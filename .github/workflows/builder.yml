@@ -6,7 +6,7 @@ jobs:
     runs-on: macOS-latest
     strategy:
       matrix:
-        sdk: [macosx, iphonesimulator, appletvsimulator]
+        sdk: [macosx, iphonesimulator]
         include:
           - name: macOS
             enable_codecov: true
