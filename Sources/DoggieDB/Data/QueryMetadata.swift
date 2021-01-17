@@ -25,5 +25,20 @@
 
 public struct QueryMetadata {
     
-    var metadata: [String: QueryData]
+    let metadata: [String: QueryData]
+}
+
+extension QueryMetadata {
+    
+    public var count: Int {
+        return self.metadata.count
+    }
+    
+    public var keys: Dictionary<String, QueryData>.Keys {
+        return self.metadata.keys
+    }
+    
+    public subscript(_ key: String) -> QueryData? {
+        return self.metadata[key]
+    }
 }
