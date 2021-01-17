@@ -89,7 +89,17 @@ extension MongoDBDriver {
 
 extension MongoDBDriver.Connection {
     
-    func listMongoDatabases() -> EventLoopFuture<[DatabaseConnection]> {
+    func databases() -> EventLoopFuture<[DatabaseConnection]> {
         return self.client.listMongoDatabases().map { $0.map { MongoDBDriver.Connection(client: self.client, database: $0, eventLoop: self.eventLoop) } }
+    }
+    
+    func runCommand(
+        _ command: BSONDocument,
+        options: RunCommandOptions? = nil
+    ) -> EventLoopFuture<BSONDocument> {
+        guard let database = self.database else {
+            return eventLoop.makeFailedFuture(DatabaseError.invalidOperation(message: "database not selected."))
+        }
+        return database.runCommand(command, options: options)
     }
 }

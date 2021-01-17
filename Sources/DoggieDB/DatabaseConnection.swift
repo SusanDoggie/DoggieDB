@@ -29,12 +29,12 @@ public protocol DatabaseConnection: AnyObject {
     
     func close() -> EventLoopFuture<Void>
     
-    func listMongoDatabases() -> EventLoopFuture<[DatabaseConnection]>
+    func databases() -> EventLoopFuture<[DatabaseConnection]>
 }
 
 extension DatabaseConnection {
     
-    public func listMongoDatabases() -> EventLoopFuture<[DatabaseConnection]> {
-        return eventLoop.makeFailedFuture(DatabaseError.invalidOperation)
+    public func databases() -> EventLoopFuture<[DatabaseConnection]> {
+        return eventLoop.makeFailedFuture(DatabaseError.invalidOperation(message: "unsupported operation"))
     }
 }

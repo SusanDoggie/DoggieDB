@@ -29,7 +29,7 @@ public enum DatabaseError: Error {
     
     case invalidConfiguration(message: String)
     
-    case invalidOperation
+    case invalidOperation(message: String)
     
     case unknown
     
