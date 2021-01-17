@@ -32,7 +32,7 @@ struct MySQLDriver: DatabaseDriverProtocol {
 
 extension MySQLDriver {
     
-    class Connection: DatabaseConnection {
+    class Connection: SQLDatabaseConnection {
         
         let connection: MySQLConnection
         
@@ -76,7 +76,7 @@ extension MySQLDriver {
 
 extension MySQLDriver.Connection {
     
-    private func _query(
+    func _query(
         _ string: String,
         _ binds: [MySQLData]
     ) -> EventLoopFuture<[QueryRow]> {
@@ -86,29 +86,23 @@ extension MySQLDriver.Connection {
         return self.connection.query(string, binds).map{ $0.map(QueryRow.init) }
     }
     
-    private func _query(
+    func _queryWithMetadata(
         _ string: String,
-        _ binds: [MySQLData],
-        onRow: @escaping (QueryRow) throws -> ()
-    ) -> EventLoopFuture<QueryMetadata> {
+        _ binds: [MySQLData]
+    ) -> EventLoopFuture<QueryResult> {
+        
         var metadata: MySQLQueryMetadata?
+        var rows: [QueryRow] = []
         
         return self.connection.query(
             string,
             binds,
-            onRow: { try onRow(QueryRow($0)) },
+            onRow: { rows.append(QueryRow($0)) },
             onMetadata: { metadata = $0 }
-        ).map { metadata.map(QueryMetadata.init) ?? QueryMetadata(metadata: [:]) }
-    }
-}
-
-extension QueryMetadata {
-    
-    init(_ metadata: MySQLQueryMetadata) {
-        self.init(metadata: [
-            "affectedRows": QueryData(metadata.affectedRows),
-            "lastInsertID": QueryData(metadata.lastInsertID),
-        ])
+        ).map { QueryResult(metadata: metadata.map { [
+            "affectedRows": QueryData($0.affectedRows),
+            "lastInsertID": QueryData($0.lastInsertID),
+        ] } ?? [:], rows: rows) }
     }
 }
 

@@ -84,6 +84,18 @@ extension UInt: QueryDataConvertable {
     
 }
 
+extension Float: QueryDataConvertable {
+    
+}
+
+extension Double: QueryDataConvertable {
+    
+}
+
+extension Decimal: QueryDataConvertable {
+    
+}
+
 extension String: QueryDataConvertable {
     
 }

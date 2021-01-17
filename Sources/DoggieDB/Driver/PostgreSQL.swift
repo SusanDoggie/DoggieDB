@@ -32,7 +32,7 @@ struct PostgreSQLDriver: DatabaseDriverProtocol {
 
 extension PostgreSQLDriver {
     
-    class Connection: DatabaseConnection {
+    class Connection: SQLDatabaseConnection {
         
         let connection: PostgresConnection
         
@@ -81,7 +81,7 @@ extension PostgreSQLDriver {
 
 extension PostgreSQLDriver.Connection {
     
-    private func _query(
+    func _query(
         _ string: String,
         _ binds: [PostgresData]
     ) -> EventLoopFuture<[QueryRow]> {
@@ -91,30 +91,24 @@ extension PostgreSQLDriver.Connection {
         return self.connection.query(string, binds).map{ $0.rows.map(QueryRow.init) }
     }
     
-    private func _query(
+    func _queryWithMetadata(
         _ string: String,
-        _ binds: [PostgresData],
-        onRow: @escaping (QueryRow) throws -> ()
-    ) -> EventLoopFuture<QueryMetadata> {
+        _ binds: [PostgresData]
+    ) -> EventLoopFuture<QueryResult> {
+        
         var metadata: PostgresQueryMetadata?
+        var rows: [QueryRow] = []
         
         return self.connection.query(
             string,
             binds,
             onMetadata: { metadata = $0 },
-            onRow: { try onRow(QueryRow($0)) }
-        ).map { metadata.map(QueryMetadata.init) ?? QueryMetadata(metadata: [:]) }
-    }
-}
-
-extension QueryMetadata {
-    
-    init(_ metadata: PostgresQueryMetadata) {
-        self.init(metadata: [
-            "command": QueryData(metadata.command),
-            "oid": QueryData(metadata.oid),
-            "rows": QueryData(metadata.rows),
-        ])
+            onRow: { rows.append(QueryRow($0)) }
+        ).map { QueryResult(metadata: metadata.map { [
+            "command": QueryData($0.command),
+            "oid": QueryData($0.oid),
+            "rows": QueryData($0.rows),
+        ] } ?? [:], rows: rows) }
     }
 }
 

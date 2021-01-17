@@ -31,7 +31,7 @@ struct SQLiteDriver {
 
 extension SQLiteDriver {
     
-    class Connection: DatabaseConnection {
+    class Connection: SQLDatabaseConnection {
         
         let connection: SQLiteConnection
         
@@ -69,19 +69,11 @@ extension SQLiteDriver {
 
 extension SQLiteDriver.Connection {
     
-    private func _query(
+    func _query(
         _ string: String,
         _ binds: [SQLiteData]
     ) -> EventLoopFuture<[QueryRow]> {
         return self.connection.query(string, binds).map{ $0.map(QueryRow.init) }
-    }
-    
-    private func _query(
-        _ string: String,
-        _ binds: [SQLiteData],
-        onRow: @escaping (QueryRow) -> ()
-    ) -> EventLoopFuture<QueryMetadata> {
-        return self.connection.query(string, binds, { onRow(QueryRow($0)) }).map { QueryMetadata(metadata: [:]) }
     }
 }
 
