@@ -27,41 +27,47 @@ import MySQLNIO
 
 struct MySQLDriver: DatabaseDriverProtocol {
     
-    static func connect(
-        to socketAddress: SocketAddress,
-        username: String,
-        database: String,
-        password: String? = nil,
-        tlsConfiguration: TLSConfiguration? = .forClient(),
-        serverHostname: String? = nil,
-        logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
-        on eventLoop: EventLoop
-    ) -> EventLoopFuture<MySQLConnection> {
+    static var defaultPort: Int { 3306 }
+}
+
+extension MySQLDriver {
+    
+    class Connection: DatabaseConnection {
         
-        let connection = MySQLNIO.MySQLConnection.connect(
-            to: socketAddress,
+        let connection: MySQLConnection
+        
+        init(_ connection: MySQLConnection) {
+            self.connection = connection
+        }
+        
+        func close() -> EventLoopFuture<Void> {
+            return connection.close()
+        }
+    }
+}
+
+extension MySQLDriver {
+    
+    static func connect(
+        config: DatabaseConfiguration,
+        logger: Logger,
+        on eventLoop: EventLoop
+    ) -> EventLoopFuture<DatabaseConnection> {
+        
+        guard let username = config.username else {
+            return eventLoop.makeFailedFuture(DatabaseError.invalidConfiguration(message: "username is missing."))
+        }
+        
+        let connection = MySQLConnection.connect(
+            to: config.socketAddress,
             username: username,
-            database: database,
-            password: password,
-            tlsConfiguration: tlsConfiguration,
-            serverHostname: serverHostname,
+            database: config.database ?? username,
+            password: config.password,
+            tlsConfiguration: config.tlsConfiguration,
             logger: logger,
             on: eventLoop
         )
         
-        return connection.map(MySQLConnection.init)
-    }
-}
-
-class MySQLConnection: DatabaseConnection {
-    
-    let connection: MySQLNIO.MySQLConnection
-    
-    init(_ connection: MySQLNIO.MySQLConnection) {
-        self.connection = connection
-    }
-    
-    func close() -> EventLoopFuture<Void> {
-        return connection.close()
+        return connection.map(Connection.init)
     }
 }

@@ -25,35 +25,42 @@
 
 import SQLiteNIO
 
-struct SQLiteDriver: DatabaseDriverProtocol {
+struct SQLiteDriver {
     
-    static func connect(
-        storage: SQLiteNIO.SQLiteConnection.Storage = .memory,
-        threadPool: NIOThreadPool,
-        logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
-        on eventLoop: EventLoop
-    ) -> EventLoopFuture<SQLiteConnection> {
+}
+
+extension SQLiteDriver {
+    
+    class Connection: DatabaseConnection {
         
-        let connection = SQLiteNIO.SQLiteConnection.open(
+        let connection: SQLiteConnection
+        
+        init(_ connection: SQLiteConnection) {
+            self.connection = connection
+        }
+        
+        func close() -> EventLoopFuture<Void> {
+            return connection.close()
+        }
+    }
+}
+
+extension SQLiteDriver {
+    
+    static func create(
+        storage: SQLiteConnection.Storage,
+        logger: Logger,
+        threadPool: NIOThreadPool,
+        on eventLoop: EventLoop
+    ) -> EventLoopFuture<DatabaseConnection> {
+        
+        let connection = SQLiteConnection.open(
             storage: storage,
             threadPool: threadPool,
             logger: logger,
             on: eventLoop
         )
         
-        return connection.map(SQLiteConnection.init)
-    }
-}
-
-class SQLiteConnection: DatabaseConnection {
-    
-    let connection: SQLiteNIO.SQLiteConnection
-    
-    init(_ connection: SQLiteNIO.SQLiteConnection) {
-        self.connection = connection
-    }
-    
-    func close() -> EventLoopFuture<Void> {
-        return connection.close()
+        return connection.map(Connection.init)
     }
 }

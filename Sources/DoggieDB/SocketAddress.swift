@@ -1,5 +1,5 @@
 //
-//  DatabaseDriver.swift
+//  SocketAddress.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,48 +23,13 @@
 //  THE SOFTWARE.
 //
 
-protocol DatabaseDriverProtocol {
+extension SocketAddress {
     
-    static var defaultPort: Int { get }
-    
-    static func connect(
-        config: DatabaseConfiguration,
-        logger: Logger,
-        on eventLoop: EventLoop
-    ) -> EventLoopFuture<DatabaseConnection>
-}
-
-public struct DatabaseDriver: Hashable {
-    
-    var rawValue: DatabaseDriverProtocol.Type
-    
-    init(rawValue: DatabaseDriverProtocol.Type) {
-        self.rawValue = rawValue
+    public var host: String? {
+        switch self {
+        case let .v4(addr): return addr.host
+        case let .v6(addr): return addr.host
+        default: return nil
+        }
     }
-}
-
-extension DatabaseDriver {
-    
-    public var identifier: ObjectIdentifier {
-        return ObjectIdentifier(rawValue)
-    }
-    
-    public static func == (lhs: DatabaseDriver, rhs: DatabaseDriver) -> Bool {
-        return lhs.identifier == rhs.identifier
-    }
-    
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(identifier)
-    }
-}
-
-extension DatabaseDriver {
-    
-    public static let mongoDB = DatabaseDriver(rawValue: MongoDBDriver.self)
-    
-    public static let mySQL = DatabaseDriver(rawValue: MySQLDriver.self)
-    
-    public static let postgreSQL = DatabaseDriver(rawValue: PostgreSQLDriver.self)
-    
-    public static let redis = DatabaseDriver(rawValue: RedisDriver.self)
 }

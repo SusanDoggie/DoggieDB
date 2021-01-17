@@ -27,35 +27,50 @@ import RediStack
 
 struct RedisDriver: DatabaseDriverProtocol {
     
-    static func connect(
-        configuration config: RediStack.RedisConnection.Configuration,
-        configuredTCPClient client: ClientBootstrap? = nil,
-        logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
-        on eventLoop: EventLoop
-    ) -> EventLoopFuture<RedisConnection> {
+    static var defaultPort: Int { 6379 }
+}
+
+extension RedisDriver {
+    
+    class Connection: DatabaseConnection {
         
-        let connection = RediStack.RedisConnection.make(
-            configuration: config,
-            boundEventLoop: eventLoop,
-            configuredTCPClient: client
-        )
+        let connection: RedisConnection
         
-        return connection.map { RedisConnection($0, logger: logger) }
+        init(_ connection: RedisConnection) {
+            self.connection = connection
+        }
+        
+        func close() -> EventLoopFuture<Void> {
+            return connection.close()
+        }
     }
 }
 
-class RedisConnection: DatabaseConnection {
+extension RedisDriver {
     
-    let connection: RediStack.RedisConnection
-    
-    let logger: Logger
-    
-    init(_ connection: RediStack.RedisConnection, logger: Logger) {
-        self.connection = connection
-        self.logger = logger
-    }
-    
-    func close() -> EventLoopFuture<Void> {
-        return connection.close(logger: logger)
+    static func connect(
+        config: DatabaseConfiguration,
+        logger: Logger,
+        on eventLoop: EventLoop
+    ) -> EventLoopFuture<DatabaseConnection> {
+        
+        do {
+            
+            let _config = try RedisConnection.Configuration(
+                address: config.socketAddress,
+                password: config.password,
+                initialDatabase: config.database.flatMap(Int.init),
+                defaultLogger: logger
+            )
+            
+            return RedisConnection.make(
+                configuration: _config,
+                boundEventLoop: eventLoop
+            ).map(Connection.init)
+            
+        } catch let error {
+            
+            return eventLoop.makeFailedFuture(error)
+        }
     }
 }

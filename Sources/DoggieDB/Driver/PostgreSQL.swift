@@ -27,46 +27,52 @@ import PostgresNIO
 
 struct PostgreSQLDriver: DatabaseDriverProtocol {
     
-    static func connect(
-        to socketAddress: SocketAddress,
-        username: String,
-        database: String,
-        password: String? = nil,
-        tlsConfiguration: TLSConfiguration? = nil,
-        serverHostname: String? = nil,
-        logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
-        on eventLoop: EventLoop
-    ) -> EventLoopFuture<PostgreSQLConnection> {
+    static var defaultPort: Int { 5432 }
+}
+
+extension PostgreSQLDriver {
+    
+    class Connection: DatabaseConnection {
         
-        let connection = PostgresNIO.PostgresConnection.connect(
-            to: socketAddress,
-            tlsConfiguration: tlsConfiguration,
-            serverHostname: serverHostname,
-            logger: logger,
-            on: eventLoop
-        )
+        let connection: PostgresConnection
         
-        return connection.flatMap { conn in
-            
-            conn.authenticate(
-                username: username,
-                database: database,
-                password: password,
-                logger: logger
-            ).map { PostgreSQLConnection(conn) }
+        init(_ connection: PostgresConnection) {
+            self.connection = connection
+        }
+        
+        func close() -> EventLoopFuture<Void> {
+            return connection.close()
         }
     }
 }
 
-class PostgreSQLConnection: DatabaseConnection {
+extension PostgreSQLDriver {
     
-    let connection: PostgresNIO.PostgresConnection
-    
-    init(_ connection: PostgresNIO.PostgresConnection) {
-        self.connection = connection
-    }
-    
-    func close() -> EventLoopFuture<Void> {
-        return connection.close()
+    static func connect(
+        config: DatabaseConfiguration,
+        logger: Logger,
+        on eventLoop: EventLoop
+    ) -> EventLoopFuture<DatabaseConnection> {
+        
+        guard let username = config.username else {
+            return eventLoop.makeFailedFuture(DatabaseError.invalidConfiguration(message: "username is missing."))
+        }
+        
+        let connection = PostgresConnection.connect(
+            to: config.socketAddress,
+            tlsConfiguration: config.tlsConfiguration,
+            logger: logger,
+            on: eventLoop
+        )
+        
+        return connection.flatMap { connection in
+            
+            connection.authenticate(
+                username: username,
+                database: config.database,
+                password: config.password,
+                logger: logger
+            ).map { Connection(connection) }
+        }
     }
 }

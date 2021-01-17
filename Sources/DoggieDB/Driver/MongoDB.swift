@@ -27,30 +27,57 @@ import MongoSwift
 
 struct MongoDBDriver: DatabaseDriverProtocol {
     
-    static func connect(
-        _ connectionString: String = "mongodb://localhost:27017",
-        options: MongoClientOptions? = nil,
-        on eventLoop: EventLoop
-    ) -> EventLoopFuture<MongoDBConnection> {
+    static var defaultPort: Int { 27017 }
+}
+
+extension MongoDBDriver {
+    
+    class Connection: DatabaseConnection {
         
-        return eventLoop.submit {
-            
-            let client = try MongoClient(connectionString, using: eventLoop, options: options)
-            
-            return MongoDBConnection(client)
+        let client: MongoClient
+        
+        init(_ client: MongoClient) {
+            self.client = client
+        }
+        
+        func close() -> EventLoopFuture<Void> {
+            return client.close()
         }
     }
 }
 
-class MongoDBConnection: DatabaseConnection {
+extension MongoDBDriver {
     
-    let client: MongoClient
-    
-    init(_ client: MongoClient) {
-        self.client = client
-    }
-    
-    func close() -> EventLoopFuture<Void> {
-        return client.close()
+    static func connect(
+        config: DatabaseConfiguration,
+        logger: Logger,
+        on eventLoop: EventLoop
+    ) -> EventLoopFuture<DatabaseConnection> {
+        
+        guard let host = config.socketAddress.host else {
+            return eventLoop.makeFailedFuture(DatabaseError.invalidConfiguration(message: "unsupprted socket address"))
+        }
+        
+        var url = URLComponents()
+        url.scheme = "mongodb"
+        url.host = host
+        url.port = config.socketAddress.port
+        url.user = config.username
+        url.password = config.password
+        
+        guard let connectionString = url.string else {
+            return eventLoop.makeFailedFuture(DatabaseError.unknown)
+        }
+        
+        do {
+            
+            let client = try MongoClient(connectionString, using: eventLoop, options: nil)
+            
+            return eventLoop.makeSucceededFuture(Connection(client))
+            
+        } catch let error {
+            
+            return eventLoop.makeFailedFuture(error)
+        }
     }
 }

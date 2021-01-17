@@ -26,3 +26,75 @@
 public enum Database {
     
 }
+
+extension Database {
+    
+    public static func createSQLite(
+        path: String? = nil,
+        logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
+        threadPool: NIOThreadPool,
+        on eventLoop: EventLoop
+    ) -> EventLoopFuture<DatabaseConnection> {
+        
+        return SQLiteDriver.create(storage: path.map { .file(path: $0) } ?? .memory, logger: logger, threadPool: threadPool, on: eventLoop)
+    }
+}
+
+extension Database {
+    
+    public static func connect(
+        config: DatabaseConfiguration,
+        logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
+        driver: DatabaseDriver,
+        on eventLoop: EventLoop
+    ) -> EventLoopFuture<DatabaseConnection> {
+        
+        return driver.rawValue.connect(config: config, logger: logger, on: eventLoop)
+    }
+    
+    public static func connect(
+        url: URL,
+        logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
+        on eventLoop: EventLoop
+    ) -> EventLoopFuture<DatabaseConnection> {
+        
+        do {
+            
+            guard let hostname = url.host else {
+                return eventLoop.makeFailedFuture(DatabaseError.invalidConnectionURL)
+            }
+            
+            let driver: DatabaseDriver
+            
+            switch url.scheme {
+            case "redis": driver = .redis
+            case "mysql": driver = .mySQL
+            case "postgres": driver = .postgreSQL
+            case "mongodb": driver = .mongoDB
+            default: return eventLoop.makeFailedFuture(DatabaseError.invalidConnectionURL)
+            }
+            
+            let tlsConfiguration: TLSConfiguration?
+            if url.query?.contains("ssl=false") == true {
+                tlsConfiguration = nil
+            } else {
+                tlsConfiguration = .forClient()
+            }
+            
+            let config = try DatabaseConfiguration(
+                hostname: hostname,
+                port: url.port ?? driver.rawValue.defaultPort,
+                username: url.user,
+                password: url.password,
+                database: url.lastPathComponent,
+                tlsConfiguration: tlsConfiguration
+            )
+            
+            return self.connect(config: config, logger: logger, driver: driver, on: eventLoop)
+            
+        } catch let error {
+            
+            return eventLoop.makeFailedFuture(error)
+        }
+    }
+}
