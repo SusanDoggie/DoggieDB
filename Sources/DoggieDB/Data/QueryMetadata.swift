@@ -1,5 +1,5 @@
 //
-//  QueryResult.swift
+//  QueryMetadata.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,9 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public struct QueryResult {
+public struct QueryMetadata {
     
-    public var metadata: [String: QueryData]
-    
-    public var rows: [QueryRow]
+    var metadata: [String: QueryData]
 }

@@ -86,23 +86,29 @@ extension MySQLDriver.Connection {
         return self.connection.query(string, binds).map{ $0.map(QueryRow.init) }
     }
     
-    func _queryWithMetadata(
+    func _query(
         _ string: String,
-        _ binds: [MySQLData]
-    ) -> EventLoopFuture<QueryResult> {
-        
+        _ binds: [MySQLData],
+        onRow: @escaping (QueryRow) throws -> Void
+    ) -> EventLoopFuture<QueryMetadata> {
         var metadata: MySQLQueryMetadata?
-        var rows: [QueryRow] = []
         
         return self.connection.query(
             string,
             binds,
-            onRow: { rows.append(QueryRow($0)) },
+            onRow: { try onRow(QueryRow($0)) },
             onMetadata: { metadata = $0 }
-        ).map { QueryResult(metadata: metadata.map { [
-            "affectedRows": QueryData($0.affectedRows),
-            "lastInsertID": QueryData($0.lastInsertID),
-        ] } ?? [:], rows: rows) }
+        ).map { metadata.map(QueryMetadata.init) ?? QueryMetadata(metadata: [:]) }
+    }
+}
+
+extension QueryMetadata {
+    
+    init(_ metadata: MySQLQueryMetadata) {
+        self.init(metadata: [
+            "affectedRows": QueryData(metadata.affectedRows),
+            "lastInsertID": QueryData(metadata.lastInsertID),
+        ])
     }
 }
 

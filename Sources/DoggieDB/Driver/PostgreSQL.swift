@@ -91,24 +91,30 @@ extension PostgreSQLDriver.Connection {
         return self.connection.query(string, binds).map{ $0.rows.map(QueryRow.init) }
     }
     
-    func _queryWithMetadata(
+    func _query(
         _ string: String,
-        _ binds: [PostgresData]
-    ) -> EventLoopFuture<QueryResult> {
-        
+        _ binds: [PostgresData],
+        onRow: @escaping (QueryRow) throws -> Void
+    ) -> EventLoopFuture<QueryMetadata> {
         var metadata: PostgresQueryMetadata?
-        var rows: [QueryRow] = []
         
         return self.connection.query(
             string,
             binds,
             onMetadata: { metadata = $0 },
-            onRow: { rows.append(QueryRow($0)) }
-        ).map { QueryResult(metadata: metadata.map { [
-            "command": QueryData($0.command),
-            "oid": QueryData($0.oid),
-            "rows": QueryData($0.rows),
-        ] } ?? [:], rows: rows) }
+            onRow: { try onRow(QueryRow($0)) }
+        ).map { metadata.map(QueryMetadata.init) ?? QueryMetadata(metadata: [:]) }
+    }
+}
+
+extension QueryMetadata {
+    
+    init(_ metadata: PostgresQueryMetadata) {
+        self.init(metadata: [
+            "command": QueryData(metadata.command),
+            "oid": QueryData(metadata.oid),
+            "rows": QueryData(metadata.rows),
+        ])
     }
 }
 

@@ -75,6 +75,14 @@ extension SQLiteDriver.Connection {
     ) -> EventLoopFuture<[QueryRow]> {
         return self.connection.query(string, binds).map{ $0.map(QueryRow.init) }
     }
+    
+    func _query(
+        _ string: String,
+        _ binds: [SQLiteData],
+        onRow: @escaping (QueryRow) -> Void
+    ) -> EventLoopFuture<QueryMetadata> {
+        return self.connection.query(string, binds, { onRow(QueryRow($0)) }).map { QueryMetadata(metadata: [:]) }
+    }
 }
 
 extension SQLiteRow: QueryRowConvertable {

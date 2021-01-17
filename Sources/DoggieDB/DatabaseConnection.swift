@@ -36,10 +36,11 @@ public protocol DatabaseConnection: AnyObject {
         _ binds: [QueryData]
     ) -> EventLoopFuture<[QueryRow]>
     
-    func queryWithMetadata(
+    func query(
         _ string: String,
-        _ binds: [QueryData]
-    ) -> EventLoopFuture<QueryResult>
+        _ binds: [QueryData],
+        onRow: @escaping (QueryRow) -> Void
+    ) -> EventLoopFuture<QueryMetadata>
 }
 
 extension DatabaseConnection {
@@ -58,10 +59,11 @@ extension DatabaseConnection {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     
-    func queryWithMetadata(
+    func query(
         _ string: String,
-        _ binds: [QueryData]
-    ) -> EventLoopFuture<QueryResult> {
+        _ binds: [QueryData],
+        onRow: @escaping (QueryRow) -> Void
+    ) -> EventLoopFuture<QueryMetadata> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
 }
