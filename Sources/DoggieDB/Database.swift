@@ -23,6 +23,6 @@
 //  THE SOFTWARE.
 //
 
-public struct Database {
+public enum Database {
     
 }
