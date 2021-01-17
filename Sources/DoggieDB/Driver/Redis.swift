@@ -51,7 +51,7 @@ extension RedisDriver {
 extension RedisDriver {
     
     static func connect(
-        config: DatabaseConfiguration,
+        config: Database.Configuration,
         logger: Logger,
         on eventLoop: EventLoop
     ) -> EventLoopFuture<DatabaseConnection> {
@@ -81,7 +81,7 @@ extension RedisDriver.Connection {
     
     func query(
         _ string: String,
-        _ binds: [RESPValue] = []
+        _ binds: [RESPValue]
     ) -> EventLoopFuture<RESPValue> {
         if binds.isEmpty {
             return self.connection.send(command: string)

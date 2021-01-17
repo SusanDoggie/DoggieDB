@@ -71,16 +71,39 @@ extension SQLiteDriver.Connection {
     
     func query(
         _ string: String,
-        _ binds: [SQLiteData] = []
-    ) -> EventLoopFuture<[SQLiteRow]> {
-        return self.connection.query(string, binds)
+        _ binds: [SQLiteData]
+    ) -> EventLoopFuture<[QueryRow]> {
+        return self.connection.query(string, binds).map{ $0.map(QueryRow.init) }
     }
     
     func query(
         _ string: String,
-        _ binds: [SQLiteData] = [],
-        onRow: @escaping (SQLiteRow) -> ()
-    ) -> NIO.EventLoopFuture<Void> {
-        return self.connection.query(string, binds, onRow)
+        _ binds: [SQLiteData],
+        onRow: @escaping (QueryRow) -> ()
+    ) -> EventLoopFuture<QueryMetadata> {
+        return self.connection.query(string, binds, { onRow(QueryRow($0)) }).map { QueryMetadata(metadata: [:]) }
     }
+}
+
+extension SQLiteRow: QueryRowConvertable {
+    
+    public var count: Int {
+        return self.columns.count
+    }
+    
+    public var allColumns: [String] {
+        return self.columns.map { $0.name }
+    }
+    
+    public func contains(column: String) -> Bool {
+        return self.columns.contains { $0.name == column }
+    }
+    
+    public func value(_ column: String) -> QueryData? {
+        return self.column(column).map(QueryData.init)
+    }
+}
+
+extension SQLiteData: QueryDataConvertable {
+    
 }

@@ -51,13 +51,13 @@ extension PostgreSQLDriver {
 extension PostgreSQLDriver {
     
     static func connect(
-        config: DatabaseConfiguration,
+        config: Database.Configuration,
         logger: Logger,
         on eventLoop: EventLoop
     ) -> EventLoopFuture<DatabaseConnection> {
         
         guard let username = config.username else {
-            return eventLoop.makeFailedFuture(DatabaseError.invalidConfiguration(message: "username is missing."))
+            return eventLoop.makeFailedFuture(Database.Error.invalidConfiguration(message: "username is missing."))
         }
         
         let connection = PostgresConnection.connect(
@@ -83,20 +83,60 @@ extension PostgreSQLDriver.Connection {
     
     func query(
         _ string: String,
-        _ binds: [PostgresData] = []
-    ) -> EventLoopFuture<[PostgresRow]> {
+        _ binds: [PostgresData]
+    ) -> EventLoopFuture<[QueryRow]> {
         if binds.isEmpty {
-            return self.connection.simpleQuery(string)
+            return self.connection.simpleQuery(string).map{ $0.map(QueryRow.init) }
         }
-        return self.connection.query(string, binds).map{ $0.rows }
+        return self.connection.query(string, binds).map{ $0.rows.map(QueryRow.init) }
     }
     
     func query(
         _ string: String,
-        _ binds: [PostgresData] = [],
-        onRow: @escaping (PostgresRow) throws -> (),
-        onMetadata: @escaping (PostgresQueryMetadata) -> () = { _ in }
-    ) -> NIO.EventLoopFuture<Void> {
-        return self.connection.query(string, binds, onMetadata: onMetadata, onRow: onRow)
+        _ binds: [PostgresData],
+        onRow: @escaping (QueryRow) throws -> ()
+    ) -> EventLoopFuture<QueryMetadata> {
+        var metadata: PostgresQueryMetadata?
+        
+        return self.connection.query(
+            string,
+            binds,
+            onMetadata: { metadata = $0 },
+            onRow: { try onRow(QueryRow($0)) }
+        ).map { metadata.map(QueryMetadata.init) ?? QueryMetadata(metadata: [:]) }
     }
+}
+
+extension QueryMetadata {
+    
+    init(_ metadata: PostgresQueryMetadata) {
+        self.init(metadata: [
+            "command": QueryData(metadata.command),
+            "oid": QueryData(metadata.oid),
+            "rows": QueryData(metadata.rows),
+        ])
+    }
+}
+
+extension PostgresRow: QueryRowConvertable {
+    
+    public var count: Int {
+        return self.rowDescription.fields.count
+    }
+    
+    public var allColumns: [String] {
+        return self.rowDescription.fields.map { $0.name }
+    }
+    
+    public func contains(column: String) -> Bool {
+        return self.rowDescription.fields.contains { $0.name == column }
+    }
+    
+    public func value(_ column: String) -> QueryData? {
+        return self.column(column).map(QueryData.init)
+    }
+}
+
+extension PostgresData: QueryDataConvertable {
+    
 }

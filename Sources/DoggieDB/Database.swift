@@ -43,7 +43,7 @@ extension Database {
 extension Database {
     
     public static func connect(
-        config: DatabaseConfiguration,
+        config: Database.Configuration,
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
         driver: DatabaseDriver,
         on eventLoop: EventLoop
@@ -61,7 +61,7 @@ extension Database {
         do {
             
             guard let hostname = url.host else {
-                return eventLoop.makeFailedFuture(DatabaseError.invalidConnectionURL)
+                return eventLoop.makeFailedFuture(Database.Error.invalidURL)
             }
             
             let driver: DatabaseDriver
@@ -71,7 +71,7 @@ extension Database {
             case "mysql": driver = .mySQL
             case "postgres": driver = .postgreSQL
             case "mongodb": driver = .mongoDB
-            default: return eventLoop.makeFailedFuture(DatabaseError.invalidConnectionURL)
+            default: return eventLoop.makeFailedFuture(Database.Error.invalidURL)
             }
             
             let tlsConfiguration: TLSConfiguration?
@@ -81,7 +81,7 @@ extension Database {
                 tlsConfiguration = .forClient()
             }
             
-            let config = try DatabaseConfiguration(
+            let config = try Database.Configuration(
                 hostname: hostname,
                 port: url.port ?? driver.rawValue.defaultPort,
                 username: url.user,

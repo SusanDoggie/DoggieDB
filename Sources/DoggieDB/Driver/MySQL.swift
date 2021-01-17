@@ -51,13 +51,13 @@ extension MySQLDriver {
 extension MySQLDriver {
     
     static func connect(
-        config: DatabaseConfiguration,
+        config: Database.Configuration,
         logger: Logger,
         on eventLoop: EventLoop
     ) -> EventLoopFuture<DatabaseConnection> {
         
         guard let username = config.username else {
-            return eventLoop.makeFailedFuture(DatabaseError.invalidConfiguration(message: "username is missing."))
+            return eventLoop.makeFailedFuture(Database.Error.invalidConfiguration(message: "username is missing."))
         }
         
         let connection = MySQLConnection.connect(
@@ -78,20 +78,59 @@ extension MySQLDriver.Connection {
     
     func query(
         _ string: String,
-        _ binds: [MySQLData] = []
-    ) -> EventLoopFuture<[MySQLRow]> {
+        _ binds: [MySQLData]
+    ) -> EventLoopFuture<[QueryRow]> {
         if binds.isEmpty {
-            return self.connection.simpleQuery(string)
+            return self.connection.simpleQuery(string).map{ $0.map(QueryRow.init) }
         }
-        return self.connection.query(string, binds)
+        return self.connection.query(string, binds).map{ $0.map(QueryRow.init) }
     }
     
     func query(
         _ string: String,
-        _ binds: [MySQLData] = [],
-        onRow: @escaping (MySQLRow) throws -> (),
-        onMetadata: @escaping (MySQLQueryMetadata) -> () = { _ in }
-    ) -> NIO.EventLoopFuture<Void> {
-        return self.connection.query(string, binds, onRow: onRow, onMetadata: onMetadata)
+        _ binds: [MySQLData],
+        onRow: @escaping (QueryRow) throws -> ()
+    ) -> EventLoopFuture<QueryMetadata> {
+        var metadata: MySQLQueryMetadata?
+        
+        return self.connection.query(
+            string,
+            binds,
+            onRow: { try onRow(QueryRow($0)) },
+            onMetadata: { metadata = $0 }
+        ).map { metadata.map(QueryMetadata.init) ?? QueryMetadata(metadata: [:]) }
     }
+}
+
+extension QueryMetadata {
+    
+    init(_ metadata: MySQLQueryMetadata) {
+        self.init(metadata: [
+            "affectedRows": QueryData(metadata.affectedRows),
+            "lastInsertID": QueryData(metadata.lastInsertID),
+        ])
+    }
+}
+
+extension MySQLRow: QueryRowConvertable {
+    
+    public var count: Int {
+        return self.columnDefinitions.count
+    }
+    
+    public var allColumns: [String] {
+        return self.columnDefinitions.map { $0.name }
+    }
+    
+    public func contains(column: String) -> Bool {
+        return self.columnDefinitions.contains { $0.name == column }
+    }
+    
+    public func value(_ column: String) -> QueryData? {
+        return self.column(column).map(QueryData.init)
+    }
+}
+
+extension MySQLData: QueryDataConvertable {
+    
 }

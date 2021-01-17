@@ -1,5 +1,5 @@
 //
-//  DatabaseError.swift
+//  QueryData.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,14 +23,79 @@
 //  THE SOFTWARE.
 //
 
-public enum DatabaseError: Error {
+public protocol QueryDataConvertable {
     
-    case invalidConnectionURL
+}
+
+public struct QueryData {
     
-    case invalidConfiguration(message: String)
+    let value: QueryDataConvertable
     
-    case invalidOperation(message: String)
+    public init<C: QueryDataConvertable>(_ value: C) {
+        self.value = value
+    }
+}
+
+extension Optional: QueryDataConvertable where Wrapped: QueryDataConvertable {
     
-    case unknown
+}
+
+extension Bool: QueryDataConvertable {
+    
+}
+
+extension Int8: QueryDataConvertable {
+    
+}
+
+extension Int16: QueryDataConvertable {
+    
+}
+
+extension Int32: QueryDataConvertable {
+    
+}
+
+extension Int64: QueryDataConvertable {
+    
+}
+
+extension Int: QueryDataConvertable {
+    
+}
+
+extension UInt8: QueryDataConvertable {
+    
+}
+
+extension UInt16: QueryDataConvertable {
+    
+}
+
+extension UInt32: QueryDataConvertable {
+    
+}
+
+extension UInt64: QueryDataConvertable {
+    
+}
+
+extension UInt: QueryDataConvertable {
+    
+}
+
+extension String: QueryDataConvertable {
+    
+}
+
+extension Data: QueryDataConvertable {
+    
+}
+
+extension UUID: QueryDataConvertable {
+    
+}
+
+extension Date: QueryDataConvertable {
     
 }

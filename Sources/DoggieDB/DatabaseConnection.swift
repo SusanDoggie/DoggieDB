@@ -30,11 +30,40 @@ public protocol DatabaseConnection: AnyObject {
     func close() -> EventLoopFuture<Void>
     
     func databases() -> EventLoopFuture<[DatabaseConnection]>
+    
+    func query(
+        _ string: String,
+        _ binds: [QueryData]
+    ) -> EventLoopFuture<[QueryRow]>
+    
+    func query(
+        _ string: String,
+        _ binds: [QueryData],
+        onRow: @escaping (QueryRow) throws -> ()
+    ) -> EventLoopFuture<QueryMetadata>
 }
 
 extension DatabaseConnection {
     
     public func databases() -> EventLoopFuture<[DatabaseConnection]> {
-        return eventLoop.makeFailedFuture(DatabaseError.invalidOperation(message: "unsupported operation"))
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+}
+
+extension DatabaseConnection {
+    
+    func query(
+        _ string: String,
+        _ binds: [QueryData]
+    ) -> EventLoopFuture<[QueryRow]> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    func query(
+        _ string: String,
+        _ binds: [QueryData],
+        onRow: @escaping (QueryRow) throws -> ()
+    ) -> EventLoopFuture<QueryMetadata> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
 }

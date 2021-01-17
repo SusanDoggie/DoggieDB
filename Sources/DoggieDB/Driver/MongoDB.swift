@@ -54,13 +54,13 @@ extension MongoDBDriver {
 extension MongoDBDriver {
     
     static func connect(
-        config: DatabaseConfiguration,
+        config: Database.Configuration,
         logger: Logger,
         on eventLoop: EventLoop
     ) -> EventLoopFuture<DatabaseConnection> {
         
         guard let host = config.socketAddress.host else {
-            return eventLoop.makeFailedFuture(DatabaseError.invalidConfiguration(message: "unsupprted socket address"))
+            return eventLoop.makeFailedFuture(Database.Error.invalidConfiguration(message: "unsupprted socket address"))
         }
         
         var url = URLComponents()
@@ -71,7 +71,7 @@ extension MongoDBDriver {
         url.password = config.password
         
         guard let connectionString = url.string else {
-            return eventLoop.makeFailedFuture(DatabaseError.unknown)
+            return eventLoop.makeFailedFuture(Database.Error.unknown)
         }
         
         do {
@@ -95,10 +95,10 @@ extension MongoDBDriver.Connection {
     
     func runCommand(
         _ command: BSONDocument,
-        options: RunCommandOptions? = nil
+        options: RunCommandOptions?
     ) -> EventLoopFuture<BSONDocument> {
         guard let database = self.database else {
-            return eventLoop.makeFailedFuture(DatabaseError.invalidOperation(message: "database not selected."))
+            return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "database not selected."))
         }
         return database.runCommand(command, options: options)
     }

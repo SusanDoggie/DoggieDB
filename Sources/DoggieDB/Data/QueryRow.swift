@@ -1,5 +1,5 @@
 //
-//  DatabaseDriver.swift
+//  QueryRow.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,48 +23,41 @@
 //  THE SOFTWARE.
 //
 
-protocol DatabaseDriverProtocol {
+public protocol QueryRowConvertable {
     
-    static var defaultPort: Int { get }
+    var count: Int { get }
     
-    static func connect(
-        config: Database.Configuration,
-        logger: Logger,
-        on eventLoop: EventLoop
-    ) -> EventLoopFuture<DatabaseConnection>
+    var allColumns: [String] { get }
+    
+    func contains(column: String) -> Bool
+    
+    func value(_ column: String) -> QueryData?
 }
 
-public struct DatabaseDriver: Hashable {
+public struct QueryRow {
     
-    var rawValue: DatabaseDriverProtocol.Type
+    let row: QueryRowConvertable
     
-    init(rawValue: DatabaseDriverProtocol.Type) {
-        self.rawValue = rawValue
-    }
-}
-
-extension DatabaseDriver {
-    
-    public var identifier: ObjectIdentifier {
-        return ObjectIdentifier(rawValue)
-    }
-    
-    public static func == (lhs: DatabaseDriver, rhs: DatabaseDriver) -> Bool {
-        return lhs.identifier == rhs.identifier
-    }
-    
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(identifier)
+    public init<C: QueryRowConvertable>(_ row: C) {
+        self.row = row
     }
 }
 
-extension DatabaseDriver {
+extension QueryRow {
     
-    public static let mongoDB = DatabaseDriver(rawValue: MongoDBDriver.self)
+    public var count: Int {
+        return self.row.count
+    }
     
-    public static let mySQL = DatabaseDriver(rawValue: MySQLDriver.self)
+    public var allColumns: [String] {
+        return self.row.allColumns
+    }
     
-    public static let postgreSQL = DatabaseDriver(rawValue: PostgreSQLDriver.self)
+    public func contains(column: String) -> Bool {
+        return self.row.contains(column: column)
+    }
     
-    public static let redis = DatabaseDriver(rawValue: RedisDriver.self)
+    public subscript(_ column: String) -> QueryData? {
+        return self.row.value(column)
+    }
 }

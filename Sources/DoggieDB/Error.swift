@@ -1,5 +1,5 @@
 //
-//  DatabaseData.swift
+//  Error.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -22,3 +22,18 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 //
+
+extension Database {
+    
+    public enum Error: Swift.Error {
+        
+        case invalidURL
+        
+        case invalidConfiguration(message: String)
+        
+        case invalidOperation(message: String)
+        
+        case unknown
+        
+    }
+}
