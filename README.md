@@ -15,4 +15,4 @@ For Ubuntu platforms, you need to install some of database drivers.
 
 ### Ubuntu
 
-apt-get -y install libmongoc-1.0-0 libbson-1.0-0 libssl-dev libsqlite3-dev
+    apt-get -y install libmongoc-1.0-0 libbson-1.0-0 libssl-dev libsqlite3-dev
