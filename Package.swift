@@ -30,7 +30,6 @@ let package = Package(
     name: "DoggieDB",
     platforms: [
         .macOS(.v10_15),
-        .iOS(.v13),
     ],
     products: [
         .library(name: "DoggieDB", targets: ["DoggieDB"]),
