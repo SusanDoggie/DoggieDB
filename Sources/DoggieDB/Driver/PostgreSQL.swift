@@ -36,11 +36,10 @@ extension PostgreSQLDriver {
         
         let connection: PostgresConnection
         
-        let eventLoop: EventLoop
+        var eventLoop: EventLoop { connection.eventLoop }
         
-        init(_ connection: PostgresConnection, eventLoop: EventLoop) {
+        init(_ connection: PostgresConnection) {
             self.connection = connection
-            self.eventLoop = eventLoop
         }
         
         func close() -> EventLoopFuture<Void> {
@@ -75,7 +74,29 @@ extension PostgreSQLDriver {
                 database: config.database,
                 password: config.password,
                 logger: logger
-            ).map { Connection(connection, eventLoop: eventLoop) }
+            ).map { Connection(connection) }
         }
+    }
+}
+
+extension PostgreSQLDriver.Connection {
+    
+    func query(
+        _ string: String,
+        _ binds: [PostgresData] = []
+    ) -> EventLoopFuture<[PostgresRow]> {
+        if binds.isEmpty {
+            return self.connection.simpleQuery(string)
+        }
+        return self.connection.query(string, binds).map{ $0.rows }
+    }
+    
+    func query(
+        _ string: String,
+        _ binds: [PostgresData] = [],
+        onRow: @escaping (PostgresRow) throws -> (),
+        onMetadata: @escaping (PostgresQueryMetadata) -> () = { _ in }
+    ) -> NIO.EventLoopFuture<Void> {
+        return self.connection.query(string, binds, onMetadata: onMetadata, onRow: onRow)
     }
 }

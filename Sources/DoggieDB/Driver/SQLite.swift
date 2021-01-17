@@ -35,11 +35,10 @@ extension SQLiteDriver {
         
         let connection: SQLiteConnection
         
-        let eventLoop: EventLoop
+        var eventLoop: EventLoop { connection.eventLoop }
         
-        init(_ connection: SQLiteConnection, eventLoop: EventLoop) {
+        init(_ connection: SQLiteConnection) {
             self.connection = connection
-            self.eventLoop = eventLoop
         }
         
         func close() -> EventLoopFuture<Void> {
@@ -64,6 +63,24 @@ extension SQLiteDriver {
             on: eventLoop
         )
         
-        return connection.map { Connection($0, eventLoop: eventLoop) }
+        return connection.map(Connection.init)
+    }
+}
+
+extension SQLiteDriver.Connection {
+    
+    func query(
+        _ string: String,
+        _ binds: [SQLiteData] = []
+    ) -> EventLoopFuture<[SQLiteRow]> {
+        return self.connection.query(string, binds)
+    }
+    
+    func query(
+        _ string: String,
+        _ binds: [SQLiteData] = [],
+        onRow: @escaping (SQLiteRow) -> ()
+    ) -> NIO.EventLoopFuture<Void> {
+        return self.connection.query(string, binds, onRow)
     }
 }

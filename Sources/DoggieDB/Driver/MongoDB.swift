@@ -48,10 +48,6 @@ extension MongoDBDriver {
         func close() -> EventLoopFuture<Void> {
             return client.close()
         }
-        
-        func listMongoDatabases() -> EventLoopFuture<[DatabaseConnection]> {
-            return self.client.listMongoDatabases().map { $0.map { Connection(client: self.client, database: $0, eventLoop: self.eventLoop) } }
-        }
     }
 }
 
@@ -88,5 +84,12 @@ extension MongoDBDriver {
             
             return eventLoop.makeFailedFuture(error)
         }
+    }
+}
+
+extension MongoDBDriver.Connection {
+    
+    func listMongoDatabases() -> EventLoopFuture<[DatabaseConnection]> {
+        return self.client.listMongoDatabases().map { $0.map { MongoDBDriver.Connection(client: self.client, database: $0, eventLoop: self.eventLoop) } }
     }
 }

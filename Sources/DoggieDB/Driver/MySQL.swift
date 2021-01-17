@@ -36,11 +36,10 @@ extension MySQLDriver {
         
         let connection: MySQLConnection
         
-        let eventLoop: EventLoop
+        var eventLoop: EventLoop { connection.eventLoop }
         
-        init(_ connection: MySQLConnection, eventLoop: EventLoop) {
+        init(_ connection: MySQLConnection) {
             self.connection = connection
-            self.eventLoop = eventLoop
         }
         
         func close() -> EventLoopFuture<Void> {
@@ -71,6 +70,28 @@ extension MySQLDriver {
             on: eventLoop
         )
         
-        return connection.map { Connection($0, eventLoop: eventLoop) }
+        return connection.map(Connection.init)
+    }
+}
+
+extension MySQLDriver.Connection {
+    
+    func query(
+        _ string: String,
+        _ binds: [MySQLData] = []
+    ) -> EventLoopFuture<[MySQLRow]> {
+        if binds.isEmpty {
+            return self.connection.simpleQuery(string)
+        }
+        return self.connection.query(string, binds)
+    }
+    
+    func query(
+        _ string: String,
+        _ binds: [MySQLData] = [],
+        onRow: @escaping (MySQLRow) throws -> (),
+        onMetadata: @escaping (MySQLQueryMetadata) -> () = { _ in }
+    ) -> NIO.EventLoopFuture<Void> {
+        return self.connection.query(string, binds, onRow: onRow, onMetadata: onMetadata)
     }
 }
