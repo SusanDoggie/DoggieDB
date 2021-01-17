@@ -53,6 +53,8 @@ jobs:
       run: apt-get update
     - name: Install libmongoc
       run: apt-get install -y libmongoc-1.0-0 libbson-1.0-0 libssl-dev
+    - name: Install sqlite3
+      run: apt-get install -y sqlite3
     - name: Build
       uses: SusanDoggie/swift-action@master
       with:
@@ -78,6 +80,8 @@ jobs:
       run: apt-get update
     - name: Install libmongoc
       run: apt-get install -y libmongoc-1.0-0 libbson-1.0-0 libssl-dev
+    - name: Install sqlite3
+      run: apt-get install -y sqlite3
     - name: Build
       uses: SusanDoggie/swift-action@master
       with:
