@@ -25,7 +25,7 @@
 
 import MongoSwift
 
-struct MongoDBDriver: DatabaseDriver {
+struct MongoDBDriver: DatabaseDriverProtocol {
     
     static func connect(
         _ connectionString: String = "mongodb://localhost:27017",

@@ -25,7 +25,7 @@
 
 import RediStack
 
-struct RedisDriver: DatabaseDriver {
+struct RedisDriver: DatabaseDriverProtocol {
     
     static func connect(
         configuration config: RediStack.RedisConnection.Configuration,

@@ -25,7 +25,7 @@
 
 import MySQLNIO
 
-struct MySQLDriver: DatabaseDriver {
+struct MySQLDriver: DatabaseDriverProtocol {
     
     static func connect(
         to socketAddress: SocketAddress,

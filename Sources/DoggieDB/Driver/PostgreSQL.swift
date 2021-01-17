@@ -25,7 +25,7 @@
 
 import PostgresNIO
 
-struct PostgreSQLDriver: DatabaseDriver {
+struct PostgreSQLDriver: DatabaseDriverProtocol {
     
     static func connect(
         to socketAddress: SocketAddress,

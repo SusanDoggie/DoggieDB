@@ -25,7 +25,7 @@
 
 import SQLiteNIO
 
-struct SQLiteDriver: DatabaseDriver {
+struct SQLiteDriver: DatabaseDriverProtocol {
     
     static func connect(
         storage: SQLiteNIO.SQLiteConnection.Storage = .memory,

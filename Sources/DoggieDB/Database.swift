@@ -23,39 +23,6 @@
 //  THE SOFTWARE.
 //
 
-public struct Database: Hashable {
+public struct Database {
     
-    var rawValue: DatabaseDriver.Type
-    
-    init(rawValue: DatabaseDriver.Type) {
-        self.rawValue = rawValue
-    }
-}
-
-extension Database {
-    
-    public var identifier: ObjectIdentifier {
-        return ObjectIdentifier(rawValue)
-    }
-    
-    public static func == (lhs: Database, rhs: Database) -> Bool {
-        return lhs.identifier == rhs.identifier
-    }
-    
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(identifier)
-    }
-}
-
-extension Database {
-    
-    public static let mongoDB = Database(rawValue: MongoDBDriver.self)
-    
-    public static let mySQL = Database(rawValue: MySQLDriver.self)
-    
-    public static let postgreSQL = Database(rawValue: PostgreSQLDriver.self)
-    
-    public static let redis = Database(rawValue: RedisDriver.self)
-    
-    public static let sqlite = Database(rawValue: SQLiteDriver.self)
 }
