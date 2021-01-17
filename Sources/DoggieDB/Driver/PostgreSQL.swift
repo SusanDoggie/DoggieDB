@@ -81,7 +81,7 @@ extension PostgreSQLDriver {
 
 extension PostgreSQLDriver.Connection {
     
-    func query(
+    private func _query(
         _ string: String,
         _ binds: [PostgresData]
     ) -> EventLoopFuture<[QueryRow]> {
@@ -91,7 +91,7 @@ extension PostgreSQLDriver.Connection {
         return self.connection.query(string, binds).map{ $0.rows.map(QueryRow.init) }
     }
     
-    func query(
+    private func _query(
         _ string: String,
         _ binds: [PostgresData],
         onRow: @escaping (QueryRow) throws -> ()

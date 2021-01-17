@@ -69,14 +69,14 @@ extension SQLiteDriver {
 
 extension SQLiteDriver.Connection {
     
-    func query(
+    private func _query(
         _ string: String,
         _ binds: [SQLiteData]
     ) -> EventLoopFuture<[QueryRow]> {
         return self.connection.query(string, binds).map{ $0.map(QueryRow.init) }
     }
     
-    func query(
+    private func _query(
         _ string: String,
         _ binds: [SQLiteData],
         onRow: @escaping (QueryRow) -> ()

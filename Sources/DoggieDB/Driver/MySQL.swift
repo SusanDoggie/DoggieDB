@@ -76,7 +76,7 @@ extension MySQLDriver {
 
 extension MySQLDriver.Connection {
     
-    func query(
+    private func _query(
         _ string: String,
         _ binds: [MySQLData]
     ) -> EventLoopFuture<[QueryRow]> {
@@ -86,7 +86,7 @@ extension MySQLDriver.Connection {
         return self.connection.query(string, binds).map{ $0.map(QueryRow.init) }
     }
     
-    func query(
+    private func _query(
         _ string: String,
         _ binds: [MySQLData],
         onRow: @escaping (QueryRow) throws -> ()
