@@ -35,13 +35,22 @@ extension MongoDBDriver {
     class Connection: DatabaseConnection {
         
         let client: MongoClient
+        let database: MongoDatabase?
         
-        init(_ client: MongoClient) {
+        let eventLoop: EventLoop
+        
+        init(client: MongoClient, database: MongoDatabase?, eventLoop: EventLoop) {
             self.client = client
+            self.database = database
+            self.eventLoop = eventLoop
         }
         
         func close() -> EventLoopFuture<Void> {
             return client.close()
+        }
+        
+        func listMongoDatabases() -> EventLoopFuture<[DatabaseConnection]> {
+            return self.client.listMongoDatabases().map { $0.map { Connection(client: self.client, database: $0, eventLoop: self.eventLoop) } }
         }
     }
 }
@@ -73,7 +82,7 @@ extension MongoDBDriver {
             
             let client = try MongoClient(connectionString, using: eventLoop, options: nil)
             
-            return eventLoop.makeSucceededFuture(Connection(client))
+            return eventLoop.makeSucceededFuture(Connection(client: client, database: config.database.map { client.db($0, options: nil) }, eventLoop: eventLoop))
             
         } catch let error {
             

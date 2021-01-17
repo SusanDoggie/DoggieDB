@@ -25,5 +25,16 @@
 
 public protocol DatabaseConnection: AnyObject {
     
+    var eventLoop: EventLoop { get }
+    
     func close() -> EventLoopFuture<Void>
+    
+    func listMongoDatabases() -> EventLoopFuture<[DatabaseConnection]>
+}
+
+extension DatabaseConnection {
+    
+    public func listMongoDatabases() -> EventLoopFuture<[DatabaseConnection]> {
+        return eventLoop.makeFailedFuture(DatabaseError.invalidOperation)
+    }
 }

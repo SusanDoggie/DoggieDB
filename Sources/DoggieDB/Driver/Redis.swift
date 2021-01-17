@@ -36,8 +36,11 @@ extension RedisDriver {
         
         let connection: RedisConnection
         
-        init(_ connection: RedisConnection) {
+        let eventLoop: EventLoop
+        
+        init(_ connection: RedisConnection, eventLoop: EventLoop) {
             self.connection = connection
+            self.eventLoop = eventLoop
         }
         
         func close() -> EventLoopFuture<Void> {
@@ -66,7 +69,7 @@ extension RedisDriver {
             return RedisConnection.make(
                 configuration: _config,
                 boundEventLoop: eventLoop
-            ).map(Connection.init)
+            ).map { Connection($0, eventLoop: eventLoop) }
             
         } catch let error {
             

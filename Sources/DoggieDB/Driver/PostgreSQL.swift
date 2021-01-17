@@ -36,8 +36,11 @@ extension PostgreSQLDriver {
         
         let connection: PostgresConnection
         
-        init(_ connection: PostgresConnection) {
+        let eventLoop: EventLoop
+        
+        init(_ connection: PostgresConnection, eventLoop: EventLoop) {
             self.connection = connection
+            self.eventLoop = eventLoop
         }
         
         func close() -> EventLoopFuture<Void> {
@@ -72,7 +75,7 @@ extension PostgreSQLDriver {
                 database: config.database,
                 password: config.password,
                 logger: logger
-            ).map { Connection(connection) }
+            ).map { Connection(connection, eventLoop: eventLoop) }
         }
     }
 }

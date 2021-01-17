@@ -29,6 +29,8 @@ public enum DatabaseError: Error {
     
     case invalidConfiguration(message: String)
     
+    case invalidOperation
+    
     case unknown
     
 }

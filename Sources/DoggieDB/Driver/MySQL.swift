@@ -36,8 +36,11 @@ extension MySQLDriver {
         
         let connection: MySQLConnection
         
-        init(_ connection: MySQLConnection) {
+        let eventLoop: EventLoop
+        
+        init(_ connection: MySQLConnection, eventLoop: EventLoop) {
             self.connection = connection
+            self.eventLoop = eventLoop
         }
         
         func close() -> EventLoopFuture<Void> {
@@ -68,6 +71,6 @@ extension MySQLDriver {
             on: eventLoop
         )
         
-        return connection.map(Connection.init)
+        return connection.map { Connection($0, eventLoop: eventLoop) }
     }
 }
