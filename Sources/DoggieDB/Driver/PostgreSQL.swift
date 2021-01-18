@@ -107,13 +107,47 @@ extension PostgreSQLDriver.Connection {
     }
 }
 
+extension PostgreSQLDriver.Connection {
+    
+    func query(
+        _ string: String,
+        _ binds: [QueryData]
+    ) -> EventLoopFuture<[QueryRow]> {
+        
+        do {
+            
+            return try self._query(string, binds.map(PostgresData.init))
+            
+        } catch let error {
+            
+            return eventLoop.makeFailedFuture(error)
+        }
+    }
+    
+    func query(
+        _ string: String,
+        _ binds: [QueryData],
+        onRow: @escaping (QueryRow) -> Void
+    ) -> EventLoopFuture<QueryMetadata> {
+        
+        do {
+            
+            return try self._query(string, binds.map(PostgresData.init), onRow: onRow)
+            
+        } catch let error {
+            
+            return eventLoop.makeFailedFuture(error)
+        }
+    }
+}
+
 extension QueryMetadata {
     
     init(_ metadata: PostgresQueryMetadata) {
         self.init(metadata: [
             "command": QueryData(metadata.command),
-            "oid": QueryData(metadata.oid),
-            "rows": QueryData(metadata.rows),
+            "oid": metadata.oid.map(QueryData.init) ?? nil,
+            "rows": metadata.rows.map(QueryData.init) ?? nil,
         ])
     }
 }
@@ -135,8 +169,4 @@ extension PostgresRow: QueryRowConvertable {
     public func value(_ column: String) -> QueryData? {
         return self.column(column).map(QueryData.init)
     }
-}
-
-extension PostgresData: QueryDataConvertable {
-    
 }

@@ -1,5 +1,5 @@
 //
-//  DatabaseConnection.swift
+//  MySQLData.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,44 +23,18 @@
 //  THE SOFTWARE.
 //
 
-public protocol DatabaseConnection: AnyObject {
-    
-    var eventLoop: EventLoop { get }
-    
-    func close() -> EventLoopFuture<Void>
-    
-    func databases() -> EventLoopFuture<[DatabaseConnection]>
-    
-    func query(
-        _ string: String,
-        _ binds: [QueryData]
-    ) -> EventLoopFuture<[QueryRow]>
-    
-    func query(
-        _ string: String,
-        _ binds: [QueryData],
-        onRow: @escaping (QueryRow) -> Void
-    ) -> EventLoopFuture<QueryMetadata>
-}
+import MySQLNIO
 
-extension DatabaseConnection {
+extension QueryData {
     
-    public func databases() -> EventLoopFuture<[DatabaseConnection]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    init(_ value: MySQLData) {
+        
     }
 }
 
-extension DatabaseConnection {
+extension MySQLData {
     
-    func query(
-        _ string: String,
-        _ binds: [QueryData],
-        onRow: @escaping (QueryRow) -> Void
-    ) -> EventLoopFuture<QueryMetadata> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    init(_ value: QueryData) throws {
+        
     }
-}
-
-protocol SQLDatabaseConnection: DatabaseConnection {
-    
 }

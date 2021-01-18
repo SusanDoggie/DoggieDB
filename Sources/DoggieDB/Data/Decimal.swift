@@ -1,5 +1,5 @@
 //
-//  DatabaseConnection.swift
+//  Decimal.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,44 +23,29 @@
 //  THE SOFTWARE.
 //
 
-public protocol DatabaseConnection: AnyObject {
+extension Double {
     
-    var eventLoop: EventLoop { get }
-    
-    func close() -> EventLoopFuture<Void>
-    
-    func databases() -> EventLoopFuture<[DatabaseConnection]>
-    
-    func query(
-        _ string: String,
-        _ binds: [QueryData]
-    ) -> EventLoopFuture<[QueryRow]>
-    
-    func query(
-        _ string: String,
-        _ binds: [QueryData],
-        onRow: @escaping (QueryRow) -> Void
-    ) -> EventLoopFuture<QueryMetadata>
-}
-
-extension DatabaseConnection {
-    
-    public func databases() -> EventLoopFuture<[DatabaseConnection]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    @inlinable
+    init?(exactly value: Decimal) {
+        self = NSDecimalNumber(decimal: value).doubleValue
+        guard Decimal(self) == value else { return nil }
     }
 }
 
-extension DatabaseConnection {
+extension UInt64 {
     
-    func query(
-        _ string: String,
-        _ binds: [QueryData],
-        onRow: @escaping (QueryRow) -> Void
-    ) -> EventLoopFuture<QueryMetadata> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    @inlinable
+    init?(exactly value: Decimal) {
+        self = NSDecimalNumber(decimal: value).uint64Value
+        guard Decimal(self) == value else { return nil }
     }
 }
 
-protocol SQLDatabaseConnection: DatabaseConnection {
+extension Int64 {
     
+    @inlinable
+    init?(exactly value: Decimal) {
+        self = NSDecimalNumber(decimal: value).int64Value
+        guard Decimal(self) == value else { return nil }
+    }
 }

@@ -1,5 +1,5 @@
 //
-//  DatabaseConnection.swift
+//  String.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,44 +23,11 @@
 //  THE SOFTWARE.
 //
 
-public protocol DatabaseConnection: AnyObject {
+extension StringProtocol {
     
-    var eventLoop: EventLoop { get }
-    
-    func close() -> EventLoopFuture<Void>
-    
-    func databases() -> EventLoopFuture<[DatabaseConnection]>
-    
-    func query(
-        _ string: String,
-        _ binds: [QueryData]
-    ) -> EventLoopFuture<[QueryRow]>
-    
-    func query(
-        _ string: String,
-        _ binds: [QueryData],
-        onRow: @escaping (QueryRow) -> Void
-    ) -> EventLoopFuture<QueryMetadata>
-}
-
-extension DatabaseConnection {
-    
-    public func databases() -> EventLoopFuture<[DatabaseConnection]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    @inlinable
+    func escaped(asASCII forceASCII: Bool) -> String {
+        return self.unicodeScalars.reduce(into: "") { $0 += $1.escaped(asASCII: forceASCII) }
     }
-}
-
-extension DatabaseConnection {
-    
-    func query(
-        _ string: String,
-        _ binds: [QueryData],
-        onRow: @escaping (QueryRow) -> Void
-    ) -> EventLoopFuture<QueryMetadata> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-}
-
-protocol SQLDatabaseConnection: DatabaseConnection {
     
 }

@@ -102,12 +102,46 @@ extension MySQLDriver.Connection {
     }
 }
 
+extension MySQLDriver.Connection {
+    
+    func query(
+        _ string: String,
+        _ binds: [QueryData]
+    ) -> EventLoopFuture<[QueryRow]> {
+        
+        do {
+            
+            return try self._query(string, binds.map(MySQLData.init))
+            
+        } catch let error {
+            
+            return eventLoop.makeFailedFuture(error)
+        }
+    }
+    
+    func query(
+        _ string: String,
+        _ binds: [QueryData],
+        onRow: @escaping (QueryRow) -> Void
+    ) -> EventLoopFuture<QueryMetadata> {
+        
+        do {
+            
+            return try self._query(string, binds.map(MySQLData.init), onRow: onRow)
+            
+        } catch let error {
+            
+            return eventLoop.makeFailedFuture(error)
+        }
+    }
+}
+
 extension QueryMetadata {
     
     init(_ metadata: MySQLQueryMetadata) {
         self.init(metadata: [
             "affectedRows": QueryData(metadata.affectedRows),
-            "lastInsertID": QueryData(metadata.lastInsertID),
+            "lastInsertID": metadata.lastInsertID.map(QueryData.init) ?? nil,
         ])
     }
 }
@@ -129,8 +163,4 @@ extension MySQLRow: QueryRowConvertable {
     public func value(_ column: String) -> QueryData? {
         return self.column(column).map(QueryData.init)
     }
-}
-
-extension MySQLData: QueryDataConvertable {
-    
 }

@@ -85,6 +85,40 @@ extension SQLiteDriver.Connection {
     }
 }
 
+extension SQLiteDriver.Connection {
+    
+    func query(
+        _ string: String,
+        _ binds: [QueryData]
+    ) -> EventLoopFuture<[QueryRow]> {
+        
+        do {
+            
+            return try self._query(string, binds.map(SQLiteData.init))
+            
+        } catch let error {
+            
+            return eventLoop.makeFailedFuture(error)
+        }
+    }
+    
+    func query(
+        _ string: String,
+        _ binds: [QueryData],
+        onRow: @escaping (QueryRow) -> Void
+    ) -> EventLoopFuture<QueryMetadata> {
+        
+        do {
+            
+            return try self._query(string, binds.map(SQLiteData.init), onRow: onRow)
+            
+        } catch let error {
+            
+            return eventLoop.makeFailedFuture(error)
+        }
+    }
+}
+
 extension SQLiteRow: QueryRowConvertable {
     
     public var count: Int {
@@ -102,8 +136,4 @@ extension SQLiteRow: QueryRowConvertable {
     public func value(_ column: String) -> QueryData? {
         return self.column(column).map(QueryData.init)
     }
-}
-
-extension SQLiteData: QueryDataConvertable {
-    
 }
