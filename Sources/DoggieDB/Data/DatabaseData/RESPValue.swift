@@ -52,6 +52,27 @@ extension QueryData {
 extension RESPValue {
     
     init(_ value: QueryData) throws {
-        
+        switch value.base {
+        case .null: self = .null
+        case let .boolean(value): self = .integer(value ? 1 : 0)
+        case let .string(value): self = value.convertedToRESPValue()
+        case let .signed(value): self = value.convertedToRESPValue()
+        case let .unsigned(value): self = value.convertedToRESPValue()
+        case let .number(value): self = value.convertedToRESPValue()
+        case let .decimal(value):
+            
+            guard let _value = Double(exactly: value) else { throw Database.Error.unsupportedType }
+            self = _value.convertedToRESPValue()
+            
+        case let .date(value):
+            
+            guard let date = value.date else { throw Database.Error.unsupportedType }
+            self = DateFormatter.rfc3339.string(from: date).convertedToRESPValue()
+            
+        case let .binary(value): self = value.convertedToRESPValue()
+        case let .uuid(value): self = "\(value)".convertedToRESPValue()
+        case let .array(value): self = try value.map(RESPValue.init).convertedToRESPValue()
+        default: throw Database.Error.unsupportedType
+        }
     }
 }
