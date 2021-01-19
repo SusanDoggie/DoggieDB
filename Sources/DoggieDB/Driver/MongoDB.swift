@@ -92,8 +92,11 @@ extension MongoDBDriver.Connection {
     func databases() -> EventLoopFuture<[DatabaseConnection]> {
         return self.client.listMongoDatabases().map { $0.map { MongoDBDriver.Connection(client: self.client, database: $0, eventLoop: self.eventLoop) } }
     }
+}
+
+extension MongoDBDriver.Connection {
     
-    func runCommand(
+    private func runCommand(
         _ command: BSONDocument,
         options: RunCommandOptions?
     ) -> EventLoopFuture<BSONDocument> {

@@ -27,6 +27,8 @@
 
 @_exported import NIO
 
+@_exported import NIOFoundationCompat
+
 @_exported import NIOSSL
 
 @_exported import Logging

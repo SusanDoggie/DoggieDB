@@ -28,13 +28,42 @@ import SQLiteNIO
 extension QueryData {
     
     init(_ value: SQLiteData) {
-        
+        switch value {
+        case .null: self = nil
+        case let .integer(value): self.init(value)
+        case let .float(value): self.init(value)
+        case let .text(value): self.init(value)
+        case let .blob(value): self.init(Data(buffer: value))
+        }
     }
 }
 
 extension SQLiteData {
     
     init(_ value: QueryData) throws {
-        
+        switch value.base {
+        case .null: self = .null
+        case let .boolean(value): self = .integer(value ? 1 : 0)
+        case let .string(value): self = .text(value)
+            
+        case let .signed(value):
+            
+            guard let _value = Int(exactly: value) else { throw Database.Error.unsupportedType }
+            self = .integer(_value)
+            
+        case let .unsigned(value):
+            
+            guard let _value = Int(exactly: value) else { throw Database.Error.unsupportedType }
+            self = .integer(_value)
+            
+        case let .number(value): self = .float(value)
+        case let .decimal(value):
+            
+            guard let _value = Double(exactly: value) else { throw Database.Error.unsupportedType }
+            self = .float(_value)
+            
+        case let .binary(value): self = .blob(ByteBuffer(data: value))
+        default: throw Database.Error.unsupportedType
+        }
     }
 }

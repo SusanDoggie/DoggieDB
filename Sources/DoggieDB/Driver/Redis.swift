@@ -79,7 +79,7 @@ extension RedisDriver {
 
 extension RedisDriver.Connection {
     
-    private func _query(
+    private func runCommand(
         _ string: String,
         _ binds: [RESPValue]
     ) -> EventLoopFuture<RESPValue> {

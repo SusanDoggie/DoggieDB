@@ -35,6 +35,7 @@ let package = Package(
         .library(name: "DoggieDB", targets: ["DoggieDB"]),
     ],
     dependencies: [
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.0.0"),
         .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "1.0.0"),
         .package(url: "https://gitlab.com/mordil/RediStack.git", from: "1.0.0"),
         .package(url: "https://github.com/vapor/sqlite-nio.git", from: "1.0.0"),
@@ -45,6 +46,8 @@ let package = Package(
         .target(
             name: "DoggieDB",
             dependencies: [
+                .product(name: "NIO", package: "swift-nio"),
+                .product(name: "NIOFoundationCompat", package: "swift-nio"),
                 .product(name: "MongoSwift", package: "mongo-swift-driver"),
                 .product(name: "RediStack", package: "RediStack"),
                 .product(name: "SQLiteNIO", package: "sqlite-nio"),
