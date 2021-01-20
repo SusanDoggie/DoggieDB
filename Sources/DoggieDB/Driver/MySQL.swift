@@ -76,34 +76,6 @@ extension MySQLDriver {
 
 extension MySQLDriver.Connection {
     
-    func _query(
-        _ string: String,
-        _ binds: [MySQLData]
-    ) -> EventLoopFuture<[QueryRow]> {
-        if binds.isEmpty {
-            return self.connection.simpleQuery(string).map{ $0.map(QueryRow.init) }
-        }
-        return self.connection.query(string, binds).map{ $0.map(QueryRow.init) }
-    }
-    
-    func _query(
-        _ string: String,
-        _ binds: [MySQLData],
-        onRow: @escaping (QueryRow) throws -> Void
-    ) -> EventLoopFuture<QueryMetadata> {
-        var metadata: MySQLQueryMetadata?
-        
-        return self.connection.query(
-            string,
-            binds,
-            onRow: { try onRow(QueryRow($0)) },
-            onMetadata: { metadata = $0 }
-        ).map { metadata.map(QueryMetadata.init) ?? QueryMetadata(metadata: [:]) }
-    }
-}
-
-extension MySQLDriver.Connection {
-    
     func query(
         _ string: String,
         _ binds: [QueryData]
@@ -111,7 +83,14 @@ extension MySQLDriver.Connection {
         
         do {
             
-            return try self._query(string, binds.map(MySQLData.init))
+            if binds.isEmpty {
+                
+                return self.connection.simpleQuery(string).map{ $0.map(QueryRow.init) }
+            }
+            
+            let binds = try binds.map(MySQLData.init)
+            
+            return self.connection.query(string, binds).map{ $0.map(QueryRow.init) }
             
         } catch let error {
             
@@ -127,7 +106,15 @@ extension MySQLDriver.Connection {
         
         do {
             
-            return try self._query(string, binds.map(MySQLData.init), onRow: onRow)
+            var metadata: MySQLQueryMetadata?
+            let binds = try binds.map(MySQLData.init)
+            
+            return self.connection.query(
+                string,
+                binds,
+                onRow: { onRow(QueryRow($0)) },
+                onMetadata: { metadata = $0 }
+            ).map { metadata.map(QueryMetadata.init) ?? QueryMetadata(metadata: [:]) }
             
         } catch let error {
             

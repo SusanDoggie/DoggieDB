@@ -81,34 +81,6 @@ extension PostgreSQLDriver {
 
 extension PostgreSQLDriver.Connection {
     
-    func _query(
-        _ string: String,
-        _ binds: [PostgresData]
-    ) -> EventLoopFuture<[QueryRow]> {
-        if binds.isEmpty {
-            return self.connection.simpleQuery(string).map{ $0.map(QueryRow.init) }
-        }
-        return self.connection.query(string, binds).map{ $0.rows.map(QueryRow.init) }
-    }
-    
-    func _query(
-        _ string: String,
-        _ binds: [PostgresData],
-        onRow: @escaping (QueryRow) throws -> Void
-    ) -> EventLoopFuture<QueryMetadata> {
-        var metadata: PostgresQueryMetadata?
-        
-        return self.connection.query(
-            string,
-            binds,
-            onMetadata: { metadata = $0 },
-            onRow: { try onRow(QueryRow($0)) }
-        ).map { metadata.map(QueryMetadata.init) ?? QueryMetadata(metadata: [:]) }
-    }
-}
-
-extension PostgreSQLDriver.Connection {
-    
     func query(
         _ string: String,
         _ binds: [QueryData]
@@ -116,7 +88,14 @@ extension PostgreSQLDriver.Connection {
         
         do {
             
-            return try self._query(string, binds.map(PostgresData.init))
+            if binds.isEmpty {
+                
+                return self.connection.simpleQuery(string).map{ $0.map(QueryRow.init) }
+            }
+            
+            let binds = try binds.map(PostgresData.init)
+            
+            return self.connection.query(string, binds).map{ $0.rows.map(QueryRow.init) }
             
         } catch let error {
             
@@ -132,7 +111,15 @@ extension PostgreSQLDriver.Connection {
         
         do {
             
-            return try self._query(string, binds.map(PostgresData.init), onRow: onRow)
+            var metadata: PostgresQueryMetadata?
+            let binds = try binds.map(PostgresData.init)
+            
+            return self.connection.query(
+                string,
+                binds,
+                onMetadata: { metadata = $0 },
+                onRow: { onRow(QueryRow($0)) }
+            ).map { metadata.map(QueryMetadata.init) ?? QueryMetadata(metadata: [:]) }
             
         } catch let error {
             

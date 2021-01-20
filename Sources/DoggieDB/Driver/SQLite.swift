@@ -87,6 +87,10 @@ extension SQLiteDriver.Connection {
 
 extension SQLiteDriver.Connection {
     
+    func lastAutoincrementID() -> EventLoopFuture<Int> {
+        return self.connection.lastAutoincrementID()
+    }
+    
     func query(
         _ string: String,
         _ binds: [QueryData]
@@ -94,7 +98,9 @@ extension SQLiteDriver.Connection {
         
         do {
             
-            return try self._query(string, binds.map(SQLiteData.init))
+            let binds = try binds.map(SQLiteData.init)
+            
+            return self.connection.query(string, binds).map{ $0.map(QueryRow.init) }
             
         } catch let error {
             
@@ -110,7 +116,9 @@ extension SQLiteDriver.Connection {
         
         do {
             
-            return try self._query(string, binds.map(SQLiteData.init), onRow: onRow)
+            let binds = try binds.map(SQLiteData.init)
+            
+            return self.connection.query(string, binds, { onRow(QueryRow($0)) }).map { QueryMetadata(metadata: [:]) }
             
         } catch let error {
             

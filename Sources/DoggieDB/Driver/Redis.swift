@@ -93,32 +93,40 @@ extension RedisDriver.Connection {
 extension RedisDriver.Connection {
     
     func subscribe(
-        to channels: [RedisChannelName],
-        messageReceiver receiver: @escaping RedisSubscriptionMessageReceiver,
-        onSubscribe subscribeHandler: RedisSubscriptionChangeHandler?,
-        onUnsubscribe unsubscribeHandler: RedisSubscriptionChangeHandler?
+        toChannels channels: [String],
+        messageReceiver receiver: @escaping (_ publisher: String, _ message: QueryData) -> Void,
+        onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
+        onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
     ) -> EventLoopFuture<Void> {
         
-        return self.connection.subscribe(to: channels, messageReceiver: receiver, onSubscribe: subscribeHandler, onUnsubscribe: unsubscribeHandler)
+        return self.connection.subscribe(
+            to: channels.map { RedisChannelName($0) },
+            messageReceiver: { receiver($0.rawValue, QueryData($1)) },
+            onSubscribe: subscribeHandler,
+            onUnsubscribe: unsubscribeHandler
+        )
     }
     
-    func unsubscribe(from channels: [RedisChannelName]) -> EventLoopFuture<Void> {
-        
-        return self.connection.unsubscribe(from: channels)
+    func unsubscribe(fromChannels channels: [String]) -> EventLoopFuture<Void> {
+        return self.connection.unsubscribe(from: channels.map { RedisChannelName($0) })
     }
     
-    func psubscribe(
-        to patterns: [String],
-        messageReceiver receiver: @escaping RedisSubscriptionMessageReceiver,
-        onSubscribe subscribeHandler: RedisSubscriptionChangeHandler?,
-        onUnsubscribe unsubscribeHandler: RedisSubscriptionChangeHandler?
+    func subscribe(
+        toPatterns patterns: [String],
+        messageReceiver receiver: @escaping (_ publisher: String, _ message: QueryData) -> Void,
+        onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
+        onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
     ) -> EventLoopFuture<Void> {
         
-        return self.connection.psubscribe(to: patterns, messageReceiver: receiver, onSubscribe: subscribeHandler, onUnsubscribe: unsubscribeHandler)
+        return self.connection.psubscribe(
+            to: patterns,
+            messageReceiver: { receiver($0.rawValue, QueryData($1)) },
+            onSubscribe: subscribeHandler,
+            onUnsubscribe: unsubscribeHandler
+        )
     }
     
-    func punsubscribe(from patterns: [String]) -> EventLoopFuture<Void> {
-        
+    func unsubscribe(fromPatterns patterns: [String]) -> EventLoopFuture<Void> {
         return self.connection.punsubscribe(from: patterns)
     }
 }
