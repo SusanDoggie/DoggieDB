@@ -42,6 +42,12 @@ public protocol DatabaseConnection: AnyObject {
         onRow: @escaping (QueryRow) -> Void
     ) -> EventLoopFuture<QueryMetadata>
     
+    var allowSubscriptions: Bool { get set }
+    
+    var isSubscribed: Bool { get }
+    
+    func activeChannels(matching match: String?) -> EventLoopFuture<[String]>
+    
     func subscribe(
         toChannels channels: [String],
         messageReceiver receiver: @escaping (_ publisher: String, _ message: QueryData) -> Void,
@@ -85,29 +91,46 @@ extension DatabaseConnection {
 
 extension DatabaseConnection {
     
-    func subscribe(
+    public var allowSubscriptions: Bool {
+        get {
+            return false
+        }
+        set {
+            fatalError("unsupported operation")
+        }
+    }
+    
+    public var isSubscribed: Bool {
+        return false
+    }
+    
+    public func activeChannels(matching match: String? = nil) -> EventLoopFuture<[String]> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func subscribe(
         toChannels channels: [String],
         messageReceiver receiver: @escaping (_ publisher: String, _ message: QueryData) -> Void,
-        onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
-        onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
+        onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
+        onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) -> EventLoopFuture<Void> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     
-    func unsubscribe(fromChannels channels: [String]) -> EventLoopFuture<Void> {
+    public func unsubscribe(fromChannels channels: [String]) -> EventLoopFuture<Void> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     
-    func subscribe(
+    public func subscribe(
         toPatterns patterns: [String],
         messageReceiver receiver: @escaping (_ publisher: String, _ message: QueryData) -> Void,
-        onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
-        onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
+        onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
+        onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) -> EventLoopFuture<Void> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     
-    func unsubscribe(fromPatterns patterns: [String]) -> EventLoopFuture<Void> {
+    public func unsubscribe(fromPatterns patterns: [String]) -> EventLoopFuture<Void> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
 }

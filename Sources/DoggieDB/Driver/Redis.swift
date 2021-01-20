@@ -92,6 +92,23 @@ extension RedisDriver.Connection {
 
 extension RedisDriver.Connection {
     
+    var allowSubscriptions: Bool {
+        get {
+            return self.connection.allowSubscriptions
+        }
+        set {
+            self.connection.allowSubscriptions = newValue
+        }
+    }
+    
+    var isSubscribed: Bool {
+        return self.connection.isSubscribed
+    }
+    
+    func activeChannels(matching match: String? = nil) -> EventLoopFuture<[String]> {
+        return self.connection.activeChannels(matching: match).map { $0.map { $0.rawValue } }
+    }
+    
     func subscribe(
         toChannels channels: [String],
         messageReceiver receiver: @escaping (_ publisher: String, _ message: QueryData) -> Void,
