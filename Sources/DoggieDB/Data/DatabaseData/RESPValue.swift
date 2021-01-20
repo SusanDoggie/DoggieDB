@@ -37,7 +37,7 @@ extension QueryData {
             if let value = String(fromRESP: value) {
                 self.init(value)
             } else {
-                self.init("\(buffer)")
+                self.init(Data(buffer.readableBytesView))
             }
             
         case .bulkString(.none): self.init(String(fromRESP: value)!)
