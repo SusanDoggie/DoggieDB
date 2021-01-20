@@ -79,7 +79,7 @@ extension RedisDriver {
 
 extension RedisDriver.Connection {
     
-    private func runCommand(
+    func runCommand(
         _ string: String,
         _ binds: [RESPValue]
     ) -> EventLoopFuture<RESPValue> {
@@ -87,5 +87,53 @@ extension RedisDriver.Connection {
             return self.connection.send(command: string)
         }
         return self.connection.send(command: string, with: binds)
+    }
+}
+
+extension RedisDriver.Connection {
+    
+    func subscribe(
+        to channels: [RedisChannelName],
+        messageReceiver receiver: @escaping RedisSubscriptionMessageReceiver,
+        onSubscribe subscribeHandler: RedisSubscriptionChangeHandler?,
+        onUnsubscribe unsubscribeHandler: RedisSubscriptionChangeHandler?
+    ) -> EventLoopFuture<Void> {
+        
+        return self.connection.subscribe(to: channels, messageReceiver: receiver, onSubscribe: subscribeHandler, onUnsubscribe: unsubscribeHandler)
+    }
+    
+    func unsubscribe(from channels: [RedisChannelName]) -> EventLoopFuture<Void> {
+        
+        return self.connection.unsubscribe(from: channels)
+    }
+    
+    func psubscribe(
+        to patterns: [String],
+        messageReceiver receiver: @escaping RedisSubscriptionMessageReceiver,
+        onSubscribe subscribeHandler: RedisSubscriptionChangeHandler?,
+        onUnsubscribe unsubscribeHandler: RedisSubscriptionChangeHandler?
+    ) -> EventLoopFuture<Void> {
+        
+        return self.connection.psubscribe(to: patterns, messageReceiver: receiver, onSubscribe: subscribeHandler, onUnsubscribe: unsubscribeHandler)
+    }
+    
+    func punsubscribe(from patterns: [String]) -> EventLoopFuture<Void> {
+        
+        return self.connection.punsubscribe(from: patterns)
+    }
+}
+
+extension RedisDriver.Connection {
+    
+    func get<D>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> where D: Decodable {
+        return self.connection.get(RedisKey(key), as: Data.self).flatMapThrowing { data in try data.flatMap { try JSONDecoder().decode(D.self, from: $0) } }
+    }
+    
+    func set<E>(_ key: String, as type: E) -> EventLoopFuture<Void> where E: Encodable {
+        do {
+            return try self.connection.set(RedisKey(key), to: JSONEncoder().encode(type))
+        } catch {
+            return self.eventLoop.makeFailedFuture(error)
+        }
     }
 }

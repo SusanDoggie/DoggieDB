@@ -41,6 +41,10 @@ public protocol DatabaseConnection: AnyObject {
         _ binds: [QueryData],
         onRow: @escaping (QueryRow) -> Void
     ) -> EventLoopFuture<QueryMetadata>
+    
+    func get<D>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> where D: Decodable
+    
+    func set<E>(_ key: String, as type: E) -> EventLoopFuture<Void> where E: Encodable
 }
 
 extension DatabaseConnection {
@@ -52,11 +56,22 @@ extension DatabaseConnection {
 
 extension DatabaseConnection {
     
-    func query(
+    public func query(
         _ string: String,
         _ binds: [QueryData],
         onRow: @escaping (QueryRow) -> Void
     ) -> EventLoopFuture<QueryMetadata> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+}
+
+extension DatabaseConnection {
+    
+    public func get<D>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> where D: Decodable {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func set<E>(_ key: String, as type: E) -> EventLoopFuture<Void> where E: Encodable {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
 }

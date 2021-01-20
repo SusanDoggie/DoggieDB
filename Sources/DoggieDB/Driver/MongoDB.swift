@@ -96,7 +96,7 @@ extension MongoDBDriver.Connection {
 
 extension MongoDBDriver.Connection {
     
-    private func runCommand(
+    func runCommand(
         _ command: BSONDocument,
         options: RunCommandOptions?
     ) -> EventLoopFuture<BSONDocument> {
