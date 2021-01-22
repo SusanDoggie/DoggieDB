@@ -133,7 +133,7 @@ extension SQLiteRow: DBRowConvertable {
         return self.columns.count
     }
     
-    public var allColumns: [String] {
+    public var keys: [String] {
         return self.columns.map { $0.name }
     }
     

@@ -25,16 +25,22 @@
 
 import MongoSwift
 
-extension DBData {
+extension Dictionary where Key == String, Value == DBData {
     
-    init(_ value: BSONDocument) {
-        
+    init(_ document: BSONDocument) {
+        self.init()
+        for (key, value) in document {
+            self[key] = DBData(value)
+        }
     }
 }
 
 extension BSONDocument {
     
-    init(_ value: DBData) throws {
-        
+    init(_ dictionary: [String: DBData]) throws {
+        self.init()
+        for (key, value) in dictionary {
+            self[key] = try BSON(value)
+        }
     }
 }

@@ -1,5 +1,5 @@
 //
-//  QueryRow.swift
+//  BSON.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,41 +23,18 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBRowConvertable {
-    
-    var count: Int { get }
-    
-    var keys: [String] { get }
-    
-    func contains(column: String) -> Bool
-    
-    func value(_ column: String) -> DBData?
-}
+import MongoSwift
 
-public struct DBQueryRow {
+extension DBData {
     
-    let row: DBRowConvertable
-    
-    public init<C: DBRowConvertable>(_ row: C) {
-        self.row = row
+    init(_ value: BSON) {
+        
     }
 }
 
-extension DBQueryRow {
+extension BSON {
     
-    public var count: Int {
-        return self.row.count
-    }
-    
-    public var allColumns: [String] {
-        return self.row.keys
-    }
-    
-    public func contains(column: String) -> Bool {
-        return self.row.contains(column: column)
-    }
-    
-    public subscript(_ column: String) -> DBData? {
-        return self.row.value(column)
+    init(_ value: DBData) throws {
+        
     }
 }

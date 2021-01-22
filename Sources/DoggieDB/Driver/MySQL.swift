@@ -139,7 +139,7 @@ extension MySQLRow: DBRowConvertable {
         return self.columnDefinitions.count
     }
     
-    public var allColumns: [String] {
+    public var keys: [String] {
         return self.columnDefinitions.map { $0.name }
     }
     

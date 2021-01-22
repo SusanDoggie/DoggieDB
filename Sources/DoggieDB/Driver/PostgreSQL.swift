@@ -145,7 +145,7 @@ extension PostgresRow: DBRowConvertable {
         return self.rowDescription.fields.count
     }
     
-    public var allColumns: [String] {
+    public var keys: [String] {
         return self.rowDescription.fields.map { $0.name }
     }
     
