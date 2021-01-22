@@ -82,6 +82,13 @@ extension DBConnection {
     
     public func query(
         _ string: String,
+        _ binds: [DBData]
+    ) -> EventLoopFuture<[DBQueryRow]> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func query(
+        _ string: String,
         _ binds: [DBData],
         onRow: @escaping (DBQueryRow) -> Void
     ) -> EventLoopFuture<DBQueryMetadata> {
