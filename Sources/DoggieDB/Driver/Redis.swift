@@ -83,10 +83,17 @@ extension RedisDriver.Connection {
         _ string: String,
         _ binds: [RESPValue]
     ) -> EventLoopFuture<RESPValue> {
-        if binds.isEmpty {
-            return self.connection.send(command: string)
+        
+        let result = binds.isEmpty ? self.connection.send(command: string) : self.connection.send(command: string, with: binds)
+        
+        return result.flatMapResult { result in
+            Result {
+                if case let .error(error) = result {
+                    throw error
+                }
+                return result
+            }
         }
-        return self.connection.send(command: string, with: binds)
     }
 }
 
