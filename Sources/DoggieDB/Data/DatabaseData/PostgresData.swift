@@ -25,7 +25,7 @@
 
 import PostgresNIO
 
-extension QueryData {
+extension DBData {
     
     init(_ value: PostgresData) {
         
@@ -34,7 +34,7 @@ extension QueryData {
 
 extension PostgresData {
     
-    init(_ value: QueryData) throws {
+    init(_ value: DBData) throws {
         
     }
 }

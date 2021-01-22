@@ -34,7 +34,7 @@ extension Database {
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
         threadPool: NIOThreadPool,
         on eventLoop: EventLoop
-    ) -> EventLoopFuture<DatabaseConnection> {
+    ) -> EventLoopFuture<DBConnection> {
         
         return SQLiteDriver.create(storage: path.map { .file(path: $0) } ?? .memory, logger: logger, threadPool: threadPool, on: eventLoop)
     }
@@ -45,9 +45,9 @@ extension Database {
     public static func connect(
         config: Database.Configuration,
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
-        driver: DatabaseDriver,
+        driver: DBDriver,
         on eventLoop: EventLoop
-    ) -> EventLoopFuture<DatabaseConnection> {
+    ) -> EventLoopFuture<DBConnection> {
         
         return driver.rawValue.connect(config: config, logger: logger, on: eventLoop)
     }
@@ -56,7 +56,7 @@ extension Database {
         url: URL,
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
         on eventLoop: EventLoop
-    ) -> EventLoopFuture<DatabaseConnection> {
+    ) -> EventLoopFuture<DBConnection> {
         
         do {
             
@@ -64,7 +64,7 @@ extension Database {
                 return eventLoop.makeFailedFuture(Database.Error.invalidURL)
             }
             
-            let driver: DatabaseDriver
+            let driver: DBDriver
             
             switch url.scheme {
             case "redis": driver = .redis

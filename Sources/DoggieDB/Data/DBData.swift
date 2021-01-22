@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public enum QueryDataType: Hashable {
+public enum DBDataType: Hashable {
     
     case null
     case boolean
@@ -40,7 +40,7 @@ public enum QueryDataType: Hashable {
 }
 
 @frozen
-public struct QueryData {
+public struct DBData {
     
     @usableFromInline
     enum Base {
@@ -54,8 +54,8 @@ public struct QueryData {
         case date(DateComponents)
         case binary(Data)
         case uuid(UUID)
-        case array([QueryData])
-        case dictionary([String: QueryData])
+        case array([DBData])
+        case dictionary([String: DBData])
     }
     
     @usableFromInline
@@ -121,17 +121,17 @@ public struct QueryData {
     }
     
     @inlinable
-    public init<S: Sequence>(_ elements: S) where S.Element == QueryData {
+    public init<S: Sequence>(_ elements: S) where S.Element == DBData {
         self.base = .array(Array(elements))
     }
     
     @inlinable
-    public init(_ elements: [String: QueryData]) {
+    public init(_ elements: [String: DBData]) {
         self.base = .dictionary(elements)
     }
 }
 
-extension QueryData: ExpressibleByNilLiteral {
+extension DBData: ExpressibleByNilLiteral {
     
     @inlinable
     public init(nilLiteral value: Void) {
@@ -139,7 +139,7 @@ extension QueryData: ExpressibleByNilLiteral {
     }
 }
 
-extension QueryData: ExpressibleByBooleanLiteral {
+extension DBData: ExpressibleByBooleanLiteral {
     
     @inlinable
     public init(booleanLiteral value: BooleanLiteralType) {
@@ -147,7 +147,7 @@ extension QueryData: ExpressibleByBooleanLiteral {
     }
 }
 
-extension QueryData: ExpressibleByIntegerLiteral {
+extension DBData: ExpressibleByIntegerLiteral {
     
     @inlinable
     public init(integerLiteral value: IntegerLiteralType) {
@@ -155,7 +155,7 @@ extension QueryData: ExpressibleByIntegerLiteral {
     }
 }
 
-extension QueryData: ExpressibleByFloatLiteral {
+extension DBData: ExpressibleByFloatLiteral {
     
     @inlinable
     public init(floatLiteral value: FloatLiteralType) {
@@ -163,7 +163,7 @@ extension QueryData: ExpressibleByFloatLiteral {
     }
 }
 
-extension QueryData: ExpressibleByStringLiteral {
+extension DBData: ExpressibleByStringLiteral {
     
     @inlinable
     public init(stringLiteral value: StringLiteralType) {
@@ -171,23 +171,23 @@ extension QueryData: ExpressibleByStringLiteral {
     }
 }
 
-extension QueryData: ExpressibleByArrayLiteral {
+extension DBData: ExpressibleByArrayLiteral {
     
     @inlinable
-    public init(arrayLiteral elements: QueryData ...) {
+    public init(arrayLiteral elements: DBData ...) {
         self.init(elements)
     }
 }
 
-extension QueryData: ExpressibleByDictionaryLiteral {
+extension DBData: ExpressibleByDictionaryLiteral {
     
     @inlinable
-    public init(dictionaryLiteral elements: (String, QueryData) ...) {
+    public init(dictionaryLiteral elements: (String, DBData) ...) {
         self.init(Dictionary(uniqueKeysWithValues: elements))
     }
 }
 
-extension QueryData: CustomStringConvertible {
+extension DBData: CustomStringConvertible {
     
     @inlinable
     public var description: String {
@@ -208,10 +208,10 @@ extension QueryData: CustomStringConvertible {
     }
 }
 
-extension QueryData: Hashable {
+extension DBData: Hashable {
     
     @inlinable
-    public static func == (lhs: QueryData, rhs: QueryData) -> Bool {
+    public static func == (lhs: DBData, rhs: DBData) -> Bool {
         switch (lhs.base, rhs.base) {
         case (.null, .null): return true
         case let (.boolean(lhs), .boolean(rhs)): return lhs == rhs
@@ -247,10 +247,10 @@ extension QueryData: Hashable {
     }
 }
 
-extension QueryData {
+extension DBData {
     
     @inlinable
-    public var type: QueryDataType {
+    public var type: DBDataType {
         switch self.base {
         case .null: return .null
         case .boolean: return .boolean
@@ -338,7 +338,7 @@ extension QueryData {
     }
 }
 
-extension QueryData {
+extension DBData {
     
     @inlinable
     public var boolValue: Bool? {
@@ -532,7 +532,7 @@ extension QueryData {
     }
     
     @inlinable
-    public var dictionary: [String: QueryData]? {
+    public var dictionary: [String: DBData]? {
         switch self.base {
         case let .dictionary(value): return value
         default: return nil
@@ -540,7 +540,7 @@ extension QueryData {
     }
 }
 
-extension QueryData {
+extension DBData {
     
     @inlinable
     public var count: Int {
@@ -552,7 +552,7 @@ extension QueryData {
     }
     
     @inlinable
-    public subscript(index: Int) -> QueryData {
+    public subscript(index: Int) -> DBData {
         get {
             guard 0..<count ~= index else { return nil }
             switch self.base {
@@ -568,7 +568,7 @@ extension QueryData {
                     value.append(contentsOf: repeatElement(nil, count: index - value.count + 1))
                 }
                 value[index] = newValue
-                self = QueryData(value)
+                self = DBData(value)
                 
             default: fatalError("Not an array.")
             }
@@ -576,13 +576,13 @@ extension QueryData {
     }
     
     @inlinable
-    public var keys: Dictionary<String, QueryData>.Keys {
+    public var keys: Dictionary<String, DBData>.Keys {
         guard case let .dictionary(value) = base else { return [:].keys }
         return value.keys
     }
     
     @inlinable
-    public subscript(key: String) -> QueryData {
+    public subscript(key: String) -> DBData {
         get {
             guard case let .dictionary(value) = base else { return nil }
             return value[key] ?? nil
@@ -590,12 +590,12 @@ extension QueryData {
         set {
             guard case var .dictionary(value) = base else { fatalError("Not an object.") }
             value[key] = newValue.isNil ? nil : newValue
-            self = QueryData(value)
+            self = DBData(value)
         }
     }
 }
 
-extension QueryData: Encodable {
+extension DBData: Encodable {
     
     @frozen
     @usableFromInline

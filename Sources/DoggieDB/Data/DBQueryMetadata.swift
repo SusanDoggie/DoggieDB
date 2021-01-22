@@ -1,5 +1,5 @@
 //
-//  QueryRow.swift
+//  QueryMetadata.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,41 +23,22 @@
 //  THE SOFTWARE.
 //
 
-public protocol QueryRowConvertable {
+public struct DBQueryMetadata {
     
-    var count: Int { get }
-    
-    var allColumns: [String] { get }
-    
-    func contains(column: String) -> Bool
-    
-    func value(_ column: String) -> QueryData?
+    let metadata: [String: DBData]
 }
 
-public struct QueryRow {
-    
-    let row: QueryRowConvertable
-    
-    public init<C: QueryRowConvertable>(_ row: C) {
-        self.row = row
-    }
-}
-
-extension QueryRow {
+extension DBQueryMetadata {
     
     public var count: Int {
-        return self.row.count
+        return self.metadata.count
     }
     
-    public var allColumns: [String] {
-        return self.row.allColumns
+    public var keys: Dictionary<String, DBData>.Keys {
+        return self.metadata.keys
     }
     
-    public func contains(column: String) -> Bool {
-        return self.row.contains(column: column)
-    }
-    
-    public subscript(_ column: String) -> QueryData? {
-        return self.row.value(column)
+    public subscript(_ key: String) -> DBData? {
+        return self.metadata[key]
     }
 }

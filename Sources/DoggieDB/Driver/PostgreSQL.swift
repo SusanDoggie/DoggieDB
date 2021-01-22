@@ -25,14 +25,14 @@
 
 import PostgresNIO
 
-struct PostgreSQLDriver: DatabaseDriverProtocol {
+struct PostgreSQLDriver: DBDriverProtocol {
     
     static var defaultPort: Int { 5432 }
 }
 
 extension PostgreSQLDriver {
     
-    class Connection: SQLDatabaseConnection {
+    class Connection: DBConnection {
         
         let connection: PostgresConnection
         
@@ -54,7 +54,7 @@ extension PostgreSQLDriver {
         config: Database.Configuration,
         logger: Logger,
         on eventLoop: EventLoop
-    ) -> EventLoopFuture<DatabaseConnection> {
+    ) -> EventLoopFuture<DBConnection> {
         
         guard let username = config.username else {
             return eventLoop.makeFailedFuture(Database.Error.invalidConfiguration(message: "username is missing."))
@@ -83,19 +83,19 @@ extension PostgreSQLDriver.Connection {
     
     func query(
         _ string: String,
-        _ binds: [QueryData]
-    ) -> EventLoopFuture<[QueryRow]> {
+        _ binds: [DBData]
+    ) -> EventLoopFuture<[DBQueryRow]> {
         
         do {
             
             if binds.isEmpty {
                 
-                return self.connection.simpleQuery(string).map{ $0.map(QueryRow.init) }
+                return self.connection.simpleQuery(string).map{ $0.map(DBQueryRow.init) }
             }
             
             let binds = try binds.map(PostgresData.init)
             
-            return self.connection.query(string, binds).map{ $0.rows.map(QueryRow.init) }
+            return self.connection.query(string, binds).map{ $0.rows.map(DBQueryRow.init) }
             
         } catch let error {
             
@@ -105,9 +105,9 @@ extension PostgreSQLDriver.Connection {
     
     func query(
         _ string: String,
-        _ binds: [QueryData],
-        onRow: @escaping (QueryRow) -> Void
-    ) -> EventLoopFuture<QueryMetadata> {
+        _ binds: [DBData],
+        onRow: @escaping (DBQueryRow) -> Void
+    ) -> EventLoopFuture<DBQueryMetadata> {
         
         do {
             
@@ -118,8 +118,8 @@ extension PostgreSQLDriver.Connection {
                 string,
                 binds,
                 onMetadata: { metadata = $0 },
-                onRow: { onRow(QueryRow($0)) }
-            ).map { metadata.map(QueryMetadata.init) ?? QueryMetadata(metadata: [:]) }
+                onRow: { onRow(DBQueryRow($0)) }
+            ).map { metadata.map(DBQueryMetadata.init) ?? DBQueryMetadata(metadata: [:]) }
             
         } catch let error {
             
@@ -128,18 +128,18 @@ extension PostgreSQLDriver.Connection {
     }
 }
 
-extension QueryMetadata {
+extension DBQueryMetadata {
     
     init(_ metadata: PostgresQueryMetadata) {
         self.init(metadata: [
-            "command": QueryData(metadata.command),
-            "oid": metadata.oid.map(QueryData.init) ?? nil,
-            "rows": metadata.rows.map(QueryData.init) ?? nil,
+            "command": DBData(metadata.command),
+            "oid": metadata.oid.map(DBData.init) ?? nil,
+            "rows": metadata.rows.map(DBData.init) ?? nil,
         ])
     }
 }
 
-extension PostgresRow: QueryRowConvertable {
+extension PostgresRow: DBRowConvertable {
     
     public var count: Int {
         return self.rowDescription.fields.count
@@ -153,7 +153,7 @@ extension PostgresRow: QueryRowConvertable {
         return self.rowDescription.fields.contains { $0.name == column }
     }
     
-    public func value(_ column: String) -> QueryData? {
-        return self.column(column).map(QueryData.init)
+    public func value(_ column: String) -> DBData? {
+        return self.column(column).map(DBData.init)
     }
 }

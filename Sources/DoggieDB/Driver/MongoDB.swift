@@ -25,14 +25,14 @@
 
 import MongoSwift
 
-struct MongoDBDriver: DatabaseDriverProtocol {
+struct MongoDBDriver: DBDriverProtocol {
     
     static var defaultPort: Int { 27017 }
 }
 
 extension MongoDBDriver {
     
-    class Connection: DatabaseConnection {
+    class Connection: DBConnection {
         
         let client: MongoClient
         let database: MongoDatabase?
@@ -57,7 +57,7 @@ extension MongoDBDriver {
         config: Database.Configuration,
         logger: Logger,
         on eventLoop: EventLoop
-    ) -> EventLoopFuture<DatabaseConnection> {
+    ) -> EventLoopFuture<DBConnection> {
         
         guard let host = config.socketAddress.host else {
             return eventLoop.makeFailedFuture(Database.Error.invalidConfiguration(message: "unsupprted socket address"))
@@ -89,7 +89,7 @@ extension MongoDBDriver {
 
 extension MongoDBDriver.Connection {
     
-    func databases() -> EventLoopFuture<[DatabaseConnection]> {
+    func databases() -> EventLoopFuture<[DBConnection]> {
         return self.client.listMongoDatabases().map { $0.map { MongoDBDriver.Connection(client: self.client, database: $0, eventLoop: self.eventLoop) } }
     }
 }

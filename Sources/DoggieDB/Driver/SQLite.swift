@@ -31,7 +31,7 @@ struct SQLiteDriver {
 
 extension SQLiteDriver {
     
-    class Connection: SQLDatabaseConnection {
+    class Connection: DBConnection {
         
         let connection: SQLiteConnection
         
@@ -54,7 +54,7 @@ extension SQLiteDriver {
         logger: Logger,
         threadPool: NIOThreadPool,
         on eventLoop: EventLoop
-    ) -> EventLoopFuture<DatabaseConnection> {
+    ) -> EventLoopFuture<DBConnection> {
         
         let connection = SQLiteConnection.open(
             storage: storage,
@@ -72,16 +72,16 @@ extension SQLiteDriver.Connection {
     func _query(
         _ string: String,
         _ binds: [SQLiteData]
-    ) -> EventLoopFuture<[QueryRow]> {
-        return self.connection.query(string, binds).map{ $0.map(QueryRow.init) }
+    ) -> EventLoopFuture<[DBQueryRow]> {
+        return self.connection.query(string, binds).map{ $0.map(DBQueryRow.init) }
     }
     
     func _query(
         _ string: String,
         _ binds: [SQLiteData],
-        onRow: @escaping (QueryRow) -> Void
-    ) -> EventLoopFuture<QueryMetadata> {
-        return self.connection.query(string, binds, { onRow(QueryRow($0)) }).map { QueryMetadata(metadata: [:]) }
+        onRow: @escaping (DBQueryRow) -> Void
+    ) -> EventLoopFuture<DBQueryMetadata> {
+        return self.connection.query(string, binds, { onRow(DBQueryRow($0)) }).map { DBQueryMetadata(metadata: [:]) }
     }
 }
 
@@ -93,14 +93,14 @@ extension SQLiteDriver.Connection {
     
     func query(
         _ string: String,
-        _ binds: [QueryData]
-    ) -> EventLoopFuture<[QueryRow]> {
+        _ binds: [DBData]
+    ) -> EventLoopFuture<[DBQueryRow]> {
         
         do {
             
             let binds = try binds.map(SQLiteData.init)
             
-            return self.connection.query(string, binds).map{ $0.map(QueryRow.init) }
+            return self.connection.query(string, binds).map{ $0.map(DBQueryRow.init) }
             
         } catch let error {
             
@@ -110,15 +110,15 @@ extension SQLiteDriver.Connection {
     
     func query(
         _ string: String,
-        _ binds: [QueryData],
-        onRow: @escaping (QueryRow) -> Void
-    ) -> EventLoopFuture<QueryMetadata> {
+        _ binds: [DBData],
+        onRow: @escaping (DBQueryRow) -> Void
+    ) -> EventLoopFuture<DBQueryMetadata> {
         
         do {
             
             let binds = try binds.map(SQLiteData.init)
             
-            return self.connection.query(string, binds, { onRow(QueryRow($0)) }).map { QueryMetadata(metadata: [:]) }
+            return self.connection.query(string, binds, { onRow(DBQueryRow($0)) }).map { DBQueryMetadata(metadata: [:]) }
             
         } catch let error {
             
@@ -127,7 +127,7 @@ extension SQLiteDriver.Connection {
     }
 }
 
-extension SQLiteRow: QueryRowConvertable {
+extension SQLiteRow: DBRowConvertable {
     
     public var count: Int {
         return self.columns.count
@@ -141,7 +141,7 @@ extension SQLiteRow: QueryRowConvertable {
         return self.columns.contains { $0.name == column }
     }
     
-    public func value(_ column: String) -> QueryData? {
-        return self.column(column).map(QueryData.init)
+    public func value(_ column: String) -> DBData? {
+        return self.column(column).map(DBData.init)
     }
 }

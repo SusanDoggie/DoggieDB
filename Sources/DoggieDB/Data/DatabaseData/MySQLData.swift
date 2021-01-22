@@ -25,7 +25,7 @@
 
 import MySQLNIO
 
-extension QueryData {
+extension DBData {
     
     init(_ value: MySQLData) {
         
@@ -34,7 +34,7 @@ extension QueryData {
 
 extension MySQLData {
     
-    init(_ value: QueryData) throws {
+    init(_ value: DBData) throws {
         
     }
 }

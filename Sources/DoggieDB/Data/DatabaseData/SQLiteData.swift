@@ -25,7 +25,7 @@
 
 import SQLiteNIO
 
-extension QueryData {
+extension DBData {
     
     init(_ value: SQLiteData) {
         switch value {
@@ -40,7 +40,7 @@ extension QueryData {
 
 extension SQLiteData {
     
-    init(_ value: QueryData) throws {
+    init(_ value: DBData) throws {
         switch value.base {
         case .null: self = .null
         case let .boolean(value): self = .integer(value ? 1 : 0)

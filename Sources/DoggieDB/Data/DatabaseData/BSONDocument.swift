@@ -25,7 +25,7 @@
 
 import MongoSwift
 
-extension QueryData {
+extension DBData {
     
     init(_ value: BSONDocument) {
         
@@ -34,7 +34,7 @@ extension QueryData {
 
 extension BSONDocument {
     
-    init(_ value: QueryData) throws {
+    init(_ value: DBData) throws {
         
     }
 }

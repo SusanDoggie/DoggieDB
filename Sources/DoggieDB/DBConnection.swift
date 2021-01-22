@@ -23,24 +23,24 @@
 //  THE SOFTWARE.
 //
 
-public protocol DatabaseConnection: AnyObject {
+public protocol DBConnection: AnyObject {
     
     var eventLoop: EventLoop { get }
     
     func close() -> EventLoopFuture<Void>
     
-    func databases() -> EventLoopFuture<[DatabaseConnection]>
+    func databases() -> EventLoopFuture<[DBConnection]>
     
     func query(
         _ string: String,
-        _ binds: [QueryData]
-    ) -> EventLoopFuture<[QueryRow]>
+        _ binds: [DBData]
+    ) -> EventLoopFuture<[DBQueryRow]>
     
     func query(
         _ string: String,
-        _ binds: [QueryData],
-        onRow: @escaping (QueryRow) -> Void
-    ) -> EventLoopFuture<QueryMetadata>
+        _ binds: [DBData],
+        onRow: @escaping (DBQueryRow) -> Void
+    ) -> EventLoopFuture<DBQueryMetadata>
     
     var allowSubscriptions: Bool { get set }
     
@@ -50,7 +50,7 @@ public protocol DatabaseConnection: AnyObject {
     
     func subscribe(
         toChannels channels: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: QueryData) -> Void,
+        messageReceiver receiver: @escaping (_ publisher: String, _ message: DBData) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
     ) -> EventLoopFuture<Void>
@@ -59,7 +59,7 @@ public protocol DatabaseConnection: AnyObject {
     
     func subscribe(
         toPatterns patterns: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: QueryData) -> Void,
+        messageReceiver receiver: @escaping (_ publisher: String, _ message: DBData) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
     ) -> EventLoopFuture<Void>
@@ -71,25 +71,25 @@ public protocol DatabaseConnection: AnyObject {
     func set<E>(_ key: String, as type: E) -> EventLoopFuture<Void> where E: Encodable
 }
 
-extension DatabaseConnection {
+extension DBConnection {
     
-    public func databases() -> EventLoopFuture<[DatabaseConnection]> {
+    public func databases() -> EventLoopFuture<[DBConnection]> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
 }
 
-extension DatabaseConnection {
+extension DBConnection {
     
     public func query(
         _ string: String,
-        _ binds: [QueryData],
-        onRow: @escaping (QueryRow) -> Void
-    ) -> EventLoopFuture<QueryMetadata> {
+        _ binds: [DBData],
+        onRow: @escaping (DBQueryRow) -> Void
+    ) -> EventLoopFuture<DBQueryMetadata> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
 }
 
-extension DatabaseConnection {
+extension DBConnection {
     
     public var allowSubscriptions: Bool {
         get {
@@ -110,7 +110,7 @@ extension DatabaseConnection {
     
     public func subscribe(
         toChannels channels: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: QueryData) -> Void,
+        messageReceiver receiver: @escaping (_ publisher: String, _ message: DBData) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) -> EventLoopFuture<Void> {
@@ -123,7 +123,7 @@ extension DatabaseConnection {
     
     public func subscribe(
         toPatterns patterns: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: QueryData) -> Void,
+        messageReceiver receiver: @escaping (_ publisher: String, _ message: DBData) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) -> EventLoopFuture<Void> {
@@ -135,7 +135,7 @@ extension DatabaseConnection {
     }
 }
 
-extension DatabaseConnection {
+extension DBConnection {
     
     public func get<D>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> where D: Decodable {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
@@ -144,8 +144,4 @@ extension DatabaseConnection {
     public func set<E>(_ key: String, as type: E) -> EventLoopFuture<Void> where E: Encodable {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
-}
-
-protocol SQLDatabaseConnection: DatabaseConnection {
-    
 }

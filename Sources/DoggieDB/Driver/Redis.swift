@@ -25,14 +25,14 @@
 
 import RediStack
 
-struct RedisDriver: DatabaseDriverProtocol {
+struct RedisDriver: DBDriverProtocol {
     
     static var defaultPort: Int { 6379 }
 }
 
 extension RedisDriver {
     
-    class Connection: DatabaseConnection {
+    class Connection: DBConnection {
         
         let connection: RedisConnection
         
@@ -54,7 +54,7 @@ extension RedisDriver {
         config: Database.Configuration,
         logger: Logger,
         on eventLoop: EventLoop
-    ) -> EventLoopFuture<DatabaseConnection> {
+    ) -> EventLoopFuture<DBConnection> {
         
         do {
             
@@ -111,14 +111,14 @@ extension RedisDriver.Connection {
     
     func subscribe(
         toChannels channels: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: QueryData) -> Void,
+        messageReceiver receiver: @escaping (_ publisher: String, _ message: DBData) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
     ) -> EventLoopFuture<Void> {
         
         return self.connection.subscribe(
             to: channels.map { RedisChannelName($0) },
-            messageReceiver: { receiver($0.rawValue, QueryData($1)) },
+            messageReceiver: { receiver($0.rawValue, DBData($1)) },
             onSubscribe: subscribeHandler,
             onUnsubscribe: unsubscribeHandler
         )
@@ -130,14 +130,14 @@ extension RedisDriver.Connection {
     
     func subscribe(
         toPatterns patterns: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: QueryData) -> Void,
+        messageReceiver receiver: @escaping (_ publisher: String, _ message: DBData) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
     ) -> EventLoopFuture<Void> {
         
         return self.connection.psubscribe(
             to: patterns,
-            messageReceiver: { receiver($0.rawValue, QueryData($1)) },
+            messageReceiver: { receiver($0.rawValue, DBData($1)) },
             onSubscribe: subscribeHandler,
             onUnsubscribe: unsubscribeHandler
         )

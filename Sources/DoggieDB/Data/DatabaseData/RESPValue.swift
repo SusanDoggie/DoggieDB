@@ -25,7 +25,7 @@
 
 import RediStack
 
-extension QueryData {
+extension DBData {
     
     init(_ value: RESPValue) {
         switch value {
@@ -42,16 +42,16 @@ extension QueryData {
             
         case .bulkString(.none): self.init(String(fromRESP: value)!)
             
-        case let .error(error): self.init(["error": QueryData(error.message)])
+        case let .error(error): self.init(["error": DBData(error.message)])
         case let .integer(value): self.init(value)
-        case let .array(array): self.init(array.map(QueryData.init))
+        case let .array(array): self.init(array.map(DBData.init))
         }
     }
 }
 
 extension RESPValue {
     
-    init(_ value: QueryData) throws {
+    init(_ value: DBData) throws {
         switch value.base {
         case .null: self = .null
         case let .boolean(value): self = .integer(value ? 1 : 0)

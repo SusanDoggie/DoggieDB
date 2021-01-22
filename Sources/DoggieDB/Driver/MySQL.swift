@@ -25,14 +25,14 @@
 
 import MySQLNIO
 
-struct MySQLDriver: DatabaseDriverProtocol {
+struct MySQLDriver: DBDriverProtocol {
     
     static var defaultPort: Int { 3306 }
 }
 
 extension MySQLDriver {
     
-    class Connection: SQLDatabaseConnection {
+    class Connection: DBConnection {
         
         let connection: MySQLConnection
         
@@ -54,7 +54,7 @@ extension MySQLDriver {
         config: Database.Configuration,
         logger: Logger,
         on eventLoop: EventLoop
-    ) -> EventLoopFuture<DatabaseConnection> {
+    ) -> EventLoopFuture<DBConnection> {
         
         guard let username = config.username else {
             return eventLoop.makeFailedFuture(Database.Error.invalidConfiguration(message: "username is missing."))
@@ -78,19 +78,19 @@ extension MySQLDriver.Connection {
     
     func query(
         _ string: String,
-        _ binds: [QueryData]
-    ) -> EventLoopFuture<[QueryRow]> {
+        _ binds: [DBData]
+    ) -> EventLoopFuture<[DBQueryRow]> {
         
         do {
             
             if binds.isEmpty {
                 
-                return self.connection.simpleQuery(string).map{ $0.map(QueryRow.init) }
+                return self.connection.simpleQuery(string).map{ $0.map(DBQueryRow.init) }
             }
             
             let binds = try binds.map(MySQLData.init)
             
-            return self.connection.query(string, binds).map{ $0.map(QueryRow.init) }
+            return self.connection.query(string, binds).map{ $0.map(DBQueryRow.init) }
             
         } catch let error {
             
@@ -100,9 +100,9 @@ extension MySQLDriver.Connection {
     
     func query(
         _ string: String,
-        _ binds: [QueryData],
-        onRow: @escaping (QueryRow) -> Void
-    ) -> EventLoopFuture<QueryMetadata> {
+        _ binds: [DBData],
+        onRow: @escaping (DBQueryRow) -> Void
+    ) -> EventLoopFuture<DBQueryMetadata> {
         
         do {
             
@@ -112,9 +112,9 @@ extension MySQLDriver.Connection {
             return self.connection.query(
                 string,
                 binds,
-                onRow: { onRow(QueryRow($0)) },
+                onRow: { onRow(DBQueryRow($0)) },
                 onMetadata: { metadata = $0 }
-            ).map { metadata.map(QueryMetadata.init) ?? QueryMetadata(metadata: [:]) }
+            ).map { metadata.map(DBQueryMetadata.init) ?? DBQueryMetadata(metadata: [:]) }
             
         } catch let error {
             
@@ -123,17 +123,17 @@ extension MySQLDriver.Connection {
     }
 }
 
-extension QueryMetadata {
+extension DBQueryMetadata {
     
     init(_ metadata: MySQLQueryMetadata) {
         self.init(metadata: [
-            "affectedRows": QueryData(metadata.affectedRows),
-            "lastInsertID": metadata.lastInsertID.map(QueryData.init) ?? nil,
+            "affectedRows": DBData(metadata.affectedRows),
+            "lastInsertID": metadata.lastInsertID.map(DBData.init) ?? nil,
         ])
     }
 }
 
-extension MySQLRow: QueryRowConvertable {
+extension MySQLRow: DBRowConvertable {
     
     public var count: Int {
         return self.columnDefinitions.count
@@ -147,7 +147,7 @@ extension MySQLRow: QueryRowConvertable {
         return self.columnDefinitions.contains { $0.name == column }
     }
     
-    public func value(_ column: String) -> QueryData? {
-        return self.column(column).map(QueryData.init)
+    public func value(_ column: String) -> DBData? {
+        return self.column(column).map(DBData.init)
     }
 }

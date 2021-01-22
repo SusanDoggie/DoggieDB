@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-protocol DatabaseDriverProtocol {
+protocol DBDriverProtocol {
     
     static var defaultPort: Int { get }
     
@@ -31,25 +31,25 @@ protocol DatabaseDriverProtocol {
         config: Database.Configuration,
         logger: Logger,
         on eventLoop: EventLoop
-    ) -> EventLoopFuture<DatabaseConnection>
+    ) -> EventLoopFuture<DBConnection>
 }
 
-public struct DatabaseDriver: Hashable {
+public struct DBDriver: Hashable {
     
-    var rawValue: DatabaseDriverProtocol.Type
+    var rawValue: DBDriverProtocol.Type
     
-    init(rawValue: DatabaseDriverProtocol.Type) {
+    init(rawValue: DBDriverProtocol.Type) {
         self.rawValue = rawValue
     }
 }
 
-extension DatabaseDriver {
+extension DBDriver {
     
     public var identifier: ObjectIdentifier {
         return ObjectIdentifier(rawValue)
     }
     
-    public static func == (lhs: DatabaseDriver, rhs: DatabaseDriver) -> Bool {
+    public static func == (lhs: DBDriver, rhs: DBDriver) -> Bool {
         return lhs.identifier == rhs.identifier
     }
     
@@ -58,13 +58,13 @@ extension DatabaseDriver {
     }
 }
 
-extension DatabaseDriver {
+extension DBDriver {
     
-    public static let mongoDB = DatabaseDriver(rawValue: MongoDBDriver.self)
+    public static let mongoDB = DBDriver(rawValue: MongoDBDriver.self)
     
-    public static let mySQL = DatabaseDriver(rawValue: MySQLDriver.self)
+    public static let mySQL = DBDriver(rawValue: MySQLDriver.self)
     
-    public static let postgreSQL = DatabaseDriver(rawValue: PostgreSQLDriver.self)
+    public static let postgreSQL = DBDriver(rawValue: PostgreSQLDriver.self)
     
-    public static let redis = DatabaseDriver(rawValue: RedisDriver.self)
+    public static let redis = DBDriver(rawValue: RedisDriver.self)
 }
