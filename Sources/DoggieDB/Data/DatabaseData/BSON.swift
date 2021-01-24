@@ -28,7 +28,35 @@ import MongoSwift
 extension DBData {
     
     init(_ value: BSON) {
-        
+        switch value {
+        case .null: self = nil
+        case .undefined: self = nil
+        case let .int32(value): self.init(value)
+        case let .int64(value): self.init(value)
+        case let .double(value): self.init(value)
+        case let .decimal128(value):
+        case let .string(value): self.init(value)
+        case let .document(value): self.init(value)
+        case let .array(value): self.init(value.map(DBData.init))
+        case let .binary(value):
+            switch value.subtype {
+            case .generic, .binaryDeprecated: self.init(Data(buffer: value.data))
+            case .uuidDeprecated, .uuid:
+            case .md5:
+            default: self.init(type: "BSONBinary", value: ["subtype": DBData(value.subtype.rawValue), "data": DBData(Data(buffer: value.data))])
+            }
+        case let .objectID(value): self.init(type: "BSONObjectID", value: DBData(value.hex))
+        case let .bool(value): self.init(value)
+        case let .datetime(value): self.init(value)
+        case let .regex(value): self.init(type: "BSONRegularExpression", value: ["pattern": DBData(value.pattern), "options": DBData(value.options)])
+        case let .dbPointer(value): self.init(type: "BSONPointer", value: ["ref": DBData(value.ref), "id": DBData(value.id.hex)])
+        case let .symbol(value): self.init(type: "BSONSymbol", value: DBData(value.stringValue))
+        case let .code(value): self.init(type: "BSONCode", value: DBData(value.code))
+        case let .codeWithScope(value): self.init(type: "BSONCodeWithScope", value: ["scope": DBData(value.scope), "code": DBData(value.code)])
+        case let .timestamp(value):
+        case .minKey: self.init(type: "BSONMinKey", value: [:])
+        case .maxKey: self.init(type: "BSONMaxKey", value: [:])
+        }
     }
 }
 
