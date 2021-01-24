@@ -650,11 +650,8 @@ extension DBData {
                 value[index] = newValue
                 self = DBData(value)
                 
-            case var .custom(type, value):
+            case .custom(let type, var value):
                 
-                if index >= value.count {
-                    value.append(contentsOf: repeatElement(nil, count: index - value.count + 1))
-                }
                 value[index] = newValue
                 self = DBData(type: type, value: value)
                 
@@ -688,9 +685,9 @@ extension DBData {
                 value[key] = newValue.isNil ? nil : newValue
                 self = DBData(value)
                 
-            case var .custom(type, value):
+            case .custom(let type, var value):
                 
-                value[key] = newValue.isNil ? nil : newValue
+                value[key] = newValue
                 self = DBData(type: type, value: value)
                 
             default: fatalError("Not an object.")
