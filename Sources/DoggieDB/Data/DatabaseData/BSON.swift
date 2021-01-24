@@ -41,8 +41,7 @@ extension DBData {
         case let .binary(value):
             switch value.subtype {
             case .generic, .binaryDeprecated: self.init(Data(buffer: value.data))
-            case .uuidDeprecated, .uuid:
-            case .md5:
+            case .uuidDeprecated, .uuid: try! self.init(value.toUUID())
             default: self.init(type: "BSONBinary", value: ["subtype": DBData(value.subtype.rawValue), "data": DBData(Data(buffer: value.data))])
             }
         case let .objectID(value): self.init(type: "BSONObjectID", value: DBData(value.hex))
