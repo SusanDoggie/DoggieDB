@@ -44,7 +44,7 @@ public enum DBDataType: Hashable {
 public struct DBData {
     
     @usableFromInline
-    enum Base {
+    indirect enum Base {
         case null
         case boolean(Bool)
         case string(String)
