@@ -67,6 +67,33 @@ extension DBData {
 extension BSON {
     
     init(_ value: DBData) throws {
-        
+        switch value.base {
+        case .null: self = .null
+        case let .boolean(value): self = .bool(value)
+        case let .string(value): self = .string(value)
+        case let .signed(value): self = .int64(value)
+        case let .unsigned(value):
+            
+            guard let int64 = Int64(exactly: value) else { throw Database.Error.unsupportedType }
+            self = .int64(int64)
+            
+        case let .number(value): self = .double(value)
+            
+        case let .decimal(value):
+            
+            guard let decimal = try? BSONDecimal128("\(value)") else { throw Database.Error.unsupportedType }
+            self = .decimal128(decimal)
+            
+        case let .date(value):
+            
+            guard let date = value.date else { throw Database.Error.unsupportedType }
+            self = .datetime(date)
+            
+        case let .binary(value): self = .binary(BSONBinary(data: value, subtype: .generic))
+        case let .uuid(value): self = .binary(BSONBinary(from: value))
+        case let .array(value): self = try .array(value.map(BSON.init))
+        case let .dictionary(value):
+    
+        }
     }
 }
