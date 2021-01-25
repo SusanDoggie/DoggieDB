@@ -35,6 +35,11 @@ extension DBData {
         case let .int64(value): self.init(value)
         case let .double(value): self.init(value)
         case let .decimal128(value):
+            if let decimal = Decimal(string: value.description) {
+                self.init(decimal)
+            } else {
+                self.init(type: "BSONDecimal128", value: DBData(value.description))
+            }
         case let .string(value): self.init(value)
         case let .document(value): self.init(value)
         case let .array(value): self.init(value.map(DBData.init))
@@ -52,7 +57,7 @@ extension DBData {
         case let .symbol(value): self.init(type: "BSONSymbol", value: DBData(value.stringValue))
         case let .code(value): self.init(type: "BSONCode", value: DBData(value.code))
         case let .codeWithScope(value): self.init(type: "BSONCodeWithScope", value: ["scope": DBData(value.scope), "code": DBData(value.code)])
-        case let .timestamp(value):
+        case let .timestamp(value): self.init(type: "BSONTimestamp", value: ["timestamp": DBData(value.timestamp), "increment": DBData(value.increment)])
         case .minKey: self.init(type: "BSONMinKey", value: [:])
         case .maxKey: self.init(type: "BSONMaxKey", value: [:])
         }
