@@ -41,7 +41,7 @@ extension DBData {
                 self.init(type: "BSONDecimal128", value: DBData(value.description))
             }
         case let .string(value): self.init(value)
-        case let .document(value): self.init(value)
+        case let .document(value): self.init(Dictionary(value))
         case let .array(value): self.init(value.map(DBData.init))
         case let .binary(value):
             switch value.subtype {
@@ -56,7 +56,7 @@ extension DBData {
         case let .dbPointer(value): self.init(type: "BSONPointer", value: ["ref": DBData(value.ref), "id": DBData(value.id.hex)])
         case let .symbol(value): self.init(type: "BSONSymbol", value: DBData(value.stringValue))
         case let .code(value): self.init(type: "BSONCode", value: DBData(value.code))
-        case let .codeWithScope(value): self.init(type: "BSONCodeWithScope", value: ["scope": DBData(value.scope), "code": DBData(value.code)])
+        case let .codeWithScope(value): self.init(type: "BSONCodeWithScope", value: ["scope": DBData(Dictionary(value.scope)), "code": DBData(value.code)])
         case let .timestamp(value): self.init(type: "BSONTimestamp", value: ["timestamp": DBData(value.timestamp), "increment": DBData(value.increment)])
         case .minKey: self.init(type: "BSONMinKey", value: [:])
         case .maxKey: self.init(type: "BSONMaxKey", value: [:])
@@ -89,11 +89,50 @@ extension BSON {
             guard let date = value.date else { throw Database.Error.unsupportedType }
             self = .datetime(date)
             
-        case let .binary(value): self = .binary(BSONBinary(data: value, subtype: .generic))
-        case let .uuid(value): self = .binary(BSONBinary(from: value))
+        case let .binary(value): self = try .binary(BSONBinary(data: value, subtype: .generic))
+        case let .uuid(value): self = try .binary(BSONBinary(from: value))
         case let .array(value): self = try .array(value.map(BSON.init))
-        case let .dictionary(value):
-    
+        case let .dictionary(value):self = try .document(BSONDocument(value))
+        case let .custom("BSONDecimal128", value):
+            
+            guard let decimal = try? value.string.map(BSONDecimal128.init) else { throw Database.Error.unsupportedType }
+            self = .decimal128(decimal)
+            
+        case let .custom("BSONBinary", value):
+            
+            guard let subtype = try? value["subtype"].intValue.map(BSONBinary.Subtype.userDefined) else { throw Database.Error.unsupportedType }
+            guard let data = value["data"].binary else { throw Database.Error.unsupportedType }
+            guard let binary = try? BSONBinary(data: data, subtype: subtype) else { throw Database.Error.unsupportedType }
+            self = .binary(binary)
+            
+        case let .custom("BSONObjectID", value):
+            
+            guard let objectId = try? value.string.map(BSONObjectID.init) else { throw Database.Error.unsupportedType }
+            self = .objectID(objectId)
+            
+        case let .custom("BSONRegularExpression", value):
+            
+            guard let pattern = value["pattern"].string, let options = value["options"].string else { throw Database.Error.unsupportedType }
+            self = .regex(BSONRegularExpression(pattern: pattern, options: options))
+            
+        case let .custom("BSONCode", value):
+            
+            guard let code = value.string.map(BSONCode.init) else { throw Database.Error.unsupportedType }
+            self = .code(code)
+            
+        case let .custom("BSONCodeWithScope", value):
+            
+            guard let scope = try? value["scope"].dictionary.map(BSONDocument.init), let code = value["code"].string else { throw Database.Error.unsupportedType }
+            self = .codeWithScope(BSONCodeWithScope(code: code, scope: scope))
+            
+        case let .custom("BSONTimestamp", value):
+            
+            guard let timestamp = value["timestamp"].uint32Value, let increment = value["increment"].uint32Value else { throw Database.Error.unsupportedType }
+            self = .timestamp(BSONTimestamp(timestamp: timestamp, inc: increment))
+            
+        case .custom("BSONMinKey", [:]): self = .minKey
+        case .custom("BSONMaxKey", [:]): self = .maxKey
+        default: throw Database.Error.unsupportedType
         }
     }
 }
