@@ -102,6 +102,11 @@ extension DBData {
                     self = nil
                 }
                 
+            case .tinyBlob,
+                 .mediumBlob,
+                 .longBlob,
+                 .blob: self = value.buffer.map { DBData(Data(buffer: $0)) } ?? nil
+                
             case .year:
             case .newdate:
             case .timestamp2:
@@ -110,10 +115,6 @@ extension DBData {
             case .json:
             case .enum:
             case .set:
-            case .tinyBlob:
-            case .mediumBlob:
-            case .longBlob:
-            case .blob:
             case .geometry:
             }
         case .text: self = value.string.map { DBData($0) } ?? nil

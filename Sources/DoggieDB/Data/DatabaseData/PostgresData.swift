@@ -28,7 +28,62 @@ import PostgresNIO
 extension DBData {
     
     init(_ value: PostgresData) {
-        
+        switch value.formatCode {
+        case .binary:
+            switch value.type {
+            case .null: self = nil
+            case .bool: self = value.bool.map { DBData($0) } ?? nil
+            case .bytea: self = value.bytes.map { DBData(Data($0)) } ?? nil
+            case .char: self = value.uint8.map { DBData($0) } ?? nil
+            case .int8: self = value.int64.map { DBData($0) } ?? nil
+            case .int2: self = value.int16.map { DBData($0) } ?? nil
+            case .int4: self = value.int32.map { DBData($0) } ?? nil
+                
+            case .name,
+                 .bpchar,
+                 .varchar,
+                 .text: self = value.string.map { DBData($0) } ?? nil
+                
+            case .float4: self = value.float.map { DBData($0) } ?? nil
+            case .float8: self = value.double.map { DBData($0) } ?? nil
+                
+            case .money,
+                 .numeric: self = value.decimal.map { DBData($0) } ?? nil
+                
+            case .date,
+                 .timestamp,
+                 .timestamptz: self = value.date.map { DBData($0) } ?? nil
+                
+            case .uuid: self = value.uuid.map { DBData($0) } ?? nil
+                
+            case .boolArray,
+                 .byteaArray,
+                 .charArray,
+                 .nameArray,
+                 .int2Array,
+                 .int4Array,
+                 .textArray,
+                 .varcharArray,
+                 .int8Array,
+                 .pointArray,
+                 .float4Array,
+                 .float8Array,
+                 .aclitemArray,
+                 .uuidArray,
+                 .jsonbArray: self = value.array.map { DBData($0.map { DBData($0) }) } ?? nil
+                
+            case .regproc:
+            case .oid:
+            case .pgNodeTree:
+            case .point:
+            case .time:
+            case .timetz:
+            case .timestampArray:
+            case .json:
+            case .jsonb:
+            }
+        case .text: self = value.string.map { DBData($0) } ?? nil
+        }
     }
 }
 
