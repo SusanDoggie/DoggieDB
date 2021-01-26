@@ -68,7 +68,7 @@ extension BSON {
     
     init(_ value: DBData) throws {
         switch value.base {
-        case .null: self = .undefined
+        case .null: self = .null
         case let .boolean(value): self = .bool(value)
         case let .string(value): self = .string(value)
         case let .signed(value): self = .int64(value)

@@ -28,7 +28,96 @@ import MySQLNIO
 extension DBData {
     
     init(_ value: MySQLData) {
-        
+        switch value.format {
+        case .binary:
+            switch value.type {
+            case .null: self = nil
+                
+            case .tiny,
+                 .bit:
+                if value.isUnsigned {
+                    self = value.uint8.map { DBData($0) } ?? nil
+                } else {
+                    self = value.int8.map { DBData($0) } ?? nil
+                }
+            case .short:
+                if value.isUnsigned {
+                    self = value.uint16.map { DBData($0) } ?? nil
+                } else {
+                    self = value.int16.map { DBData($0) } ?? nil
+                }
+            case .long:
+                if value.isUnsigned {
+                    self = value.uint32.map { DBData($0) } ?? nil
+                } else {
+                    self = value.int32.map { DBData($0) } ?? nil
+                }
+            case .int24:
+                if value.isUnsigned {
+                    self = value.uint32.map { DBData($0) } ?? nil
+                } else {
+                    self = value.int32.map { DBData($0) } ?? nil
+                }
+            case .longlong:
+                if value.isUnsigned {
+                    self = value.uint64.map { DBData($0) } ?? nil
+                } else {
+                    self = value.int64.map { DBData($0) } ?? nil
+                }
+            case .float: self = value.float.map { DBData($0) } ?? nil
+            case .double: self = value.double.map { DBData($0) } ?? nil
+                
+            case .decimal,
+                 .newdecimal: self = value.decimal.map { DBData($0) } ?? nil
+                
+            case .varchar,
+                 .varString,
+                 .string: self = value.string.map { DBData($0) } ?? nil
+                
+            case .timestamp,
+                 .datetime,
+                 .date,
+                 .time:
+                
+                if let time = value.time {
+                    
+                    let calendar = Calendar(identifier: .iso8601)
+                    let timeZone = TimeZone(identifier: "UTC")!
+                    
+                    let dateComponents = DateComponents(
+                        calendar: calendar,
+                        timeZone: timeZone,
+                        year: time.year.map(Int.init),
+                        month: time.month.map(Int.init),
+                        day: time.day.map(Int.init),
+                        hour: time.hour.map(Int.init),
+                        minute: time.minute.map(Int.init),
+                        second: time.second.map(Int.init),
+                        nanosecond: time.microsecond.map { Int($0) * 1000 }
+                    )
+                    
+                    self.init(dateComponents)
+                    
+                } else {
+                    self = nil
+                }
+                
+            case .year:
+            case .newdate:
+            case .timestamp2:
+            case .datetime2:
+            case .time2:
+            case .json:
+            case .enum:
+            case .set:
+            case .tinyBlob:
+            case .mediumBlob:
+            case .longBlob:
+            case .blob:
+            case .geometry:
+            }
+        case .text: self = value.string.map { DBData($0) } ?? nil
+        }
     }
 }
 
