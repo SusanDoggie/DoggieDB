@@ -107,12 +107,20 @@ extension DBData {
                  .longBlob,
                  .blob: self = value.buffer.map { DBData(Data(buffer: $0)) } ?? nil
                 
+            case .json:
+                
+                if let json = try? value.json(as: Json.self) {
+                    self = DBData(json)
+                } else {
+                    self = nil
+                }
+                
             case .year:
             case .newdate:
             case .timestamp2:
             case .datetime2:
             case .time2:
-            case .json:
+                
             case .enum:
             case .set:
             case .geometry:

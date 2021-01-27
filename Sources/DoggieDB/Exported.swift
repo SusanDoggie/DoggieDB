@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-@_exported import Foundation
+@_exported import DoggieCore
 
 @_exported import NIO
 

@@ -72,6 +72,22 @@ extension DBData {
                  .uuidArray,
                  .jsonbArray: self = value.array.map { DBData($0.map { DBData($0) }) } ?? nil
                 
+            case .json:
+                
+                if let json = try? value.json(as: Json.self) {
+                    self = DBData(json)
+                } else {
+                    self = nil
+                }
+                
+            case .jsonb:
+                
+                if let json = try? value.jsonb(as: Json.self) {
+                    self = DBData(json)
+                } else {
+                    self = nil
+                }
+                
             case .regproc:
             case .oid:
             case .pgNodeTree:
@@ -79,8 +95,6 @@ extension DBData {
             case .time:
             case .timetz:
             case .timestampArray:
-            case .json:
-            case .jsonb:
             }
         case .text: self = value.string.map { DBData($0) } ?? nil
         }
