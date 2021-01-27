@@ -37,6 +37,7 @@ public enum DBDataType: Hashable {
     case uuid
     case array
     case dictionary
+    case encodable
     case custom(type: String)
 }
 
@@ -57,6 +58,7 @@ public struct DBData {
         case uuid(UUID)
         case array([DBData])
         case dictionary([String: DBData])
+        case encodable(Encodable)
         case custom(String, DBData)
     }
     
@@ -130,6 +132,11 @@ public struct DBData {
     @inlinable
     public init(_ elements: [String: DBData]) {
         self.base = .dictionary(elements)
+    }
+    
+    @inlinable
+    public init(_ encodable: Encodable) {
+        self.base = .encodable(encodable)
     }
     
     @inlinable
@@ -211,6 +218,7 @@ extension DBData: CustomStringConvertible {
         case let .uuid(value): return "\(value)"
         case let .array(value): return "\(value)"
         case let .dictionary(value): return "\(value)"
+        case let .encodable(value): return "\(value)"
         case let .custom(type, value): return "\(type)(\(value))"
         }
     }
@@ -274,6 +282,7 @@ extension DBData {
         case .uuid: return .uuid
         case .array: return .array
         case .dictionary: return .dictionary
+        case .encodable: return .encodable
         case let .custom(type, _): return .custom(type: type)
         }
     }

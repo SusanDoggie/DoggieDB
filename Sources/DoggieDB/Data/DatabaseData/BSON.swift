@@ -25,42 +25,11 @@
 
 import MongoSwift
 
-extension DBData {
+extension Encodable {
     
-    init(_ value: BSON) {
-        switch value {
-        case .null: self = nil
-        case .undefined: self = nil
-        case let .int32(value): self.init(value)
-        case let .int64(value): self.init(value)
-        case let .double(value): self.init(value)
-        case let .decimal128(value):
-            if let decimal = Decimal(string: value.description) {
-                self.init(decimal)
-            } else {
-                self.init(type: "BSONDecimal128", value: DBData(value.description))
-            }
-        case let .string(value): self.init(value)
-        case let .document(value): self.init(Dictionary(value))
-        case let .array(value): self.init(value.map(DBData.init))
-        case let .binary(value):
-            switch value.subtype {
-            case .generic, .binaryDeprecated: self.init(Data(buffer: value.data))
-            case .uuidDeprecated, .uuid: try! self.init(value.toUUID())
-            default: self.init(type: "BSONBinary", value: ["subtype": DBData(value.subtype.rawValue), "data": DBData(Data(buffer: value.data))])
-            }
-        case let .objectID(value): self.init(type: "BSONObjectID", value: DBData(value.hex))
-        case let .bool(value): self.init(value)
-        case let .datetime(value): self.init(value)
-        case let .regex(value): self.init(type: "BSONRegularExpression", value: ["pattern": DBData(value.pattern), "options": DBData(value.options)])
-        case let .dbPointer(value): self.init(type: "BSONPointer", value: ["ref": DBData(value.ref), "id": DBData(value.id.hex)])
-        case let .symbol(value): self.init(type: "BSONSymbol", value: DBData(value.stringValue))
-        case let .code(value): self.init(type: "BSONCode", value: DBData(value.code))
-        case let .codeWithScope(value): self.init(type: "BSONCodeWithScope", value: ["scope": DBData(Dictionary(value.scope)), "code": DBData(value.code)])
-        case let .timestamp(value): self.init(type: "BSONTimestamp", value: ["timestamp": DBData(value.timestamp), "increment": DBData(value.increment)])
-        case .minKey: self.init(type: "BSONMinKey", value: [:])
-        case .maxKey: self.init(type: "BSONMaxKey", value: [:])
-        }
+    func encodeBSON(options: CodingStrategyProvider? = nil) throws -> BSONDocument {
+        let encoder = BSONEncoder(options: options)
+        return try encoder.encode(self)
     }
 }
 
@@ -92,46 +61,12 @@ extension BSON {
         case let .binary(value): self = try .binary(BSONBinary(data: value, subtype: .generic))
         case let .uuid(value): self = try .binary(BSONBinary(from: value))
         case let .array(value): self = try .array(value.map(BSON.init))
-        case let .dictionary(value):self = try .document(BSONDocument(value))
-        case let .custom("BSONDecimal128", value):
+        case let .dictionary(value): self = try .document(BSONDocument(value))
+        case let .encodable(value):
             
-            guard let decimal = try? value.string.map(BSONDecimal128.init) else { throw Database.Error.unsupportedType }
-            self = .decimal128(decimal)
+            guard let document = try? value.encodeBSON() else { throw Database.Error.unsupportedType }
+            self = .document(document)
             
-        case let .custom("BSONBinary", value):
-            
-            guard let subtype = try? value["subtype"].intValue.map(BSONBinary.Subtype.userDefined) else { throw Database.Error.unsupportedType }
-            guard let data = value["data"].binary else { throw Database.Error.unsupportedType }
-            guard let binary = try? BSONBinary(data: data, subtype: subtype) else { throw Database.Error.unsupportedType }
-            self = .binary(binary)
-            
-        case let .custom("BSONObjectID", value):
-            
-            guard let objectId = try? value.string.map(BSONObjectID.init) else { throw Database.Error.unsupportedType }
-            self = .objectID(objectId)
-            
-        case let .custom("BSONRegularExpression", value):
-            
-            guard let pattern = value["pattern"].string, let options = value["options"].string else { throw Database.Error.unsupportedType }
-            self = .regex(BSONRegularExpression(pattern: pattern, options: options))
-            
-        case let .custom("BSONCode", value):
-            
-            guard let code = value.string.map(BSONCode.init) else { throw Database.Error.unsupportedType }
-            self = .code(code)
-            
-        case let .custom("BSONCodeWithScope", value):
-            
-            guard let scope = try? value["scope"].dictionary.map(BSONDocument.init), let code = value["code"].string else { throw Database.Error.unsupportedType }
-            self = .codeWithScope(BSONCodeWithScope(code: code, scope: scope))
-            
-        case let .custom("BSONTimestamp", value):
-            
-            guard let timestamp = value["timestamp"].uint32Value, let increment = value["increment"].uint32Value else { throw Database.Error.unsupportedType }
-            self = .timestamp(BSONTimestamp(timestamp: timestamp, inc: increment))
-            
-        case .custom("BSONMinKey", [:]): self = .minKey
-        case .custom("BSONMaxKey", [:]): self = .maxKey
         default: throw Database.Error.unsupportedType
         }
     }
