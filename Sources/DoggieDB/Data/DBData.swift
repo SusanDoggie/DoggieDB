@@ -289,119 +289,129 @@ extension DBData {
     
     @inlinable
     public var isNil: Bool {
-        if case let .custom(_, value) = self.base {
-            return value.isNil
+        switch self.base {
+        case .null: return true
+        case let .custom(_, value): return value.isNil
+        default: return false
         }
-        return type == .null
     }
     
     @inlinable
     public var isBool: Bool {
-        if case let .custom(_, value) = self.base {
-            return value.isBool
+        switch self.base {
+        case .boolean: return true
+        case let .custom(_, value): return value.isBool
+        default: return false
         }
-        return type == .boolean
     }
     
     @inlinable
     public var isString: Bool {
-        if case let .custom(_, value) = self.base {
-            return value.isString
+        switch self.base {
+        case .string: return true
+        case let .custom(_, value): return value.isString
+        default: return false
         }
-        return type == .string
     }
     
     @inlinable
     public var isArray: Bool {
-        if case let .custom(_, value) = self.base {
-            return value.isArray
+        switch self.base {
+        case .array: return true
+        case let .custom(_, value): return value.isArray
+        default: return false
         }
-        return type == .array
     }
     
     @inlinable
     public var isObject: Bool {
-        if case let .custom(_, value) = self.base {
-            return value.isObject
+        switch self.base {
+        case .dictionary: return true
+        case let .custom(_, value): return value.isObject
+        default: return false
         }
-        return type == .dictionary
     }
     
     @inlinable
     public var isSigned: Bool {
-        if case let .custom(_, value) = self.base {
-            return value.isSigned
+        switch self.base {
+        case .signed: return true
+        case let .custom(_, value): return value.isSigned
+        default: return false
         }
-        return type == .signed
     }
     
     @inlinable
     public var isUnsigned: Bool {
-        if case let .custom(_, value) = self.base {
-            return value.isUnsigned
+        switch self.base {
+        case .unsigned: return true
+        case let .custom(_, value): return value.isUnsigned
+        default: return false
         }
-        return type == .unsigned
     }
     
     @inlinable
     public var isNumber: Bool {
-        if case let .custom(_, value) = self.base {
-            return value.isNumber
+        switch self.base {
+        case .number: return true
+        case let .custom(_, value): return value.isNumber
+        default: return false
         }
-        return type == .number
     }
     
     @inlinable
     public var isDecimal: Bool {
-        if case let .custom(_, value) = self.base {
-            return value.isDecimal
+        switch self.base {
+        case .decimal: return true
+        case let .custom(_, value): return value.isDecimal
+        default: return false
         }
-        return type == .decimal
     }
     
     @inlinable
     public var isNumeric: Bool {
-        if case let .custom(_, value) = self.base {
-            return value.isNumeric
-        }
-        switch type {
+        switch self.base {
         case .signed: return true
         case .unsigned: return true
         case .number: return true
+        case let .custom(_, value): return value.isNumeric
         default: return false
         }
     }
     
     @inlinable
     public var isDate: Bool {
-        if case let .custom(_, value) = self.base {
-            return value.isDate
+        switch self.base {
+        case .date: return true
+        case let .custom(_, value): return value.isDate
+        default: return false
         }
-        return type == .date
     }
     
     @inlinable
     public var isBinary: Bool {
-        if case let .custom(_, value) = self.base {
-            return value.isBinary
+        switch self.base {
+        case .binary: return true
+        case let .custom(_, value): return value.isBinary
+        default: return false
         }
-        return type == .binary
     }
     
     @inlinable
     public var isUUID: Bool {
-        if case let .custom(_, value) = self.base {
-            return value.isUUID
+        switch self.base {
+        case .uuid: return true
+        case let .custom(_, value): return value.isUUID
+        default: return false
         }
-        return type == .uuid
     }
     
     @inlinable
     public var isCustomType: Bool {
-        if case .custom = self.base {
-            return true
+        switch self.base {
+        case .custom: return true
+        default: return false
         }
-        return false
     }
 }
 
@@ -794,6 +804,10 @@ extension DBData: Encodable {
             for (key, value) in value {
                 try container.encode(value, forKey: CodingKey(stringValue: key))
             }
+            
+        case let .encodable(value):
+            
+            try value.encode(to: encoder)
             
         case let .custom(_, value):
             
