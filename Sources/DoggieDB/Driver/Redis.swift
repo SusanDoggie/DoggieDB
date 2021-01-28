@@ -157,11 +157,11 @@ extension RedisDriver.Connection {
 
 extension RedisDriver.Connection {
     
-    func get<D>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> where D: Decodable {
+    func get<D: Decodable>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> {
         return self.connection.get(RedisKey(key), as: Data.self).flatMapThrowing { data in try data.flatMap { try JSONDecoder().decode(D.self, from: $0) } }
     }
     
-    func set<E>(_ key: String, as type: E) -> EventLoopFuture<Void> where E: Encodable {
+    func set<E: Encodable>(_ key: String, as type: E) -> EventLoopFuture<Void> {
         do {
             return try self.connection.set(RedisKey(key), to: JSONEncoder().encode(type))
         } catch {

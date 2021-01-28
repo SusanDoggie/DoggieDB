@@ -66,9 +66,9 @@ public protocol DBConnection: AnyObject {
     
     func unsubscribe(fromPatterns patterns: [String]) -> EventLoopFuture<Void>
     
-    func get<D>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> where D: Decodable
+    func get<D: Decodable>(_ key: String, as type: D.Type) -> EventLoopFuture<D?>
     
-    func set<E>(_ key: String, as type: E) -> EventLoopFuture<Void> where E: Encodable
+    func set<E: Encodable>(_ key: String, as type: E) -> EventLoopFuture<Void>
 }
 
 extension DBConnection {
@@ -144,11 +144,11 @@ extension DBConnection {
 
 extension DBConnection {
     
-    public func get<D>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> where D: Decodable {
+    public func get<D: Decodable>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     
-    public func set<E>(_ key: String, as type: E) -> EventLoopFuture<Void> where E: Encodable {
+    public func set<E: Encodable>(_ key: String, as type: E) -> EventLoopFuture<Void> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
 }
