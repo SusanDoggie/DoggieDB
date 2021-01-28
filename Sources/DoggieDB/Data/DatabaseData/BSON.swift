@@ -50,6 +50,7 @@ extension DBData {
             }
         case let .bool(value): self.init(value)
         case let .objectID(value): self.init(value.hex)
+        case let .regex(value): self.init(value.pattern)
         case let .datetime(value): self.init(value)
         case let .timestamp(value): self.init(Date(timeIntervalSince1970: TimeInterval(value.timestamp + value.increment)))
         default: throw Database.Error.unsupportedType
