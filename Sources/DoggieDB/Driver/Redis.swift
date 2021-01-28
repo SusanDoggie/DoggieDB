@@ -118,14 +118,14 @@ extension RedisDriver.Connection {
     
     func subscribe(
         toChannels channels: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: DBData) -> Void,
+        messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
     ) -> EventLoopFuture<Void> {
         
         return self.connection.subscribe(
             to: channels.map { RedisChannelName($0) },
-            messageReceiver: { receiver($0.rawValue, (try? DBData($1)) ?? nil) },
+            messageReceiver: { publisher, message in receiver(publisher.rawValue, Result { try DBData(message) }) },
             onSubscribe: subscribeHandler,
             onUnsubscribe: unsubscribeHandler
         )
@@ -137,14 +137,14 @@ extension RedisDriver.Connection {
     
     func subscribe(
         toPatterns patterns: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: DBData) -> Void,
+        messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
     ) -> EventLoopFuture<Void> {
         
         return self.connection.psubscribe(
             to: patterns,
-            messageReceiver: { receiver($0.rawValue, (try? DBData($1)) ?? nil) },
+            messageReceiver: { publisher, message in receiver(publisher.rawValue, Result { try DBData(message) }) },
             onSubscribe: subscribeHandler,
             onUnsubscribe: unsubscribeHandler
         )
