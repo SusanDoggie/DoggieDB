@@ -25,11 +25,33 @@
 
 import MongoSwift
 
-extension Encodable {
+extension DBData {
     
-    func encodeBSON(options: CodingStrategyProvider? = nil) throws -> BSONDocument {
-        let encoder = BSONEncoder(options: options)
-        return try encoder.encode(self)
+    init(_ value: BSON) throws {
+        switch value {
+        case .null: self = nil
+        case .undefined: self = nil
+        case let .int32(value): self.init(value)
+        case let .int64(value): self.init(value)
+        case let .double(value): self.init(value)
+        case let .decimal128(value):
+            
+            guard let decimal = Decimal(string: value.description) else { throw Database.Error.unsupportedType }
+            self.init(decimal)
+            
+        case let .string(value): self.init(value)
+        case let .document(value): self.init(Dictionary(value))
+        case let .array(value): try self.init(value.map(DBData.init))
+        case let .binary(value):
+            switch value.subtype {
+            case .generic, .binaryDeprecated: self.init(Data(buffer: value.data))
+            case .uuidDeprecated, .uuid: try! self.init(value.toUUID())
+            default: throw Database.Error.unsupportedType
+            }
+        case let .bool(value): self.init(value)
+        case let .datetime(value): self.init(value)
+        default: throw Database.Error.unsupportedType
+        }
     }
 }
 
@@ -62,10 +84,6 @@ extension BSON {
         case let .uuid(value): self = try .binary(BSONBinary(from: value))
         case let .array(value): self = try .array(value.map(BSON.init))
         case let .dictionary(value): self = try .document(BSONDocument(value))
-        case let .encodable(value):
-            
-            guard let document = try? value.encodeBSON() else { throw Database.Error.unsupportedType }
-            self = .document(document)
         }
     }
 }

@@ -37,7 +37,6 @@ public enum DBDataType: Hashable {
     case uuid
     case array
     case dictionary
-    case encodable
 }
 
 @frozen
@@ -57,7 +56,6 @@ public struct DBData {
         case uuid(UUID)
         case array([DBData])
         case dictionary([String: DBData])
-        case encodable(Encodable)
     }
     
     @usableFromInline
@@ -206,7 +204,45 @@ extension DBData: CustomStringConvertible {
         case let .uuid(value): return "\(value)"
         case let .array(value): return "\(value)"
         case let .dictionary(value): return "\(value)"
-        case let .encodable(value): return "\(value)"
+        }
+    }
+}
+
+extension DBData: Hashable {
+    
+    @inlinable
+    public static func == (lhs: DBData, rhs: DBData) -> Bool {
+        switch (lhs.base, rhs.base) {
+        case (.null, .null): return true
+        case let (.boolean(lhs), .boolean(rhs)): return lhs == rhs
+        case let (.string(lhs), .string(rhs)): return lhs == rhs
+        case let (.signed(lhs), .signed(rhs)): return lhs == rhs
+        case let (.unsigned(lhs), .unsigned(rhs)): return lhs == rhs
+        case let (.number(lhs), .number(rhs)): return lhs == rhs
+        case let (.date(lhs), .date(rhs)): return lhs == rhs
+        case let (.binary(lhs), .binary(rhs)): return lhs == rhs
+        case let (.uuid(lhs), .uuid(rhs)): return lhs == rhs
+        case let (.array(lhs), .array(rhs)): return lhs == rhs
+        case let (.dictionary(lhs), .dictionary(rhs)): return lhs == rhs
+        default: return false
+        }
+    }
+    
+    @inlinable
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(type)
+        switch self.base {
+        case let .boolean(value): hasher.combine(value)
+        case let .string(value): hasher.combine(value)
+        case let .signed(value): hasher.combine(value)
+        case let .unsigned(value): hasher.combine(value)
+        case let .number(value): hasher.combine(value)
+        case let .date(value): hasher.combine(value)
+        case let .binary(value): hasher.combine(value)
+        case let .uuid(value): hasher.combine(value)
+        case let .array(value): hasher.combine(value)
+        case let .dictionary(value): hasher.combine(value)
+        default: break
         }
     }
 }
@@ -228,7 +264,6 @@ extension DBData {
         case .uuid: return .uuid
         case .array: return .array
         case .dictionary: return .dictionary
-        case .encodable: return .encodable
         }
     }
     
@@ -694,10 +729,6 @@ extension DBData: Encodable {
             for (key, value) in value {
                 try container.encode(value, forKey: CodingKey(stringValue: key))
             }
-            
-        case let .encodable(value):
-            
-            try value.encode(to: encoder)
         }
     }
 }
