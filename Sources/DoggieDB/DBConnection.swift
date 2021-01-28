@@ -50,7 +50,7 @@ public protocol DBConnection: AnyObject {
     
     func subscribe(
         toChannels channels: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: DBData) -> Void,
+        messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
     ) -> EventLoopFuture<Void>
@@ -59,7 +59,7 @@ public protocol DBConnection: AnyObject {
     
     func subscribe(
         toPatterns patterns: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: DBData) -> Void,
+        messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
     ) -> EventLoopFuture<Void>
@@ -117,7 +117,7 @@ extension DBConnection {
     
     public func subscribe(
         toChannels channels: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: DBData) -> Void,
+        messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) -> EventLoopFuture<Void> {
@@ -130,7 +130,7 @@ extension DBConnection {
     
     public func subscribe(
         toPatterns patterns: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: DBData) -> Void,
+        messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) -> EventLoopFuture<Void> {
