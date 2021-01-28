@@ -148,6 +148,6 @@ extension MySQLRow: DBRowConvertable {
     }
     
     public func value(_ column: String) -> DBData? {
-        return self.column(column).map(DBData.init)
+        return try? self.column(column).map(DBData.init)
     }
 }

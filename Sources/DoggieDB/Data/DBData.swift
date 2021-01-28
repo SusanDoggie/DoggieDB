@@ -38,7 +38,6 @@ public enum DBDataType: Hashable {
     case array
     case dictionary
     case encodable
-    case custom(type: String)
 }
 
 @frozen
@@ -59,7 +58,6 @@ public struct DBData {
         case array([DBData])
         case dictionary([String: DBData])
         case encodable(Encodable)
-        case custom(String, DBData)
     }
     
     @usableFromInline
@@ -138,11 +136,6 @@ public struct DBData {
     public init(_ encodable: Encodable) {
         self.base = .encodable(encodable)
     }
-    
-    @inlinable
-    public init(type: String, value: DBData) {
-        self.base = .custom(type, value)
-    }
 }
 
 extension DBData: ExpressibleByNilLiteral {
@@ -219,7 +212,6 @@ extension DBData: CustomStringConvertible {
         case let .array(value): return "\(value)"
         case let .dictionary(value): return "\(value)"
         case let .encodable(value): return "\(value)"
-        case let .custom(type, value): return "\(type)(\(value))"
         }
     }
 }
@@ -240,7 +232,6 @@ extension DBData: Hashable {
         case let (.uuid(lhs), .uuid(rhs)): return lhs == rhs
         case let (.array(lhs), .array(rhs)): return lhs == rhs
         case let (.dictionary(lhs), .dictionary(rhs)): return lhs == rhs
-        case let (.custom(lhs_type, lhs_value), .custom(rhs_type, rhs_value)): return lhs_type == rhs_type && lhs_value == rhs_value
         default: return false
         }
     }
@@ -259,7 +250,6 @@ extension DBData: Hashable {
         case let .uuid(value): hasher.combine(value)
         case let .array(value): hasher.combine(value)
         case let .dictionary(value): hasher.combine(value)
-        case let .custom(_, value): hasher.combine(value)
         default: break
         }
     }
@@ -283,7 +273,6 @@ extension DBData {
         case .array: return .array
         case .dictionary: return .dictionary
         case .encodable: return .encodable
-        case let .custom(type, _): return .custom(type: type)
         }
     }
     
@@ -291,7 +280,6 @@ extension DBData {
     public var isNil: Bool {
         switch self.base {
         case .null: return true
-        case let .custom(_, value): return value.isNil
         default: return false
         }
     }
@@ -300,7 +288,6 @@ extension DBData {
     public var isBool: Bool {
         switch self.base {
         case .boolean: return true
-        case let .custom(_, value): return value.isBool
         default: return false
         }
     }
@@ -309,7 +296,6 @@ extension DBData {
     public var isString: Bool {
         switch self.base {
         case .string: return true
-        case let .custom(_, value): return value.isString
         default: return false
         }
     }
@@ -318,7 +304,6 @@ extension DBData {
     public var isArray: Bool {
         switch self.base {
         case .array: return true
-        case let .custom(_, value): return value.isArray
         default: return false
         }
     }
@@ -327,7 +312,6 @@ extension DBData {
     public var isObject: Bool {
         switch self.base {
         case .dictionary: return true
-        case let .custom(_, value): return value.isObject
         default: return false
         }
     }
@@ -336,7 +320,6 @@ extension DBData {
     public var isSigned: Bool {
         switch self.base {
         case .signed: return true
-        case let .custom(_, value): return value.isSigned
         default: return false
         }
     }
@@ -345,7 +328,6 @@ extension DBData {
     public var isUnsigned: Bool {
         switch self.base {
         case .unsigned: return true
-        case let .custom(_, value): return value.isUnsigned
         default: return false
         }
     }
@@ -354,7 +336,6 @@ extension DBData {
     public var isNumber: Bool {
         switch self.base {
         case .number: return true
-        case let .custom(_, value): return value.isNumber
         default: return false
         }
     }
@@ -363,7 +344,6 @@ extension DBData {
     public var isDecimal: Bool {
         switch self.base {
         case .decimal: return true
-        case let .custom(_, value): return value.isDecimal
         default: return false
         }
     }
@@ -374,7 +354,6 @@ extension DBData {
         case .signed: return true
         case .unsigned: return true
         case .number: return true
-        case let .custom(_, value): return value.isNumeric
         default: return false
         }
     }
@@ -383,7 +362,6 @@ extension DBData {
     public var isDate: Bool {
         switch self.base {
         case .date: return true
-        case let .custom(_, value): return value.isDate
         default: return false
         }
     }
@@ -392,7 +370,6 @@ extension DBData {
     public var isBinary: Bool {
         switch self.base {
         case .binary: return true
-        case let .custom(_, value): return value.isBinary
         default: return false
         }
     }
@@ -401,15 +378,6 @@ extension DBData {
     public var isUUID: Bool {
         switch self.base {
         case .uuid: return true
-        case let .custom(_, value): return value.isUUID
-        default: return false
-        }
-    }
-    
-    @inlinable
-    public var isCustomType: Bool {
-        switch self.base {
-        case .custom: return true
         default: return false
         }
     }
@@ -421,7 +389,6 @@ extension DBData {
     public var boolValue: Bool? {
         switch self.base {
         case let .boolean(value): return value
-        case let .custom(_, value): return value.boolValue
         default: return nil
         }
     }
@@ -433,7 +400,6 @@ extension DBData {
         case let .unsigned(value): return Int8(exactly: value)
         case let .number(value): return Int8(exactly: value)
         case let .decimal(value): return Int64(exactly: value).flatMap { Int8(exactly: $0) }
-        case let .custom(_, value): return value.int8Value
         default: return nil
         }
     }
@@ -445,7 +411,6 @@ extension DBData {
         case let .unsigned(value): return UInt8(exactly: value)
         case let .number(value): return UInt8(exactly: value)
         case let .decimal(value): return UInt64(exactly: value).flatMap { UInt8(exactly: $0) }
-        case let .custom(_, value): return value.uint8Value
         default: return nil
         }
     }
@@ -457,7 +422,6 @@ extension DBData {
         case let .unsigned(value): return Int16(exactly: value)
         case let .number(value): return Int16(exactly: value)
         case let .decimal(value): return Int64(exactly: value).flatMap { Int16(exactly: $0) }
-        case let .custom(_, value): return value.int16Value
         default: return nil
         }
     }
@@ -469,7 +433,6 @@ extension DBData {
         case let .unsigned(value): return UInt16(exactly: value)
         case let .number(value): return UInt16(exactly: value)
         case let .decimal(value): return UInt64(exactly: value).flatMap { UInt16(exactly: $0) }
-        case let .custom(_, value): return value.uint16Value
         default: return nil
         }
     }
@@ -481,7 +444,6 @@ extension DBData {
         case let .unsigned(value): return Int32(exactly: value)
         case let .number(value): return Int32(exactly: value)
         case let .decimal(value): return Int64(exactly: value).flatMap { Int32(exactly: $0) }
-        case let .custom(_, value): return value.int32Value
         default: return nil
         }
     }
@@ -493,7 +455,6 @@ extension DBData {
         case let .unsigned(value): return UInt32(exactly: value)
         case let .number(value): return UInt32(exactly: value)
         case let .decimal(value): return UInt64(exactly: value).flatMap { UInt32(exactly: $0) }
-        case let .custom(_, value): return value.uint32Value
         default: return nil
         }
     }
@@ -505,7 +466,6 @@ extension DBData {
         case let .unsigned(value): return Int64(exactly: value)
         case let .number(value): return Int64(exactly: value)
         case let .decimal(value): return Int64(exactly: value)
-        case let .custom(_, value): return value.int64Value
         default: return nil
         }
     }
@@ -517,7 +477,6 @@ extension DBData {
         case let .unsigned(value): return value
         case let .number(value): return UInt64(exactly: value)
         case let .decimal(value): return UInt64(exactly: value)
-        case let .custom(_, value): return value.uint64Value
         default: return nil
         }
     }
@@ -529,7 +488,6 @@ extension DBData {
         case let .unsigned(value): return Int(exactly: value)
         case let .number(value): return Int(exactly: value)
         case let .decimal(value): return Int64(exactly: value).flatMap { Int(exactly: $0) }
-        case let .custom(_, value): return value.intValue
         default: return nil
         }
     }
@@ -541,7 +499,6 @@ extension DBData {
         case let .unsigned(value): return UInt(exactly: value)
         case let .number(value): return UInt(exactly: value)
         case let .decimal(value): return UInt64(exactly: value).flatMap { UInt(exactly: $0) }
-        case let .custom(_, value): return value.uintValue
         default: return nil
         }
     }
@@ -553,7 +510,6 @@ extension DBData {
         case let .unsigned(value): return Float(exactly: value)
         case let .number(value): return Float(value)
         case let .decimal(value): return Double(exactly: value).flatMap { Float(exactly: $0) }
-        case let .custom(_, value): return value.floatValue
         default: return nil
         }
     }
@@ -565,7 +521,6 @@ extension DBData {
         case let .unsigned(value): return Double(exactly: value)
         case let .number(value): return value
         case let .decimal(value): return Double(exactly: value)
-        case let .custom(_, value): return value.doubleValue
         default: return nil
         }
     }
@@ -577,7 +532,6 @@ extension DBData {
         case let .unsigned(value): return Decimal(value)
         case let .number(value): return Int64(exactly: value).map { Decimal($0) }
         case let .decimal(value): return value
-        case let .custom(_, value): return value.decimalValue
         default: return nil
         }
     }
@@ -586,7 +540,6 @@ extension DBData {
     public var string: String? {
         switch self.base {
         case let .string(value): return value
-        case let .custom(_, value): return value.string
         default: return nil
         }
     }
@@ -595,7 +548,6 @@ extension DBData {
     public var date: Date? {
         switch self.base {
         case let .date(value): return value.date
-        case let .custom(_, value): return value.date
         default: return nil
         }
     }
@@ -604,7 +556,6 @@ extension DBData {
     public var dateComponents: DateComponents? {
         switch self.base {
         case let .date(value): return value
-        case let .custom(_, value): return value.dateComponents
         default: return nil
         }
     }
@@ -613,7 +564,6 @@ extension DBData {
     public var binary: Data? {
         switch self.base {
         case let .binary(value): return value
-        case let .custom(_, value): return value.binary
         default: return nil
         }
     }
@@ -622,7 +572,6 @@ extension DBData {
     public var uuid: UUID? {
         switch self.base {
         case let .uuid(value): return value
-        case let .custom(_, value): return value.uuid
         default: return nil
         }
     }
@@ -631,7 +580,6 @@ extension DBData {
     public var dictionary: [String: DBData]? {
         switch self.base {
         case let .dictionary(value): return value
-        case let .custom(_, value): return value.dictionary
         default: return nil
         }
     }
@@ -644,7 +592,6 @@ extension DBData {
         switch self.base {
         case let .array(value): return value.count
         case let .dictionary(value): return value.count
-        case let .custom(_, value): return value.count
         default: fatalError("Not an array or object.")
         }
     }
@@ -655,7 +602,6 @@ extension DBData {
             guard 0..<count ~= index else { return nil }
             switch self.base {
             case let .array(value): return value[index]
-            case let .custom(_, value): return value[index]
             default: return nil
             }
         }
@@ -669,11 +615,6 @@ extension DBData {
                 value[index] = newValue
                 self = DBData(value)
                 
-            case .custom(let type, var value):
-                
-                value[index] = newValue
-                self = DBData(type: type, value: value)
-                
             default: fatalError("Not an array.")
             }
         }
@@ -683,7 +624,6 @@ extension DBData {
     public var keys: Dictionary<String, DBData>.Keys {
         switch self.base {
         case let .dictionary(value): return value.keys
-        case let .custom(_, value): return value.keys
         default: return [:].keys
         }
     }
@@ -693,7 +633,6 @@ extension DBData {
         get {
             switch self.base {
             case let .dictionary(value): return value[key] ?? nil
-            case let .custom(_, value): return value[key]
             default: return nil
             }
         }
@@ -703,11 +642,6 @@ extension DBData {
                 
                 value[key] = newValue.isNil ? nil : newValue
                 self = DBData(value)
-                
-            case .custom(let type, var value):
-                
-                value[key] = newValue
-                self = DBData(type: type, value: value)
                 
             default: fatalError("Not an object.")
             }
@@ -808,11 +742,6 @@ extension DBData: Encodable {
         case let .encodable(value):
             
             try value.encode(to: encoder)
-            
-        case let .custom(_, value):
-            
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
         }
     }
 }

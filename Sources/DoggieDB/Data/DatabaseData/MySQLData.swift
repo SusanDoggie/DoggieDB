@@ -27,7 +27,7 @@ import MySQLNIO
 
 extension DBData {
     
-    init(_ value: MySQLData) {
+    init(_ value: MySQLData) throws {
         switch value.format {
         case .binary:
             switch value.type {
@@ -68,11 +68,15 @@ extension DBData {
             case .double: self = value.double.map { DBData($0) } ?? nil
                 
             case .decimal,
-                 .newdecimal: self = value.decimal.map { DBData($0) } ?? nil
+                 .newdecimal:
+                
+                self = value.decimal.map { DBData($0) } ?? nil
                 
             case .varchar,
                  .varString,
-                 .string: self = value.string.map { DBData($0) } ?? nil
+                 .string:
+                
+                self = value.string.map { DBData($0) } ?? nil
                 
             case .timestamp,
                  .datetime,
@@ -105,25 +109,25 @@ extension DBData {
             case .tinyBlob,
                  .mediumBlob,
                  .longBlob,
-                 .blob: self = value.buffer.map { DBData(Data(buffer: $0)) } ?? nil
+                 .blob:
+                
+                self = value.buffer.map { DBData(Data(buffer: $0)) } ?? nil
                 
             case .json:
                 
-                if let json = try? value.json(as: Json.self) {
-                    self = DBData(json)
-                } else {
-                    self = nil
-                }
+                guard let json = try? value.json(as: Json.self) else { throw Database.Error.unsupportedType }
+                self = DBData(json)
                 
-            case .year:
-            case .newdate:
-            case .timestamp2:
-            case .datetime2:
-            case .time2:
-                
-            case .enum:
-            case .set:
-            case .geometry:
+//            case .year:
+//            case .newdate:
+//            case .timestamp2:
+//            case .datetime2:
+//            case .time2:
+//                
+//            case .enum:
+//            case .set:
+//            case .geometry:
+            default: throw Database.Error.unsupportedType
             }
         case .text: self = value.string.map { DBData($0) } ?? nil
         }

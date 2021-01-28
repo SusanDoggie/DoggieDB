@@ -27,7 +27,7 @@ import RediStack
 
 extension DBData {
     
-    init(_ value: RESPValue) {
+    init(_ value: RESPValue) throws {
         switch value {
         case .null: self = nil
             
@@ -42,9 +42,9 @@ extension DBData {
             
         case .bulkString(.none): self.init(String(fromRESP: value)!)
             
-        case let .error(error): self.init(type: "RedisError", value: DBData(error.message))
         case let .integer(value): self.init(value)
-        case let .array(array): self.init(array.map(DBData.init))
+        case let .array(array): try self.init(array.map(DBData.init))
+        case let .error(error): throw error
         }
     }
 }
@@ -72,11 +72,6 @@ extension RESPValue {
         case let .binary(value): self = value.convertedToRESPValue()
         case let .uuid(value): self = "\(value)".convertedToRESPValue()
         case let .array(value): self = try value.map(RESPValue.init).convertedToRESPValue()
-        case let .custom("RedisError", value):
-            
-            guard let reason = value.string else { throw Database.Error.unsupportedType }
-            self = .error(RedisError(reason: reason))
-            
         default: throw Database.Error.unsupportedType
         }
     }

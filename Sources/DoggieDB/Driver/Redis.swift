@@ -125,7 +125,7 @@ extension RedisDriver.Connection {
         
         return self.connection.subscribe(
             to: channels.map { RedisChannelName($0) },
-            messageReceiver: { receiver($0.rawValue, DBData($1)) },
+            messageReceiver: { receiver($0.rawValue, (try? DBData($1)) ?? nil) },
             onSubscribe: subscribeHandler,
             onUnsubscribe: unsubscribeHandler
         )
@@ -144,7 +144,7 @@ extension RedisDriver.Connection {
         
         return self.connection.psubscribe(
             to: patterns,
-            messageReceiver: { receiver($0.rawValue, DBData($1)) },
+            messageReceiver: { receiver($0.rawValue, (try? DBData($1)) ?? nil) },
             onSubscribe: subscribeHandler,
             onUnsubscribe: unsubscribeHandler
         )

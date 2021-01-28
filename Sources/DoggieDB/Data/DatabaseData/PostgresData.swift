@@ -27,7 +27,7 @@ import PostgresNIO
 
 extension DBData {
     
-    init(_ value: PostgresData) {
+    init(_ value: PostgresData) throws {
         switch value.formatCode {
         case .binary:
             switch value.type {
@@ -42,17 +42,23 @@ extension DBData {
             case .name,
                  .bpchar,
                  .varchar,
-                 .text: self = value.string.map { DBData($0) } ?? nil
+                 .text:
+                
+                self = value.string.map { DBData($0) } ?? nil
                 
             case .float4: self = value.float.map { DBData($0) } ?? nil
             case .float8: self = value.double.map { DBData($0) } ?? nil
                 
             case .money,
-                 .numeric: self = value.decimal.map { DBData($0) } ?? nil
+                 .numeric:
+                
+                self = value.decimal.map { DBData($0) } ?? nil
                 
             case .date,
                  .timestamp,
-                 .timestamptz: self = value.date.map { DBData($0) } ?? nil
+                 .timestamptz:
+                
+                self = value.date.map { DBData($0) } ?? nil
                 
             case .uuid: self = value.uuid.map { DBData($0) } ?? nil
                 
@@ -70,31 +76,28 @@ extension DBData {
                  .float8Array,
                  .aclitemArray,
                  .uuidArray,
-                 .jsonbArray: self = value.array.map { DBData($0.map { DBData($0) }) } ?? nil
+                 .jsonbArray:
+                
+                self = try value.array.map { try DBData($0.map { try DBData($0) }) } ?? nil
                 
             case .json:
                 
-                if let json = try? value.json(as: Json.self) {
-                    self = DBData(json)
-                } else {
-                    self = nil
-                }
+                guard let json = try? value.json(as: Json.self) else { throw Database.Error.unsupportedType }
+                self = DBData(json)
                 
             case .jsonb:
                 
-                if let json = try? value.jsonb(as: Json.self) {
-                    self = DBData(json)
-                } else {
-                    self = nil
-                }
+                guard let json = try? value.jsonb(as: Json.self) else { throw Database.Error.unsupportedType }
+                self = DBData(json)
                 
-            case .regproc:
-            case .oid:
-            case .pgNodeTree:
-            case .point:
-            case .time:
-            case .timetz:
-            case .timestampArray:
+//            case .regproc:
+//            case .oid:
+//            case .pgNodeTree:
+//            case .point:
+//            case .time:
+//            case .timetz:
+//            case .timestampArray:
+            default: throw Database.Error.unsupportedType
             }
         case .text: self = value.string.map { DBData($0) } ?? nil
         }
