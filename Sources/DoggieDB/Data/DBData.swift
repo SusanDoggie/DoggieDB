@@ -211,45 +211,6 @@ extension DBData: CustomStringConvertible {
     }
 }
 
-extension DBData: Hashable {
-    
-    @inlinable
-    public static func == (lhs: DBData, rhs: DBData) -> Bool {
-        switch (lhs.base, rhs.base) {
-        case (.null, .null): return true
-        case let (.boolean(lhs), .boolean(rhs)): return lhs == rhs
-        case let (.string(lhs), .string(rhs)): return lhs == rhs
-        case let (.signed(lhs), .signed(rhs)): return lhs == rhs
-        case let (.unsigned(lhs), .unsigned(rhs)): return lhs == rhs
-        case let (.number(lhs), .number(rhs)): return lhs == rhs
-        case let (.date(lhs), .date(rhs)): return lhs == rhs
-        case let (.binary(lhs), .binary(rhs)): return lhs == rhs
-        case let (.uuid(lhs), .uuid(rhs)): return lhs == rhs
-        case let (.array(lhs), .array(rhs)): return lhs == rhs
-        case let (.dictionary(lhs), .dictionary(rhs)): return lhs == rhs
-        default: return false
-        }
-    }
-    
-    @inlinable
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(type)
-        switch self.base {
-        case let .boolean(value): hasher.combine(value)
-        case let .string(value): hasher.combine(value)
-        case let .signed(value): hasher.combine(value)
-        case let .unsigned(value): hasher.combine(value)
-        case let .number(value): hasher.combine(value)
-        case let .date(value): hasher.combine(value)
-        case let .binary(value): hasher.combine(value)
-        case let .uuid(value): hasher.combine(value)
-        case let .array(value): hasher.combine(value)
-        case let .dictionary(value): hasher.combine(value)
-        default: break
-        }
-    }
-}
-
 extension DBData {
     
     @inlinable

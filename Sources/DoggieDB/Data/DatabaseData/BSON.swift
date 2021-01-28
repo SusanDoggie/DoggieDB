@@ -66,8 +66,6 @@ extension BSON {
             
             guard let document = try? value.encodeBSON() else { throw Database.Error.unsupportedType }
             self = .document(document)
-            
-        default: throw Database.Error.unsupportedType
         }
     }
 }
