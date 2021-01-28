@@ -131,11 +131,6 @@ public struct DBData {
     public init(_ elements: [String: DBData]) {
         self.base = .dictionary(elements)
     }
-    
-    @inlinable
-    public init(_ encodable: Encodable) {
-        self.base = .encodable(encodable)
-    }
 }
 
 extension DBData: ExpressibleByNilLiteral {
