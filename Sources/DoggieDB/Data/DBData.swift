@@ -28,6 +28,7 @@ public enum DBDataType: Hashable {
     case null
     case boolean
     case string
+    case regex
     case signed
     case unsigned
     case number
@@ -47,6 +48,7 @@ public struct DBData {
         case null
         case boolean(Bool)
         case string(String)
+        case regex(Regex)
         case signed(Int64)
         case unsigned(UInt64)
         case number(Double)
@@ -74,6 +76,16 @@ public struct DBData {
     @inlinable
     public init<S: StringProtocol>(_ value: S) {
         self.base = .string(String(value))
+    }
+    
+    @inlinable
+    public init(_ value: Regex) {
+        self.base = .regex(value)
+    }
+    
+    @inlinable
+    public init(_ value: NSRegularExpression) {
+        self.base = .regex(Regex(value))
     }
     
     @inlinable
@@ -195,6 +207,7 @@ extension DBData: CustomStringConvertible {
         case .null: return "nil"
         case let .boolean(value): return "\(value)"
         case let .string(value): return "\"\(value.escaped(asASCII: false))\""
+        case let .regex(value): return "\(value)"
         case let .signed(value): return "\(value)"
         case let .unsigned(value): return "\(value)"
         case let .number(value): return "\(value)"
@@ -216,6 +229,7 @@ extension DBData: Hashable {
         case (.null, .null): return true
         case let (.boolean(lhs), .boolean(rhs)): return lhs == rhs
         case let (.string(lhs), .string(rhs)): return lhs == rhs
+        case let (.regex(lhs), .regex(rhs)): return lhs == rhs
         case let (.signed(lhs), .signed(rhs)): return lhs == rhs
         case let (.unsigned(lhs), .unsigned(rhs)): return lhs == rhs
         case let (.number(lhs), .number(rhs)): return lhs == rhs
@@ -234,6 +248,7 @@ extension DBData: Hashable {
         switch self.base {
         case let .boolean(value): hasher.combine(value)
         case let .string(value): hasher.combine(value)
+        case let .regex(value): hasher.combine(value)
         case let .signed(value): hasher.combine(value)
         case let .unsigned(value): hasher.combine(value)
         case let .number(value): hasher.combine(value)
@@ -255,6 +270,7 @@ extension DBData {
         case .null: return .null
         case .boolean: return .boolean
         case .string: return .string
+        case .regex: return .regex
         case .signed: return .signed
         case .unsigned: return .unsigned
         case .number: return .number
@@ -287,6 +303,14 @@ extension DBData {
     public var isString: Bool {
         switch self.base {
         case .string: return true
+        default: return false
+        }
+    }
+    
+    @inlinable
+    public var isRegex: Bool {
+        switch self.base {
+        case .regex: return true
         default: return false
         }
     }
@@ -536,6 +560,14 @@ extension DBData {
     }
     
     @inlinable
+    public var regex: Regex? {
+        switch self.base {
+        case let .regex(value): return value
+        default: return nil
+        }
+    }
+    
+    @inlinable
     public var date: Date? {
         switch self.base {
         case let .date(value): return value.date
@@ -635,99 +667,6 @@ extension DBData {
                 self = DBData(value)
                 
             default: fatalError("Not an object.")
-            }
-        }
-    }
-}
-
-extension DBData: Encodable {
-    
-    @frozen
-    @usableFromInline
-    struct CodingKey: Swift.CodingKey {
-        
-        @usableFromInline
-        var stringValue: String
-        
-        @usableFromInline
-        var intValue: Int? { nil }
-        
-        @inlinable
-        init(stringValue: String) {
-            self.stringValue = stringValue
-        }
-        
-        @inlinable
-        init?(intValue: Int) {
-            return nil
-        }
-    }
-    
-    @inlinable
-    public func encode(to encoder: Encoder) throws {
-        
-        switch self.base {
-        case .null:
-            
-            var container = encoder.singleValueContainer()
-            try container.encodeNil()
-            
-        case let .boolean(value):
-            
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-            
-        case let .string(value):
-            
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-            
-        case let .signed(value):
-            
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-            
-        case let .unsigned(value):
-            
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-            
-        case let .number(value):
-            
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-            
-        case let .decimal(value):
-            
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-            
-        case let .date(value):
-            
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-            
-        case let .binary(value):
-            
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-            
-        case let .uuid(value):
-            
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-            
-        case let .array(value):
-            
-            var container = encoder.unkeyedContainer()
-            try container.encode(contentsOf: value)
-            
-        case let .dictionary(value):
-            
-            var container = encoder.container(keyedBy: CodingKey.self)
-            
-            for (key, value) in value {
-                try container.encode(value, forKey: CodingKey(stringValue: key))
             }
         }
     }
