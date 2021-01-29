@@ -25,6 +25,26 @@
 
 import MongoSwift
 
+extension Dictionary where Key == String, Value == DBData {
+    
+    init(_ document: BSONDocument) throws {
+        self.init()
+        for (key, value) in document {
+            self[key] = try DBData(value)
+        }
+    }
+}
+
+extension BSONDocument {
+    
+    init(_ dictionary: [String: DBData]) throws {
+        self.init()
+        for (key, value) in dictionary {
+            self[key] = try BSON(value)
+        }
+    }
+}
+
 extension DBData {
     
     init(_ value: BSON) throws {
@@ -40,7 +60,7 @@ extension DBData {
             self.init(decimal)
             
         case let .string(value): self.init(value)
-        case let .document(value): self.init(Dictionary(value))
+        case let .document(value): try self.init(Dictionary(value))
         case let .array(value): try self.init(value.map(DBData.init))
         case let .binary(value):
             switch value.subtype {
