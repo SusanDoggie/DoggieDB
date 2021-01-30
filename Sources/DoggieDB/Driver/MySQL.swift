@@ -76,6 +76,25 @@ extension MySQLDriver {
 
 extension MySQLDriver.Connection {
     
+    func databases() -> EventLoopFuture<[String]> {
+        return self.query("SHOW DATABASES;", []).map { $0.map { $0["Database"]!.string! } }
+    }
+    
+    func tables() -> EventLoopFuture<[String]> {
+        return self.query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE';", []).map { $0.map { $0[$0.keys.first { $0.hasPrefix("Tables_in_") }!]!.string! } }
+    }
+    
+    func views() -> EventLoopFuture<[String]> {
+        return self.query("SHOW FULL TABLES WHERE Table_type = 'VIEW';", []).map { $0.map { $0[$0.keys.first { $0.hasPrefix("Tables_in_") }!]!.string! } }
+    }
+    
+    func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+        return self.query("DESCRIBE ?;", [DBData(table)])
+    }
+}
+
+extension MySQLDriver.Connection {
+    
     func query(
         _ string: String,
         _ binds: [DBData]
@@ -135,14 +154,17 @@ extension DBQueryMetadata {
 
 extension MySQLRow: DBRowConvertable {
     
+    @inlinable
     public var count: Int {
         return self.columnDefinitions.count
     }
     
+    @inlinable
     public var keys: [String] {
         return self.columnDefinitions.map { $0.name }
     }
     
+    @inlinable
     public func contains(column: String) -> Bool {
         return self.columnDefinitions.contains { $0.name == column }
     }

@@ -81,6 +81,29 @@ extension PostgreSQLDriver {
 
 extension PostgreSQLDriver.Connection {
     
+    func databases() -> EventLoopFuture<[String]> {
+        return self.query("SELECT datname FROM pg_catalog.pg_database;", []).map { $0.compactMap { $0["datname"]!.string! } }
+    }
+    
+    func tables() -> EventLoopFuture<[String]> {
+        return self.query("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';", []).map { $0.map { $0["tablename"]!.string! } }
+    }
+    
+    func views() -> EventLoopFuture<[String]> {
+        return self.query("SELECT viewname FROM pg_catalog.pg_views WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';", []).map { $0.map { $0["viewname"]!.string! } }
+    }
+    
+    func materializedViews() -> EventLoopFuture<[String]> {
+        return self.query("SELECT matviewname FROM pg_catalog.pg_matviews WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';", []).map { $0.map { $0["matviewname"]!.string! } }
+    }
+    
+    func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+        return self.query("SELECT * FROM information_schema.columns WHERE table_name = $1;", [DBData(table)])
+    }
+}
+
+extension PostgreSQLDriver.Connection {
+    
     func query(
         _ string: String,
         _ binds: [DBData]
@@ -141,14 +164,17 @@ extension DBQueryMetadata {
 
 extension PostgresRow: DBRowConvertable {
     
+    @inlinable
     public var count: Int {
         return self.rowDescription.fields.count
     }
     
+    @inlinable
     public var keys: [String] {
         return self.rowDescription.fields.map { $0.name }
     }
     
+    @inlinable
     public func contains(column: String) -> Bool {
         return self.rowDescription.fields.contains { $0.name == column }
     }

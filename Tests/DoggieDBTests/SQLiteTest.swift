@@ -35,6 +35,7 @@ class SQLiteTest: XCTestCase {
     
     override func setUpWithError() throws {
         self.connection = try Database.createSQLite(threadPool: threadPool, on: eventLoopGroup.next()).wait()
+        print(try connection.version().wait())
     }
     
     override func tearDownWithError() throws {
@@ -43,12 +44,23 @@ class SQLiteTest: XCTestCase {
         try threadPool.syncShutdownGracefully()
     }
 
-    func testSQLiteConnection() throws {
+    func testCreateTable() throws {
         
-        let result = try connection.query("select sqlite_version();", []).wait()
-    
-        print(result)
+        let query = """
+        CREATE TABLE contacts (
+            contact_id INTEGER PRIMARY KEY,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            phone TEXT NOT NULL UNIQUE
+        );
+        """
         
+        _ = try connection.query(query, []).wait()
+        
+        XCTAssertTrue(try connection.tables().wait().contains("contacts"))
+        
+        print(try connection.tableInfo("contacts").wait())
     }
     
 }

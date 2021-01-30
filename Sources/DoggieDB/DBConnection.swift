@@ -29,7 +29,19 @@ public protocol DBConnection: AnyObject {
     
     func close() -> EventLoopFuture<Void>
     
-    func databases() -> EventLoopFuture<[DBConnection]>
+    func version() -> EventLoopFuture<String>
+    
+    func databases() -> EventLoopFuture<[String]>
+    
+    func connections() -> EventLoopFuture<[DBConnection]>
+    
+    func tables() -> EventLoopFuture<[String]>
+    
+    func views() -> EventLoopFuture<[String]>
+    
+    func materializedViews() -> EventLoopFuture<[String]>
+    
+    func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]>
     
     func query(
         _ string: String,
@@ -73,7 +85,31 @@ public protocol DBConnection: AnyObject {
 
 extension DBConnection {
     
-    public func databases() -> EventLoopFuture<[DBConnection]> {
+    public func version() -> EventLoopFuture<String> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func databases() -> EventLoopFuture<[String]> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func connections() -> EventLoopFuture<[DBConnection]> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func tables() -> EventLoopFuture<[String]> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func views() -> EventLoopFuture<[String]> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func materializedViews() -> EventLoopFuture<[String]> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
 }

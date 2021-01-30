@@ -69,19 +69,20 @@ extension SQLiteDriver {
 
 extension SQLiteDriver.Connection {
     
-    func _query(
-        _ string: String,
-        _ binds: [SQLiteData]
-    ) -> EventLoopFuture<[DBQueryRow]> {
-        return self.connection.query(string, binds).map{ $0.map(DBQueryRow.init) }
+    func version() -> EventLoopFuture<String> {
+        return self.query("SELECT sqlite_version();", []).map { $0[0]["sqlite_version()"]!.string! }
     }
     
-    func _query(
-        _ string: String,
-        _ binds: [SQLiteData],
-        onRow: @escaping (DBQueryRow) -> Void
-    ) -> EventLoopFuture<DBQueryMetadata> {
-        return self.connection.query(string, binds, { onRow(DBQueryRow($0)) }).map { DBQueryMetadata(metadata: [:]) }
+    func tables() -> EventLoopFuture<[String]> {
+        return self.query("SELECT name FROM sqlite_master WHERE type = 'table';", []).map { $0.map { $0["name"]!.string! } }
+    }
+    
+    func views() -> EventLoopFuture<[String]> {
+        return self.query("SELECT name FROM sqlite_master WHERE type = 'view';", []).map { $0.map { $0["name"]!.string! } }
+    }
+    
+    func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+        return self.query("pragma table_info(\(table));", [])
     }
 }
 
@@ -129,14 +130,17 @@ extension SQLiteDriver.Connection {
 
 extension SQLiteRow: DBRowConvertable {
     
+    @inlinable
     public var count: Int {
         return self.columns.count
     }
     
+    @inlinable
     public var keys: [String] {
         return self.columns.map { $0.name }
     }
     
+    @inlinable
     public func contains(column: String) -> Bool {
         return self.columns.contains { $0.name == column }
     }
