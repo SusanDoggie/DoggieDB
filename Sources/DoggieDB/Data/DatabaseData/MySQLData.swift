@@ -81,7 +81,11 @@ extension DBData {
             case .timestamp,
                  .datetime,
                  .date,
-                 .time:
+                 .time,
+                 .newdate,
+                 .timestamp2,
+                 .datetime2,
+                 .time2:
                 
                 if let time = value.time {
                     
@@ -118,15 +122,6 @@ extension DBData {
                 guard let json = try? value.json(as: Json.self) else { throw Database.Error.unsupportedType }
                 self = DBData(json)
                 
-//            case .year:
-//            case .newdate:
-//            case .timestamp2:
-//            case .datetime2:
-//            case .time2:
-//                
-//            case .enum:
-//            case .set:
-//            case .geometry:
             default: throw Database.Error.unsupportedType
             }
         case .text: self = value.string.map { DBData($0) } ?? nil
@@ -137,6 +132,43 @@ extension DBData {
 extension MySQLData {
     
     init(_ value: DBData) throws {
-        
+        switch value.base {
+        case .null: self = .null
+        case let .boolean(value): self.init(bool: value)
+        case let .string(value): self.init(string: value)
+        case let .signed(value):
+            
+            guard let int = Int(exactly: value) else { throw Database.Error.unsupportedType }
+            self.init(int: int)
+            
+        case let .unsigned(value):
+            
+            guard let int = Int(exactly: value) else { throw Database.Error.unsupportedType }
+            self.init(int: int)
+            
+        case let .number(value): self.init(double: value)
+        case let .decimal(value): self.init(decimal: value)
+        case let .date(value):
+            
+            if let date = value.date {
+                self.init(date: date)
+            } else {
+                throw Database.Error.unsupportedType
+            }
+            
+        case let .binary(value): self.init(type: .blob, buffer: ByteBuffer(data: value))
+        case let .uuid(value): self.init(uuid: value)
+        case let .array(value):
+            
+            guard let json = try? MySQLData(json: value) else { throw Database.Error.unsupportedType }
+            self = json
+            
+        case let .dictionary(value):
+            
+            guard let json = try? MySQLData(json: value) else { throw Database.Error.unsupportedType }
+            self = json
+            
+        default: throw Database.Error.unsupportedType
+        }
     }
 }

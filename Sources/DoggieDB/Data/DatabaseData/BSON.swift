@@ -89,11 +89,7 @@ extension BSON {
         case .null: self = .null
         case let .boolean(value): self = .bool(value)
         case let .string(value): self = .string(value)
-        case let .regex(value):
-            
-            guard let regex = try? BSONRegularExpression(from: value.nsRegex) else { throw Database.Error.unsupportedType }
-            self = .regex(regex)
-            
+        case let .regex(value): self = .regex(BSONRegularExpression(from: value.nsRegex))
         case let .signed(value): self = .int64(value)
         case let .unsigned(value):
             

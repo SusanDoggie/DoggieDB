@@ -90,13 +90,6 @@ extension DBData {
                 guard let json = try? value.jsonb(as: Json.self) else { throw Database.Error.unsupportedType }
                 self = DBData(json)
                 
-//            case .regproc:
-//            case .oid:
-//            case .pgNodeTree:
-//            case .point:
-//            case .time:
-//            case .timetz:
-//            case .timestampArray:
             default: throw Database.Error.unsupportedType
             }
         case .text: self = value.string.map { DBData($0) } ?? nil
@@ -107,6 +100,74 @@ extension DBData {
 extension PostgresData {
     
     init(_ value: DBData) throws {
-        
+        switch value.base {
+        case .null: self = .null
+        case let .boolean(value): self.init(bool: value)
+        case let .string(value): self.init(string: value)
+        case let .signed(value): self.init(int64: value)
+        case let .unsigned(value):
+            
+            guard let int = Int64(exactly: value) else { throw Database.Error.unsupportedType }
+            self.init(int64: int)
+            
+        case let .number(value): self.init(double: value)
+        case let .decimal(value): self.init(decimal: value)
+        case let .date(value):
+            
+            if let date = value.date {
+                self.init(date: date)
+            } else {
+                throw Database.Error.unsupportedType
+            }
+            
+        case let .binary(value): self.init(bytes: value)
+        case let .uuid(value): self.init(uuid: value)
+        case let .array(value):
+            
+            if let (array, elementType) = value._postgresArray {
+                
+                self.init(array: array, elementType: elementType)
+                
+            } else {
+                
+                guard let json = try? PostgresData(jsonb: value) else { throw Database.Error.unsupportedType }
+                self = json
+            }
+            
+        case let .dictionary(value):
+            
+            guard let json = try? PostgresData(jsonb: value) else { throw Database.Error.unsupportedType }
+            self = json
+            
+        default: throw Database.Error.unsupportedType
+        }
+    }
+}
+
+extension DBData {
+    
+    fileprivate var _elementType: PostgresDataType? {
+        switch self.base {
+        case .boolean: return .bool
+        case .binary: return .bytea
+        case .string: return .text
+        case .signed: return .int8
+        case .unsigned: return .int8
+        case .number: return .float8
+        case .uuid: return .uuid
+        case .array: return .jsonb
+        case .dictionary: return .jsonb
+        default: return nil
+        }
+    }
+}
+
+extension Array where Element == DBData {
+    
+    fileprivate var _postgresArray: ([PostgresData], PostgresDataType)? {
+        guard let type = self.first?._elementType else { return nil }
+        guard self.dropFirst().allSatisfy({ $0._elementType == type }) else { return nil }
+        guard let array = try? self.map({ try PostgresData($0) }) else { return nil }
+        return (array, type)
     }
 }

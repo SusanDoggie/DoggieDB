@@ -671,3 +671,98 @@ extension DBData {
         }
     }
 }
+
+extension DBData: Encodable {
+    
+    @frozen
+    @usableFromInline
+    struct CodingKey: Swift.CodingKey {
+        
+        @usableFromInline
+        var stringValue: String
+        
+        @usableFromInline
+        var intValue: Int? { nil }
+        
+        @inlinable
+        init(stringValue: String) {
+            self.stringValue = stringValue
+        }
+        
+        @inlinable
+        init?(intValue: Int) {
+            return nil
+        }
+    }
+    
+    @inlinable
+    public func encode(to encoder: Encoder) throws {
+        
+        switch self.base {
+        case .null:
+            
+            var container = encoder.singleValueContainer()
+            try container.encodeNil()
+            
+        case let .boolean(value):
+            
+            var container = encoder.singleValueContainer()
+            try container.encode(value)
+            
+        case let .string(value):
+            
+            var container = encoder.singleValueContainer()
+            try container.encode(value)
+            
+        case let .signed(value):
+            
+            var container = encoder.singleValueContainer()
+            try container.encode(value)
+            
+        case let .unsigned(value):
+            
+            var container = encoder.singleValueContainer()
+            try container.encode(value)
+            
+        case let .number(value):
+            
+            var container = encoder.singleValueContainer()
+            try container.encode(value)
+            
+        case let .decimal(value):
+            
+            var container = encoder.singleValueContainer()
+            try container.encode(value)
+            
+        case let .date(value):
+            
+            var container = encoder.singleValueContainer()
+            try container.encode(value)
+            
+        case let .binary(value):
+            
+            var container = encoder.singleValueContainer()
+            try container.encode(value)
+            
+        case let .uuid(value):
+            
+            var container = encoder.singleValueContainer()
+            try container.encode(value)
+            
+        case let .array(value):
+            
+            var container = encoder.unkeyedContainer()
+            try container.encode(contentsOf: value)
+            
+        case let .dictionary(value):
+            
+            var container = encoder.container(keyedBy: CodingKey.self)
+            
+            for (key, value) in value {
+                try container.encode(value, forKey: CodingKey(stringValue: key))
+            }
+            
+        default: throw Database.Error.unsupportedType
+        }
+    }
+}
