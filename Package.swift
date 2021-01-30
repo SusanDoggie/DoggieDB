@@ -57,5 +57,11 @@ let package = Package(
                 .product(name: "PostgresNIO", package: "postgres-nio"),
             ]
         ),
+        .testTarget(
+            name: "DoggieDBTests",
+            dependencies: [
+                "DoggieDB",
+            ]
+        ),
     ]
 )
