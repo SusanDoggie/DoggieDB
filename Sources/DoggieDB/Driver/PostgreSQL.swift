@@ -104,6 +104,15 @@ extension PostgreSQLDriver.Connection {
     }
     
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+        
+        if let split = table.firstIndex(of: ".") {
+            
+            let _schema = table.prefix(upTo: split)
+            let _name = table.suffix(from: split).dropFirst()
+
+            return self.query("SELECT * FROM information_schema.columns WHERE table_schema = $1 AND table_name = $1;", [DBData(_schema)], DBData(_name)])
+        }
+        
         return self.query("SELECT * FROM information_schema.columns WHERE table_name = $1;", [DBData(table)])
     }
 }
