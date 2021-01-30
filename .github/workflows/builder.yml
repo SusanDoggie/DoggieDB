@@ -2,7 +2,7 @@ name: Builder
 on: [push, pull_request]
 env:
   MYSQL_HOST: mysql
-  MYSQL_USER: root
+  MYSQL_USER: test
   MYSQL_DATABASE: test
   MYSQL_PASSWORD: password
   POSTGRES_HOST: postgres
@@ -43,11 +43,11 @@ jobs:
     - name: Start MySQL server
       run: brew services start mariadb
     - name: Wait for MySQL server to be ready
-      run: until echo | mysql -u$MYSQL_USER; do sleep 1; done
+      run: until echo | mysql -uroot; do sleep 1; done
       timeout-minutes: 5
     - name: Set up MySQL databases and privileges
       run: |
-          mysql -u$MYSQL_USER --batch <<-'SQL'
+          mysql -uroot --batch <<-'SQL'
               CREATE USER $MYSQL_USER@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
               CREATE DATABASE $MYSQL_DATABASE;
               GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USER@localhost;
