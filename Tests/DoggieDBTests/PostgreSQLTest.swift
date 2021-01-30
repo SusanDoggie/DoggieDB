@@ -83,6 +83,8 @@ class PostgreSQLTest: XCTestCase {
             
             let tableInfo = try connection.tableInfo("contacts").wait()
             
+            print(tableInfo)
+            
             guard let contact_id = tableInfo.first(where: { $0["column_name"] == "contact_id" }) else { XCTFail(); return }
             guard let first_name = tableInfo.first(where: { $0["column_name"] == "first_name" }) else { XCTFail(); return }
             guard let last_name = tableInfo.first(where: { $0["column_name"] == "last_name" }) else { XCTFail(); return }
