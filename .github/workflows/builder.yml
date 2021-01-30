@@ -11,14 +11,25 @@ env:
   REDIS_HOST: redis
   MONGO_HOST: mongo
 jobs:
-  darwin:
-    name: macOS
+  macos:
+    name: ${{ matrix.name }}
     runs-on: macOS-latest
+    strategy:
+      matrix:
+        name: [macOS, macOS(SwiftPM)]
+        include:
+          - name: macOS
+            use_xcodebuild: true
+            sdk: macosx
+            destination: 'platform=macOS'
+            enable_codecov: true
+          - name: macOS(SwiftPM)
+            use_xcodebuild: false
     env:
-      use_xcodebuild: true
-      sdk: macosx
-      destination: 'platform=macOS'
-      enable_codecov: true
+      use_xcodebuild: ${{ matrix.use_xcodebuild }}
+      sdk: ${{ matrix.sdk }}
+      destination: ${{ matrix.destination }}
+      enable_codecov: ${{ matrix.enable_codecov }}
     steps:
     - uses: actions/checkout@v1
       with:
@@ -43,6 +54,8 @@ jobs:
           brew install postgresql
           initdb --locale=C -U ${{ POSTGRES_USER }} --pwfile=<(echo ${{ POSTGRES_PASSWORD }})
           pg_ctl start --wait
+    - name: Install redis
+      run: brew install redis
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
@@ -52,21 +65,6 @@ jobs:
       with:
         action: test
     - uses: codecov/codecov-action@v1
-  macos:
-    name: macOS(SwiftPM)
-    runs-on: macOS-latest
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        submodules: recursive
-    - name: Build
-      uses: SusanDoggie/swift-action@main
-      with:
-        action: build
-    - name: Run tests
-      uses: SusanDoggie/swift-action@main
-      with:
-        action: test
   ubuntu_swift_latest:
     name: latest-${{ matrix.image }}
     container: 
