@@ -37,9 +37,9 @@ class RedisTest: XCTestCase {
         var url_components = URLComponents()
         url_components.scheme = "redis"
         url_components.host = env("REDIS_HOST") ?? "localhost"
-        url_components.user = env("DB_USERNAME")
-        url_components.password = env("DB_PASSWORD")
-        url_components.path = env("DB_DATABASE")
+        url_components.user = env("REDIS_USERNAME")
+        url_components.password = env("REDIS_PASSWORD")
+        url_components.path = env("REDIS_DATABASE") ?? ""
         
         let url = url_components.url!
         

@@ -37,9 +37,9 @@ class MySQLTest: XCTestCase {
         var url_components = URLComponents()
         url_components.scheme = "redis"
         url_components.host = env("MYSQL_HOST") ?? "localhost"
-        url_components.user = env("DB_USERNAME")
-        url_components.password = env("DB_PASSWORD")
-        url_components.path = env("DB_DATABASE")
+        url_components.user = env("MYSQL_USERNAME")
+        url_components.password = env("MYSQL_PASSWORD")
+        url_components.path = env("MYSQL_DATABASE") ?? ""
         
         let url = url_components.url!
         
