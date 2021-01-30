@@ -65,6 +65,7 @@ jobs:
       with:
         action: test
     - uses: codecov/codecov-action@v1
+      if: ${{ matrix.enable_codecov }}
   ubuntu_swift_latest:
     name: latest-${{ matrix.image }}
     container: 
