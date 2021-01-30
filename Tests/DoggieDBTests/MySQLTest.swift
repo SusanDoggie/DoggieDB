@@ -45,7 +45,7 @@ class MySQLTest: XCTestCase {
         
         self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
         
-        print(try connection.version().wait())
+        print("MYSQL:", try connection.version().wait())
     }
     
     override func tearDownWithError() throws {

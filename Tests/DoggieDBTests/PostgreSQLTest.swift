@@ -45,7 +45,7 @@ class PostgreSQLTest: XCTestCase {
         
         self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
         
-        print(try connection.version().wait())
+        print("POSTGRES:", try connection.version().wait())
     }
     
     override func tearDownWithError() throws {
