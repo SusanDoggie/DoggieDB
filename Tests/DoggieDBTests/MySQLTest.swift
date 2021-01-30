@@ -53,4 +53,28 @@ class MySQLTest: XCTestCase {
         try eventLoopGroup.syncShutdownGracefully()
     }
 
+    func testCreateTable() throws {
+        
+        let query = """
+        CREATE TABLE contacts (
+            contact_id INTEGER PRIMARY KEY NOT NULL,
+            first_name TEXT NOT NULL,
+            last_name TEXT,
+            email TEXT NOT NULL UNIQUE,
+            phone TEXT NOT NULL UNIQUE
+        );
+        """
+        
+        _ = try connection.query(query, []).wait()
+        
+        print(try connection.tables().wait())
+        
+        XCTAssertTrue(try connection.tables().wait().contains("contacts"))
+        
+        let tableInfo = try connection.tableInfo("contacts").wait()
+        
+        print(tableInfo)
+        
+    }
+
 }
