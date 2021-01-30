@@ -11,6 +11,9 @@ env:
   POSTGRES_PASSWORD: postgre
   REDIS_HOST: redis
   MONGO_HOST: mongo
+  MONGO_DB: mongo
+  MONGO_USER: admin
+  MONGO_PASSWORD: admin
 jobs:
   macos:
     name: ${{ matrix.name }}
@@ -85,6 +88,10 @@ jobs:
         image: redis
       mongo: 
         image: mongo
+        env:
+          MONGO_INITDB_ROOT_USERNAME: ${{ MONGO_USER }}
+          MONGO_INITDB_ROOT_PASSWORD: ${{ MONGO_PASSWORD }}
+          MONGO_INITDB_DATABASE: ${{ MONGO_DB }}
     strategy:
       matrix:
         image: [xenial, bionic, focal]
@@ -120,6 +127,10 @@ jobs:
         image: redis
       mongo: 
         image: mongo
+        env:
+          MONGO_INITDB_ROOT_USERNAME: ${{ MONGO_USER }}
+          MONGO_INITDB_ROOT_PASSWORD: ${{ MONGO_PASSWORD }}
+          MONGO_INITDB_DATABASE: ${{ MONGO_DB }}
     continue-on-error: true
     strategy:
       matrix:
