@@ -2,10 +2,11 @@ name: Builder
 on: [push, pull_request]
 env:
   MYSQL_HOST: mysql
-  MYSQL_USER: test
   MYSQL_DATABASE: test
+  MYSQL_USER: test
   MYSQL_PASSWORD: password
   POSTGRES_HOST: postgres
+  POSTGRES_DB: postgre
   POSTGRES_USER: postgre
   POSTGRES_PASSWORD: postgre
   REDIS_HOST: redis
