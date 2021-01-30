@@ -77,6 +77,8 @@ class MySQLTest: XCTestCase {
             
             _ = try connection.query(query, []).wait()
             
+            print(try connection.tables().wait())
+            
             XCTAssertTrue(try connection.tables().wait().contains("contacts"))
             
             let tableInfo = try connection.tableInfo("contacts").wait()
