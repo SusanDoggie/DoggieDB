@@ -34,6 +34,8 @@ extension RedisDriver {
     
     class Connection: DBConnection {
         
+        var driver: DBDriver { return .redis }
+        
         let connection: RedisConnection
         
         var eventLoop: EventLoop { connection.eventLoop }

@@ -67,4 +67,6 @@ extension DBDriver {
     public static let postgreSQL = DBDriver(rawValue: PostgreSQLDriver.self)
     
     public static let redis = DBDriver(rawValue: RedisDriver.self)
+    
+    public static let sqlite = DBDriver(rawValue: SQLiteDriver.self)
 }

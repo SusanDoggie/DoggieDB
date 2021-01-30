@@ -25,13 +25,16 @@
 
 import SQLiteNIO
 
-struct SQLiteDriver {
+struct SQLiteDriver: DBDriverProtocol {
     
+    static var defaultPort: Int { 0 }
 }
 
 extension SQLiteDriver {
     
     class Connection: DBConnection {
+        
+        var driver: DBDriver { return .sqlite }
         
         let connection: SQLiteConnection
         
@@ -48,6 +51,10 @@ extension SQLiteDriver {
 }
 
 extension SQLiteDriver {
+    
+    static func connect(config: Database.Configuration, logger: Logger, on eventLoop: EventLoop) -> EventLoopFuture<DBConnection> {
+        fatalError()
+    }
     
     static func create(
         storage: SQLiteConnection.Storage,

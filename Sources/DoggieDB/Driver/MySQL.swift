@@ -34,6 +34,8 @@ extension MySQLDriver {
     
     class Connection: DBConnection {
         
+        var driver: DBDriver { return .mySQL }
+        
         let connection: MySQLConnection
         
         var eventLoop: EventLoop { connection.eventLoop }
@@ -89,7 +91,7 @@ extension MySQLDriver.Connection {
     }
     
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
-        return self.query("SHOW COLUMNS FROM \(table);")
+        return self.query("SHOW COLUMNS FROM \(table);", [])
     }
 }
 

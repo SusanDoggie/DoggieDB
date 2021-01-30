@@ -34,6 +34,8 @@ extension MongoDBDriver {
     
     class Connection: DBConnection {
         
+        var driver: DBDriver { return .mongoDB }
+        
         let client: MongoClient
         let database: MongoDatabase?
         

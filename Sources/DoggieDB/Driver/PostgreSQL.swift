@@ -34,6 +34,8 @@ extension PostgreSQLDriver {
     
     class Connection: DBConnection {
         
+        var driver: DBDriver { return .postgreSQL }
+        
         let connection: PostgresConnection
         
         var eventLoop: EventLoop { connection.eventLoop }
