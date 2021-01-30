@@ -4,6 +4,15 @@ jobs:
   darwin:
     name: macOS
     runs-on: macOS-latest
+    services:
+      mysql:
+        image: mysql
+      postgres:
+        image: postgres
+      redis:
+        image: redis
+      mongo: 
+        image: mongo
     env:
       use_xcodebuild: true
       sdk: macosx
@@ -19,12 +28,26 @@ jobs:
         action: build
     - name: Run tests
       uses: SusanDoggie/swift-action@main
+      env:
+          MYSQL_HOST: mysql
+          POSTGRES_HOST: postgres
+          REDIS_HOST: redis
+          MONGO_HOST: mongo
       with:
         action: test
     - uses: codecov/codecov-action@v1
   macos:
     name: macOS(SwiftPM)
     runs-on: macOS-latest
+    services:
+      mysql:
+        image: mysql
+      postgres:
+        image: postgres
+      redis:
+        image: redis
+      mongo: 
+        image: mongo
     steps:
     - uses: actions/checkout@v1
       with:
@@ -35,6 +58,11 @@ jobs:
         action: build
     - name: Run tests
       uses: SusanDoggie/swift-action@main
+      env:
+          MYSQL_HOST: mysql
+          POSTGRES_HOST: postgres
+          REDIS_HOST: redis
+          MONGO_HOST: mongo
       with:
         action: test
   ubuntu_swift_latest:
@@ -42,6 +70,15 @@ jobs:
     container: 
       image: docker://swift:${{ matrix.image }}
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql
+      postgres:
+        image: postgres
+      redis:
+        image: redis
+      mongo: 
+        image: mongo
     strategy:
       matrix:
         image: [xenial, bionic, focal]
@@ -61,6 +98,11 @@ jobs:
         action: build
     - name: Run tests
       uses: SusanDoggie/swift-action@main
+      env:
+          MYSQL_HOST: mysql
+          POSTGRES_HOST: postgres
+          REDIS_HOST: redis
+          MONGO_HOST: mongo
       with:
         action: test
   ubuntu_swift_nightly:
@@ -68,6 +110,15 @@ jobs:
     container:
       image: docker://swiftlang/swift:${{ matrix.image }}
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql
+      postgres:
+        image: postgres
+      redis:
+        image: redis
+      mongo: 
+        image: mongo
     continue-on-error: true
     strategy:
       matrix:
@@ -88,5 +139,10 @@ jobs:
         action: build
     - name: Run tests
       uses: SusanDoggie/swift-action@main
+      env:
+          MYSQL_HOST: mysql
+          POSTGRES_HOST: postgres
+          REDIS_HOST: redis
+          MONGO_HOST: mongo
       with:
         action: test
