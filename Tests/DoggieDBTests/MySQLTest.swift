@@ -67,14 +67,33 @@ class MySQLTest: XCTestCase {
         
         _ = try connection.query(query, []).wait()
         
-        print(try connection.tables().wait())
-        
         XCTAssertTrue(try connection.tables().wait().contains("contacts"))
         
         let tableInfo = try connection.tableInfo("contacts").wait()
         
-        print(tableInfo)
+        guard let contact_id = tableInfo.first(where: { $0["Field"] == "contact_id" }) else { XCTFail(); return }
+        guard let first_name = tableInfo.first(where: { $0["Field"] == "first_name" }) else { XCTFail(); return }
+        guard let last_name = tableInfo.first(where: { $0["Field"] == "last_name" }) else { XCTFail(); return }
+        guard let email = tableInfo.first(where: { $0["Field"] == "email" }) else { XCTFail(); return }
+        guard let phone = tableInfo.first(where: { $0["Field"] == "phone" }) else { XCTFail(); return }
         
+        XCTAssertEqual(contact_id["Type"], "int(11)")
+        XCTAssertEqual(first_name["Type"], "text")
+        XCTAssertEqual(last_name["Type"], "text")
+        XCTAssertEqual(email["Type"], "text")
+        XCTAssertEqual(phone["Type"], "text")
+        
+        XCTAssertEqual(contact_id["Key"], "PRI")
+        XCTAssertEqual(first_name["Key"], nil)
+        XCTAssertEqual(last_name["Key"], nil)
+        XCTAssertEqual(email["Key"], "UNI")
+        XCTAssertEqual(phone["Key"], "UNI")
+        
+        XCTAssertEqual(contact_id["Null"], false)
+        XCTAssertEqual(first_name["Null"], false)
+        XCTAssertEqual(last_name["Null"], true)
+        XCTAssertEqual(email["Null"], false)
+        XCTAssertEqual(phone["Null"], false)
     }
 
 }
