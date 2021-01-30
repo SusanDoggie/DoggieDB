@@ -1,19 +1,20 @@
 name: Builder
 on: [push, pull_request]
 env:
-  MYSQL_HOST: mysql
-  MYSQL_DATABASE: test
-  MYSQL_USER: test
-  MYSQL_PASSWORD: password
-  POSTGRES_HOST: postgres
-  POSTGRES_DB: postgre
-  POSTGRES_USER: postgre
-  POSTGRES_PASSWORD: postgre
-  REDIS_HOST: redis
-  MONGO_HOST: mongo
-  MONGO_DB: mongo
-  MONGO_USER: admin
-  MONGO_PASSWORD: admin
+  MYSQL_HOST: localhost
+  MYSQL_DATABASE: doggiedb
+  MYSQL_USERNAME: doggiedb
+  MYSQL_PASSWORD: doggiedb
+  POSTGRES_HOST: localhost
+  POSTGRES_DATABASE: doggiedb
+  POSTGRES_USERNAME: doggiedb
+  POSTGRES_PASSWORD: doggiedb
+  REDIS_HOST: localhost
+  REDIS_DATABASE: doggiedb
+  MONGO_HOST: localhost
+  MONGO_DATABASE: doggiedb
+  MONGO_USERNAME: doggiedb
+  MONGO_PASSWORD: doggiedb
 jobs:
   macos:
     name: ${{ matrix.name }}
@@ -34,10 +35,6 @@ jobs:
       sdk: ${{ matrix.sdk }}
       destination: ${{ matrix.destination }}
       enable_codecov: ${{ matrix.enable_codecov }}
-      MYSQL_HOST: localhost
-      POSTGRES_HOST: localhost
-      REDIS_HOST: localhost
-      MONGO_HOST: localhost
     steps:
     - uses: actions/checkout@v1
       with:
@@ -52,15 +49,15 @@ jobs:
     - name: Set up MySQL databases and privileges
       run: |
           mysql -uroot --batch <<-'SQL'
-              CREATE USER $MYSQL_USER@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
+              CREATE USER $MYSQL_USERNAME@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
               CREATE DATABASE $MYSQL_DATABASE;
-              GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USER@localhost;
+              GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@localhost;
           SQL
     - name: Install postgresql
       run: |
           export PATH="/usr/local/opt/postgresql/bin:$PATH"
           brew install postgresql
-          initdb --locale=C -U $POSTGRES_USER --pwfile=<(echo $POSTGRES_PASSWORD)
+          initdb --locale=C -U $POSTGRES_USERNAME --pwfile=<(echo $POSTGRES_PASSWORD)
           pg_ctl start --wait
     - name: Install redis
       run: brew install redis
@@ -82,16 +79,32 @@ jobs:
     services:
       mysql:
         image: mysql
+        ports: 
+          - 3306:3306
+        env:
+          MYSQL_USER: ${{ env.MYSQL_USERNAME }}
+          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
+          MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
       postgres:
         image: postgres
+        ports: 
+          - 5432:5432
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USERNAME }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DATABASE }}
       redis:
         image: redis
+        ports: 
+          - 6379:6379
       mongo: 
         image: mongo
+        ports: 
+          - 27017:27017
         env:
-          MONGO_INITDB_ROOT_USERNAME: ${{ env.MONGO_USER }}
+          MONGO_INITDB_ROOT_USERNAME: ${{ env.MONGO_USERNAME }}
           MONGO_INITDB_ROOT_PASSWORD: ${{ env.MONGO_PASSWORD }}
-          MONGO_INITDB_DATABASE: ${{ env.MONGO_DB }}
+          MONGO_INITDB_DATABASE: ${{ env.MONGO_DATABASE }}
     strategy:
       matrix:
         image: [xenial, bionic, focal]
@@ -121,16 +134,32 @@ jobs:
     services:
       mysql:
         image: mysql
+        ports: 
+          - 3306:3306
+        env:
+          MYSQL_USER: ${{ env.MYSQL_USERNAME }}
+          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
+          MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
       postgres:
         image: postgres
+        ports: 
+          - 5432:5432
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USERNAME }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DATABASE }}
       redis:
         image: redis
+        ports: 
+          - 6379:6379
       mongo: 
         image: mongo
+        ports: 
+          - 27017:27017
         env:
-          MONGO_INITDB_ROOT_USERNAME: ${{ env.MONGO_USER }}
+          MONGO_INITDB_ROOT_USERNAME: ${{ env.MONGO_USERNAME }}
           MONGO_INITDB_ROOT_PASSWORD: ${{ env.MONGO_PASSWORD }}
-          MONGO_INITDB_DATABASE: ${{ env.MONGO_DB }}
+          MONGO_INITDB_DATABASE: ${{ env.MONGO_DATABASE }}
     continue-on-error: true
     strategy:
       matrix:
