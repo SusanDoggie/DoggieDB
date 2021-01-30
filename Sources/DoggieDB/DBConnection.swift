@@ -25,7 +25,7 @@
 
 public protocol DBConnection: AnyObject {
     
-    var  driver: DBDriver { get }
+    var driver: DBDriver { get }
     
     var eventLoop: EventLoop { get }
     
