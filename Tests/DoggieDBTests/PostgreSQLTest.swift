@@ -34,18 +34,26 @@ class PostgreSQLTest: XCTestCase {
     
     override func setUpWithError() throws {
         
-        var url_components = URLComponents()
-        url_components.scheme = "redis"
-        url_components.host = env("POSTGRES_HOST") ?? "localhost"
-        url_components.user = env("POSTGRES_USERNAME")
-        url_components.password = env("POSTGRES_PASSWORD")
-        url_components.path = env("POSTGRES_DATABASE") ?? ""
-        
-        let url = url_components.url!
-        
-        self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
-        
-        print("POSTGRES:", try connection.version().wait())
+        do {
+            
+            var url_components = URLComponents()
+            url_components.scheme = "redis"
+            url_components.host = env("POSTGRES_HOST") ?? "localhost"
+            url_components.user = env("POSTGRES_USERNAME")
+            url_components.password = env("POSTGRES_PASSWORD")
+            url_components.path = env("POSTGRES_DATABASE") ?? ""
+            
+            let url = url_components.url!
+            
+            self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
+            
+            print("POSTGRES:", try connection.version().wait())
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
     }
     
     override func tearDownWithError() throws {

@@ -34,21 +34,29 @@ class MongoDBTest: XCTestCase {
     
     override func setUpWithError() throws {
         
-        var url_components = URLComponents()
-        url_components.scheme = "redis"
-        url_components.host = env("MONGO_HOST") ?? "localhost"
-        url_components.user = env("MONGO_USERNAME")
-        url_components.password = env("MONGO_PASSWORD")
-        url_components.path = env("MONGO_DATABASE") ?? ""
-        
-        let url = url_components.url!
-        
-        self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
+        do {
+            
+            var url_components = URLComponents()
+            url_components.scheme = "redis"
+            url_components.host = env("MONGO_HOST") ?? "localhost"
+            url_components.user = env("MONGO_USERNAME")
+            url_components.password = env("MONGO_PASSWORD")
+            url_components.path = env("MONGO_DATABASE") ?? ""
+            
+            let url = url_components.url!
+            
+            self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
     }
     
     override func tearDownWithError() throws {
         try self.connection.close().wait()
         try eventLoopGroup.syncShutdownGracefully()
     }
-
+    
 }
