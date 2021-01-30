@@ -63,41 +63,49 @@ class PostgreSQLTest: XCTestCase {
     
     func testCreateTable() throws {
         
-        let query = """
-        CREATE TABLE contacts (
-            contact_id INTEGER PRIMARY KEY NOT NULL,
-            first_name TEXT NOT NULL,
-            last_name TEXT,
-            email TEXT NOT NULL UNIQUE,
-            phone TEXT NOT NULL UNIQUE
-        );
-        """
-        
-        _ = try connection.query(query, []).wait()
-        
-        print(try connection.tables().wait())
-        
-        XCTAssertTrue(try connection.tables().wait().contains("contacts"))
-        
-        let tableInfo = try connection.tableInfo("contacts").wait()
-        
-        guard let contact_id = tableInfo.first(where: { $0["column_name"] == "contact_id" }) else { XCTFail(); return }
-        guard let first_name = tableInfo.first(where: { $0["column_name"] == "first_name" }) else { XCTFail(); return }
-        guard let last_name = tableInfo.first(where: { $0["column_name"] == "last_name" }) else { XCTFail(); return }
-        guard let email = tableInfo.first(where: { $0["column_name"] == "email" }) else { XCTFail(); return }
-        guard let phone = tableInfo.first(where: { $0["column_name"] == "phone" }) else { XCTFail(); return }
-        
-        XCTAssertEqual(contact_id["data_type"], "integer")
-        XCTAssertEqual(first_name["data_type"], "text")
-        XCTAssertEqual(last_name["data_type"], "text")
-        XCTAssertEqual(email["data_type"], "text")
-        XCTAssertEqual(phone["data_type"], "text")
-        
-        XCTAssertEqual(contact_id["is_nullable"], false)
-        XCTAssertEqual(first_name["is_nullable"], false)
-        XCTAssertEqual(last_name["is_nullable"], true)
-        XCTAssertEqual(email["is_nullable"], false)
-        XCTAssertEqual(phone["is_nullable"], false)
+        do {
+            
+            let query = """
+            CREATE TABLE contacts (
+                contact_id INTEGER PRIMARY KEY NOT NULL,
+                first_name TEXT NOT NULL,
+                last_name TEXT,
+                email TEXT NOT NULL UNIQUE,
+                phone TEXT NOT NULL UNIQUE
+            );
+            """
+            
+            _ = try connection.query(query, []).wait()
+            
+            print(try connection.tables().wait())
+            
+            XCTAssertTrue(try connection.tables().wait().contains("contacts"))
+            
+            let tableInfo = try connection.tableInfo("contacts").wait()
+            
+            guard let contact_id = tableInfo.first(where: { $0["column_name"] == "contact_id" }) else { XCTFail(); return }
+            guard let first_name = tableInfo.first(where: { $0["column_name"] == "first_name" }) else { XCTFail(); return }
+            guard let last_name = tableInfo.first(where: { $0["column_name"] == "last_name" }) else { XCTFail(); return }
+            guard let email = tableInfo.first(where: { $0["column_name"] == "email" }) else { XCTFail(); return }
+            guard let phone = tableInfo.first(where: { $0["column_name"] == "phone" }) else { XCTFail(); return }
+            
+            XCTAssertEqual(contact_id["data_type"], "integer")
+            XCTAssertEqual(first_name["data_type"], "text")
+            XCTAssertEqual(last_name["data_type"], "text")
+            XCTAssertEqual(email["data_type"], "text")
+            XCTAssertEqual(phone["data_type"], "text")
+            
+            XCTAssertEqual(contact_id["is_nullable"], false)
+            XCTAssertEqual(first_name["is_nullable"], false)
+            XCTAssertEqual(last_name["is_nullable"], true)
+            XCTAssertEqual(email["is_nullable"], false)
+            XCTAssertEqual(phone["is_nullable"], false)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
     }
-
+    
 }
