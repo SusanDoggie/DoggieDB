@@ -37,9 +37,9 @@ class MongoDBTest: XCTestCase {
         var url_components = URLComponents()
         url_components.scheme = "redis"
         url_components.host = env("MONGO_HOST") ?? "localhost"
-        url_components.user = env("DB_USERNAME") ?? "doggiedb"
-        url_components.password = env("DB_PASSWORD") ?? "doggiedb"
-        url_components.path = env("DB_DATABASE") ?? "doggiedb"
+        url_components.user = env("DB_USERNAME")
+        url_components.password = env("DB_PASSWORD")
+        url_components.path = env("DB_DATABASE")
         
         let url = url_components.url!
         
