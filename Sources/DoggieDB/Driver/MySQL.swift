@@ -89,7 +89,7 @@ extension MySQLDriver.Connection {
     }
     
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
-        return self.query("DESCRIBE ?;", [DBData(table)])
+        return self.query("SHOW COLUMNS FROM \(table);")
     }
 }
 
