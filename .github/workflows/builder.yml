@@ -1,15 +1,15 @@
 name: Builder
 on: [push, pull_request]
 env:
-  MYSQL_HOST: 'mysql'
-  MYSQL_USER: 'root'
-  MYSQL_DB: 'test'
-  MYSQL_PASSWORD: 'password'
-  POSTGRES_HOST: 'postgres'
-  POSTGRES_USER: 'postgre'
-  POSTGRES_PASSWORD: 'postgre'
-  REDIS_HOST: 'redis'
-  MONGO_HOST: 'mongo'
+  MYSQL_HOST: mysql
+  MYSQL_USER: root
+  MYSQL_DATABASE: test
+  MYSQL_PASSWORD: password
+  POSTGRES_HOST: postgres
+  POSTGRES_USER: postgre
+  POSTGRES_PASSWORD: postgre
+  REDIS_HOST: redis
+  MONGO_HOST: mongo
 jobs:
   macos:
     name: ${{ matrix.name }}
@@ -30,6 +30,10 @@ jobs:
       sdk: ${{ matrix.sdk }}
       destination: ${{ matrix.destination }}
       enable_codecov: ${{ matrix.enable_codecov }}
+      MYSQL_HOST: localhost
+      POSTGRES_HOST: localhost
+      REDIS_HOST: localhost
+      MONGO_HOST: localhost
     steps:
     - uses: actions/checkout@v1
       with:
@@ -45,8 +49,8 @@ jobs:
       run: |
           mysql -u${{ MYSQL_USER }} --batch <<-'SQL'
               CREATE USER ${{ MYSQL_USER }}@localhost IDENTIFIED BY '${{ MYSQL_PASSWORD }}';
-              CREATE DATABASE ${{ MYSQL_DB }};
-              GRANT ALL PRIVILEGES ON ${{ MYSQL_DB }}.* TO ${{ MYSQL_USER }}@localhost;
+              CREATE DATABASE ${{ MYSQL_DATABASE }};
+              GRANT ALL PRIVILEGES ON ${{ MYSQL_DATABASE }}.* TO ${{ MYSQL_USER }}@localhost;
           SQL
     - name: Install postgresql
       run: |
