@@ -45,6 +45,13 @@ public struct DBDriver: Hashable {
 
 extension DBDriver {
     
+    public var defaultPort: Int {
+        return rawValue.defaultPort
+    }
+}
+
+extension DBDriver {
+    
     public var identifier: ObjectIdentifier {
         return ObjectIdentifier(rawValue)
     }
