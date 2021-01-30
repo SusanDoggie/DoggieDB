@@ -44,6 +44,8 @@ class MySQLTest: XCTestCase {
         let url = url_components.url!
         
         self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
+        
+        print(try connection.version().wait())
     }
     
     override func tearDownWithError() throws {

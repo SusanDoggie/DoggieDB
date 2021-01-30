@@ -78,6 +78,10 @@ extension MySQLDriver {
 
 extension MySQLDriver.Connection {
     
+    func version() -> EventLoopFuture<String> {
+        return self.query("SELECT version();", []).map { $0[0]["version()"]!.string! }
+    }
+    
     func databases() -> EventLoopFuture<[String]> {
         return self.query("SHOW DATABASES;", []).map { $0.map { $0["Database"]!.string! } }
     }

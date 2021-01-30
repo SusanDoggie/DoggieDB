@@ -83,6 +83,10 @@ extension PostgreSQLDriver {
 
 extension PostgreSQLDriver.Connection {
     
+    func version() -> EventLoopFuture<String> {
+        return self.query("SELECT version();", []).map { $0[0]["version()"]!.string! }
+    }
+    
     func databases() -> EventLoopFuture<[String]> {
         return self.query("SELECT datname FROM pg_catalog.pg_database;", []).map { $0.compactMap { $0["datname"]!.string! } }
     }
