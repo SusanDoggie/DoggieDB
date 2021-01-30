@@ -48,9 +48,9 @@ jobs:
     - name: Set up MySQL databases and privileges
       run: |
           mysql -u${{ MYSQL_USER }} --batch <<-'SQL'
-              CREATE USER ${{ MYSQL_USER }}@localhost IDENTIFIED BY '${{ MYSQL_PASSWORD }}';
-              CREATE DATABASE ${{ MYSQL_DATABASE }};
-              GRANT ALL PRIVILEGES ON ${{ MYSQL_DATABASE }}.* TO ${{ MYSQL_USER }}@localhost;
+              CREATE USER $MYSQL_USER@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
+              CREATE DATABASE $MYSQL_DATABASE;
+              GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USER@localhost;
           SQL
     - name: Install postgresql
       run: |
