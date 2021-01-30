@@ -37,9 +37,9 @@ class PostgreSQLTest: XCTestCase {
         var url_components = URLComponents()
         url_components.scheme = "redis"
         url_components.host = env("POSTGRES_HOST") ?? "localhost"
-        url_components.user = env("POSTGRES_USER") ?? "doggiedb"
-        url_components.password = env("POSTGRES_PASSWORD") ?? "doggiedb"
-        url_components.path = env("POSTGRES_DB") ?? "doggiedb"
+        url_components.user = env("DB_USERNAME") ?? "doggiedb"
+        url_components.password = env("DB_PASSWORD") ?? "doggiedb"
+        url_components.path = env("DB_DATABASE") ?? "doggiedb"
         
         let url = url_components.url!
         
