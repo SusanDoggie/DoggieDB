@@ -89,9 +89,9 @@ jobs:
       mongo: 
         image: mongo
         env:
-          MONGO_INITDB_ROOT_USERNAME: ${{ MONGO_USER }}
-          MONGO_INITDB_ROOT_PASSWORD: ${{ MONGO_PASSWORD }}
-          MONGO_INITDB_DATABASE: ${{ MONGO_DB }}
+          MONGO_INITDB_ROOT_USERNAME: ${{ env.MONGO_USER }}
+          MONGO_INITDB_ROOT_PASSWORD: ${{ env.MONGO_PASSWORD }}
+          MONGO_INITDB_DATABASE: ${{ env.MONGO_DB }}
     strategy:
       matrix:
         image: [xenial, bionic, focal]
