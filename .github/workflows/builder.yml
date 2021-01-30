@@ -1,5 +1,15 @@
 name: Builder
 on: [push, pull_request]
+env:
+  MYSQL_HOST: mysql
+  MYSQL_USER: root
+  MYSQL_DB: test
+  MYSQL_PASSWORD: password
+  POSTGRES_HOST: postgres
+  POSTGRES_USER: postgre
+  POSTGRES_PASSWORD: postgre
+  REDIS_HOST: redis
+  MONGO_HOST: mongo
 jobs:
   darwin:
     name: macOS
@@ -13,6 +23,26 @@ jobs:
     - uses: actions/checkout@v1
       with:
         submodules: recursive
+    - name: Install mysql
+      run: brew install mariadb && brew link --force mariadb
+    - name: Start MySQL server
+      run: brew services start mariadb
+    - name: Wait for MySQL server to be ready
+      run: until echo | mysql -u${{ MYSQL_USER }}; do sleep 1; done
+      timeout-minutes: 5
+    - name: Set up MySQL databases and privileges
+      run: |
+          mysql -u${{ MYSQL_USER }} --batch <<-'SQL'
+              CREATE USER ${{ MYSQL_USER }}@localhost IDENTIFIED BY '${{ MYSQL_PASSWORD }}';
+              CREATE DATABASE ${{ MYSQL_DB }};
+              GRANT ALL PRIVILEGES ON ${{ MYSQL_DB }}.* TO ${{ MYSQL_USER }}@localhost;
+          SQL
+    - name: Install postgresql
+      run: |
+          export PATH="/usr/local/opt/postgresql/bin:$PATH"
+          brew install postgresql
+          initdb --locale=C -U ${{ POSTGRES_USER }} --pwfile=<(echo ${{ POSTGRES_PASSWORD }})
+          pg_ctl start --wait
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
@@ -70,11 +100,6 @@ jobs:
         action: build
     - name: Run tests
       uses: SusanDoggie/swift-action@main
-      env:
-          MYSQL_HOST: mysql
-          POSTGRES_HOST: postgres
-          REDIS_HOST: redis
-          MONGO_HOST: mongo
       with:
         action: test
   ubuntu_swift_nightly:
@@ -111,10 +136,5 @@ jobs:
         action: build
     - name: Run tests
       uses: SusanDoggie/swift-action@main
-      env:
-          MYSQL_HOST: mysql
-          POSTGRES_HOST: postgres
-          REDIS_HOST: redis
-          MONGO_HOST: mongo
       with:
         action: test
