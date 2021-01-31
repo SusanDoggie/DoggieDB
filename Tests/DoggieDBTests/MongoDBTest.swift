@@ -37,7 +37,7 @@ class MongoDBTest: XCTestCase {
         do {
             
             var url_components = URLComponents()
-            url_components.scheme = "redis"
+            url_components.scheme = "mongodb"
             url_components.host = env("MONGO_HOST") ?? "localhost"
             url_components.user = env("MONGO_USERNAME")
             url_components.password = env("MONGO_PASSWORD")
