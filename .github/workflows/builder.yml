@@ -1,17 +1,17 @@
 name: Builder
 on: [push, pull_request]
 env:
-  MYSQL_HOST: localhost
+  MYSQL_HOST: 127.0.0.1
   MYSQL_DATABASE: doggiedb
   MYSQL_USERNAME: doggiedb
   MYSQL_PASSWORD: doggiedb
-  POSTGRES_HOST: localhost
+  POSTGRES_HOST: 127.0.0.1
   POSTGRES_DATABASE: doggiedb
   POSTGRES_USERNAME: doggiedb
   POSTGRES_PASSWORD: doggiedb
-  REDIS_HOST: localhost
+  REDIS_HOST: 127.0.0.1
   REDIS_DATABASE: doggiedb
-  MONGO_HOST: localhost
+  MONGO_HOST: 127.0.0.1
   MONGO_DATABASE: doggiedb
   MONGO_USERNAME: doggiedb
   MONGO_PASSWORD: doggiedb
