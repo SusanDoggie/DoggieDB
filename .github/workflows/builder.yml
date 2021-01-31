@@ -42,7 +42,7 @@ jobs:
     - name: Install mysql
       run: brew install mysql && brew link --force mysql
     - name: Start MySQL server
-      run: brew services start mysql
+      run: brew services start mysql && brew services status mysql
     - name: Wait for MySQL server to be ready
       run: until echo | mysql -uroot -h127.0.0.1; do sleep 1; done
       timeout-minutes: 5
