@@ -42,7 +42,6 @@ class PostgreSQLTest: XCTestCase {
             url_components.user = env("POSTGRES_USERNAME")
             url_components.password = env("POSTGRES_PASSWORD")
             url_components.path = env("POSTGRES_DATABASE").map { "/\($0)" } ?? "/"
-            url_components.query = "ssl=false"
             
             let url = url_components.url!
             

@@ -42,7 +42,6 @@ class MongoDBTest: XCTestCase {
             url_components.user = env("MONGO_USERNAME")
             url_components.password = env("MONGO_PASSWORD")
             url_components.path = env("MONGO_DATABASE").map { "/\($0)" } ?? "/"
-            url_components.query = "ssl=false"
             
             let url = url_components.url!
             

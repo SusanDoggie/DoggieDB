@@ -42,7 +42,6 @@ class MySQLTest: XCTestCase {
             url_components.user = env("MYSQL_USERNAME")
             url_components.password = env("MYSQL_PASSWORD")
             url_components.path = env("MYSQL_DATABASE").map { "/\($0)" } ?? "/"
-            url_components.query = "ssl=false"
             
             let url = url_components.url!
             

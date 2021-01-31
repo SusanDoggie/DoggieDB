@@ -79,10 +79,10 @@ extension Database {
             }
             
             let tlsConfiguration: TLSConfiguration?
-            if url_components.queryItems?.contains(where: { $0.name == "ssl" && $0.value == "false" }) == true {
-                tlsConfiguration = nil
-            } else {
+            if url_components.queryItems?.contains(where: { $0.name == "ssl" && $0.value == "true" }) == true {
                 tlsConfiguration = .forClient()
+            } else {
+                tlsConfiguration = nil
             }
             
             let config = try Database.Configuration(

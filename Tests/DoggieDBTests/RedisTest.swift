@@ -42,7 +42,6 @@ class RedisTest: XCTestCase {
             url_components.user = env("REDIS_USERNAME")
             url_components.password = env("REDIS_PASSWORD")
             url_components.path = env("REDIS_DATABASE").map { "/\($0)" } ?? "/"
-            url_components.query = "ssl=false"
             
             let url = url_components.url!
             
