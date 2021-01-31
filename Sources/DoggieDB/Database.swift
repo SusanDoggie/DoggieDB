@@ -58,15 +58,19 @@ extension Database {
         on eventLoop: EventLoop
     ) -> EventLoopFuture<DBConnection> {
         
+        guard let url_components = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
+            return eventLoop.makeFailedFuture(Database.Error.invalidURL)
+        }
+        
         do {
             
-            guard let hostname = url.host else {
+            guard let hostname = url_components.host else {
                 return eventLoop.makeFailedFuture(Database.Error.invalidURL)
             }
             
             let driver: DBDriver
             
-            switch url.scheme {
+            switch url_components.scheme {
             case "redis": driver = .redis
             case "mysql": driver = .mySQL
             case "postgres": driver = .postgreSQL
@@ -75,7 +79,7 @@ extension Database {
             }
             
             let tlsConfiguration: TLSConfiguration?
-            if url.query?.contains("ssl=false") == true {
+            if url_components.queryItems?.contains(where: { $0.name == "ssl" && $0.value == "false" }) == true {
                 tlsConfiguration = nil
             } else {
                 tlsConfiguration = .forClient()
@@ -83,9 +87,9 @@ extension Database {
             
             let config = try Database.Configuration(
                 hostname: hostname,
-                port: url.port ?? driver.rawValue.defaultPort,
-                username: url.user,
-                password: url.password,
+                port: url_components.port ?? driver.rawValue.defaultPort,
+                username: url_components.user,
+                password: url_components.password,
                 database: url.lastPathComponent,
                 tlsConfiguration: tlsConfiguration
             )
