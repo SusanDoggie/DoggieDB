@@ -82,6 +82,7 @@ jobs:
         ports: 
           - 3306:3306
         env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
           MYSQL_USER: ${{ env.MYSQL_USERNAME }}
           MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
           MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
@@ -137,6 +138,7 @@ jobs:
         ports: 
           - 3306:3306
         env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
           MYSQL_USER: ${{ env.MYSQL_USERNAME }}
           MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
           MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
