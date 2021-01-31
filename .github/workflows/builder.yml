@@ -44,11 +44,11 @@ jobs:
     - name: Start MySQL server
       run: brew services start mysql && brew services list
     - name: Wait for MySQL server to be ready
-      run: until echo | mysql -uroot -h127.0.0.1; do sleep 1; done
+      run: until echo | mysql -urunner; do sleep 1; done
       timeout-minutes: 5
     - name: Set up MySQL databases and privileges
       run: |
-          mysql -uroot -h127.0.0.1 --batch <<-'SQL'
+          mysql -urunner --batch <<-'SQL'
               CREATE USER $MYSQL_USERNAME@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
               CREATE DATABASE $MYSQL_DATABASE;
               GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@localhost;
