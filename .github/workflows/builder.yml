@@ -127,6 +127,11 @@ jobs:
       uses: SusanDoggie/swift-action@main
       with:
         action: test
+      env:
+        MYSQL_HOSTNAME: mysql
+        POSTGRES_HOSTNAME: postgres
+        REDIS_HOSTNAME: redis
+        MONGO_HOSTNAME: mongo
   ubuntu_swift_nightly:
     name: ${{ matrix.image }}
     container:
@@ -184,3 +189,8 @@ jobs:
       uses: SusanDoggie/swift-action@main
       with:
         action: test
+      env:
+        MYSQL_HOSTNAME: mysql
+        POSTGRES_HOSTNAME: postgres
+        REDIS_HOSTNAME: redis
+        MONGO_HOSTNAME: mongo
