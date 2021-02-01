@@ -36,24 +36,12 @@ class MongoDBTest: XCTestCase {
         
         do {
             
-            let host = env("MONGO_HOST") ?? "localhost"
-            let user = env("MONGO_USERNAME")
-            let password = env("MONGO_PASSWORD")
-            let database = env("MONGO_DATABASE") ?? ""
-            
-            print("MONGO_HOST:", host)
-            print("MONGO_USERNAME:", user ?? "")
-            print("MONGO_PASSWORD:", password ?? "")
-            print("MONGO_DATABASE:", database)
-            
             var url = URLComponents()
             url.scheme = "mongodb"
-            url.host = host
-            url.user = user
-            url.password = password
-            url.path = "/\(database)"
-            
-            print("MONGODB:", url)
+            url.host = env("MONGO_HOST") ?? "localhost"
+            url.user = env("MONGO_USERNAME")
+            url.password = env("MONGO_PASSWORD")
+            url.path = "/\(env("MONGO_DATABASE") ?? "")"
             
             self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             

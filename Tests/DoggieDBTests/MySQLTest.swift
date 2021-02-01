@@ -36,24 +36,12 @@ class MySQLTest: XCTestCase {
         
         do {
             
-            let host = env("MYSQL_HOST") ?? "localhost"
-            let user = env("MYSQL_USERNAME")
-            let password = env("MYSQL_PASSWORD")
-            let database = env("MYSQL_DATABASE") ?? ""
-            
-            print("MYSQL_HOST:", host)
-            print("MYSQL_USERNAME:", user ?? "")
-            print("MYSQL_PASSWORD:", password ?? "")
-            print("MYSQL_DATABASE:", database)
-            
             var url = URLComponents()
             url.scheme = "mysql"
-            url.host = host
-            url.user = user
-            url.password = password
-            url.path = "/\(database)"
-            
-            print("MYSQL:", url)
+            url.host = env("MYSQL_HOST") ?? "localhost"
+            url.user = env("MYSQL_USERNAME")
+            url.password = env("MYSQL_PASSWORD")
+            url.path = "/\(env("MYSQL_DATABASE") ?? "")"
             
             self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             
@@ -108,16 +96,16 @@ class MySQLTest: XCTestCase {
             XCTAssertEqual(phone["Type"], "text")
             
             XCTAssertEqual(contact_id["Key"], "PRI")
-            XCTAssertEqual(first_name["Key"], nil)
-            XCTAssertEqual(last_name["Key"], nil)
+            XCTAssertEqual(first_name["Key"], "")
+            XCTAssertEqual(last_name["Key"], "")
             XCTAssertEqual(email["Key"], "UNI")
             XCTAssertEqual(phone["Key"], "UNI")
             
-            XCTAssertEqual(contact_id["Null"], false)
-            XCTAssertEqual(first_name["Null"], false)
-            XCTAssertEqual(last_name["Null"], true)
-            XCTAssertEqual(email["Null"], false)
-            XCTAssertEqual(phone["Null"], false)
+            XCTAssertEqual(contact_id["Null"], "NO")
+            XCTAssertEqual(first_name["Null"], "NO")
+            XCTAssertEqual(last_name["Null"], "YES")
+            XCTAssertEqual(email["Null"], "NO")
+            XCTAssertEqual(phone["Null"], "NO")
             
         } catch let error {
             

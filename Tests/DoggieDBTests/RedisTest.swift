@@ -36,24 +36,12 @@ class RedisTest: XCTestCase {
         
         do {
             
-            let host = env("REDIS_HOST") ?? "localhost"
-            let user = env("REDIS_USERNAME")
-            let password = env("REDIS_PASSWORD")
-            let database = env("REDIS_DATABASE") ?? ""
-            
-            print("REDIS_HOST:", host)
-            print("REDIS_USERNAME:", user ?? "")
-            print("REDIS_PASSWORD:", password ?? "")
-            print("REDIS_DATABASE:", database)
-            
             var url = URLComponents()
             url.scheme = "redis"
-            url.host = host
-            url.user = user
-            url.password = password
-            url.path = "/\(database)"
-            
-            print("REDIS:", url)
+            url.host = env("REDIS_HOST") ?? "localhost"
+            url.user = env("REDIS_USERNAME")
+            url.password = env("REDIS_PASSWORD")
+            url.path = "/\(env("REDIS_DATABASE") ?? "")"
             
             self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             
