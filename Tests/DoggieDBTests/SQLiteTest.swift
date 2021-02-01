@@ -67,14 +67,14 @@ class SQLiteTest: XCTestCase {
         do {
             
             let query = """
-        CREATE TABLE contacts (
-            contact_id INTEGER PRIMARY KEY NOT NULL,
-            first_name TEXT NOT NULL,
-            last_name TEXT,
-            email TEXT NOT NULL UNIQUE,
-            phone TEXT NOT NULL UNIQUE
-        );
-        """
+            CREATE TABLE contacts (
+                contact_id INTEGER PRIMARY KEY NOT NULL,
+                first_name TEXT NOT NULL,
+                last_name TEXT,
+                email TEXT NOT NULL UNIQUE,
+                phone TEXT NOT NULL UNIQUE
+            );
+            """
             
             _ = try connection.query(query, []).wait()
             
