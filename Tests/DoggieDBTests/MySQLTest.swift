@@ -55,8 +55,17 @@ class MySQLTest: XCTestCase {
     }
     
     override func tearDownWithError() throws {
-        try self.connection.close().wait()
-        try eventLoopGroup.syncShutdownGracefully()
+        
+        do {
+            
+            try self.connection.close().wait()
+            try eventLoopGroup.syncShutdownGracefully()
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
     }
     
     func testCreateTable() throws {

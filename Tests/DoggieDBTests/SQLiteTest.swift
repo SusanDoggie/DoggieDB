@@ -34,19 +34,39 @@ class SQLiteTest: XCTestCase {
     var connection: DBConnection!
     
     override func setUpWithError() throws {
-        self.connection = try Database.createSQLite(threadPool: threadPool, on: eventLoopGroup.next()).wait()
-        print("SQLITE:", try connection.version().wait())
+        
+        do {
+            
+            self.connection = try Database.createSQLite(threadPool: threadPool, on: eventLoopGroup.next()).wait()
+            print("SQLITE:", try connection.version().wait())
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
     }
     
     override func tearDownWithError() throws {
-        try self.connection.close().wait()
-        try eventLoopGroup.syncShutdownGracefully()
-        try threadPool.syncShutdownGracefully()
+        
+        do {
+            
+            try self.connection.close().wait()
+            try eventLoopGroup.syncShutdownGracefully()
+            try threadPool.syncShutdownGracefully()
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
     }
-
+    
     func testCreateTable() throws {
         
-        let query = """
+        do {
+            
+            let query = """
         CREATE TABLE contacts (
             contact_id INTEGER PRIMARY KEY NOT NULL,
             first_name TEXT NOT NULL,
@@ -55,36 +75,42 @@ class SQLiteTest: XCTestCase {
             phone TEXT NOT NULL UNIQUE
         );
         """
-        
-        _ = try connection.query(query, []).wait()
-        
-        XCTAssertTrue(try connection.tables().wait().contains("contacts"))
-        
-        let tableInfo = try connection.tableInfo("contacts").wait()
-        
-        guard let contact_id = tableInfo.first(where: { $0["name"] == "contact_id" }) else { XCTFail(); return }
-        guard let first_name = tableInfo.first(where: { $0["name"] == "first_name" }) else { XCTFail(); return }
-        guard let last_name = tableInfo.first(where: { $0["name"] == "last_name" }) else { XCTFail(); return }
-        guard let email = tableInfo.first(where: { $0["name"] == "email" }) else { XCTFail(); return }
-        guard let phone = tableInfo.first(where: { $0["name"] == "phone" }) else { XCTFail(); return }
-        
-        XCTAssertEqual(contact_id["type"], "INTEGER")
-        XCTAssertEqual(first_name["type"], "TEXT")
-        XCTAssertEqual(last_name["type"], "TEXT")
-        XCTAssertEqual(email["type"], "TEXT")
-        XCTAssertEqual(phone["type"], "TEXT")
-        
-        XCTAssertEqual(contact_id["pk"], 1)
-        XCTAssertEqual(first_name["pk"], 0)
-        XCTAssertEqual(last_name["pk"], 0)
-        XCTAssertEqual(email["pk"], 0)
-        XCTAssertEqual(phone["pk"], 0)
-        
-        XCTAssertEqual(contact_id["notnull"], 1)
-        XCTAssertEqual(first_name["notnull"], 1)
-        XCTAssertEqual(last_name["notnull"], 0)
-        XCTAssertEqual(email["notnull"], 1)
-        XCTAssertEqual(phone["notnull"], 1)
+            
+            _ = try connection.query(query, []).wait()
+            
+            XCTAssertTrue(try connection.tables().wait().contains("contacts"))
+            
+            let tableInfo = try connection.tableInfo("contacts").wait()
+            
+            guard let contact_id = tableInfo.first(where: { $0["name"] == "contact_id" }) else { XCTFail(); return }
+            guard let first_name = tableInfo.first(where: { $0["name"] == "first_name" }) else { XCTFail(); return }
+            guard let last_name = tableInfo.first(where: { $0["name"] == "last_name" }) else { XCTFail(); return }
+            guard let email = tableInfo.first(where: { $0["name"] == "email" }) else { XCTFail(); return }
+            guard let phone = tableInfo.first(where: { $0["name"] == "phone" }) else { XCTFail(); return }
+            
+            XCTAssertEqual(contact_id["type"], "INTEGER")
+            XCTAssertEqual(first_name["type"], "TEXT")
+            XCTAssertEqual(last_name["type"], "TEXT")
+            XCTAssertEqual(email["type"], "TEXT")
+            XCTAssertEqual(phone["type"], "TEXT")
+            
+            XCTAssertEqual(contact_id["pk"], 1)
+            XCTAssertEqual(first_name["pk"], 0)
+            XCTAssertEqual(last_name["pk"], 0)
+            XCTAssertEqual(email["pk"], 0)
+            XCTAssertEqual(phone["pk"], 0)
+            
+            XCTAssertEqual(contact_id["notnull"], 1)
+            XCTAssertEqual(first_name["notnull"], 1)
+            XCTAssertEqual(last_name["notnull"], 0)
+            XCTAssertEqual(email["notnull"], 1)
+            XCTAssertEqual(phone["notnull"], 1)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
     }
     
 }
