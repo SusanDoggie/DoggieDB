@@ -45,6 +45,8 @@ class MySQLTest: XCTestCase {
             
             let url = url_components.url!
             
+            print("MYSQL:", url)
+            
             self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             
             print("MYSQL:", try connection.version().wait())

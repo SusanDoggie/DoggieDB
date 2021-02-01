@@ -45,6 +45,8 @@ class MongoDBTest: XCTestCase {
             
             let url = url_components.url!
             
+            print("MONGODB:", url)
+            
             self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             
         } catch let error {

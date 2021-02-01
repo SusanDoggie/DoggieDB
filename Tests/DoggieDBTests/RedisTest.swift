@@ -45,6 +45,8 @@ class RedisTest: XCTestCase {
             
             let url = url_components.url!
             
+            print("REDIS:", url)
+            
             self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             
         } catch let error {

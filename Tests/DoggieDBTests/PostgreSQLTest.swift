@@ -45,6 +45,8 @@ class PostgreSQLTest: XCTestCase {
             
             let url = url_components.url!
             
+            print("POSTGRES:", url)
+            
             self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             
             print("POSTGRES:", try connection.version().wait())
