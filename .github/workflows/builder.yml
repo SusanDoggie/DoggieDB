@@ -128,10 +128,10 @@ jobs:
       with:
         action: test
       env:
-        MYSQL_HOSTNAME: mysql
-        POSTGRES_HOSTNAME: postgres
-        REDIS_HOSTNAME: redis
-        MONGO_HOSTNAME: mongo
+        MYSQL_HOST: mysql
+        POSTGRES_HOST: postgres
+        REDIS_HOST: redis
+        MONGO_HOST: mongo
   ubuntu_swift_nightly:
     name: ${{ matrix.image }}
     container:
@@ -190,7 +190,7 @@ jobs:
       with:
         action: test
       env:
-        MYSQL_HOSTNAME: mysql
-        POSTGRES_HOSTNAME: postgres
-        REDIS_HOSTNAME: redis
-        MONGO_HOSTNAME: mongo
+        MYSQL_HOST: mysql
+        POSTGRES_HOST: postgres
+        REDIS_HOST: redis
+        MONGO_HOST: mongo
