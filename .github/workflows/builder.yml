@@ -44,11 +44,11 @@ jobs:
     - name: Start MySQL server
       run: brew services start mariadb && brew services list
     - name: Wait for MySQL server to be ready
-      run: until echo | mysql -urunner; do sleep 1; done
+      run: until echo | mysql -u$USER; do sleep 1; done
       timeout-minutes: 5
     - name: Set up MySQL databases and privileges
       run: |
-          mysql -urunner --batch <<-'SQL'
+          mysql -u$USER --batch <<-'SQL'
               CREATE USER $MYSQL_USERNAME@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
               CREATE DATABASE $MYSQL_DATABASE;
               GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@localhost;
