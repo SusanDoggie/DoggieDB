@@ -36,12 +36,22 @@ class MySQLTest: XCTestCase {
         
         do {
             
+            let host = env("MYSQL_HOST") ?? "localhost"
+            let user = env("MYSQL_USERNAME")
+            let password = env("MYSQL_PASSWORD")
+            let database = env("MYSQL_DATABASE") ?? ""
+            
+            print("MYSQL_HOST:", host)
+            print("MYSQL_USERNAME:", user ?? "")
+            print("MYSQL_PASSWORD:", password ?? "")
+            print("MYSQL_DATABASE:", database)
+            
             var url = URLComponents()
             url.scheme = "mysql"
-            url.host = env("MYSQL_HOST") ?? "localhost"
-            url.user = env("MYSQL_USERNAME")
-            url.password = env("MYSQL_PASSWORD")
-            url.path = env("MYSQL_DATABASE").map { "/\($0)" } ?? "/"
+            url.host = host
+            url.user = user
+            url.password = password
+            url.path = "/\(database)"
             
             print("MYSQL:", url)
             
