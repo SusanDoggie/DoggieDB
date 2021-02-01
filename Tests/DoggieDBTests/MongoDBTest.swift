@@ -36,14 +36,12 @@ class MongoDBTest: XCTestCase {
         
         do {
             
-            var url_components = URLComponents()
-            url_components.scheme = "mongodb"
-            url_components.host = env("MONGO_HOST") ?? "localhost"
-            url_components.user = env("MONGO_USERNAME")
-            url_components.password = env("MONGO_PASSWORD")
-            url_components.path = env("MONGO_DATABASE").map { "/\($0)" } ?? "/"
-            
-            let url = url_components.url!
+            var url = URLComponents()
+            url.scheme = "mongodb"
+            url.host = env("MONGO_HOST") ?? "localhost"
+            url.user = env("MONGO_USERNAME")
+            url.password = env("MONGO_PASSWORD")
+            url.path = env("MONGO_DATABASE").map { "/\($0)" } ?? "/"
             
             print("MONGODB:", url)
             

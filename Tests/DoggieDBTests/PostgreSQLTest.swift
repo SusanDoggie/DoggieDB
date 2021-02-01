@@ -36,14 +36,12 @@ class PostgreSQLTest: XCTestCase {
         
         do {
             
-            var url_components = URLComponents()
-            url_components.scheme = "postgres"
-            url_components.host = env("POSTGRES_HOST") ?? "localhost"
-            url_components.user = env("POSTGRES_USERNAME")
-            url_components.password = env("POSTGRES_PASSWORD")
-            url_components.path = env("POSTGRES_DATABASE").map { "/\($0)" } ?? "/"
-            
-            let url = url_components.url!
+            var url = URLComponents()
+            url.scheme = "postgres"
+            url.host = env("POSTGRES_HOST") ?? "localhost"
+            url.user = env("POSTGRES_USERNAME")
+            url.password = env("POSTGRES_PASSWORD")
+            url.path = env("POSTGRES_DATABASE").map { "/\($0)" } ?? "/"
             
             print("POSTGRES:", url)
             

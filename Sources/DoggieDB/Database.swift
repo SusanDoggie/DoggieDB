@@ -53,6 +53,19 @@ extension Database {
     }
     
     public static func connect(
+        url url_components: URLComponents,
+        logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
+        on eventLoop: EventLoop
+    ) -> EventLoopFuture<DBConnection> {
+        
+        guard let url = url_components.url else {
+            return eventLoop.makeFailedFuture(Database.Error.invalidURL)
+        }
+        
+        return self.connect(url: url, logger: logger, on: eventLoop)
+    }
+    
+    public static func connect(
         url: URL,
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
         on eventLoop: EventLoop
