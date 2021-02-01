@@ -39,10 +39,10 @@ jobs:
     - uses: actions/checkout@v1
       with:
         submodules: recursive
-    - name: Install mysql
-      run: brew install mysql && brew link --force mysql
+    - name: Install mariadb
+      run: brew install mariadb && brew link --force mariadb
     - name: Start MySQL server
-      run: brew services start mysql && brew services list
+      run: brew services start mariadb && brew services list
     - name: Wait for MySQL server to be ready
       run: until echo | mysql -urunner; do sleep 1; done
       timeout-minutes: 5
@@ -78,7 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql
+        image: mariadb
         ports: 
           - 3306:3306
         env:
@@ -134,7 +134,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql
+        image: mariadb
         ports: 
           - 3306:3306
         env:
