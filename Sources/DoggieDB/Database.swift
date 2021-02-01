@@ -53,12 +53,12 @@ extension Database {
     }
     
     public static func connect(
-        url url_components: URLComponents,
+        url: URL,
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
         on eventLoop: EventLoop
     ) -> EventLoopFuture<DBConnection> {
         
-        guard let url = url_components.url else {
+        guard let url = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
             return eventLoop.makeFailedFuture(Database.Error.invalidURL)
         }
         
@@ -66,24 +66,20 @@ extension Database {
     }
     
     public static func connect(
-        url: URL,
+        url: URLComponents,
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
         on eventLoop: EventLoop
     ) -> EventLoopFuture<DBConnection> {
         
-        guard let url_components = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
-            return eventLoop.makeFailedFuture(Database.Error.invalidURL)
-        }
-        
         do {
             
-            guard let hostname = url_components.host else {
+            guard let hostname = url.host else {
                 return eventLoop.makeFailedFuture(Database.Error.invalidURL)
             }
             
             let driver: DBDriver
             
-            switch url_components.scheme {
+            switch url.scheme {
             case "redis": driver = .redis
             case "mysql": driver = .mySQL
             case "postgres": driver = .postgreSQL
@@ -92,18 +88,20 @@ extension Database {
             }
             
             let tlsConfiguration: TLSConfiguration?
-            if url_components.queryItems?.contains(where: { $0.name == "ssl" && $0.value == "true" }) == true {
+            if url.queryItems?.contains(where: { $0.name == "ssl" && $0.value == "true" }) == true {
                 tlsConfiguration = .forClient()
             } else {
                 tlsConfiguration = nil
             }
             
+            let lastPathComponent = url.lastPathComponent
+            
             let config = try Database.Configuration(
                 hostname: hostname,
-                port: url_components.port ?? driver.rawValue.defaultPort,
-                username: url_components.user,
-                password: url_components.password,
-                database: url.lastPathComponent,
+                port: url.port ?? driver.rawValue.defaultPort,
+                username: url.user,
+                password: url.password,
+                database: lastPathComponent == "/" ? nil : lastPathComponent,
                 tlsConfiguration: tlsConfiguration
             )
             
