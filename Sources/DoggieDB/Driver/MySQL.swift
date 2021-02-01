@@ -78,6 +78,13 @@ extension MySQLDriver {
 
 extension MySQLDriver.Connection {
     
+    var isClosed: Bool {
+        return self.connection.isClosed
+    }
+}
+
+extension MySQLDriver.Connection {
+    
     func version() -> EventLoopFuture<String> {
         return self.query("SELECT version();", []).map { $0[0]["version()"]!.string! }
     }

@@ -29,13 +29,13 @@ public protocol DBConnection: AnyObject {
     
     var eventLoop: EventLoop { get }
     
+    var isClosed: Bool { get }
+    
     func close() -> EventLoopFuture<Void>
     
     func version() -> EventLoopFuture<String>
     
     func databases() -> EventLoopFuture<[String]>
-    
-    func connections() -> EventLoopFuture<[DBConnection]>
     
     func tables() -> EventLoopFuture<[String]>
     
@@ -92,10 +92,6 @@ extension DBConnection {
     }
     
     public func databases() -> EventLoopFuture<[String]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func connections() -> EventLoopFuture<[DBConnection]> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     

@@ -83,6 +83,13 @@ extension PostgreSQLDriver {
 
 extension PostgreSQLDriver.Connection {
     
+    var isClosed: Bool {
+        return self.connection.isClosed
+    }
+}
+
+extension PostgreSQLDriver.Connection {
+    
     func version() -> EventLoopFuture<String> {
         return self.query("SELECT version();", []).map { $0[0]["version()"]!.string! }
     }

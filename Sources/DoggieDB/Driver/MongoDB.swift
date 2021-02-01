@@ -36,6 +36,8 @@ extension MongoDBDriver {
         
         var driver: DBDriver { return .mongoDB }
         
+        private(set) var isClosed: Bool = false
+        
         let client: MongoClient
         let database: MongoDatabase?
         
@@ -48,7 +50,9 @@ extension MongoDBDriver {
         }
         
         func close() -> EventLoopFuture<Void> {
-            return client.close()
+            let closeResult = client.close()
+            closeResult.whenComplete { _ in self.isClosed = true }
+            return closeResult
         }
     }
 }
@@ -93,10 +97,6 @@ extension MongoDBDriver.Connection {
     
     func databases() -> EventLoopFuture<[String]> {
         return self.client.listDatabaseNames()
-    }
-    
-    func connections() -> EventLoopFuture<[DBConnection]> {
-        return self.client.listMongoDatabases().map { $0.map { MongoDBDriver.Connection(client: self.client, database: $0, eventLoop: self.eventLoop) } }
     }
 }
 

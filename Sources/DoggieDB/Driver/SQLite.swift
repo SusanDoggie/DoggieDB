@@ -76,6 +76,13 @@ extension SQLiteDriver {
 
 extension SQLiteDriver.Connection {
     
+    var isClosed: Bool {
+        return self.connection.isClosed
+    }
+}
+
+extension SQLiteDriver.Connection {
+    
     func version() -> EventLoopFuture<String> {
         return self.query("SELECT sqlite_version();", []).map { $0[0]["sqlite_version()"]!.string! }
     }

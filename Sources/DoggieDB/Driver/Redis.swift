@@ -81,6 +81,13 @@ extension RedisDriver {
 
 extension RedisDriver.Connection {
     
+    var isClosed: Bool {
+        return !self.connection.isConnected
+    }
+}
+
+extension RedisDriver.Connection {
+    
     func runCommand(
         _ string: String,
         _ binds: [RESPValue]
