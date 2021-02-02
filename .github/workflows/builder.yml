@@ -39,11 +39,13 @@ jobs:
     - uses: actions/checkout@v1
       with:
         submodules: recursive
+    - name: Upgrade Homebrew
+      run: brew upgrade
     - name: Install mariadb
-      run: brew install mariadb && brew link --force mariadb
+      run: brew install mysql@5.7 && brew link --force mysql@5.7
     - name: Set up MySQL databases and privileges
       run: |
-          brew services start mariadb
+          brew services start mysql@5.7
           brew services list
           lsof -i:3306
           until echo | mysql -u$USER; do sleep 1; done
