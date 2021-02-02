@@ -41,18 +41,18 @@ jobs:
         submodules: recursive
     - name: Install mariadb
       run: brew install mariadb && brew link --force mariadb
-    - name: Start MySQL server
-      run: brew services start mariadb && brew services list && lsof -nP -iTCP | grep LISTEN
-    - name: Wait for MySQL server to be ready
-      run: until echo | mysql -u$USER; do sleep 1; done
-      timeout-minutes: 5
     - name: Set up MySQL databases and privileges
       run: |
+          brew services start mariadb
+          brew services list
+          lsof -nP -iTCP | grep LISTEN
+          until echo | mysql -u$USER; do sleep 1; done
           mysql -u$USER --batch <<-'SQL'
               CREATE USER $MYSQL_USERNAME@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
               CREATE DATABASE $MYSQL_DATABASE;
               GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@localhost;
           SQL
+      timeout-minutes: 5
     - name: Install postgresql
       run: |
           export PATH="/usr/local/opt/postgresql/bin:$PATH"
