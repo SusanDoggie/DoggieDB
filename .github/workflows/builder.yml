@@ -45,9 +45,7 @@ jobs:
       run: brew install mysql@5.7 && brew link --force mysql@5.7
     - name: Set up MySQL databases and privileges
       run: |
-          brew services start mysql@5.7
-          brew services list
-          lsof -i:3306
+          brew services start mysql@5.7 && brew services list
           until echo | mysql -u$USER; do sleep 1; done
           mysql -u$USER --batch <<-'SQL'
               CREATE USER $MYSQL_USERNAME@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
