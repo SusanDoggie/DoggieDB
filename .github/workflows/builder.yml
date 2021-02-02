@@ -42,7 +42,7 @@ jobs:
     - name: Install mariadb
       run: brew install mariadb && brew link --force mariadb
     - name: Start MySQL server
-      run: brew services start mariadb && brew services list
+      run: brew services start mariadb && brew services list && lsof -nP -iTCP | grep LISTEN
     - name: Wait for MySQL server to be ready
       run: until echo | mysql -u$USER; do sleep 1; done
       timeout-minutes: 5
