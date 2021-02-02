@@ -45,14 +45,14 @@ jobs:
       run: |
           brew services start mariadb
           brew services list
-          lsof -nP -iTCP | grep LISTEN
+          lsof -i:3306
           until echo | mysql -u$USER; do sleep 1; done
           mysql -u$USER --batch <<-'SQL'
               CREATE USER $MYSQL_USERNAME@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
               CREATE DATABASE $MYSQL_DATABASE;
               GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@localhost;
           SQL
-      timeout-minutes: 5
+      timeout-minutes: 1
     - name: Install postgresql
       run: |
           export PATH="/usr/local/opt/postgresql/bin:$PATH"
