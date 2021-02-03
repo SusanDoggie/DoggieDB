@@ -34,8 +34,6 @@ jobs:
     - uses: actions/checkout@v1
       with:
         submodules: recursive
-    - name: Upgrade Homebrew
-      run: brew upgrade
     - name: Install MySQL
       run: brew install mariadb && brew link --force mariadb && cat /etc/my.cnf
     - name: Start MySQL server
