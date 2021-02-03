@@ -37,7 +37,7 @@ jobs:
     - name: Upgrade Homebrew
       run: brew upgrade
     - name: Install MySQL
-      run: brew install mariadb && brew link --force mariadb
+      run: brew install mariadb && brew link --force mariadb && cat /etc/my.cnf
     - name: Start MySQL server
       run: brew services start mariadb
     - name: Wait for MySQL server to be ready
