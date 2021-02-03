@@ -88,13 +88,13 @@ jobs:
       uses: docker-practice/actions-setup-docker@master
     - name: Setup MySQL
       run: |
-        docker run -d |
-        --network-alias mysql |
-        -p 3306:3306 |
-        -e MYSQL_ALLOW_EMPTY_PASSWORD=true |
-        -e MYSQL_USER=$MYSQL_USER |
-        -e MYSQL_PASSWORD=$MYSQL_PASSWORD |
-        -e MYSQL_DATABASE=$MYSQL_DATABASE |
+        docker run -d \
+        --network-alias mysql \
+        -p 3306:3306 \
+        -e MYSQL_ALLOW_EMPTY_PASSWORD=true \
+        -e MYSQL_USER=$MYSQL_USER \
+        -e MYSQL_PASSWORD=$MYSQL_PASSWORD \
+        -e MYSQL_DATABASE=$MYSQL_DATABASE \
         mariadb
     - name: Setup PosegreSQL
       run: |
