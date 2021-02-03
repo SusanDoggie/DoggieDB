@@ -75,6 +75,60 @@ jobs:
         action: test
     - uses: codecov/codecov-action@v1
       if: ${{ matrix.enable_codecov }}
+  macos_docker:
+    name: macos_docker
+    runs-on: macOS-latest
+    env:
+      use_xcodebuild: false
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: recursive
+    - name: Install docker
+      uses: docker-practice/actions-setup-docker@master
+    - name: Setup MySQL
+      run: |
+        docker run -d |
+        --network-alias mysql |
+        -p 3306:3306 |
+        -e MYSQL_ALLOW_EMPTY_PASSWORD=true |
+        -e MYSQL_USER=$MYSQL_USER |
+        -e MYSQL_PASSWORD=$MYSQL_PASSWORD |
+        -e MYSQL_DATABASE=$MYSQL_DATABASE |
+        mariadb
+    - name: Setup PosegreSQL
+      run: |
+        docker run -d \
+        --network-alias postgres \
+        -p 5432:5432 \
+        -e POSTGRES_USER=$POSTGRES_USER \
+        -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+        -e POSTGRES_DB=$POSTGRES_DATABASE \
+        postgres
+    - name: Setup Redis
+      run: |
+        docker run -d \
+        --network-alias redis \
+        -p 6379:6379 redis
+    - name: Setup Mongo
+      run: |
+        docker run -d \
+        --network-alias mongo \
+        -p 27017:27017 \
+        -e MONGO_INITDB_ROOT_USERNAME=$MONGO_USERNAME \
+        -e MONGO_INITDB_ROOT_PASSWORD=$MONGO_PASSWORD \
+        -e MONGO_INITDB_DATABASE=$MONGO_DATABASE \
+        mongo
+    - name: Build
+      uses: SusanDoggie/swift-action@main
+      with:
+        action: build
+    - name: Run tests
+      uses: SusanDoggie/swift-action@main
+      with:
+        action: test
+    - uses: codecov/codecov-action@v1
+      if: ${{ matrix.enable_codecov }}
   ubuntu_swift_latest:
     name: latest-${{ matrix.image }}
     container: 
