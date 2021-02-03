@@ -48,6 +48,7 @@ jobs:
     - name: Wait for MySQL server to be ready
       run: |
           mysql -V
+          ls /var/mysql
           ls /tmp
           until echo | mysql -u$USER; do sleep 1; done
       timeout-minutes: 1
