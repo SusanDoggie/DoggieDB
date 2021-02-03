@@ -1,17 +1,17 @@
 name: Builder
 on: [push, pull_request]
 env:
-  MYSQL_HOST: mysql
+  MYSQL_HOST: localhost
   MYSQL_DATABASE: doggiedb
   MYSQL_USERNAME: doggiedb
   MYSQL_PASSWORD: doggiedb
-  POSTGRES_HOST: postgres
+  POSTGRES_HOST: localhost
   POSTGRES_DATABASE: doggiedb
   POSTGRES_USERNAME: doggiedb
   POSTGRES_PASSWORD: doggiedb
-  REDIS_HOST: redis
+  REDIS_HOST: localhost
   REDIS_DATABASE: doggiedb
-  MONGO_HOST: mongo
+  MONGO_HOST: localhost
   MONGO_DATABASE: doggiedb
   MONGO_USERNAME: doggiedb
   MONGO_PASSWORD: doggiedb
@@ -39,41 +39,33 @@ jobs:
     - uses: actions/checkout@v1
       with:
         submodules: recursive
-    - name: Install docker
-      uses: docker-practice/actions-setup-docker@master
-    - name: Setup MySQL
+    - name: Upgrade Homebrew
+      run: brew upgrade
+    - name: Install MySQL
+      run: brew install mariadb && brew link --force mariadb
+    - name: Start MySQL server
+      run: brew services start mariadb && brew services list && lsof -nP -iTCP | grep LISTEN
+    - name: Wait for MySQL server to be ready
       run: |
-        docker run -d --restart always \
-        --network-alias $MYSQL_HOST \
-        -p 3306:3306 \
-        -e MYSQL_ALLOW_EMPTY_PASSWORD=true \
-        -e MYSQL_USER=$MYSQL_USER \
-        -e MYSQL_PASSWORD=$MYSQL_PASSWORD \
-        -e MYSQL_DATABASE=$MYSQL_DATABASE \
-        mariadb
-    - name: Setup PosegreSQL
+          mysql -V
+          ls /tmp
+          until echo | mysql -u$USER; do sleep 1; done
+      timeout-minutes: 1
+    - name: Set up MySQL databases and privileges
       run: |
-        docker run -d --restart always \
-        --network-alias $POSTGRES_HOST \
-        -p 5432:5432 \
-        -e POSTGRES_USER=$POSTGRES_USER \
-        -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
-        -e POSTGRES_DB=$POSTGRES_DATABASE \
-        postgres
-    - name: Setup Redis
+          mysql -u$USER --batch <<-'SQL'
+              CREATE USER $MYSQL_USERNAME@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
+              CREATE DATABASE $MYSQL_DATABASE;
+              GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@localhost;
+          SQL
+    - name: Install PostgreSQL
       run: |
-        docker run -d --restart always \
-        --network-alias $REDIS_HOST \
-        -p 6379:6379 redis
-    - name: Setup Mongo
-      run: |
-        docker run -d --restart always \
-        --network-alias $MONGO_HOST \
-        -p 27017:27017 \
-        -e MONGO_INITDB_ROOT_USERNAME=$MONGO_USERNAME \
-        -e MONGO_INITDB_ROOT_PASSWORD=$MONGO_PASSWORD \
-        -e MONGO_INITDB_DATABASE=$MONGO_DATABASE \
-        mongo
+          export PATH="/usr/local/opt/postgresql/bin:$PATH"
+          brew install postgresql
+          initdb --locale=C -U $POSTGRES_USERNAME --pwfile=<(echo $POSTGRES_PASSWORD)
+          pg_ctl start --wait
+    - name: Install Redis
+      run: brew install redis
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
@@ -140,6 +132,11 @@ jobs:
       uses: SusanDoggie/swift-action@main
       with:
         action: test
+      env:
+        MYSQL_HOST: mysql
+        POSTGRES_HOST: postgres
+        REDIS_HOST: redis
+        MONGO_HOST: mongo
   ubuntu_swift_nightly:
     name: ${{ matrix.image }}
     container:
@@ -197,3 +194,8 @@ jobs:
       uses: SusanDoggie/swift-action@main
       with:
         action: test
+      env:
+        MYSQL_HOST: mysql
+        POSTGRES_HOST: postgres
+        REDIS_HOST: redis
+        MONGO_HOST: mongo
