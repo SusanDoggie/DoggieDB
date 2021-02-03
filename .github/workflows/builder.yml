@@ -1,17 +1,17 @@
 name: Builder
 on: [push, pull_request]
 env:
-  MYSQL_HOST: localhost
+  MYSQL_HOST: mysql
   MYSQL_DATABASE: doggiedb
   MYSQL_USERNAME: doggiedb
   MYSQL_PASSWORD: doggiedb
-  POSTGRES_HOST: localhost
+  POSTGRES_HOST: postgres
   POSTGRES_DATABASE: doggiedb
   POSTGRES_USERNAME: doggiedb
   POSTGRES_PASSWORD: doggiedb
-  REDIS_HOST: localhost
+  REDIS_HOST: redis
   REDIS_DATABASE: doggiedb
-  MONGO_HOST: localhost
+  MONGO_HOST: mongo
   MONGO_DATABASE: doggiedb
   MONGO_USERNAME: doggiedb
   MONGO_PASSWORD: doggiedb
@@ -35,51 +35,6 @@ jobs:
       sdk: ${{ matrix.sdk }}
       destination: ${{ matrix.destination }}
       enable_codecov: ${{ matrix.enable_codecov }}
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        submodules: recursive
-    - name: Upgrade Homebrew
-      run: brew upgrade
-    - name: Install MySQL
-      run: brew install mariadb && brew link --force mariadb
-    - name: Start MySQL server
-      run: brew services start mariadb && brew services list && lsof -nP -iTCP | grep LISTEN
-    - name: Wait for MySQL server to be ready
-      run: |
-          mysql -V
-          until echo | mysql -u$USER; do sleep 1; done
-      timeout-minutes: 1
-    - name: Set up MySQL databases and privileges
-      run: |
-          mysql -u$USER --batch <<-'SQL'
-              CREATE USER $MYSQL_USERNAME@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
-              CREATE DATABASE $MYSQL_DATABASE;
-              GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@localhost;
-          SQL
-    - name: Install PostgreSQL
-      run: |
-          export PATH="/usr/local/opt/postgresql/bin:$PATH"
-          brew install postgresql
-          initdb --locale=C -U $POSTGRES_USERNAME --pwfile=<(echo $POSTGRES_PASSWORD)
-          pg_ctl start --wait
-    - name: Install Redis
-      run: brew install redis
-    - name: Build
-      uses: SusanDoggie/swift-action@main
-      with:
-        action: build
-    - name: Run tests
-      uses: SusanDoggie/swift-action@main
-      with:
-        action: test
-    - uses: codecov/codecov-action@v1
-      if: ${{ matrix.enable_codecov }}
-  macos_docker:
-    name: macos_docker
-    runs-on: macOS-latest
-    env:
-      use_xcodebuild: false
     steps:
     - uses: actions/checkout@v1
       with:
@@ -185,11 +140,6 @@ jobs:
       uses: SusanDoggie/swift-action@main
       with:
         action: test
-      env:
-        MYSQL_HOST: mysql
-        POSTGRES_HOST: postgres
-        REDIS_HOST: redis
-        MONGO_HOST: mongo
   ubuntu_swift_nightly:
     name: ${{ matrix.image }}
     container:
@@ -247,8 +197,3 @@ jobs:
       uses: SusanDoggie/swift-action@main
       with:
         action: test
-      env:
-        MYSQL_HOST: mysql
-        POSTGRES_HOST: postgres
-        REDIS_HOST: redis
-        MONGO_HOST: mongo
