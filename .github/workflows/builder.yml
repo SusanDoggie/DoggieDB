@@ -44,7 +44,7 @@ jobs:
     - name: Setup MySQL
       run: |
         docker run -d \
-        --network-alias mysql \
+        --network-alias $MYSQL_HOST \
         -p 3306:3306 \
         -e MYSQL_ALLOW_EMPTY_PASSWORD=true \
         -e MYSQL_USER=$MYSQL_USER \
@@ -54,7 +54,7 @@ jobs:
     - name: Setup PosegreSQL
       run: |
         docker run -d \
-        --network-alias postgres \
+        --network-alias $POSTGRES_HOST \
         -p 5432:5432 \
         -e POSTGRES_USER=$POSTGRES_USER \
         -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
@@ -63,12 +63,12 @@ jobs:
     - name: Setup Redis
       run: |
         docker run -d \
-        --network-alias redis \
+        --network-alias $REDIS_HOST \
         -p 6379:6379 redis
     - name: Setup Mongo
       run: |
         docker run -d \
-        --network-alias mongo \
+        --network-alias $MONGO_HOST \
         -p 27017:27017 \
         -e MONGO_INITDB_ROOT_USERNAME=$MONGO_USERNAME \
         -e MONGO_INITDB_ROOT_PASSWORD=$MONGO_PASSWORD \
