@@ -35,7 +35,7 @@ jobs:
       with:
         submodules: recursive
     - name: Install MySQL
-      run: brew install mariadb && brew link --force mariadb && mysqladmin --help && cat /usr/local/etc/my.cnf && cat ~/.my.cnf
+      run: brew install mariadb && brew link --force mariadb && ls /usr/local/etc/my.cnf.d
     - name: Start MySQL server
       run: brew services start mariadb
     - name: Wait for MySQL server to be ready
