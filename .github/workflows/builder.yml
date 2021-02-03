@@ -30,12 +30,13 @@ jobs:
       sdk: ${{ matrix.sdk }}
       destination: ${{ matrix.destination }}
       enable_codecov: ${{ matrix.enable_codecov }}
+      MYSQL_UNIX_PORT: /tmp/mysql.sock
     steps:
     - uses: actions/checkout@v1
       with:
         submodules: recursive
     - name: Install MySQL
-      run: brew install mariadb && brew link --force mariadb && ls /usr/local/etc/my.cnf.d
+      run: brew install mariadb && brew link --force mariadb
     - name: Start MySQL server
       run: brew services start mariadb
     - name: Wait for MySQL server to be ready
