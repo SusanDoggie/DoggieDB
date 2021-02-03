@@ -7,7 +7,6 @@ env:
   POSTGRES_DATABASE: doggiedb
   POSTGRES_USERNAME: doggiedb
   POSTGRES_PASSWORD: doggiedb
-  REDIS_DATABASE: doggiedb
   MONGO_DATABASE: doggiedb
   MONGO_USERNAME: doggiedb
   MONGO_PASSWORD: doggiedb
