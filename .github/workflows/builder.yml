@@ -37,9 +37,7 @@ jobs:
     - name: Install MySQL
       run: brew install mariadb && brew link --force mariadb
     - name: Start MySQL server
-      run: brew services start mariadb && ls /usr/local/var/mysql
-    - name: Wait for MySQL server to be ready
-      run: until echo | mysql -u$USER; do sleep 1; done
+      run: brew services start mariadb && until echo | mysql -u$USER; do sleep 1; done
       timeout-minutes: 1
     - name: Set up MySQL databases and privileges
       run: |
