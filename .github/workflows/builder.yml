@@ -38,7 +38,7 @@ jobs:
       uses: shogo82148/actions-setup-mysql@v1
     - name: Set up MySQL databases and privileges
       run: |
-          mysql -uroot --batch <<-'SQL'
+          mysql -uroot -h127.0.0.1 --batch <<-'SQL'
               CREATE USER $MYSQL_USERNAME@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
               CREATE DATABASE $MYSQL_DATABASE;
               GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@localhost;
