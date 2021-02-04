@@ -36,7 +36,7 @@ jobs:
         submodules: recursive
     - name: Install MySQL
       run: |
-        sudo mkdir /usr/local/var/mysql
+        sudo rm -rf /usr/local/var/mysql
         brew install mariadb
         brew link --force mariadb
     - name: Start MySQL server
