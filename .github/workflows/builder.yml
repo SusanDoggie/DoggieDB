@@ -174,7 +174,7 @@ jobs:
           MONGO_INITDB_DATABASE: ${{ env.MONGO_DATABASE }}
     strategy:
       matrix:
-        image: [centos8, amazonlinux2]
+        image: [centos7, centos8, amazonlinux2]
     steps:
     - uses: actions/checkout@v1
       with:
