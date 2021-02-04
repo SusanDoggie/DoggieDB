@@ -36,6 +36,9 @@ jobs:
         submodules: recursive
     - name: Install MySQL
       uses: shogo82148/actions-setup-mysql@v1
+      with:
+        user: ${{ env.MYSQL_USERNAME }}
+        password: ${{ env.MYSQL_PASSWORD }}
     - name: Set up MySQL databases and privileges
       run: |
           mysql -uroot -h127.0.0.1 --batch <<-'SQL'
