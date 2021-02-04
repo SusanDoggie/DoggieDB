@@ -41,8 +41,7 @@ jobs:
     - name: Start MySQL
       run: |
           brew services start mariadb
-          find /var -name "mysqld.sock"
-          brew info mariadb
+          mysql_config --socket
           mysql --help --verbose
     - name: Waiting MySQL
       run: until echo | mysql -u$USER --socket=/var/lib/mysqld/mysqld.sock; do sleep 1; done
