@@ -41,6 +41,7 @@ jobs:
     - name: Start MySQL
       run: |
           brew info mariadb
+          mysql --help --verbose
           brew services start mariadb
           until echo | mysql -u$USER; do sleep 1; done
       timeout-minutes: 1
