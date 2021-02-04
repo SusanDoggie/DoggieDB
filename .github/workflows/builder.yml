@@ -42,7 +42,7 @@ jobs:
     - name: Start MySQL server
       run: |
         mkdir /usr/local/var/mysql
-        mysqld --initialize-insecure
+        # mysqld --initialize-insecure
         brew services start mariadb
         until echo | mysql -u$USER; do sleep 1; done
       timeout-minutes: 1
