@@ -36,12 +36,11 @@ jobs:
         submodules: recursive
     - name: Install MySQL
       run: |
-        sudo rm -rf /usr/local/var/mysql
         brew install mariadb
         brew link --force mariadb
     - name: Start MySQL server
       run: |
-        mysqld --initialize-insecure
+        sudo mysqld --initialize-insecure
         brew services start mariadb
         until echo | mysql -u$USER; do sleep 1; done
       timeout-minutes: 1
