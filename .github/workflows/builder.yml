@@ -44,7 +44,7 @@ jobs:
           mysql_config --socket
           mysql --help --verbose
     - name: Waiting MySQL
-      run: until echo | mysql -u$USER --socket=/var/lib/mysqld/mysqld.sock; do sleep 1; done
+      run: until echo | mysql -u$USER; do sleep 1; done
       timeout-minutes: 1
     - name: Set up MySQL databases and privileges
       run: |
