@@ -40,9 +40,9 @@ jobs:
           brew link --force mariadb
     - name: Start MySQL
       run: |
+          brew services start mariadb
           brew info mariadb
           mysql --help --verbose
-          brew services start mariadb
           until echo | mysql -u$USER; do sleep 1; done
       timeout-minutes: 1
     - name: Set up MySQL databases and privileges
