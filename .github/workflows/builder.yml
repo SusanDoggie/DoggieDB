@@ -35,17 +35,10 @@ jobs:
       with:
         submodules: recursive
     - name: Install MySQL
-      run: |
-        brew install mariadb
-        brew link --force mariadb
-    - name: Start MySQL server
-      run: |
-        brew services start mariadb
-        until echo | mysql -u$USER; do sleep 1; done
-      timeout-minutes: 1
+      uses: shogo82148/actions-setup-mysql@v1
     - name: Set up MySQL databases and privileges
       run: |
-          mysql -u$USER --batch <<-'SQL'
+          mysql -uroot --batch <<-'SQL'
               CREATE USER $MYSQL_USERNAME@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
               CREATE DATABASE $MYSQL_DATABASE;
               GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@localhost;
