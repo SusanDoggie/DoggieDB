@@ -40,6 +40,7 @@ jobs:
         brew link --force mariadb
     - name: Start MySQL server
       run: |
+        sudo mkdir /usr/local/var/mysql
         sudo mysqld --initialize-insecure
         brew services start mariadb
         until echo | mysql -u$USER; do sleep 1; done
