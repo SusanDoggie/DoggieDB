@@ -45,7 +45,7 @@ jobs:
           SQL
     - name: Install PostgreSQL
       run: |
-          export PATH="/usr/local/opt/postgresql/bin:$PATH"
+          export PATH="/usr/local/opt/postgresql/bin:$PATH" PGDATA=/tmp/postgres-test
           brew install postgresql
           initdb --locale=C -U $POSTGRES_USERNAME --pwfile=<(echo $POSTGRES_PASSWORD)
           pg_ctl start --wait
