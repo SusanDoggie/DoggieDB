@@ -44,7 +44,8 @@ jobs:
           find / -name "mysqld.sock"
           brew info mariadb
           mysql --help --verbose
-          until echo | mysql -u$USER --socket=/var/lib/mysqld/mysqld.sock; do sleep 1; done
+    - name: Waiting MySQL
+      run: until echo | mysql -u$USER --socket=/var/lib/mysqld/mysqld.sock; do sleep 1; done
       timeout-minutes: 1
     - name: Set up MySQL databases and privileges
       run: |
