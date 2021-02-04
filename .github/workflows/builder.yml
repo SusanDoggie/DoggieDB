@@ -40,7 +40,7 @@ jobs:
           brew link --force mariadb
     - name: Start MySQL
       run: |
-          sudo chown -R _mysql:mysql /usr/local/var/mysql
+          brew info mariadb
           brew services start mariadb
           until echo | mysql -u$USER; do sleep 1; done
       timeout-minutes: 1
