@@ -43,7 +43,7 @@ jobs:
           brew services start mariadb
           brew info mariadb
           mysql --help --verbose
-          until echo | mysql -u$USER --socket=/var/run/mysqld/mysqld.sock; do sleep 1; done
+          until echo | mysql -u$USER --socket=/var/lib/mysqld/mysqld.sock; do sleep 1; done
       timeout-minutes: 1
     - name: Set up MySQL databases and privileges
       run: |
