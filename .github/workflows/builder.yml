@@ -41,7 +41,7 @@ jobs:
     - name: Start MySQL
       run: |
           brew services start mariadb
-          find / -name "mysqld.sock"
+          find /var -name "mysqld.sock"
           brew info mariadb
           mysql --help --verbose
     - name: Waiting MySQL
