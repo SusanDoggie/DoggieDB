@@ -179,6 +179,12 @@ jobs:
     - uses: actions/checkout@v1
       with:
         submodules: recursive
+    - name: Prepare		
+      run: yum update -y
+    - name: Install libmongoc
+      run: yum install -y mongo-c-driver libbson openssl-devel
+    - name: Install sqlite3
+      run: yum install -y sqlite-devel
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
@@ -297,6 +303,12 @@ jobs:
     - uses: actions/checkout@v1
       with:
         submodules: recursive
+    - name: Prepare		
+      run: yum update -y
+    - name: Install libmongoc
+      run: yum install -y mongo-c-driver libbson openssl-devel
+    - name: Install sqlite3
+      run: yum install -y sqlite-devel
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
