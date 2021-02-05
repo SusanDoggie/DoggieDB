@@ -100,11 +100,11 @@ class PostgreSQLTest: XCTestCase {
             XCTAssertEqual(email["data_type"], "text")
             XCTAssertEqual(phone["data_type"], "text")
             
-            XCTAssertEqual(contact_id["is_nullable"], false)
-            XCTAssertEqual(first_name["is_nullable"], false)
-            XCTAssertEqual(last_name["is_nullable"], true)
-            XCTAssertEqual(email["is_nullable"], false)
-            XCTAssertEqual(phone["is_nullable"], false)
+            XCTAssertEqual(contact_id["is_nullable"], "NO")
+            XCTAssertEqual(first_name["is_nullable"], "NO")
+            XCTAssertEqual(last_name["is_nullable"], "YES")
+            XCTAssertEqual(email["is_nullable"], "NO")
+            XCTAssertEqual(phone["is_nullable"], "NO")
             
         } catch let error {
             

@@ -91,7 +91,7 @@ extension PostgreSQLDriver.Connection {
 extension PostgreSQLDriver.Connection {
     
     func version() -> EventLoopFuture<String> {
-        return self.query("SELECT version();", []).map { $0[0]["version()"]!.string! }
+        return self.query("SELECT version();", []).map { $0[0]["version"]!.string! }
     }
     
     func databases() -> EventLoopFuture<[String]> {
