@@ -16,3 +16,11 @@ For Ubuntu platforms, you need to install some of database drivers.
 ### Ubuntu
 
     apt-get -y install libmongoc-1.0-0 libbson-1.0-0 libssl-dev libsqlite3-dev
+
+### CentOS 8
+
+    yum -y install mongo-c-driver libbson openssl-devel sqlite-devel
+
+### Amazon Linux 2
+
+    yum -y install mongo-c-driver libbson openssl-devel sqlite-devel
