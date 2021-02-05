@@ -43,6 +43,7 @@ jobs:
           brew services start mariadb
           mysql_config --socket
           mysql --help --verbose
+          mysql --print-defaults
     - name: Waiting MySQL
       run: until echo | mysql -u$USER; do sleep 1; done
       timeout-minutes: 1
