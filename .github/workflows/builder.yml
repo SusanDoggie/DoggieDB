@@ -41,6 +41,7 @@ jobs:
     - name: Start MySQL
       run: |
           brew services start mariadb
+          mysql.server start
           mysql_config --socket
           mysql --help --verbose
           mysql --print-defaults $MYSQL_DATABASE
