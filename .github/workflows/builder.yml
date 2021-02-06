@@ -40,7 +40,6 @@ jobs:
           brew link --force mariadb
     - name: Start MySQL
       run: |
-          brew services start mariadb
           mysql.server start
           mysql_config --socket
           mysql --help --verbose
