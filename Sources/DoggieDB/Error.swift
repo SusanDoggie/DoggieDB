@@ -33,6 +33,8 @@ extension Database {
         
         case invalidOperation(message: String)
         
+        case valueNotFound
+        
         case unsupportedType
         
         case unknown
