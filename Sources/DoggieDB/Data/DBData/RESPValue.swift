@@ -70,7 +70,7 @@ extension RESPValue {
             self = DateFormatter.rfc3339.string(from: date).convertedToRESPValue()
             
         case let .binary(value): self = value.convertedToRESPValue()
-        case let .uuid(value): self = "\(value)".convertedToRESPValue()
+        case let .uuid(value): self = value.uuidString.convertedToRESPValue()
         case let .array(value): self = try value.map(RESPValue.init).convertedToRESPValue()
         default: throw Database.Error.unsupportedType
         }

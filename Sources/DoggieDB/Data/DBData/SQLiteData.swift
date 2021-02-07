@@ -62,6 +62,7 @@ extension SQLiteData {
             guard let _value = Double(exactly: value) else { throw Database.Error.unsupportedType }
             self = .float(_value)
             
+        case let .uuid(value): self = .text(value.uuidString)
         case let .binary(value): self = .blob(ByteBuffer(data: value))
         default: throw Database.Error.unsupportedType
         }
