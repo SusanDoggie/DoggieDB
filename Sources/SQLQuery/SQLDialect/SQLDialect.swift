@@ -45,7 +45,7 @@ extension DBConnection {
 
 extension DBConnection {
     
-    public func serialize(_ sql: SQLRaw) -> (String, [DBData])? {
+    func serialize(_ sql: SQLRaw) -> (String, [DBData])? {
         
         guard let dialect = self.sqlDialect else { return nil }
         
