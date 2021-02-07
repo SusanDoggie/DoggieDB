@@ -84,19 +84,19 @@ extension SQLiteDriver.Connection {
 extension SQLiteDriver.Connection {
     
     func version() -> EventLoopFuture<String> {
-        return self.execute("SELECT sqlite_version();", []).map { $0[0]["sqlite_version()"]!.string! }
+        return self.execute("SELECT sqlite_version();").map { $0[0]["sqlite_version()"]!.string! }
     }
     
     func tables() -> EventLoopFuture<[String]> {
-        return self.execute("SELECT name FROM sqlite_master WHERE type = 'table';", []).map { $0.map { $0["name"]!.string! } }
+        return self.execute("SELECT name FROM sqlite_master WHERE type = 'table';").map { $0.map { $0["name"]!.string! } }
     }
     
     func views() -> EventLoopFuture<[String]> {
-        return self.execute("SELECT name FROM sqlite_master WHERE type = 'view';", []).map { $0.map { $0["name"]!.string! } }
+        return self.execute("SELECT name FROM sqlite_master WHERE type = 'view';").map { $0.map { $0["name"]!.string! } }
     }
     
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
-        return self.execute("pragma table_info(\(table));", [])
+        return self.execute("pragma table_info(\(table));")
     }
 }
 
@@ -107,15 +107,18 @@ extension SQLiteDriver.Connection {
     }
     
     func execute(
-        _ string: String,
-        _ binds: [DBData]
+        _ sql: SQLRaw
     ) -> EventLoopFuture<[DBQueryRow]> {
         
         do {
             
-            let binds = try binds.map(SQLiteData.init)
+            guard let (raw, binds) = self.serialize(sql) else {
+                throw Database.Error.invalidOperation(message: "unsupported operation")
+            }
             
-            return self.connection.query(string, binds).map{ $0.map(DBQueryRow.init) }
+            let _binds = try binds.map(SQLiteData.init)
+            
+            return self.connection.query(raw, _binds).map{ $0.map(DBQueryRow.init) }
             
         } catch let error {
             
@@ -124,16 +127,19 @@ extension SQLiteDriver.Connection {
     }
     
     func execute(
-        _ string: String,
-        _ binds: [DBData],
+        _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) -> Void
     ) -> EventLoopFuture<DBQueryMetadata> {
         
         do {
             
-            let binds = try binds.map(SQLiteData.init)
+            guard let (raw, binds) = self.serialize(sql) else {
+                throw Database.Error.invalidOperation(message: "unsupported operation")
+            }
             
-            return self.connection.query(string, binds, { onRow(DBQueryRow($0)) }).map { DBQueryMetadata(metadata: [:]) }
+            let _binds = try binds.map(SQLiteData.init)
+            
+            return self.connection.query(raw, _binds, { onRow(DBQueryRow($0)) }).map { DBQueryMetadata(metadata: [:]) }
             
         } catch let error {
             

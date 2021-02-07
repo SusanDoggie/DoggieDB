@@ -1,5 +1,5 @@
 //
-//  SQLQueryString.swift
+//  SQLRaw.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -64,6 +64,10 @@ extension SQLRaw: ExpressibleByStringInterpolation {
         
         public mutating func appendLiteral(_ literal: String) {
             self.components.append(.string(literal))
+        }
+        
+        public mutating func appendInterpolation(literal value: String) {
+            self.components.append(.string(value))
         }
         
         public mutating func appendInterpolation(_ value: Bool) {

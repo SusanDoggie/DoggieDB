@@ -72,7 +72,7 @@ class MySQLTest: XCTestCase {
         
         do {
             
-            let query = """
+            _ = try connection.execute("""
             CREATE TABLE contacts (
                 contact_id INTEGER PRIMARY KEY NOT NULL,
                 first_name TEXT NOT NULL,
@@ -80,9 +80,7 @@ class MySQLTest: XCTestCase {
                 email TEXT NOT NULL UNIQUE,
                 phone TEXT NOT NULL UNIQUE
             );
-            """
-            
-            _ = try connection.execute(query, []).wait()
+            """).wait()
             
             XCTAssertTrue(try connection.tables().wait().contains("contacts"))
             

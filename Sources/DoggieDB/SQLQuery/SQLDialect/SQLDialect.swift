@@ -69,23 +69,4 @@ extension DBConnection {
         
         return (raw, binds)
     }
-    
-    public func query(
-        _ sql: SQLRaw
-    ) -> EventLoopFuture<[DBQueryRow]> {
-        guard let (raw, binds) = self.serialize(sql) else {
-            return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-        }
-        return self.execute(raw, binds)
-    }
-    
-    public func query(
-        _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) -> Void
-    ) -> EventLoopFuture<DBQueryMetadata> {
-        guard let (raw, binds) = self.serialize(sql) else {
-            return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-        }
-        return self.execute(raw, binds, onRow: onRow)
-    }
 }

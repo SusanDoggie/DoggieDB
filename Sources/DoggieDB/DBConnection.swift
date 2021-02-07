@@ -46,13 +46,11 @@ public protocol DBConnection: AnyObject {
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]>
     
     func execute(
-        _ string: String,
-        _ binds: [DBData]
+        _ sql: SQLRaw
     ) -> EventLoopFuture<[DBQueryRow]>
     
     func execute(
-        _ string: String,
-        _ binds: [DBData],
+        _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) -> Void
     ) -> EventLoopFuture<DBQueryMetadata>
     
@@ -114,16 +112,14 @@ extension DBConnection {
 
 extension DBConnection {
     
-    public func execute(
-        _ string: String,
-        _ binds: [DBData]
+    func execute(
+        _ sql: SQLRaw
     ) -> EventLoopFuture<[DBQueryRow]> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     
-    public func execute(
-        _ string: String,
-        _ binds: [DBData],
+    func execute(
+        _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) -> Void
     ) -> EventLoopFuture<DBQueryMetadata> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))

@@ -32,7 +32,6 @@ let package = Package(
         .macOS(.v10_15),
     ],
     products: [
-        .library(name: "DBDriver", targets: ["DBDriver"]),
         .library(name: "DoggieDB", targets: ["DoggieDB"]),
     ],
     dependencies: [
@@ -46,7 +45,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "DBDriver",
+            name: "DoggieDB",
             dependencies: [
                 .product(name: "DoggieCore", package: "Doggie"),
                 .product(name: "NIO", package: "swift-nio"),
@@ -56,19 +55,6 @@ let package = Package(
                 .product(name: "SQLiteNIO", package: "sqlite-nio"),
                 .product(name: "MySQLNIO", package: "mysql-nio"),
                 .product(name: "PostgresNIO", package: "postgres-nio"),
-            ]
-        ),
-        .target(
-            name: "SQLQuery",
-            dependencies: [
-                .target(name: "DBDriver"),
-            ]
-        ),
-        .target(
-            name: "DoggieDB",
-            dependencies: [
-                .target(name: "DBDriver"),
-                .target(name: "SQLQuery"),
             ]
         ),
         .testTarget(

@@ -86,43 +86,46 @@ extension MySQLDriver.Connection {
 extension MySQLDriver.Connection {
     
     func version() -> EventLoopFuture<String> {
-        return self.execute("SELECT version();", []).map { $0[0]["version()"]!.string! }
+        return self.execute("SELECT version();").map { $0[0]["version()"]!.string! }
     }
     
     func databases() -> EventLoopFuture<[String]> {
-        return self.execute("SHOW DATABASES;", []).map { $0.map { $0["Database"]!.string! } }
+        return self.execute("SHOW DATABASES;").map { $0.map { $0["Database"]!.string! } }
     }
     
     func tables() -> EventLoopFuture<[String]> {
-        return self.execute("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE';", []).map { $0.map { $0[$0.keys.first { $0.hasPrefix("Tables_in_") }!]!.string! } }
+        return self.execute("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE';").map { $0.map { $0[$0.keys.first { $0.hasPrefix("Tables_in_") }!]!.string! } }
     }
     
     func views() -> EventLoopFuture<[String]> {
-        return self.execute("SHOW FULL TABLES WHERE Table_type = 'VIEW';", []).map { $0.map { $0[$0.keys.first { $0.hasPrefix("Tables_in_") }!]!.string! } }
+        return self.execute("SHOW FULL TABLES WHERE Table_type = 'VIEW';").map { $0.map { $0[$0.keys.first { $0.hasPrefix("Tables_in_") }!]!.string! } }
     }
     
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
-        return self.execute("SHOW COLUMNS FROM \(table);", [])
+        return self.execute("SHOW COLUMNS FROM \(table);")
     }
 }
 
 extension MySQLDriver.Connection {
     
     func execute(
-        _ string: String,
-        _ binds: [DBData]
+        _ sql: SQLRaw
     ) -> EventLoopFuture<[DBQueryRow]> {
         
         do {
             
-            if binds.isEmpty {
-                
-                return self.connection.simpleQuery(string).map{ $0.map(DBQueryRow.init) }
+            guard let (raw, binds) = self.serialize(sql) else {
+                throw Database.Error.invalidOperation(message: "unsupported operation")
             }
             
-            let binds = try binds.map(MySQLData.init)
+            if binds.isEmpty {
+                
+                return self.connection.simpleQuery(raw).map{ $0.map(DBQueryRow.init) }
+            }
             
-            return self.connection.query(string, binds).map{ $0.map(DBQueryRow.init) }
+            let _binds = try binds.map(MySQLData.init)
+            
+            return self.connection.query(raw, _binds).map{ $0.map(DBQueryRow.init) }
             
         } catch let error {
             
@@ -131,19 +134,22 @@ extension MySQLDriver.Connection {
     }
     
     func execute(
-        _ string: String,
-        _ binds: [DBData],
+        _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) -> Void
     ) -> EventLoopFuture<DBQueryMetadata> {
         
         do {
             
+            guard let (raw, binds) = self.serialize(sql) else {
+                throw Database.Error.invalidOperation(message: "unsupported operation")
+            }
+            
             var metadata: MySQLQueryMetadata?
-            let binds = try binds.map(MySQLData.init)
+            let _binds = try binds.map(MySQLData.init)
             
             return self.connection.query(
-                string,
-                binds,
+                raw,
+                _binds,
                 onRow: { onRow(DBQueryRow($0)) },
                 onMetadata: { metadata = $0 }
             ).map { metadata.map(DBQueryMetadata.init) ?? DBQueryMetadata(metadata: [:]) }

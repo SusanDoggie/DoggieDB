@@ -92,12 +92,21 @@ extension Decimal: DBDataConvertible {
     }
 }
 
+extension StringProtocol {
+    
+    public func toDBData() -> DBData {
+        return DBData(String(self))
+    }
+}
+
 extension String: DBDataConvertible {
     
     public func toDBData() -> DBData {
         return DBData(self)
     }
 }
+
+extension Substring: DBDataConvertible { }
 
 extension Date: DBDataConvertible {
     
