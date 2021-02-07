@@ -96,7 +96,7 @@ extension SQLiteDriver.Connection {
     }
     
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
-        return self.execute("pragma table_info(\(table));")
+        return self.execute("pragma table_info(\(literal: table));")
     }
 }
 

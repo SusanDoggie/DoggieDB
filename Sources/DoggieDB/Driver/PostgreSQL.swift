@@ -120,7 +120,7 @@ extension PostgreSQLDriver.Connection {
             return self.execute("SELECT * FROM information_schema.columns WHERE table_schema = \(_schema) AND table_name = \(_name);")
         }
         
-        return self.execute("SELECT * FROM information_schema.columns WHERE table_name = \(literal: table);")
+        return self.execute("SELECT * FROM information_schema.columns WHERE table_name = \(table);")
     }
 }
 
