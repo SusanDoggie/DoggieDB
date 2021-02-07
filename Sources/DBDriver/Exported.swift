@@ -23,4 +23,12 @@
 //  THE SOFTWARE.
 //
 
-@_exported import DBDriver
+@_exported import DoggieCore
+
+@_exported import NIO
+
+@_exported import NIOFoundationCompat
+
+@_exported import NIOSSL
+
+@_exported import Logging
