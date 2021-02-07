@@ -117,4 +117,21 @@ class MySQLTest: XCTestCase {
         }
     }
     
+    func testBindVariables() throws {
+        
+        do {
+            
+            let uuid = UUID()
+            
+            let result = try connection.execute("SELECT \(uuid)").wait()
+            
+            print(result)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
 }
