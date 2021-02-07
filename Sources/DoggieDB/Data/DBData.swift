@@ -545,7 +545,7 @@ extension DBData {
         switch self.base {
         case let .signed(value): return Decimal(value)
         case let .unsigned(value): return Decimal(value)
-        case let .number(value): return Int64(exactly: value).map { Decimal($0) }
+        case let .number(value): return Decimal(value)
         case let .decimal(value): return value
         default: return nil
         }
@@ -965,10 +965,77 @@ extension DBData._Decoder: SingleValueDecodingContainer {
     }
     
     @inlinable
+    func _decode(_ type: Decimal.Type) throws -> Decimal {
+        switch value.base {
+        case .null: throw Database.Error.valueNotFound
+            
+        case let .signed(value): return Decimal(value)
+        case let .unsigned(value): return Decimal(value)
+        case let .number(value): return Decimal(value)
+        case let .decimal(decimal): return decimal
+            
+        case let .string(string):
+            
+            guard let value = Decimal(string: string) else { throw Database.Error.unsupportedType }
+            return value
+            
+        default: throw Database.Error.unsupportedType
+        }
+    }
+    
+    @inlinable
     func _decode(_ type: String.Type) throws -> String {
         switch value.base {
         case .null: throw Database.Error.valueNotFound
         case let .string(string): return string
+        default: throw Database.Error.unsupportedType
+        }
+    }
+    
+    @inlinable
+    func _decode(_ type: UUID.Type) throws -> UUID {
+        switch value.base {
+        case .null: throw Database.Error.valueNotFound
+            
+        case let .uuid(uuid): return uuid
+            
+        case let .string(string):
+            
+            guard let value = UUID(uuidString: string) else { throw Database.Error.unsupportedType }
+            return value
+            
+        default: throw Database.Error.unsupportedType
+        }
+    }
+    
+    @inlinable
+    func _decode(_ type: Date.Type) throws -> Date {
+        switch value.base {
+        case .null: throw Database.Error.valueNotFound
+            
+        case let .date(date):
+            
+            guard let value = date.date else { throw Database.Error.unsupportedType }
+            return value
+            
+        default: throw Database.Error.unsupportedType
+        }
+    }
+    
+    @inlinable
+    func _decode(_ type: DateComponents.Type) throws -> DateComponents {
+        switch value.base {
+        case .null: throw Database.Error.valueNotFound
+        case let .date(date): return date
+        default: throw Database.Error.unsupportedType
+        }
+    }
+    
+    @inlinable
+    func _decode(_ type: Data.Type) throws -> Data {
+        switch value.base {
+        case .null: throw Database.Error.valueNotFound
+        case let .binary(data): return data
         default: throw Database.Error.unsupportedType
         }
     }
@@ -989,7 +1056,12 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         case is UInt16.Type: return try self._decode(UInt16.self) as! T
         case is UInt32.Type: return try self._decode(UInt32.self) as! T
         case is UInt64.Type: return try self._decode(UInt64.self) as! T
+        case is Decimal.Type: return try self._decode(Decimal.self) as! T
         case is String.Type: return try self._decode(String.self) as! T
+        case is UUID.Type: return try self._decode(UUID.self) as! T
+        case is Date.Type: return try self._decode(Date.self) as! T
+        case is DateComponents.Type: return try self._decode(DateComponents.self) as! T
+        case is Data.Type: return try self._decode(Data.self) as! T
         default: throw Database.Error.unsupportedType
         }
     }
