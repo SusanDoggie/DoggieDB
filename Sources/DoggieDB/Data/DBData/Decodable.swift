@@ -68,16 +68,6 @@ extension DBData {
     }
 }
 
-extension DBData.DateDecodingStrategy {
-    
-    @usableFromInline
-    static let _iso8601Formatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = .withInternetDateTime
-        return formatter
-    }()
-}
-
 extension DBData {
     
     @inlinable
@@ -374,7 +364,11 @@ extension DBData._Decoder: SingleValueDecodingContainer {
             
             case .iso8601:
                 
-                guard let value = DBData.DateDecodingStrategy._iso8601Formatter.date(from: string) else { throw Database.Error.invalidDateFormat }
+                let formatter = ISO8601DateFormatter()
+                formatter.formatOptions = .withInternetDateTime
+                formatter.timeZone = options.timeZone
+                
+                guard let value = formatter.date(from: string) else { throw Database.Error.invalidDateFormat }
                 return value
                 
             case let .formatted(formatter):
