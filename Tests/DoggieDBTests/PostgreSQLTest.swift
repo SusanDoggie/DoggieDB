@@ -119,7 +119,7 @@ class PostgreSQLTest: XCTestCase {
             
             let result = try connection.execute("SELECT \(uuid)").wait()
             
-            print(result)
+            XCTAssertEqual(result[0]["?column?"]?.uuid, uuid)
             
         } catch let error {
             

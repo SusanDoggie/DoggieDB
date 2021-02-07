@@ -116,7 +116,7 @@ extension PostgreSQLDriver.Connection {
             
             let _schema = table.prefix(upTo: split)
             let _name = table.suffix(from: split).dropFirst()
-
+            
             return self.execute("SELECT * FROM information_schema.columns WHERE table_schema = \(_schema) AND table_name = \(_name);")
         }
         
