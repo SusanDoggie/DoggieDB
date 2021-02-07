@@ -37,6 +37,8 @@ extension Database {
         
         case unsupportedType
         
+        case invalidDateFormat
+        
         case unknown
         
     }
