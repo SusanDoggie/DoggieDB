@@ -121,9 +121,9 @@ class MySQLTest: XCTestCase {
         
         do {
             
-            let uuid = UUID()
+            let value = 42
             
-            let result = try connection.execute("SELECT BIN_TO_UUID(\(uuid))").wait()
+            let result = try connection.execute("SELECT \(value)").wait()
             
             print(result)
             
