@@ -25,7 +25,6 @@
 
 extension Double {
     
-    @inlinable
     init?(exactly value: Decimal) {
         self = NSDecimalNumber(decimal: value).doubleValue
         guard Decimal(self) == value else { return nil }
@@ -34,7 +33,6 @@ extension Double {
 
 extension UInt64 {
     
-    @inlinable
     init?(exactly value: Decimal) {
         self = NSDecimalNumber(decimal: value).uint64Value
         guard Decimal(self) == value else { return nil }
@@ -43,7 +41,6 @@ extension UInt64 {
 
 extension Int64 {
     
-    @inlinable
     init?(exactly value: Decimal) {
         self = NSDecimalNumber(decimal: value).int64Value
         guard Decimal(self) == value else { return nil }

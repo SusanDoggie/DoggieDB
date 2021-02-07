@@ -40,10 +40,8 @@ public enum DBDataType: Hashable {
     case dictionary
 }
 
-@frozen
 public struct DBData {
     
-    @usableFromInline
     indirect enum Base {
         case null
         case boolean(Bool)
@@ -60,55 +58,44 @@ public struct DBData {
         case dictionary([String: DBData])
     }
     
-    @usableFromInline
     let base: Base
     
-    @inlinable
     public init(_ value: Bool) {
         self.base = .boolean(value)
     }
     
-    @inlinable
     public init(_ value: String) {
         self.base = .string(value)
     }
     
-    @inlinable
     public init<S: StringProtocol>(_ value: S) {
         self.base = .string(String(value))
     }
     
-    @inlinable
     public init(_ value: Regex) {
         self.base = .regex(value)
     }
     
-    @inlinable
     public init(_ value: NSRegularExpression) {
         self.base = .regex(Regex(value))
     }
     
-    @inlinable
     public init<T: FixedWidthInteger & SignedInteger>(_ value: T) {
         self.base = .signed(Int64(value))
     }
     
-    @inlinable
     public init<T: FixedWidthInteger & UnsignedInteger>(_ value: T) {
         self.base = .unsigned(UInt64(value))
     }
     
-    @inlinable
     public init<T: BinaryFloatingPoint>(_ value: T) {
         self.base = .number(Double(value))
     }
     
-    @inlinable
     public init(_ value: Decimal) {
         self.base = .decimal(value)
     }
     
-    @inlinable
     public init(
         _ value: Date,
         calendar: Calendar = Calendar(identifier: .iso8601),
@@ -117,35 +104,29 @@ public struct DBData {
         self.base = .date(calendar.dateComponents(in: timeZone, from: value))
     }
     
-    @inlinable
     public init(_ value: DateComponents) {
         self.base = .date(value)
     }
     
-    @inlinable
     public init(_ binary: Data) {
         self.base = .binary(binary)
     }
     
-    @inlinable
     public init(_ uuid: UUID) {
         self.base = .uuid(uuid)
     }
     
-    @inlinable
-    public init<S: Sequence>(_ elements: S) where S.Element == DBData {
-        self.base = .array(Array(elements))
+    public init<S: Sequence>(_ elements: S) where S.Element: DBDataConvertible {
+        self.base = .array(elements.map { $0.toDBData() })
     }
     
-    @inlinable
-    public init(_ elements: [String: DBData]) {
-        self.base = .dictionary(elements)
+    public init<Value: DBDataConvertible>(_ elements: [String: Value]) {
+        self.base = .dictionary(elements.mapValues { $0.toDBData() })
     }
 }
 
 extension DBData: ExpressibleByNilLiteral {
     
-    @inlinable
     public init(nilLiteral value: Void) {
         self.base = .null
     }
@@ -153,7 +134,6 @@ extension DBData: ExpressibleByNilLiteral {
 
 extension DBData: ExpressibleByBooleanLiteral {
     
-    @inlinable
     public init(booleanLiteral value: BooleanLiteralType) {
         self.init(value)
     }
@@ -161,7 +141,6 @@ extension DBData: ExpressibleByBooleanLiteral {
 
 extension DBData: ExpressibleByIntegerLiteral {
     
-    @inlinable
     public init(integerLiteral value: IntegerLiteralType) {
         self.init(value)
     }
@@ -169,7 +148,6 @@ extension DBData: ExpressibleByIntegerLiteral {
 
 extension DBData: ExpressibleByFloatLiteral {
     
-    @inlinable
     public init(floatLiteral value: FloatLiteralType) {
         self.init(value)
     }
@@ -177,7 +155,6 @@ extension DBData: ExpressibleByFloatLiteral {
 
 extension DBData: ExpressibleByStringLiteral {
     
-    @inlinable
     public init(stringLiteral value: StringLiteralType) {
         self.init(value)
     }
@@ -185,7 +162,6 @@ extension DBData: ExpressibleByStringLiteral {
 
 extension DBData: ExpressibleByArrayLiteral {
     
-    @inlinable
     public init(arrayLiteral elements: DBData ...) {
         self.init(elements)
     }
@@ -193,7 +169,6 @@ extension DBData: ExpressibleByArrayLiteral {
 
 extension DBData: ExpressibleByDictionaryLiteral {
     
-    @inlinable
     public init(dictionaryLiteral elements: (String, DBData) ...) {
         self.init(Dictionary(uniqueKeysWithValues: elements))
     }
@@ -201,7 +176,6 @@ extension DBData: ExpressibleByDictionaryLiteral {
 
 extension DBData: CustomStringConvertible {
     
-    @inlinable
     public var description: String {
         switch self.base {
         case .null: return "nil"
@@ -223,7 +197,6 @@ extension DBData: CustomStringConvertible {
 
 extension DBData: Hashable {
     
-    @inlinable
     public static func == (lhs: DBData, rhs: DBData) -> Bool {
         switch (lhs.base, rhs.base) {
         case (.null, .null): return true
@@ -242,7 +215,6 @@ extension DBData: Hashable {
         }
     }
     
-    @inlinable
     public func hash(into hasher: inout Hasher) {
         hasher.combine(type)
         switch self.base {
@@ -264,7 +236,6 @@ extension DBData: Hashable {
 
 extension DBData {
     
-    @inlinable
     public var type: DBDataType {
         switch self.base {
         case .null: return .null
@@ -283,7 +254,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var isNil: Bool {
         switch self.base {
         case .null: return true
@@ -291,7 +261,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var isBool: Bool {
         switch self.base {
         case .boolean: return true
@@ -299,7 +268,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var isString: Bool {
         switch self.base {
         case .string: return true
@@ -307,7 +275,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var isRegex: Bool {
         switch self.base {
         case .regex: return true
@@ -315,7 +282,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var isArray: Bool {
         switch self.base {
         case .array: return true
@@ -323,7 +289,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var isObject: Bool {
         switch self.base {
         case .dictionary: return true
@@ -331,7 +296,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var isSigned: Bool {
         switch self.base {
         case .signed: return true
@@ -339,7 +303,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var isUnsigned: Bool {
         switch self.base {
         case .unsigned: return true
@@ -347,7 +310,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var isNumber: Bool {
         switch self.base {
         case .number: return true
@@ -355,7 +317,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var isDecimal: Bool {
         switch self.base {
         case .decimal: return true
@@ -363,7 +324,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var isNumeric: Bool {
         switch self.base {
         case .signed: return true
@@ -373,7 +333,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var isDate: Bool {
         switch self.base {
         case .date: return true
@@ -381,7 +340,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var isBinary: Bool {
         switch self.base {
         case .binary: return true
@@ -389,7 +347,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var isUUID: Bool {
         switch self.base {
         case .uuid: return true
@@ -400,7 +357,6 @@ extension DBData {
 
 extension DBData {
     
-    @inlinable
     public var boolValue: Bool? {
         switch self.base {
         case let .boolean(value): return value
@@ -408,7 +364,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var int8Value: Int8? {
         switch self.base {
         case let .signed(value): return Int8(exactly: value)
@@ -419,7 +374,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var uint8Value: UInt8? {
         switch self.base {
         case let .signed(value): return UInt8(exactly: value)
@@ -430,7 +384,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var int16Value: Int16? {
         switch self.base {
         case let .signed(value): return Int16(exactly: value)
@@ -441,7 +394,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var uint16Value: UInt16? {
         switch self.base {
         case let .signed(value): return UInt16(exactly: value)
@@ -452,7 +404,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var int32Value: Int32? {
         switch self.base {
         case let .signed(value): return Int32(exactly: value)
@@ -463,7 +414,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var uint32Value: UInt32? {
         switch self.base {
         case let .signed(value): return UInt32(exactly: value)
@@ -474,7 +424,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var int64Value: Int64? {
         switch self.base {
         case let .signed(value): return value
@@ -485,7 +434,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var uint64Value: UInt64? {
         switch self.base {
         case let .signed(value): return UInt64(exactly: value)
@@ -496,7 +444,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var intValue: Int? {
         switch self.base {
         case let .signed(value): return Int(exactly: value)
@@ -507,7 +454,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var uintValue: UInt? {
         switch self.base {
         case let .signed(value): return UInt(exactly: value)
@@ -518,7 +464,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var floatValue: Float? {
         switch self.base {
         case let .signed(value): return Float(exactly: value)
@@ -529,7 +474,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var doubleValue: Double? {
         switch self.base {
         case let .signed(value): return Double(exactly: value)
@@ -540,7 +484,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var decimalValue: Decimal? {
         switch self.base {
         case let .signed(value): return Decimal(value)
@@ -551,7 +494,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var string: String? {
         switch self.base {
         case let .string(value): return value
@@ -559,7 +501,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var regex: Regex? {
         switch self.base {
         case let .regex(value): return value
@@ -567,7 +508,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var date: Date? {
         switch self.base {
         case let .date(value): return value.date
@@ -575,7 +515,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var dateComponents: DateComponents? {
         switch self.base {
         case let .date(value): return value
@@ -583,7 +522,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var binary: Data? {
         switch self.base {
         case let .binary(value): return value
@@ -591,7 +529,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var uuid: UUID? {
         switch self.base {
         case let .uuid(value): return value
@@ -599,7 +536,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var dictionary: [String: DBData]? {
         switch self.base {
         case let .dictionary(value): return value
@@ -610,7 +546,6 @@ extension DBData {
 
 extension DBData {
     
-    @inlinable
     public var count: Int {
         switch self.base {
         case let .array(value): return value.count
@@ -619,7 +554,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public subscript(index: Int) -> DBData {
         get {
             guard 0..<count ~= index else { return nil }
@@ -643,7 +577,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public var keys: Dictionary<String, DBData>.Keys {
         switch self.base {
         case let .dictionary(value): return value.keys
@@ -651,7 +584,6 @@ extension DBData {
         }
     }
     
-    @inlinable
     public subscript(key: String) -> DBData {
         get {
             switch self.base {

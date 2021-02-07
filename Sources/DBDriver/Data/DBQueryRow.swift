@@ -34,13 +34,10 @@ public protocol DBRowConvertable {
     func value(_ column: String) -> DBData?
 }
 
-@frozen
 public struct DBQueryRow {
     
-    @usableFromInline
     let row: DBRowConvertable
     
-    @inlinable
     public init<C: DBRowConvertable>(_ row: C) {
         self.row = row
     }
@@ -48,7 +45,6 @@ public struct DBQueryRow {
 
 extension DBQueryRow: CustomStringConvertible {
     
-    @inlinable
     public var description: String {
         var dict: [String: DBData] = [:]
         for key in row.keys {
@@ -60,27 +56,22 @@ extension DBQueryRow: CustomStringConvertible {
 
 extension DBQueryRow {
     
-    @inlinable
     public var count: Int {
         return self.row.count
     }
     
-    @inlinable
     public var keys: [String] {
         return self.row.keys
     }
     
-    @inlinable
     public func contains(column: String) -> Bool {
         return self.row.contains(column: column)
     }
     
-    @inlinable
     public subscript(_ column: String) -> DBData? {
         return self.row.value(column)
     }
     
-    @inlinable
     public func decode<T: Decodable>(_ type: T.Type, forKey key: String) throws -> T? {
         return try self.row.value(key)?.decode(type)
     }

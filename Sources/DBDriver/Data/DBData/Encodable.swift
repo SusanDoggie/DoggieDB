@@ -25,30 +25,23 @@
 
 extension DBData: Encodable {
     
-    @frozen
-    @usableFromInline
     struct CodingKey: Swift.CodingKey {
         
-        @usableFromInline
         var stringValue: String
         
-        @usableFromInline
         var intValue: Int?
         
-        @inlinable
         init(stringValue: String) {
             self.stringValue = stringValue
             self.intValue = nil
         }
         
-        @inlinable
         init(intValue: Int) {
             self.stringValue = "\(intValue)"
             self.intValue = intValue
         }
     }
     
-    @inlinable
     public func encode(to encoder: Encoder) throws {
         
         switch self.base {

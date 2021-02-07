@@ -144,17 +144,14 @@ extension SQLiteDriver.Connection {
 
 extension SQLiteRow: DBRowConvertable {
     
-    @inlinable
     public var count: Int {
         return self.columns.count
     }
     
-    @inlinable
     public var keys: [String] {
         return self.columns.map { $0.name }
     }
     
-    @inlinable
     public func contains(column: String) -> Bool {
         return self.columns.contains { $0.name == column }
     }

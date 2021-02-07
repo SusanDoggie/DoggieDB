@@ -44,7 +44,6 @@ extension DBData {
         case custom((Decoder) throws -> Date)
     }
     
-    @frozen
     public struct DecoderOptions {
         
         public var dateDecodingStrategy: DateDecodingStrategy
@@ -70,32 +69,24 @@ extension DBData {
 
 extension DBData {
     
-    @inlinable
     public func decode<T: Decodable>(_ type: T.Type, options: DecoderOptions = DecoderOptions()) throws -> T {
         return try T(from: _Decoder(value: self, codingPath: [], options: options))
     }
     
-    @frozen
-    @usableFromInline
     struct _Decoder: Decoder {
         
-        @usableFromInline
         let value: DBData
         
-        @usableFromInline
         let codingPath: [Swift.CodingKey]
         
-        @usableFromInline
         let options: DecoderOptions
         
-        @inlinable
         init(value: DBData, codingPath: [Swift.CodingKey], options: DecoderOptions) {
             self.value = value
             self.codingPath = codingPath
             self.options = options
         }
         
-        @inlinable
         func container<Key: Swift.CodingKey>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
             
             guard !value.isNil else { throw Database.Error.valueNotFound }
@@ -105,7 +96,6 @@ extension DBData {
             return KeyedDecodingContainer(container)
         }
         
-        @inlinable
         func unkeyedContainer() throws -> UnkeyedDecodingContainer {
             
             guard !value.isNil else { throw Database.Error.valueNotFound }
@@ -114,26 +104,19 @@ extension DBData {
             return _UnkeyedDecodingContainer(array: array, codingPath: codingPath, options: options)
         }
         
-        @inlinable
         func singleValueContainer() throws -> SingleValueDecodingContainer {
             return self
         }
     }
     
-    @frozen
-    @usableFromInline
     struct _KeyedDecodingContainer<Key: Swift.CodingKey> {
         
-        @usableFromInline
         let value: [String : DBData]
         
-        @usableFromInline
         let codingPath: [Swift.CodingKey]
         
-        @usableFromInline
         let options: DecoderOptions
         
-        @inlinable
         init(dictionary: [String : DBData], codingPath: [Swift.CodingKey], options: DecoderOptions) {
             self.value = dictionary
             self.codingPath = codingPath
@@ -141,23 +124,16 @@ extension DBData {
         }
     }
     
-    @frozen
-    @usableFromInline
     struct _UnkeyedDecodingContainer {
         
-        @usableFromInline
         let value: [DBData]
         
-        @usableFromInline
         let codingPath: [Swift.CodingKey]
         
-        @usableFromInline
         let options: DecoderOptions
         
-        @usableFromInline
         var currentIndex: Int = 0
         
-        @inlinable
         init(array: [DBData], codingPath: [Swift.CodingKey], options: DecoderOptions) {
             self.value = array
             self.codingPath = codingPath
@@ -168,17 +144,14 @@ extension DBData {
 
 extension DBData._Decoder: SingleValueDecodingContainer {
     
-    @inlinable
     var userInfo: [CodingUserInfoKey: Any] {
         return options.userInfo
     }
     
-    @inlinable
     func decodeNil() -> Bool {
         return value.isNil
     }
     
-    @inlinable
     func _decode(_ type: Bool.Type) throws -> Bool {
         switch value.base {
         case .null: throw Database.Error.valueNotFound
@@ -197,7 +170,6 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         }
     }
     
-    @inlinable
     func _decode<T: BinaryFloatingPoint>(_ type: T.Type) throws -> T {
         switch value.base {
         case .null: throw Database.Error.valueNotFound
@@ -233,7 +205,6 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         }
     }
     
-    @inlinable
     func _decode<T: FixedWidthInteger>(_ type: T.Type) throws -> T {
         switch value.base {
         case .null: throw Database.Error.valueNotFound
@@ -268,7 +239,6 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         }
     }
     
-    @inlinable
     func _decode(_ type: Decimal.Type) throws -> Decimal {
         switch value.base {
         case .null: throw Database.Error.valueNotFound
@@ -287,7 +257,6 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         }
     }
     
-    @inlinable
     func _decode(_ type: String.Type) throws -> String {
         switch value.base {
         case .null: throw Database.Error.valueNotFound
@@ -296,7 +265,6 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         }
     }
     
-    @inlinable
     func _decode(_ type: UUID.Type) throws -> UUID {
         switch value.base {
         case .null: throw Database.Error.valueNotFound
@@ -312,7 +280,6 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         }
     }
     
-    @inlinable
     func _decode(_ type: Date.Type) throws -> Date {
         switch value.base {
         case .null: throw Database.Error.valueNotFound
@@ -385,7 +352,6 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         }
     }
     
-    @inlinable
     func _decode(_ type: DateComponents.Type) throws -> DateComponents {
         switch value.base {
         case .null: throw Database.Error.valueNotFound
@@ -394,7 +360,6 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         }
     }
     
-    @inlinable
     func _decode(_ type: Data.Type) throws -> Data {
         switch value.base {
         case .null: throw Database.Error.valueNotFound
@@ -403,7 +368,6 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         }
     }
     
-    @inlinable
     func decode<T: Decodable>(_ type: T.Type) throws -> T {
         switch type {
         case is Bool.Type: return try self._decode(Bool.self) as! T
@@ -432,29 +396,24 @@ extension DBData._Decoder: SingleValueDecodingContainer {
 
 extension DBData._KeyedDecodingContainer: KeyedDecodingContainerProtocol {
     
-    @inlinable
     var allKeys: [Key] {
         return value.keys.compactMap { Key(stringValue: $0) }
     }
     
-    @inlinable
     func contains(_ key: Key) -> Bool {
         return value.keys.contains(key.stringValue)
     }
     
-    @inlinable
     func decodeNil(forKey key: Key) throws -> Bool {
         guard let entry = value[key.stringValue] else { throw Database.Error.valueNotFound }
         return entry.isNil
     }
     
-    @inlinable
     func decode<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
         guard let entry = value[key.stringValue] else { throw Database.Error.valueNotFound }
         return try entry.decode(type)
     }
     
-    @inlinable
     func nestedContainer<NestedKey: CodingKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> {
         
         guard let entry = self.value[key.stringValue] else { throw Database.Error.valueNotFound }
@@ -467,7 +426,6 @@ extension DBData._KeyedDecodingContainer: KeyedDecodingContainerProtocol {
         return KeyedDecodingContainer(container)
     }
     
-    @inlinable
     func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
         
         guard let entry = self.value[key.stringValue] else { throw Database.Error.valueNotFound }
@@ -479,7 +437,6 @@ extension DBData._KeyedDecodingContainer: KeyedDecodingContainerProtocol {
         return DBData._UnkeyedDecodingContainer(array: array, codingPath: codingPath, options: options)
     }
     
-    @inlinable
     func _superDecoder(forKey key: __owned CodingKey) throws -> Decoder {
         
         guard let entry = value[key.stringValue] else { throw Database.Error.valueNotFound }
@@ -490,12 +447,10 @@ extension DBData._KeyedDecodingContainer: KeyedDecodingContainerProtocol {
         return DBData._Decoder(value: entry, codingPath: codingPath, options: options)
     }
     
-    @inlinable
     func superDecoder() throws -> Decoder {
         return try _superDecoder(forKey: DBData.CodingKey(stringValue: "super"))
     }
     
-    @inlinable
     func superDecoder(forKey key: Key) throws -> Decoder {
         return try _superDecoder(forKey: key)
     }
@@ -503,17 +458,14 @@ extension DBData._KeyedDecodingContainer: KeyedDecodingContainerProtocol {
 
 extension DBData._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
     
-    @inlinable
     var count: Int? {
         return value.count
     }
     
-    @inlinable
     var isAtEnd: Bool {
         return self.currentIndex >= value.count
     }
     
-    @inlinable
     mutating func decodeNil() throws -> Bool {
         
         guard !self.isAtEnd else { throw Database.Error.valueNotFound }
@@ -528,7 +480,6 @@ extension DBData._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         }
     }
     
-    @inlinable
     mutating func decode<T: Decodable>(_ type: T.Type) throws -> T {
         
         guard !self.isAtEnd else { throw Database.Error.valueNotFound }
@@ -539,7 +490,6 @@ extension DBData._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         return decoded
     }
     
-    @inlinable
     mutating func nestedContainer<NestedKey: CodingKey>(keyedBy type: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey> {
         
         guard !self.isAtEnd else { throw Database.Error.valueNotFound }
@@ -555,7 +505,6 @@ extension DBData._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         return KeyedDecodingContainer(container)
     }
     
-    @inlinable
     mutating func nestedUnkeyedContainer() throws -> UnkeyedDecodingContainer {
         
         guard !self.isAtEnd else { throw Database.Error.valueNotFound }
@@ -569,7 +518,6 @@ extension DBData._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         return DBData._UnkeyedDecodingContainer(array: array, codingPath: codingPath, options: options)
     }
     
-    @inlinable
     mutating func superDecoder() throws -> Decoder {
         
         guard !self.isAtEnd else { throw Database.Error.valueNotFound }

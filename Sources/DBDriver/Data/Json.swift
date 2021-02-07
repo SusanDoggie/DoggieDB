@@ -25,7 +25,6 @@
 
 extension DBData {
     
-    @inlinable
     public init(_ json: Json) {
         switch json.type {
         case .null: self = nil

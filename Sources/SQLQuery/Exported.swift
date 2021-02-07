@@ -24,5 +24,3 @@
 //
 
 @_exported import DBDriver
-
-@_exported import SQLQuery

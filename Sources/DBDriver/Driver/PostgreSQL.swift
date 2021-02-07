@@ -186,17 +186,14 @@ extension DBQueryMetadata {
 
 extension PostgresRow: DBRowConvertable {
     
-    @inlinable
     public var count: Int {
         return self.rowDescription.fields.count
     }
     
-    @inlinable
     public var keys: [String] {
         return self.rowDescription.fields.map { $0.name }
     }
     
-    @inlinable
     public func contains(column: String) -> Bool {
         return self.rowDescription.fields.contains { $0.name == column }
     }

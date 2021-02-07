@@ -59,9 +59,16 @@ let package = Package(
             ]
         ),
         .target(
+            name: "SQLQuery",
+            dependencies: [
+                .target(name: "DBDriver"),
+            ]
+        ),
+        .target(
             name: "DoggieDB",
             dependencies: [
                 .target(name: "DBDriver"),
+                .target(name: "SQLQuery"),
             ]
         ),
         .testTarget(
