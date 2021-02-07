@@ -25,9 +25,64 @@
 
 extension DBData {
     
+    /// The strategy to use for decoding `Date` values.
+    public enum DateDecodingStrategy {
+        
+        /// Decode the `Date` as a UNIX timestamp from a number.
+        case secondsSince1970
+        
+        /// Decode the `Date` as UNIX millisecond timestamp from a number.
+        case millisecondsSince1970
+        
+        /// Decode the `Date` as an ISO-8601-formatted string (in RFC 3339 format).
+        case iso8601
+        
+        /// Decode the `Date` as a string parsed by the given formatter.
+        case formatted(DateFormatter)
+        
+        /// Decode the `Date` as a custom value decoded by the given closure.
+        case custom((Decoder) throws -> Date)
+    }
+    
+    @frozen
+    public struct DecoderOptions {
+        
+        public var dateDecodingStrategy: DateDecodingStrategy
+        
+        public var calendar: Calendar
+        
+        public var timeZone: TimeZone
+        
+        public var userInfo: [CodingUserInfoKey: Any]
+        
+        public init(
+            dateDecodingStrategy: DateDecodingStrategy = .iso8601,
+            calendar: Calendar = Calendar(identifier: .iso8601),
+            timeZone: TimeZone = TimeZone(identifier: "UTC")!,
+            userInfo: [CodingUserInfoKey: Any] = [:]) {
+            self.dateDecodingStrategy = dateDecodingStrategy
+            self.calendar = calendar
+            self.timeZone = timeZone
+            self.userInfo = userInfo
+        }
+    }
+}
+
+extension DBData.DateDecodingStrategy {
+    
+    @usableFromInline
+    static let _iso8601Formatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = .withInternetDateTime
+        return formatter
+    }()
+}
+
+extension DBData {
+    
     @inlinable
-    public func decode<T>(_ type: T.Type) throws -> T where T: Decodable {
-        return try T(from: _Decoder(value: self))
+    public func decode<T>(_ type: T.Type, options: DecoderOptions = DecoderOptions()) throws -> T where T: Decodable {
+        return try T(from: _Decoder(value: self, codingPath: [], options: options))
     }
     
     @frozen
@@ -41,13 +96,13 @@ extension DBData {
         let codingPath: [Swift.CodingKey]
         
         @usableFromInline
-        let userInfo: [CodingUserInfoKey: Any]
+        let options: DecoderOptions
         
         @inlinable
-        init(value: DBData, codingPath: [Swift.CodingKey] = [], userInfo: [CodingUserInfoKey: Any] = [:]) {
+        init(value: DBData, codingPath: [Swift.CodingKey], options: DecoderOptions) {
             self.value = value
             self.codingPath = codingPath
-            self.userInfo = userInfo
+            self.options = options
         }
         
         @inlinable
@@ -56,7 +111,7 @@ extension DBData {
             guard !value.isNil else { throw Database.Error.valueNotFound }
             guard case let .dictionary(dictionary) = value.base else { throw Database.Error.unsupportedType }
             
-            let container = _KeyedDecodingContainer<Key>(dictionary: dictionary, codingPath: codingPath, userInfo: userInfo)
+            let container = _KeyedDecodingContainer<Key>(dictionary: dictionary, codingPath: codingPath, options: options)
             return KeyedDecodingContainer(container)
         }
         
@@ -66,7 +121,7 @@ extension DBData {
             guard !value.isNil else { throw Database.Error.valueNotFound }
             guard case let .array(array) = value.base else { throw Database.Error.unsupportedType }
             
-            return _UnkeyedDecodingContainer(array: array, codingPath: codingPath, userInfo: userInfo)
+            return _UnkeyedDecodingContainer(array: array, codingPath: codingPath, options: options)
         }
         
         @inlinable
@@ -80,19 +135,19 @@ extension DBData {
     struct _KeyedDecodingContainer<Key: Swift.CodingKey> {
         
         @usableFromInline
-        let dictionary: [String : DBData]
+        let value: [String : DBData]
         
         @usableFromInline
         let codingPath: [Swift.CodingKey]
         
         @usableFromInline
-        let userInfo: [CodingUserInfoKey: Any]
+        let options: DecoderOptions
         
         @inlinable
-        init(dictionary: [String : DBData], codingPath: [Swift.CodingKey], userInfo: [CodingUserInfoKey: Any]) {
-            self.dictionary = dictionary
+        init(dictionary: [String : DBData], codingPath: [Swift.CodingKey], options: DecoderOptions) {
+            self.value = dictionary
             self.codingPath = codingPath
-            self.userInfo = userInfo
+            self.options = options
         }
     }
     
@@ -101,27 +156,32 @@ extension DBData {
     struct _UnkeyedDecodingContainer {
         
         @usableFromInline
-        let array: [DBData]
+        let value: [DBData]
         
         @usableFromInline
         let codingPath: [Swift.CodingKey]
         
         @usableFromInline
-        let userInfo: [CodingUserInfoKey: Any]
+        let options: DecoderOptions
         
         @usableFromInline
         var currentIndex: Int = 0
         
         @inlinable
-        init(array: [DBData], codingPath: [Swift.CodingKey], userInfo: [CodingUserInfoKey: Any]) {
-            self.array = array
+        init(array: [DBData], codingPath: [Swift.CodingKey], options: DecoderOptions) {
+            self.value = array
             self.codingPath = codingPath
-            self.userInfo = userInfo
+            self.options = options
         }
     }
 }
 
 extension DBData._Decoder: SingleValueDecodingContainer {
+    
+    @inlinable
+    var userInfo: [CodingUserInfoKey: Any] {
+        return options.userInfo
+    }
     
     @inlinable
     func decodeNil() -> Bool {
@@ -272,6 +332,61 @@ extension DBData._Decoder: SingleValueDecodingContainer {
             guard let value = date.date else { throw Database.Error.unsupportedType }
             return value
             
+        case let .signed(value):
+            
+            switch options.dateDecodingStrategy {
+            case .secondsSince1970: return Date(timeIntervalSince1970: Double(value))
+            case .millisecondsSince1970: return Date(timeIntervalSince1970: Double(value) / 1000.0)
+            case let .custom(closure): return try closure(self)
+            default: throw Database.Error.unsupportedType
+            }
+            
+        case let .unsigned(value):
+            
+            switch options.dateDecodingStrategy {
+            case .secondsSince1970: return Date(timeIntervalSince1970: Double(value))
+            case .millisecondsSince1970: return Date(timeIntervalSince1970: Double(value) / 1000.0)
+            case let .custom(closure): return try closure(self)
+            default: throw Database.Error.unsupportedType
+            }
+            
+        case let .number(value):
+            
+            switch options.dateDecodingStrategy {
+            case .secondsSince1970: return Date(timeIntervalSince1970: value)
+            case .millisecondsSince1970: return Date(timeIntervalSince1970: value / 1000.0)
+            case let .custom(closure): return try closure(self)
+            default: throw Database.Error.unsupportedType
+            }
+            
+        case let .decimal(value):
+            
+            switch options.dateDecodingStrategy {
+            case .secondsSince1970: return Date(timeIntervalSince1970: value.doubleValue)
+            case .millisecondsSince1970: return Date(timeIntervalSince1970: value.doubleValue / 1000.0)
+            case let .custom(closure): return try closure(self)
+            default: throw Database.Error.unsupportedType
+            }
+            
+        case let .string(string):
+            
+            switch options.dateDecodingStrategy {
+            
+            case .iso8601:
+                
+                guard let value = DBData.DateDecodingStrategy._iso8601Formatter.date(from: string) else { throw Database.Error.unsupportedType }
+                return value
+                
+            case let .formatted(formatter):
+                
+                guard let value = formatter.date(from: string) else { throw Database.Error.unsupportedType }
+                return value
+                
+            case let .custom(closure): return try closure(self)
+                
+            default: throw Database.Error.unsupportedType
+            }
+            
         default: throw Database.Error.unsupportedType
         }
     }
@@ -281,7 +396,7 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         switch value.base {
         case .null: throw Database.Error.valueNotFound
         case let .date(date): return date
-        default: throw Database.Error.unsupportedType
+        default: return try options.calendar.dateComponents(in: options.timeZone, from: self._decode(Date.self))
         }
     }
     
@@ -325,60 +440,60 @@ extension DBData._KeyedDecodingContainer: KeyedDecodingContainerProtocol {
     
     @inlinable
     var allKeys: [Key] {
-        return dictionary.keys.compactMap { Key(stringValue: $0) }
+        return value.keys.compactMap { Key(stringValue: $0) }
     }
     
     @inlinable
     func contains(_ key: Key) -> Bool {
-        return dictionary.keys.contains(key.stringValue)
+        return value.keys.contains(key.stringValue)
     }
     
     @inlinable
     func decodeNil(forKey key: Key) throws -> Bool {
-        guard let entry = dictionary[key.stringValue] else { throw Database.Error.valueNotFound }
+        guard let entry = value[key.stringValue] else { throw Database.Error.valueNotFound }
         return entry.isNil
     }
     
     @inlinable
     func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T : Decodable {
-        guard let entry = dictionary[key.stringValue] else { throw Database.Error.valueNotFound }
+        guard let entry = value[key.stringValue] else { throw Database.Error.valueNotFound }
         return try entry.decode(type)
     }
     
     @inlinable
     func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {
         
-        guard let entry = self.dictionary[key.stringValue] else { throw Database.Error.valueNotFound }
+        guard let entry = self.value[key.stringValue] else { throw Database.Error.valueNotFound }
         guard case let .dictionary(dictionary) = entry.base else { throw Database.Error.unsupportedType }
         
         var codingPath = self.codingPath
         codingPath.append(key)
         
-        let container = DBData._KeyedDecodingContainer<NestedKey>(dictionary: dictionary, codingPath: codingPath, userInfo: userInfo)
+        let container = DBData._KeyedDecodingContainer<NestedKey>(dictionary: dictionary, codingPath: codingPath, options: options)
         return KeyedDecodingContainer(container)
     }
     
     @inlinable
     func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
         
-        guard let entry = self.dictionary[key.stringValue] else { throw Database.Error.valueNotFound }
+        guard let entry = self.value[key.stringValue] else { throw Database.Error.valueNotFound }
         guard case let .array(array) = entry.base else { throw Database.Error.unsupportedType }
         
         var codingPath = self.codingPath
         codingPath.append(key)
         
-        return DBData._UnkeyedDecodingContainer(array: array, codingPath: codingPath, userInfo: userInfo)
+        return DBData._UnkeyedDecodingContainer(array: array, codingPath: codingPath, options: options)
     }
     
     @inlinable
     func _superDecoder(forKey key: __owned CodingKey) throws -> Decoder {
         
-        guard let entry = dictionary[key.stringValue] else { throw Database.Error.valueNotFound }
+        guard let entry = value[key.stringValue] else { throw Database.Error.valueNotFound }
         
         var codingPath = self.codingPath
         codingPath.append(key)
         
-        return DBData._Decoder(value: entry, codingPath: codingPath, userInfo: userInfo)
+        return DBData._Decoder(value: entry, codingPath: codingPath, options: options)
     }
     
     @inlinable
@@ -396,12 +511,12 @@ extension DBData._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
     
     @inlinable
     var count: Int? {
-        return array.count
+        return value.count
     }
     
     @inlinable
     var isAtEnd: Bool {
-        return self.currentIndex >= array.count
+        return self.currentIndex >= value.count
     }
     
     @inlinable
@@ -409,7 +524,7 @@ extension DBData._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         
         guard !self.isAtEnd else { throw Database.Error.valueNotFound }
         
-        let value = array[self.currentIndex]
+        let value = self.value[self.currentIndex]
         
         if value.isNil {
             self.currentIndex += 1
@@ -424,7 +539,7 @@ extension DBData._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         
         guard !self.isAtEnd else { throw Database.Error.valueNotFound }
         
-        let decoded = try array[self.currentIndex].decode(type)
+        let decoded = try value[self.currentIndex].decode(type)
         
         self.currentIndex += 1
         return decoded
@@ -435,14 +550,14 @@ extension DBData._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         
         guard !self.isAtEnd else { throw Database.Error.valueNotFound }
         
-        guard case let .dictionary(dictionary) = self.array[self.currentIndex].base else { throw Database.Error.unsupportedType }
+        guard case let .dictionary(dictionary) = self.value[self.currentIndex].base else { throw Database.Error.unsupportedType }
         
         var codingPath = self.codingPath
         codingPath.append(DBData.CodingKey(intValue: self.currentIndex))
         
         self.currentIndex += 1
         
-        let container = DBData._KeyedDecodingContainer<NestedKey>(dictionary: dictionary, codingPath: codingPath, userInfo: userInfo)
+        let container = DBData._KeyedDecodingContainer<NestedKey>(dictionary: dictionary, codingPath: codingPath, options: options)
         return KeyedDecodingContainer(container)
     }
     
@@ -451,13 +566,13 @@ extension DBData._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         
         guard !self.isAtEnd else { throw Database.Error.valueNotFound }
         
-        guard case let .array(array) = self.array[self.currentIndex].base else { throw Database.Error.unsupportedType }
+        guard case let .array(array) = self.value[self.currentIndex].base else { throw Database.Error.unsupportedType }
         
         var codingPath = self.codingPath
         codingPath.append(DBData.CodingKey(intValue: self.currentIndex))
         
         self.currentIndex += 1
-        return DBData._UnkeyedDecodingContainer(array: array, codingPath: codingPath, userInfo: userInfo)
+        return DBData._UnkeyedDecodingContainer(array: array, codingPath: codingPath, options: options)
     }
     
     @inlinable
@@ -465,12 +580,12 @@ extension DBData._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         
         guard !self.isAtEnd else { throw Database.Error.valueNotFound }
         
-        let value = array[self.currentIndex]
+        let value = self.value[self.currentIndex]
         
         var codingPath = self.codingPath
         codingPath.append(DBData.CodingKey(intValue: self.currentIndex))
         
         self.currentIndex += 1
-        return DBData._Decoder(value: value, codingPath: codingPath, userInfo: userInfo)
+        return DBData._Decoder(value: value, codingPath: codingPath, options: options)
     }
 }
