@@ -91,23 +91,23 @@ extension PostgreSQLDriver.Connection {
 extension PostgreSQLDriver.Connection {
     
     func version() -> EventLoopFuture<String> {
-        return self.query("SELECT version();", []).map { $0[0]["version"]!.string! }
+        return self.execute("SELECT version();", []).map { $0[0]["version"]!.string! }
     }
     
     func databases() -> EventLoopFuture<[String]> {
-        return self.query("SELECT datname FROM pg_catalog.pg_database;", []).map { $0.compactMap { $0["datname"]!.string! } }
+        return self.execute("SELECT datname FROM pg_catalog.pg_database;", []).map { $0.compactMap { $0["datname"]!.string! } }
     }
     
     func tables() -> EventLoopFuture<[String]> {
-        return self.query("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';", []).map { $0.map { $0["tablename"]!.string! } }
+        return self.execute("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';", []).map { $0.map { $0["tablename"]!.string! } }
     }
     
     func views() -> EventLoopFuture<[String]> {
-        return self.query("SELECT viewname FROM pg_catalog.pg_views WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';", []).map { $0.map { $0["viewname"]!.string! } }
+        return self.execute("SELECT viewname FROM pg_catalog.pg_views WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';", []).map { $0.map { $0["viewname"]!.string! } }
     }
     
     func materializedViews() -> EventLoopFuture<[String]> {
-        return self.query("SELECT matviewname FROM pg_catalog.pg_matviews WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';", []).map { $0.map { $0["matviewname"]!.string! } }
+        return self.execute("SELECT matviewname FROM pg_catalog.pg_matviews WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';", []).map { $0.map { $0["matviewname"]!.string! } }
     }
     
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
@@ -117,16 +117,16 @@ extension PostgreSQLDriver.Connection {
             let _schema = table.prefix(upTo: split)
             let _name = table.suffix(from: split).dropFirst()
 
-            return self.query("SELECT * FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2;", [DBData(_schema), DBData(_name)])
+            return self.execute("SELECT * FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2;", [DBData(_schema), DBData(_name)])
         }
         
-        return self.query("SELECT * FROM information_schema.columns WHERE table_name = $1;", [DBData(table)])
+        return self.execute("SELECT * FROM information_schema.columns WHERE table_name = $1;", [DBData(table)])
     }
 }
 
 extension PostgreSQLDriver.Connection {
     
-    func query(
+    func execute(
         _ string: String,
         _ binds: [DBData]
     ) -> EventLoopFuture<[DBQueryRow]> {
@@ -148,7 +148,7 @@ extension PostgreSQLDriver.Connection {
         }
     }
     
-    func query(
+    func execute(
         _ string: String,
         _ binds: [DBData],
         onRow: @escaping (DBQueryRow) -> Void

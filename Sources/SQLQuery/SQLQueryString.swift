@@ -27,6 +27,8 @@ enum SQLRawComponent {
     
     case string(String)
     
+    case bool(Bool)
+    
     case bind(DBData)
 }
 
@@ -62,6 +64,10 @@ extension SQLRaw: ExpressibleByStringInterpolation {
         
         public mutating func appendLiteral(_ literal: String) {
             self.components.append(.string(literal))
+        }
+        
+        public mutating func appendInterpolation(_ value: Bool) {
+            self.components.append(.bool(value))
         }
         
         public mutating func appendInterpolation<T: DBDataConvertible>(_ value: T) {

@@ -76,7 +76,7 @@ class SQLiteTest: XCTestCase {
             );
             """
             
-            _ = try connection.query(query, []).wait()
+            _ = try connection.execute(query, []).wait()
             
             XCTAssertTrue(try connection.tables().wait().contains("contacts"))
             

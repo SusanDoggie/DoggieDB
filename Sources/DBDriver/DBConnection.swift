@@ -45,12 +45,12 @@ public protocol DBConnection: AnyObject {
     
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]>
     
-    func query(
+    func execute(
         _ string: String,
         _ binds: [DBData]
     ) -> EventLoopFuture<[DBQueryRow]>
     
-    func query(
+    func execute(
         _ string: String,
         _ binds: [DBData],
         onRow: @escaping (DBQueryRow) -> Void
@@ -114,14 +114,14 @@ extension DBConnection {
 
 extension DBConnection {
     
-    public func query(
+    public func execute(
         _ string: String,
         _ binds: [DBData]
     ) -> EventLoopFuture<[DBQueryRow]> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     
-    public func query(
+    public func execute(
         _ string: String,
         _ binds: [DBData],
         onRow: @escaping (DBQueryRow) -> Void

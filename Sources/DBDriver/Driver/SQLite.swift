@@ -84,19 +84,19 @@ extension SQLiteDriver.Connection {
 extension SQLiteDriver.Connection {
     
     func version() -> EventLoopFuture<String> {
-        return self.query("SELECT sqlite_version();", []).map { $0[0]["sqlite_version()"]!.string! }
+        return self.execute("SELECT sqlite_version();", []).map { $0[0]["sqlite_version()"]!.string! }
     }
     
     func tables() -> EventLoopFuture<[String]> {
-        return self.query("SELECT name FROM sqlite_master WHERE type = 'table';", []).map { $0.map { $0["name"]!.string! } }
+        return self.execute("SELECT name FROM sqlite_master WHERE type = 'table';", []).map { $0.map { $0["name"]!.string! } }
     }
     
     func views() -> EventLoopFuture<[String]> {
-        return self.query("SELECT name FROM sqlite_master WHERE type = 'view';", []).map { $0.map { $0["name"]!.string! } }
+        return self.execute("SELECT name FROM sqlite_master WHERE type = 'view';", []).map { $0.map { $0["name"]!.string! } }
     }
     
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
-        return self.query("pragma table_info(\(table));", [])
+        return self.execute("pragma table_info(\(table));", [])
     }
 }
 
@@ -106,7 +106,7 @@ extension SQLiteDriver.Connection {
         return self.connection.lastAutoincrementID()
     }
     
-    func query(
+    func execute(
         _ string: String,
         _ binds: [DBData]
     ) -> EventLoopFuture<[DBQueryRow]> {
@@ -123,7 +123,7 @@ extension SQLiteDriver.Connection {
         }
     }
     
-    func query(
+    func execute(
         _ string: String,
         _ binds: [DBData],
         onRow: @escaping (DBQueryRow) -> Void

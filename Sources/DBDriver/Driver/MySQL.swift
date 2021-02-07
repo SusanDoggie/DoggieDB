@@ -86,29 +86,29 @@ extension MySQLDriver.Connection {
 extension MySQLDriver.Connection {
     
     func version() -> EventLoopFuture<String> {
-        return self.query("SELECT version();", []).map { $0[0]["version()"]!.string! }
+        return self.execute("SELECT version();", []).map { $0[0]["version()"]!.string! }
     }
     
     func databases() -> EventLoopFuture<[String]> {
-        return self.query("SHOW DATABASES;", []).map { $0.map { $0["Database"]!.string! } }
+        return self.execute("SHOW DATABASES;", []).map { $0.map { $0["Database"]!.string! } }
     }
     
     func tables() -> EventLoopFuture<[String]> {
-        return self.query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE';", []).map { $0.map { $0[$0.keys.first { $0.hasPrefix("Tables_in_") }!]!.string! } }
+        return self.execute("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE';", []).map { $0.map { $0[$0.keys.first { $0.hasPrefix("Tables_in_") }!]!.string! } }
     }
     
     func views() -> EventLoopFuture<[String]> {
-        return self.query("SHOW FULL TABLES WHERE Table_type = 'VIEW';", []).map { $0.map { $0[$0.keys.first { $0.hasPrefix("Tables_in_") }!]!.string! } }
+        return self.execute("SHOW FULL TABLES WHERE Table_type = 'VIEW';", []).map { $0.map { $0[$0.keys.first { $0.hasPrefix("Tables_in_") }!]!.string! } }
     }
     
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
-        return self.query("SHOW COLUMNS FROM \(table);", [])
+        return self.execute("SHOW COLUMNS FROM \(table);", [])
     }
 }
 
 extension MySQLDriver.Connection {
     
-    func query(
+    func execute(
         _ string: String,
         _ binds: [DBData]
     ) -> EventLoopFuture<[DBQueryRow]> {
@@ -130,7 +130,7 @@ extension MySQLDriver.Connection {
         }
     }
     
-    func query(
+    func execute(
         _ string: String,
         _ binds: [DBData],
         onRow: @escaping (DBQueryRow) -> Void
