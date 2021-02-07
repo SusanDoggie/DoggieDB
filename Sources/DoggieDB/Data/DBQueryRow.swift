@@ -79,4 +79,9 @@ extension DBQueryRow {
     public subscript(_ column: String) -> DBData? {
         return self.row.value(column)
     }
+    
+    @inlinable
+    public func decode<T: Decodable>(_ type: T.Type, forKey key: String) throws -> T? {
+        return try self.row.value(key)?.decode(type)
+    }
 }
