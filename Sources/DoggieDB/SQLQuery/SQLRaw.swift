@@ -66,8 +66,8 @@ extension SQLRaw: ExpressibleByStringInterpolation {
             self.components.append(.string(literal))
         }
         
-        public mutating func appendInterpolation(literal value: String) {
-            self.components.append(.string(value))
+        public mutating func appendInterpolation<T: StringProtocol>(literal value: T) {
+            self.components.append(.string(String(value)))
         }
         
         public mutating func appendInterpolation(_ value: Bool) {
