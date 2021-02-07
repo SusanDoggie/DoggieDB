@@ -26,7 +26,7 @@
 struct SQLiteDialect: SQLDialect {
     
     static func bindPlaceholder(at position: Int) -> String {
-        return "?"
+        return "?\(position)"
     }
     
     static func literalBoolean(_ value: Bool) -> String {
