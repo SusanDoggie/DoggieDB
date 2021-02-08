@@ -53,15 +53,14 @@ extension DBConnection {
         var binds: [DBData] = []
         
         for component in sql.components {
-            
             switch component {
-            
             case let .string(string): raw.append(string)
-                
-            case let .bool(bool): raw.append(dialect.literalBoolean(bool))
-                
+            case let .boolean(bool): raw.append(dialect.literalBoolean(bool))
+            case let .signed(value): raw.append("\(value)")
+            case let .unsigned(value): raw.append("\(value)")
+            case let .number(value): raw.append("\(value)")
+            case let .decimal(value): raw.append("\(value)")
             case let .bind(value):
-                
                 binds.append(value)
                 raw.append(dialect.bindPlaceholder(at: binds.count))
             }

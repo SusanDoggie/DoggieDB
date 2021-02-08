@@ -27,7 +27,15 @@ enum SQLRawComponent: Hashable {
     
     case string(String)
     
-    case bool(Bool)
+    case boolean(Bool)
+    
+    case signed(Int64)
+    
+    case unsigned(UInt64)
+    
+    case number(Double)
+    
+    case decimal(Decimal)
     
     case bind(DBData)
 }
@@ -70,12 +78,16 @@ extension SQLRaw: ExpressibleByStringInterpolation {
             self.components.append(.string(String(value)))
         }
         
-        public mutating func appendInterpolation(_ value: Bool) {
-            self.components.append(.bool(value))
-        }
-        
         public mutating func appendInterpolation<T: DBDataConvertible>(_ value: T) {
-            self.components.append(.bind(value.toDBData()))
+            let value = value.toDBData()
+            switch value.base {
+            case let .boolean(value): self.components.append(.boolean(value))
+            case let .signed(value): self.components.append(.signed(value))
+            case let .unsigned(value): self.components.append(.unsigned(value))
+            case let .number(value): self.components.append(.number(value))
+            case let .decimal(value): self.components.append(.decimal(value))
+            default: self.components.append(.bind(value))
+            }
         }
     }
     
