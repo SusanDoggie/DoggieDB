@@ -89,6 +89,10 @@ extension SQLRaw: ExpressibleByStringInterpolation {
             default: self.components.append(.bind(value))
             }
         }
+        
+        public mutating func appendInterpolation<T: DBDataConvertible>(bind value: T) {
+            self.components.append(.bind(value.toDBData()))
+        }
     }
     
     public init(stringInterpolation: StringInterpolation) {
