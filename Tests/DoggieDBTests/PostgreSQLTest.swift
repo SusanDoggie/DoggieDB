@@ -119,6 +119,7 @@ class PostgreSQLTest: XCTestCase {
             
             let result = try connection.execute("SELECT \(int) as value").wait()
             
+            XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["value"]?.intValue, int)
             
         } catch let error {
@@ -136,6 +137,7 @@ class PostgreSQLTest: XCTestCase {
             
             let result = try connection.execute("SELECT \(bind: int) as value").wait()
             
+            XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["value"]?.intValue, int)
             
         } catch let error {
@@ -153,6 +155,7 @@ class PostgreSQLTest: XCTestCase {
             
             let result = try connection.execute("SELECT \(uuid) as uuid").wait()
             
+            XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["uuid"]?.uuid, uuid)
             
         } catch let error {
