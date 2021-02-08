@@ -123,9 +123,9 @@ class MySQLTest: XCTestCase {
             
             let uuid = UUID()
             
-            let result = try connection.execute("SELECT \(uuid)").wait()
+            let result = try connection.execute("SELECT \(uuid) as uuid").wait()
             
-            XCTAssertEqual(result[0]["?"]?.uuid, uuid)
+            XCTAssertEqual(result[0]["uuid"]?.uuid, uuid)
             
         } catch let error {
             
