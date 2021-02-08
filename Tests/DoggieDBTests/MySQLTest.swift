@@ -79,7 +79,7 @@ class MySQLTest: XCTestCase {
                 last_name TEXT,
                 email TEXT NOT NULL UNIQUE,
                 phone TEXT NOT NULL UNIQUE
-            );
+            )
             """).wait()
             
             XCTAssertTrue(try connection.tables().wait().contains("contacts"))
@@ -123,9 +123,9 @@ class MySQLTest: XCTestCase {
             
             let int = 42
             
-            let result = try connection.execute("SELECT \(int)").wait()
+            let result = try connection.execute("SELECT \(int) as value").wait()
             
-            XCTAssertEqual(result[0]["?"]?.intValue, int)
+            XCTAssertEqual(result[0]["value"]?.intValue, int)
             
         } catch let error {
             
@@ -140,9 +140,9 @@ class MySQLTest: XCTestCase {
             
             let int = 42
             
-            let result = try connection.execute("SELECT \(bind: int)").wait()
+            let result = try connection.execute("SELECT \(bind: int) as value").wait()
             
-            XCTAssertEqual(result[0]["?"]?.intValue, int)
+            XCTAssertEqual(result[0]["value"]?.intValue, int)
             
         } catch let error {
             
@@ -157,9 +157,9 @@ class MySQLTest: XCTestCase {
             
             let uuid = UUID()
             
-            let result = try connection.execute("SELECT \(uuid)").wait()
+            let result = try connection.execute("SELECT HEX(\(uuid)) as uuid").wait()
             
-            XCTAssertEqual(result[0]["?"]?.uuid, uuid)
+            XCTAssertEqual(result[0]["uuid"]?.uuid, uuid)
             
         } catch let error {
             

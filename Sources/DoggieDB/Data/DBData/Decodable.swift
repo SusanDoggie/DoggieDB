@@ -273,7 +273,7 @@ extension DBData._Decoder: SingleValueDecodingContainer {
             
         case let .string(string):
             
-            guard let value = UUID(uuidString: string) else { throw Database.Error.unsupportedType }
+            guard let value = string.count == 32 ? UUID(hexString: string) : UUID(uuidString: string) else { throw Database.Error.unsupportedType }
             return value
             
         case let .binary(data):

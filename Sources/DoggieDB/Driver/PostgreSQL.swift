@@ -91,23 +91,23 @@ extension PostgreSQLDriver.Connection {
 extension PostgreSQLDriver.Connection {
     
     func version() -> EventLoopFuture<String> {
-        return self.execute("SELECT version();").map { $0[0]["version"]!.string! }
+        return self.execute("SELECT version()").map { $0[0]["version"]!.string! }
     }
     
     func databases() -> EventLoopFuture<[String]> {
-        return self.execute("SELECT datname FROM pg_catalog.pg_database;").map { $0.compactMap { $0["datname"]!.string! } }
+        return self.execute("SELECT datname FROM pg_catalog.pg_database").map { $0.compactMap { $0["datname"]!.string! } }
     }
     
     func tables() -> EventLoopFuture<[String]> {
-        return self.execute("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';").map { $0.map { $0["tablename"]!.string! } }
+        return self.execute("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'").map { $0.map { $0["tablename"]!.string! } }
     }
     
     func views() -> EventLoopFuture<[String]> {
-        return self.execute("SELECT viewname FROM pg_catalog.pg_views WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';").map { $0.map { $0["viewname"]!.string! } }
+        return self.execute("SELECT viewname FROM pg_catalog.pg_views WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'").map { $0.map { $0["viewname"]!.string! } }
     }
     
     func materializedViews() -> EventLoopFuture<[String]> {
-        return self.execute("SELECT matviewname FROM pg_catalog.pg_matviews WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';").map { $0.map { $0["matviewname"]!.string! } }
+        return self.execute("SELECT matviewname FROM pg_catalog.pg_matviews WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'").map { $0.map { $0["matviewname"]!.string! } }
     }
     
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
@@ -117,10 +117,10 @@ extension PostgreSQLDriver.Connection {
             let _schema = table.prefix(upTo: split)
             let _name = table.suffix(from: split).dropFirst()
             
-            return self.execute("SELECT * FROM information_schema.columns WHERE table_schema = \(_schema) AND table_name = \(_name);")
+            return self.execute("SELECT * FROM information_schema.columns WHERE table_schema = \(_schema) AND table_name = \(_name)")
         }
         
-        return self.execute("SELECT * FROM information_schema.columns WHERE table_name = \(table);")
+        return self.execute("SELECT * FROM information_schema.columns WHERE table_name = \(table)")
     }
 }
 

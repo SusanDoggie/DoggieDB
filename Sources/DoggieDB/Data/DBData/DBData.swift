@@ -545,7 +545,7 @@ extension DBData {
     public var uuid: UUID? {
         switch self.base {
         case let .uuid(value): return value
-        case let .string(string): return UUID(uuidString: string)
+        case let .string(string): return string.count == 32 ? UUID(hexString: string) : UUID(uuidString: string)
         case let .binary(data):
             guard data.count == 16 else { return nil }
             return UUID(uuid: data.load(as: uuid_t.self))
