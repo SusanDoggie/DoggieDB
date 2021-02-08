@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-enum SQLRawComponent {
+enum SQLRawComponent: Hashable {
     
     case string(String)
     
@@ -32,7 +32,7 @@ enum SQLRawComponent {
     case bind(DBData)
 }
 
-public struct SQLRaw {
+public struct SQLRaw: Hashable {
     
     var components: [SQLRawComponent]
     
@@ -86,14 +86,22 @@ extension SQLRaw: ExpressibleByStringInterpolation {
 
 extension SQLRaw {
     
-    public static func +(lhs: SQLRaw, rhs: SQLRaw) -> SQLRaw {
-        return SQLRaw(components: lhs.components + rhs.components)
+    public mutating func append(_ other: SQLRaw) {
+        self.components.append(contentsOf: other.components)
     }
 }
 
 extension Array where Element == SQLRaw {
     
-    public func joined(separator: String) -> SQLRaw {
-        return self.reduce { $0 + SQLRaw(separator) + $1 } ?? ""
+    public func joined(separator: SQLRaw) -> SQLRaw {
+        return self.reduce { $0 + separator + $1 } ?? ""
     }
+}
+
+public func +(lhs: SQLRaw, rhs: SQLRaw) -> SQLRaw {
+    return SQLRaw(components: lhs.components + rhs.components)
+}
+
+public func +=(lhs: inout SQLRaw, rhs: SQLRaw) {
+    lhs.components += rhs.components
 }
