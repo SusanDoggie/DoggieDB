@@ -138,12 +138,12 @@ extension PostgreSQLDriver.Connection {
             
             if binds.isEmpty {
                 
-                return self.connection.simpleQuery(raw).map{ $0.map(DBQueryRow.init) }
+                return self.connection.simpleQuery(raw).map { $0.map(DBQueryRow.init) }
             }
             
             let _binds = try binds.map(PostgresData.init)
             
-            return self.connection.query(raw, _binds).map{ $0.rows.map(DBQueryRow.init) }
+            return self.connection.query(raw, _binds).map { $0.rows.map(DBQueryRow.init) }
             
         } catch let error {
             

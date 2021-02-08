@@ -118,7 +118,7 @@ extension SQLiteDriver.Connection {
             
             let _binds = try binds.map(SQLiteData.init)
             
-            return self.connection.query(raw, _binds).map{ $0.map(DBQueryRow.init) }
+            return self.connection.query(raw, _binds).map { $0.map(DBQueryRow.init) }
             
         } catch let error {
             

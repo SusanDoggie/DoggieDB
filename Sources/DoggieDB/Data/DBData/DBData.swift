@@ -186,7 +186,7 @@ extension DBData: CustomStringConvertible {
         case let .unsigned(value): return "\(value)"
         case let .number(value): return "\(value)"
         case let .decimal(value): return "\(value)"
-        case let .date(value): return "\(value)"
+        case let .date(value): return value.date.map { "\($0)" } ?? "\(value)"
         case let .binary(value): return "\(value)"
         case let .uuid(value): return "\(value)"
         case let .array(value): return "\(value)"
