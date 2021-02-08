@@ -117,15 +117,49 @@ class MySQLTest: XCTestCase {
         }
     }
     
-    func testBindVariables() throws {
+    func testBindInt() throws {
+        
+        do {
+            
+            let int = 42
+            
+            let result = try connection.execute("SELECT \(int)").wait()
+            
+            XCTAssertEqual(result[0]["?"]?.intValue, int)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testBindInt2() throws {
+        
+        do {
+            
+            let int = 42
+            
+            let result = try connection.execute("SELECT \(bind: int)").wait()
+            
+            XCTAssertEqual(result[0]["?"]?.intValue, int)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testBindUUID() throws {
         
         do {
             
             let uuid = UUID()
             
-            let result = try connection.execute("SELECT \(uuid) as uuid").wait()
+            let result = try connection.execute("SELECT \(uuid)").wait()
             
-            XCTAssertEqual(result[0]["uuid"]?.uuid, uuid)
+            XCTAssertEqual(result[0]["?"]?.uuid, uuid)
             
         } catch let error {
             

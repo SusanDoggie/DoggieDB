@@ -111,7 +111,41 @@ class SQLiteTest: XCTestCase {
         }
     }
     
-    func testBindVariables() throws {
+    func testBindInt() throws {
+        
+        do {
+            
+            let int = 42
+            
+            let result = try connection.execute("SELECT \(int)").wait()
+            
+            XCTAssertEqual(result[0]["?"]?.intValue, int)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testBindInt2() throws {
+        
+        do {
+            
+            let int = 42
+            
+            let result = try connection.execute("SELECT \(bind: int)").wait()
+            
+            XCTAssertEqual(result[0]["?"]?.intValue, int)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testBindUUID() throws {
         
         do {
             
