@@ -121,11 +121,11 @@ class MySQLTest: XCTestCase {
         
         do {
             
-            let value = 42
+            let uuid = UUID()
             
-            let result = try connection.execute("SELECT \(value)").wait()
+            let result = try connection.execute("SELECT \(uuid)").wait()
             
-            print(result)
+            XCTAssertEqual(result[0]["?"]?.uuid, uuid)
             
         } catch let error {
             
