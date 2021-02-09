@@ -84,8 +84,8 @@ extension SQLRaw: ExpressibleByStringInterpolation {
             case let .boolean(value): self.components.append(.boolean(value))
             case let .signed(value): self.components.append(.signed(value))
             case let .unsigned(value): self.components.append(.unsigned(value))
-            case let .number(value): self.components.append(value.isFinite ? .number(value) : .bind(value))
-            case let .decimal(value): self.components.append(value.isFinite ? .decimal(value) : .bind(value))
+            case let .number(value): self.components.append(value.isFinite ? .number(value) : .bind(DBData(value)))
+            case let .decimal(value): self.components.append(value.isFinite ? .decimal(value) : .bind(DBData(value)))
             default: self.components.append(.bind(value))
             }
         }

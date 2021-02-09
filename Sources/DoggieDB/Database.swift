@@ -88,9 +88,25 @@ extension Database {
             }
             
             let tlsConfiguration: TLSConfiguration?
-            if url.queryItems?.contains(where: { $0.name == "ssl" && $0.value == "true" }) == true {
-                tlsConfiguration = .forClient()
+            
+            let enable_ssl = url.queryItems?.last { $0.name == "ssl" }?.value
+            let ssl_mode = url.queryItems?.last { $0.name == "sslmode" }?.value
+            
+            if enable_ssl == "true" {
+                
+                let certificateVerification: CertificateVerification
+                
+                switch ssl_mode {
+                case "none": certificateVerification = .none
+                case "require": certificateVerification = .noHostnameVerification
+                case "verify-full": certificateVerification = .fullVerification
+                default: certificateVerification = .fullVerification
+                }
+                
+                tlsConfiguration = .forClient(certificateVerification: certificateVerification)
+                
             } else {
+                
                 tlsConfiguration = nil
             }
             

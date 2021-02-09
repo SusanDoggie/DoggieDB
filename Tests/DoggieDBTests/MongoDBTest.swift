@@ -43,6 +43,13 @@ class MongoDBTest: XCTestCase {
             url.password = env("MONGO_PASSWORD")
             url.path = "/\(env("MONGO_DATABASE") ?? "")"
             
+            if let ssl_mode = env("MONGO_SSLMODE") {
+                url.queryItems = [
+                    URLQueryItem(name: "ssl", value: "true"),
+                    URLQueryItem(name: "sslmode", value: ssl_mode),
+                ]
+            }
+            
             self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             
         } catch let error {

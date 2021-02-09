@@ -43,6 +43,13 @@ class MySQLTest: XCTestCase {
             url.password = env("MYSQL_PASSWORD")
             url.path = "/\(env("MYSQL_DATABASE") ?? "")"
             
+            if let ssl_mode = env("MYSQL_SSLMODE") {
+                url.queryItems = [
+                    URLQueryItem(name: "ssl", value: "true"),
+                    URLQueryItem(name: "sslmode", value: ssl_mode),
+                ]
+            }
+            
             self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             
             print("MYSQL:", try connection.version().wait())

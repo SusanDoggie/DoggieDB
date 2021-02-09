@@ -43,6 +43,13 @@ class RedisTest: XCTestCase {
             url.password = env("REDIS_PASSWORD")
             url.path = "/\(env("REDIS_DATABASE") ?? "")"
             
+            if let ssl_mode = env("REDIS_SSLMODE") {
+                url.queryItems = [
+                    URLQueryItem(name: "ssl", value: "true"),
+                    URLQueryItem(name: "sslmode", value: ssl_mode),
+                ]
+            }
+            
             self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             
         } catch let error {

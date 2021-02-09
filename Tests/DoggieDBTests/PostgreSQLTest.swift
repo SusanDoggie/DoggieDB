@@ -43,6 +43,13 @@ class PostgreSQLTest: XCTestCase {
             url.password = env("POSTGRES_PASSWORD")
             url.path = "/\(env("POSTGRES_DATABASE") ?? "")"
             
+            if let ssl_mode = env("POSTGRES_SSLMODE") {
+                url.queryItems = [
+                    URLQueryItem(name: "ssl", value: "true"),
+                    URLQueryItem(name: "sslmode", value: ssl_mode),
+                ]
+            }
+            
             self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             
             print("POSTGRES:", try connection.version().wait())
