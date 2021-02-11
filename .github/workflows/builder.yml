@@ -87,7 +87,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mariadb
+        image: ${{ matrix.mysql_image }}
         ports: 
           - 3306:3306
         env:
@@ -118,6 +118,7 @@ jobs:
     strategy:
       matrix:
         image: [xenial, bionic, focal]
+        mysql_image: [mysql:5.7, mysql:8.0, mariadb]
     steps:
     - uses: actions/checkout@v1
       with:
@@ -148,7 +149,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mariadb
+        image: ${{ matrix.mysql_image }}
         ports: 
           - 3306:3306
         env:
@@ -179,6 +180,7 @@ jobs:
     strategy:
       matrix:
         image: [centos8, amazonlinux2]
+        mysql_image: [mysql:5.7, mysql:8.0, mariadb]
     steps:
     - uses: actions/checkout@v1
       with:
@@ -209,7 +211,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mariadb
+        image: ${{ matrix.mysql_image }}
         ports: 
           - 3306:3306
         env:
@@ -241,6 +243,7 @@ jobs:
     strategy:
       matrix:
         image: [nightly-xenial, nightly-bionic, nightly-focal]
+        mysql_image: [mysql:5.7, mysql:8.0, mariadb]
     steps:
     - uses: actions/checkout@v1
       with:
@@ -271,7 +274,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mariadb
+        image: ${{ matrix.mysql_image }}
         ports: 
           - 3306:3306
         env:
@@ -303,6 +306,7 @@ jobs:
     strategy:
       matrix:
         image: [nightly-centos8, nightly-amazonlinux2]
+        mysql_image: [mysql:5.7, mysql:8.0, mariadb]
     steps:
     - uses: actions/checkout@v1
       with:
