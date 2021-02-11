@@ -4,6 +4,7 @@ env:
   MYSQL_DATABASE: doggiedb
   MYSQL_USERNAME: doggiedb
   MYSQL_PASSWORD: doggiedb
+  MYSQL_SSLMODE: none
   POSTGRES_DATABASE: doggiedb
   POSTGRES_USERNAME: doggiedb
   POSTGRES_PASSWORD: doggiedb
