@@ -184,7 +184,7 @@ class MySQLTest: XCTestCase {
             
             let str = "Hello, world"
             
-            let result = try connection.execute("SELECT CAST(\(str) AS VARCHAR) as str").wait()
+            let result = try connection.execute("SELECT CAST(\(str) AS CHAR CHARACTER SET utf8mb4) as str").wait()
             
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["str"]?.string, str)
