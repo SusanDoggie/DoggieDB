@@ -178,4 +178,22 @@ class MySQLTest: XCTestCase {
         }
     }
     
+    func testBindString() throws {
+        
+        do {
+            
+            let str = "Hello, world"
+            
+            let result = try connection.execute("SELECT \(str) as str").wait()
+            
+            XCTAssertEqual(result.count, 1)
+            XCTAssertEqual(result[0]["str"]?.string, str)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
 }
