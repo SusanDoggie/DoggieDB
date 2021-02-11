@@ -36,31 +36,33 @@ jobs:
         submodules: recursive
     - name: Install MySQL
       run: |
-          brew install mariadb
-          brew link --force mariadb
+        brew install mariadb
+        brew link --force mariadb
     - name: Start MySQL
       run: |
-          ls /usr/local/var
-          mysql.server start
-          mysql_config --socket
-          mysql --help --verbose
-          mysql --print-defaults $MYSQL_DATABASE
+        brew services start mariadb
+        brew services list
+        ls /usr/local/var
+        mysql.server start
+        mysql_config --socket
+        mysql --help --verbose
+        mysql --print-defaults $MYSQL_DATABASE
     - name: Waiting MySQL
       run: until echo | mysql -u$USER; do sleep 1; done
       timeout-minutes: 1
     - name: Set up MySQL databases and privileges
       run: |
-          mysql -u$USER --batch <<-'SQL'
-              CREATE USER $MYSQL_USERNAME@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
-              CREATE DATABASE $MYSQL_DATABASE;
-              GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@localhost;
-          SQL
+        mysql -u$USER --batch <<-'SQL'
+          CREATE USER $MYSQL_USERNAME@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
+          CREATE DATABASE $MYSQL_DATABASE;
+          GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@localhost;
+        SQL
     - name: Install PostgreSQL
       run: |
-          export PATH="/usr/local/opt/postgresql/bin:$PATH" PGDATA=/tmp/postgres-test
-          brew install postgresql
-          initdb --locale=C -U $POSTGRES_USERNAME --pwfile=<(echo $POSTGRES_PASSWORD)
-          pg_ctl start --wait
+        export PATH="/usr/local/opt/postgresql/bin:$PATH" PGDATA=/tmp/postgres-test
+        brew install postgresql
+        initdb --locale=C -U $POSTGRES_USERNAME --pwfile=<(echo $POSTGRES_PASSWORD)
+        pg_ctl start --wait
     - name: Install Redis
       run: brew install redis
     - name: Build
