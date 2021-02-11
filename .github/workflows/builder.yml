@@ -15,6 +15,7 @@ jobs:
   macos:
     runs-on: macOS-latest
     strategy:
+      fail-fast: false
       matrix:
         name: [macOS, macOS(SwiftPM)]
         formula: 
@@ -119,6 +120,7 @@ jobs:
           MONGO_INITDB_ROOT_PASSWORD: ${{ env.MONGO_PASSWORD }}
           MONGO_INITDB_DATABASE: ${{ env.MONGO_DATABASE }}
     strategy:
+      fail-fast: false
       matrix:
         image: [xenial, bionic, focal]
         mysql_image:
@@ -183,6 +185,7 @@ jobs:
           MONGO_INITDB_ROOT_PASSWORD: ${{ env.MONGO_PASSWORD }}
           MONGO_INITDB_DATABASE: ${{ env.MONGO_DATABASE }}
     strategy:
+      fail-fast: false
       matrix:
         image: [centos8, amazonlinux2]
         mysql_image:
@@ -248,6 +251,7 @@ jobs:
           MONGO_INITDB_DATABASE: ${{ env.MONGO_DATABASE }}
     continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
         image: [nightly-xenial, nightly-bionic, nightly-focal]
         mysql_image:
@@ -313,6 +317,7 @@ jobs:
           MONGO_INITDB_DATABASE: ${{ env.MONGO_DATABASE }}
     continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
         image: [nightly-centos8, nightly-amazonlinux2]
         mysql_image:
