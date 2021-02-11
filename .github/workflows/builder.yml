@@ -12,7 +12,6 @@ env:
   MONGO_PASSWORD: doggiedb
 jobs:
   macos:
-    name: ${{ matrix.name }}(${{ matrix.formula }})
     runs-on: macOS-latest
     strategy:
       matrix:
@@ -85,7 +84,6 @@ jobs:
     - uses: codecov/codecov-action@v1
       if: ${{ matrix.enable_codecov }}
   ubuntu_swift_latest:
-    name: latest-${{ matrix.image }}(${{ matrix.mysql_image }})
     container: 
       image: docker://swift:${{ matrix.image }}
     runs-on: ubuntu-latest
@@ -150,7 +148,6 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   linux_swift_latest:
-    name: latest-${{ matrix.image }}(${{ matrix.mysql_image }})
     container:
       image: docker://swift:${{ matrix.image }}
     runs-on: ubuntu-latest
@@ -215,7 +212,6 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   ubuntu_swift_nightly:
-    name: ${{ matrix.image }}(${{ matrix.mysql_image }})
     container:
       image: docker://swiftlang/swift:${{ matrix.image }}
     runs-on: ubuntu-latest
@@ -281,7 +277,6 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   linux_swift_nightly:
-    name: ${{ matrix.image }}(${{ matrix.mysql_image }})
     container:
       image: docker://swiftlang/swift:${{ matrix.image }}
     runs-on: ubuntu-latest
