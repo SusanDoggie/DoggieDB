@@ -12,11 +12,15 @@ env:
   MONGO_PASSWORD: doggiedb
 jobs:
   macos:
-    name: ${{ matrix.name }}
+    name: ${{ matrix.name }}(${{ matrix.formula }})
     runs-on: macOS-latest
     strategy:
       matrix:
         name: [macOS, macOS(SwiftPM)]
+        formula: 
+          - mysql@8.0
+          - mysql@5.7
+          - mariadb
         include:
           - name: macOS
             use_xcodebuild: true
@@ -36,11 +40,11 @@ jobs:
         submodules: recursive
     - name: Install MySQL
       run: |
-        brew install mariadb
-        brew link --force mariadb
+        brew install ${{ matrix.formula }}
+        brew link --force ${{ matrix.formula }}
     - name: Start MySQL
       run: |
-        brew services start mariadb
+        brew services start ${{ matrix.formula }}
         brew services list
         ls /usr/local/var
         mysql.server start
@@ -81,7 +85,7 @@ jobs:
     - uses: codecov/codecov-action@v1
       if: ${{ matrix.enable_codecov }}
   ubuntu_swift_latest:
-    name: latest-${{ matrix.image }}
+    name: latest-${{ matrix.image }}(${{ matrix.mysql_image }})
     container: 
       image: docker://swift:${{ matrix.image }}
     runs-on: ubuntu-latest
@@ -146,7 +150,7 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   linux_swift_latest:
-    name: latest-${{ matrix.image }}
+    name: latest-${{ matrix.image }}(${{ matrix.mysql_image }})
     container:
       image: docker://swift:${{ matrix.image }}
     runs-on: ubuntu-latest
@@ -211,7 +215,7 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   ubuntu_swift_nightly:
-    name: ${{ matrix.image }}
+    name: ${{ matrix.image }}(${{ matrix.mysql_image }})
     container:
       image: docker://swiftlang/swift:${{ matrix.image }}
     runs-on: ubuntu-latest
@@ -277,7 +281,7 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   linux_swift_nightly:
-    name: ${{ matrix.image }}
+    name: ${{ matrix.image }}(${{ matrix.mysql_image }})
     container:
       image: docker://swiftlang/swift:${{ matrix.image }}
     runs-on: ubuntu-latest
