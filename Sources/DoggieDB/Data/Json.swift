@@ -36,3 +36,40 @@ extension DBData {
         }
     }
 }
+
+extension Json {
+    
+    public init?(_ value: DBData) {
+        switch value.base {
+        case .null: self = nil
+        case let .boolean(value): self.init(value)
+        case let .string(value): self.init(value)
+        case let .signed(value): self.init(value)
+        case let .unsigned(value): self.init(value)
+        case let .number(value): self.init(value)
+        case let .decimal(value): self.init(value)
+        case let .date(value):
+            
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = .withInternetDateTime
+            
+            guard let date = value.date else { return nil }
+            self.init(formatter.string(from: date))
+            
+        case let .uuid(value): self.init(value.uuidString)
+        case let .array(value):
+            
+            let array = value.compactMap(Json.init)
+            guard array.count == value.count else { return nil }
+            self.init(array)
+            
+        case let .dictionary(value):
+            
+            let dictionary = value.compactMapValues(Json.init)
+            guard dictionary.count == value.count else { return nil }
+            self.init(dictionary)
+            
+        default: return nil
+        }
+    }
+}

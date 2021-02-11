@@ -66,8 +66,11 @@ extension RESPValue {
             
         case let .date(value):
             
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = .withInternetDateTime
+            
             guard let date = value.date else { throw Database.Error.unsupportedType }
-            self = DateFormatter.rfc3339.string(from: date).convertedToRESPValue()
+            self = formatter.string(from: date).convertedToRESPValue()
             
         case let .binary(value): self = value.convertedToRESPValue()
         case let .uuid(value): self = value.uuidString.convertedToRESPValue()

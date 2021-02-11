@@ -206,6 +206,7 @@ extension DBData: Hashable {
         case let (.signed(lhs), .signed(rhs)): return lhs == rhs
         case let (.unsigned(lhs), .unsigned(rhs)): return lhs == rhs
         case let (.number(lhs), .number(rhs)): return lhs == rhs
+        case let (.decimal(lhs), .decimal(rhs)): return lhs == rhs
         case let (.date(lhs), .date(rhs)): return lhs == rhs
         case let (.binary(lhs), .binary(rhs)): return lhs == rhs
         case let (.uuid(lhs), .uuid(rhs)): return lhs == rhs
@@ -224,6 +225,7 @@ extension DBData: Hashable {
         case let .signed(value): hasher.combine(value)
         case let .unsigned(value): hasher.combine(value)
         case let .number(value): hasher.combine(value)
+        case let .decimal(value): hasher.combine(value)
         case let .date(value): hasher.combine(value)
         case let .binary(value): hasher.combine(value)
         case let .uuid(value): hasher.combine(value)

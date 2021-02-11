@@ -394,6 +394,9 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         case is Date.Type: return try self._decode(Date.self) as! T
         case is DateComponents.Type: return try self._decode(DateComponents.self) as! T
         case is Data.Type: return try self._decode(Data.self) as! T
+        case is Json.Type:
+            guard let json = Json(value) else { throw Database.Error.invalidDateFormat }
+            return json as! T
         default: throw Database.Error.unsupportedType
         }
     }
