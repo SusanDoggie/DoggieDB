@@ -148,7 +148,7 @@ class MySQLTest: XCTestCase {
             
             let int = 42
             
-            let result = try connection.execute("SELECT CAST(\(bind: int) AS INT) as value").wait()
+            let result = try connection.execute("SELECT CAST(\(bind: int) AS SIGNED) as value").wait()
             
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["value"]?.intValue, int)
