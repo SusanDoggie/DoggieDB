@@ -100,10 +100,10 @@ class MySQLTest: XCTestCase {
             guard let phone = tableInfo.first(where: { $0["Field"] == "phone" }) else { XCTFail(); return }
             
             XCTAssertEqual(contact_id["Type"], "int(11)")
-            XCTAssertEqual(first_name["Type"], "text")
-            XCTAssertEqual(last_name["Type"], "text")
-            XCTAssertEqual(email["Type"], "text")
-            XCTAssertEqual(phone["Type"], "text")
+            XCTAssertEqual(first_name["Type"], "varchar(255)")
+            XCTAssertEqual(last_name["Type"], "varchar(255)")
+            XCTAssertEqual(email["Type"], "varchar(255)")
+            XCTAssertEqual(phone["Type"], "varchar(255)")
             
             XCTAssertEqual(contact_id["Key"], "PRI")
             XCTAssertEqual(first_name["Key"], "")
