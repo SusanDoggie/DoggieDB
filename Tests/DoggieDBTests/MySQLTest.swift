@@ -34,6 +34,8 @@ class MySQLTest: XCTestCase {
     
     override func setUpWithError() throws {
         
+        print("MySQLTest.setUpWithError")
+        
         do {
             
             var url = URLComponents()
@@ -62,6 +64,8 @@ class MySQLTest: XCTestCase {
     }
     
     override func tearDownWithError() throws {
+        
+        print("MySQLTest.tearDownWithError")
         
         do {
             

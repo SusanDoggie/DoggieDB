@@ -34,6 +34,8 @@ class RedisTest: XCTestCase {
     
     override func setUpWithError() throws {
         
+        print("RedisTest.setUpWithError")
+        
         do {
             
             var url = URLComponents()
@@ -60,6 +62,8 @@ class RedisTest: XCTestCase {
     }
     
     override func tearDownWithError() throws {
+        
+        print("RedisTest.tearDownWithError")
         
         do {
             

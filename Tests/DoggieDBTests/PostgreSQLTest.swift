@@ -34,6 +34,8 @@ class PostgreSQLTest: XCTestCase {
     
     override func setUpWithError() throws {
         
+        print("PostgreSQLTest.setUpWithError")
+        
         do {
             
             var url = URLComponents()
@@ -62,6 +64,8 @@ class PostgreSQLTest: XCTestCase {
     }
     
     override func tearDownWithError() throws {
+        
+        print("PostgreSQLTest.tearDownWithError")
         
         do {
             

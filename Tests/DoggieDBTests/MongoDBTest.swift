@@ -34,6 +34,8 @@ class MongoDBTest: XCTestCase {
     
     override func setUpWithError() throws {
         
+        print("MongoDBTest.setUpWithError")
+        
         do {
             
             var url = URLComponents()
@@ -60,6 +62,8 @@ class MongoDBTest: XCTestCase {
     }
     
     override func tearDownWithError() throws {
+        
+        print("MongoDBTest.tearDownWithError")
         
         do {
             

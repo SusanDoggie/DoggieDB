@@ -35,6 +35,8 @@ class SQLiteTest: XCTestCase {
     
     override func setUpWithError() throws {
         
+        print("SQLiteTest.setUpWithError")
+        
         do {
             
             self.connection = try Database.createSQLite(threadPool: threadPool, on: eventLoopGroup.next()).wait()
@@ -48,6 +50,8 @@ class SQLiteTest: XCTestCase {
     }
     
     override func tearDownWithError() throws {
+        
+        print("SQLiteTest.tearDownWithError")
         
         do {
             
