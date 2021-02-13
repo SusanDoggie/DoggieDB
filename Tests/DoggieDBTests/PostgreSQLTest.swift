@@ -271,7 +271,7 @@ class PostgreSQLTest: XCTestCase {
         
         do {
             
-            let time = DateComponents(timeZone: .current, hour: 21, minute: 0, second: 0, nanosecond: 0)
+            let time = DateComponents(hour: 21, minute: 0, second: 0, nanosecond: 0)
             
             let result = try connection.execute("SELECT \(time)::time as \"time\"").wait()
             

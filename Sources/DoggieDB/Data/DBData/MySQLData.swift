@@ -151,13 +151,14 @@ extension MySQLData {
             if !value.containsDate() && value.containsTime() {
                 
                 var value = value
+                value.timeZone = .current
                 value.year = 2000
                 value.month = 1
                 value.day = 1
                 
                 guard let date = calendar.date(from: value) else { throw Database.Error.unsupportedType }
                 
-                let utc_time = DBData.calendar.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: date)
+                let utc_time = DBData.calendar.dateComponents([.hour, .minute, .second, .nanosecond], from: date)
                 
                 self.init(time: MySQLTime(
                     hour: utc_time.hour.map(UInt16.init),
@@ -168,9 +169,12 @@ extension MySQLData {
                 
             } else if value.containsDate() && !value.containsTime() {
                 
+                var value = value
+                value.timeZone = .current
+                
                 guard let date = calendar.date(from: value) else { throw Database.Error.unsupportedType }
                 
-                let utc_time = DBData.calendar.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: date)
+                let utc_time = DBData.calendar.dateComponents([.year, .month, .day], from: date)
                 
                 self.init(time: MySQLTime(
                     year: utc_time.year.map(UInt16.init),
