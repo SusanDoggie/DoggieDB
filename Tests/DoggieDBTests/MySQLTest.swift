@@ -166,7 +166,7 @@ class MySQLTest: XCTestCase {
             
             let uuid = UUID()
             
-            let result = try connection.execute("SELECT insert(insert(insert(insert(hex(\(uuid)),9,0,'-'),14,0,'-'),19,0,'-'),24,0,'-') as uuid").wait()
+            let result = try connection.execute("SELECT HEX(CAST(\(uuid) AS BINARY(16))) as uuid").wait()
             
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["uuid"]?.uuid, uuid)
