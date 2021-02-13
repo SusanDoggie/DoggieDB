@@ -528,8 +528,16 @@ extension DBData {
     public var date: Date? {
         switch self.base {
         case let .date(value):
+            
             let calendar = value.calendar ?? DBData.calendar
             return calendar.date(from: value)
+            
+        case let .string(value):
+            
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = .withInternetDateTime
+            return formatter.date(from: value)
+            
         default: return nil
         }
     }
@@ -537,6 +545,12 @@ extension DBData {
     public var dateComponents: DateComponents? {
         switch self.base {
         case let .date(value): return value
+        case let .string(value):
+            
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = .withInternetDateTime
+            return formatter.date(from: value).map { DBData.calendar.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: $0) }
+            
         default: return nil
         }
     }
