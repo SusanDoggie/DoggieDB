@@ -77,27 +77,60 @@ extension DBData {
     init(_ value: PostgresData) throws {
         switch value.type {
         case .null: self = nil
-        case .bool: self = value.bool.map { DBData($0) } ?? nil
-        case .bytea: self = value.bytes.map { DBData(Data($0)) } ?? nil
-        case .char: self = value.uint8.map { DBData($0) } ?? nil
-        case .int8: self = value.int64.map { DBData($0) } ?? nil
-        case .int2: self = value.int16.map { DBData($0) } ?? nil
-        case .int4: self = value.int32.map { DBData($0) } ?? nil
+        case .bool:
+            
+            guard let bool = value.bool else { throw Database.Error.unsupportedType }
+            self = DBData(bool)
+            
+        case .bytea:
+            
+            guard let bytes = value.bytes else { throw Database.Error.unsupportedType }
+            self = DBData(Data(bytes))
+            
+        case .char:
+            
+            guard let value = value.uint8 else { throw Database.Error.unsupportedType }
+            self = DBData(value)
+            
+        case .int8:
+            
+            guard let value = value.int64 else { throw Database.Error.unsupportedType }
+            self = DBData(value)
+            
+        case .int2:
+            
+            guard let value = value.int16 else { throw Database.Error.unsupportedType }
+            self = DBData(value)
+            
+        case .int4:
+            
+            guard let value = value.int32 else { throw Database.Error.unsupportedType }
+            self = DBData(value)
+            
             
         case .name,
              .bpchar,
              .varchar,
              .text:
             
-            self = value.string.map { DBData($0) } ?? nil
+            guard let string = value.string else { throw Database.Error.unsupportedType }
+            self = DBData(string)
             
-        case .float4: self = value.float.map { DBData($0) } ?? nil
-        case .float8: self = value.double.map { DBData($0) } ?? nil
+        case .float4:
+            
+            guard let float = value.float else { throw Database.Error.unsupportedType }
+            self = DBData(float)
+            
+        case .float8:
+            
+            guard let double = value.double else { throw Database.Error.unsupportedType }
+            self = DBData(double)
             
         case .money,
              .numeric:
             
-            self = value.decimal.map { DBData($0) } ?? nil
+            guard let decimal = value.decimal else { throw Database.Error.unsupportedType }
+            self = DBData(decimal)
             
         case .date:
             
@@ -178,7 +211,10 @@ extension DBData {
                 self = value.date.map { DBData($0) } ?? nil
             }
             
-        case .uuid: self = value.uuid.map { DBData($0) } ?? nil
+        case .uuid:
+            
+            guard let uuid = value.uuid else { throw Database.Error.unsupportedType }
+            self = DBData(uuid)
             
         case .boolArray,
              .byteaArray,
@@ -196,7 +232,8 @@ extension DBData {
              .uuidArray,
              .jsonbArray:
             
-            self = try value.array.map { try DBData($0.map { try DBData($0) }) } ?? nil
+            guard let array = value.array else { throw Database.Error.unsupportedType }
+            self = try DBData(array.map { try DBData($0) })
             
         case .json:
             
@@ -209,8 +246,13 @@ extension DBData {
             self = DBData(json)
             
         default:
+            
             switch value.formatCode {
-            case .text: self = value.string.map { DBData($0) } ?? nil
+            case .text:
+                
+                guard let string = value.string else { throw Database.Error.unsupportedType }
+                self = DBData(string)
+                
             case .binary: throw Database.Error.unsupportedType
             }
         }

@@ -33,48 +33,67 @@ extension DBData {
             
         case .tiny,
              .bit:
+            
             if value.isUnsigned {
-                self = value.uint8.map { DBData($0) } ?? nil
+                guard let value = value.uint8 else { throw Database.Error.unsupportedType }
+                self = DBData(value)
             } else {
-                self = value.int8.map { DBData($0) } ?? nil
+                guard let value = value.int8 else { throw Database.Error.unsupportedType }
+                self = DBData(value)
             }
+            
         case .short:
+            
             if value.isUnsigned {
-                self = value.uint16.map { DBData($0) } ?? nil
+                guard let value = value.uint16 else { throw Database.Error.unsupportedType }
+                self = DBData(value)
             } else {
-                self = value.int16.map { DBData($0) } ?? nil
+                guard let value = value.int16 else { throw Database.Error.unsupportedType }
+                self = DBData(value)
             }
-        case .long:
+            
+        case .int24, .long:
+            
             if value.isUnsigned {
-                self = value.uint32.map { DBData($0) } ?? nil
+                guard let value = value.uint32 else { throw Database.Error.unsupportedType }
+                self = DBData(value)
             } else {
-                self = value.int32.map { DBData($0) } ?? nil
+                guard let value = value.int32 else { throw Database.Error.unsupportedType }
+                self = DBData(value)
             }
-        case .int24:
-            if value.isUnsigned {
-                self = value.uint32.map { DBData($0) } ?? nil
-            } else {
-                self = value.int32.map { DBData($0) } ?? nil
-            }
+            
         case .longlong:
+            
             if value.isUnsigned {
-                self = value.uint64.map { DBData($0) } ?? nil
+                guard let value = value.uint64 else { throw Database.Error.unsupportedType }
+                self = DBData(value)
             } else {
-                self = value.int64.map { DBData($0) } ?? nil
+                guard let value = value.int64 else { throw Database.Error.unsupportedType }
+                self = DBData(value)
             }
-        case .float: self = value.float.map { DBData($0) } ?? nil
-        case .double: self = value.double.map { DBData($0) } ?? nil
+            
+        case .float:
+            
+            guard let float = value.float else { throw Database.Error.unsupportedType }
+            self = DBData(float)
+            
+        case .double:
+            
+            guard let double = value.double else { throw Database.Error.unsupportedType }
+            self = DBData(double)
             
         case .decimal,
              .newdecimal:
             
-            self = value.decimal.map { DBData($0) } ?? nil
+            guard let decimal = value.decimal else { throw Database.Error.unsupportedType }
+            self = DBData(decimal)
             
         case .varchar,
              .varString,
              .string:
             
-            self = value.string.map { DBData($0) } ?? nil
+            guard let string = value.string else { throw Database.Error.unsupportedType }
+            self = DBData(string)
             
         case .timestamp,
              .datetime,
@@ -85,35 +104,32 @@ extension DBData {
              .datetime2,
              .time2:
             
-            if let time = value.time {
+            guard let time = value.time else { throw Database.Error.unsupportedType }
                 
-                let calendar = Calendar(identifier: .iso8601)
-                let timeZone = TimeZone(secondsFromGMT: 0)!
-                
-                let dateComponents = DateComponents(
-                    calendar: calendar,
-                    timeZone: timeZone,
-                    year: time.year.map(Int.init),
-                    month: time.month.map(Int.init),
-                    day: time.day.map(Int.init),
-                    hour: time.hour.map(Int.init),
-                    minute: time.minute.map(Int.init),
-                    second: time.second.map(Int.init),
-                    nanosecond: time.microsecond.map { Int($0) * 1000 }
-                )
-                
-                self.init(dateComponents)
-                
-            } else {
-                self = nil
-            }
+            let calendar = Calendar(identifier: .iso8601)
+            let timeZone = TimeZone(secondsFromGMT: 0)!
+            
+            let dateComponents = DateComponents(
+                calendar: calendar,
+                timeZone: timeZone,
+                year: time.year.map(Int.init),
+                month: time.month.map(Int.init),
+                day: time.day.map(Int.init),
+                hour: time.hour.map(Int.init),
+                minute: time.minute.map(Int.init),
+                second: time.second.map(Int.init),
+                nanosecond: time.microsecond.map { Int($0) * 1000 }
+            )
+            
+            self.init(dateComponents)
             
         case .tinyBlob,
              .mediumBlob,
              .longBlob,
              .blob:
             
-            self = value.buffer.map { DBData(Data(buffer: $0)) } ?? nil
+            guard let buffer = value.buffer else { throw Database.Error.unsupportedType }
+            self = DBData(Data(buffer: buffer))
             
         case .json:
             
@@ -121,8 +137,13 @@ extension DBData {
             self = DBData(json)
             
         default:
-            switch value.formatCode {
-            case .text: self = value.string.map { DBData($0) } ?? nil
+            
+            switch value.format {
+            case .text:
+                
+                guard let string = value.string else { throw Database.Error.unsupportedType }
+                self = DBData(string)
+                
             case .binary: throw Database.Error.unsupportedType
             }
         }

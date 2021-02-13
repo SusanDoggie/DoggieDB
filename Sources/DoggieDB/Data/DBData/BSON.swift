@@ -65,7 +65,11 @@ extension DBData {
         case let .binary(value):
             switch value.subtype {
             case .generic, .binaryDeprecated: self.init(Data(buffer: value.data))
-            case .uuidDeprecated, .uuid: try! self.init(value.toUUID())
+            case .uuidDeprecated, .uuid:
+                
+                guard let uuid = try? value.toUUID() else { throw Database.Error.unsupportedType }
+                self.init(uuid)
+                
             default: throw Database.Error.unsupportedType
             }
         case let .bool(value): self.init(value)
