@@ -208,7 +208,11 @@ extension DBData {
             guard let json = try? value.jsonb(as: Json.self) else { throw Database.Error.unsupportedType }
             self = DBData(json)
             
-        default: throw Database.Error.unsupportedType
+        default:
+            switch value.formatCode {
+            case .text: self = value.string.map { DBData($0) } ?? nil
+            case .binary: throw Database.Error.unsupportedType
+            }
         }
     }
 }
