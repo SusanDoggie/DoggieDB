@@ -81,7 +81,7 @@ class MySQLTest: XCTestCase {
             
             _ = try connection.execute("""
             CREATE TABLE contacts (
-                contact_id INTEGER PRIMARY KEY NOT NULL,
+                contact_id INT(11) PRIMARY KEY NOT NULL,
                 first_name VARCHAR(255) NOT NULL,
                 last_name VARCHAR(255),
                 email VARCHAR(255) NOT NULL UNIQUE,
