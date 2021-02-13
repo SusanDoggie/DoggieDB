@@ -81,7 +81,7 @@ class MySQLTest: XCTestCase {
             
             _ = try connection.execute("""
             CREATE TABLE contacts (
-                contact_id INT(11) PRIMARY KEY NOT NULL,
+                contact_id INTEGER PRIMARY KEY NOT NULL,
                 first_name VARCHAR(255) NOT NULL,
                 last_name VARCHAR(255),
                 email VARCHAR(255) NOT NULL UNIQUE,
@@ -99,7 +99,7 @@ class MySQLTest: XCTestCase {
             guard let email = tableInfo.first(where: { $0["Field"] == "email" }) else { XCTFail(); return }
             guard let phone = tableInfo.first(where: { $0["Field"] == "phone" }) else { XCTFail(); return }
             
-            XCTAssertEqual(contact_id["Type"], "int(11)")
+            XCTAssertEqual(contact_id["Type"]?.string?.prefix(3), "int")
             XCTAssertEqual(first_name["Type"], "varchar(255)")
             XCTAssertEqual(last_name["Type"], "varchar(255)")
             XCTAssertEqual(email["Type"], "varchar(255)")
