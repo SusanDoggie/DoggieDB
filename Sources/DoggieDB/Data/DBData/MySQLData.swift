@@ -157,7 +157,7 @@ extension MySQLData {
                 
                 guard let date = calendar.date(from: value) else { throw Database.Error.unsupportedType }
                 
-                let utc_time = DBData.calendar.dateComponents([.hour, .minute, .second, .nanosecond], from: date)
+                let utc_time = DBData.calendar.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: date)
                 
                 self.init(time: MySQLTime(
                     hour: utc_time.hour.map(UInt16.init),
@@ -170,7 +170,7 @@ extension MySQLData {
                 
                 guard let date = calendar.date(from: value) else { throw Database.Error.unsupportedType }
                 
-                let utc_time = DBData.calendar.dateComponents([.year, .month, .day], from: date)
+                let utc_time = DBData.calendar.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: date)
                 
                 self.init(time: MySQLTime(
                     year: utc_time.year.map(UInt16.init),

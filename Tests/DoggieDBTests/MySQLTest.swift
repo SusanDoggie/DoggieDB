@@ -220,7 +220,7 @@ class MySQLTest: XCTestCase {
         
         do {
             
-            let date = DateComponents(year: 2000, month: 1, day: 1)
+            let date = DateComponents(timeZone: TimeZone(secondsFromGMT: 0)!, year: 2000, month: 1, day: 1)
             
             let result = try connection.execute("SELECT CAST(\(date) AS DATE) as \"date\"").wait()
             
@@ -240,7 +240,7 @@ class MySQLTest: XCTestCase {
         
         do {
             
-            let time = DateComponents(timeZone: .current, hour: 21, minute: 0, second: 0, nanosecond: 0)
+            let time = DateComponents(timeZone: TimeZone(secondsFromGMT: 0)!, hour: 21, minute: 0, second: 0, nanosecond: 0)
             
             let result = try connection.execute("SELECT CAST(\(time) AS TIME) as \"time\"").wait()
             
