@@ -35,6 +35,13 @@ extension DBData: DBDataConvertible {
     }
 }
 
+extension Optional: DBDataConvertible where Wrapped: DBDataConvertible {
+    
+    public func toDBData() -> DBData {
+        return self?.toDBData() ?? nil
+    }
+}
+
 extension Bool: DBDataConvertible {
     
     public func toDBData() -> DBData {

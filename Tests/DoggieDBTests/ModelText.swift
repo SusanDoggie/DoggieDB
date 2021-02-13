@@ -1,5 +1,5 @@
 //
-//  Exported.swift
+//  ModelText.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,8 +23,34 @@
 //  THE SOFTWARE.
 //
 
-@_exported import DBDriver
+@testable import DBFluent
+import DoggieDB
+import XCTest
 
-@_exported import DBQuery
+class ModelText: XCTestCase {
+    
+    func testModel() {
+        
+        struct TestModel: DBModel {
+            
+            @DBField(name: "id")
+            var id: UUID
+            
+            @DBField(name: "name")
+            var name: String
+            
+            init(id: UUID, name: String) {
+                self.id = id
+                self.name = name
+            }
+        }
 
-@_exported import DBFluent
+        let object = TestModel(id: UUID(), name: "John")
+        
+        let _fields = object._fields
+        XCTAssertEqual(_fields.count, 2)
+        XCTAssertEqual(_fields.first { $0.name == "id" }?._data(), DBData(object.id))
+        XCTAssertEqual(_fields.first { $0.name == "name" }?._data(), DBData(object.name))
+        
+    }
+}

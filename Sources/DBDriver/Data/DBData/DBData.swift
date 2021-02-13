@@ -116,6 +116,10 @@ public struct DBData {
         self.base = .uuid(uuid)
     }
     
+    public init<Wrapped: DBDataConvertible>(_ value: Wrapped?) {
+        self = value.toDBData()
+    }
+    
     public init<S: Sequence>(_ elements: S) where S.Element: DBDataConvertible {
         self.base = .array(elements.map { $0.toDBData() })
     }

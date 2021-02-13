@@ -1,5 +1,5 @@
 //
-//  Exported.swift
+//  AnyField.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,8 +23,9 @@
 //  THE SOFTWARE.
 //
 
-@_exported import DBDriver
-
-@_exported import DBQuery
-
-@_exported import DBFluent
+protocol AnyField {
+    
+    var name: String { get }
+    
+    func _data() -> DBData?
+}

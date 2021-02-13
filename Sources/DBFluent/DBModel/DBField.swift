@@ -1,5 +1,5 @@
 //
-//  Exported.swift
+//  DBField.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,8 +23,36 @@
 //  THE SOFTWARE.
 //
 
-@_exported import DBDriver
+@propertyWrapper
+public struct DBField<Value: DBDataConvertible> {
+    
+    public let name: String
+    
+    private var value: Value?
+    
+    public init(name: String) {
+        self.name = name
+    }
+    
+    public init(wrappedValue: Value, name: String) {
+        self.value = wrappedValue
+        self.name = name
+    }
+    
+    public var wrappedValue: Value {
+        get {
+            guard let value = self.value else { fatalError("property accessed before being initialized") }
+            return value
+        }
+        set {
+            self.value = newValue
+        }
+    }
+}
 
-@_exported import DBQuery
-
-@_exported import DBFluent
+extension DBField: AnyField {
+    
+    func _data() -> DBData? {
+        return self.value?.toDBData()
+    }
+}

@@ -1,5 +1,5 @@
 //
-//  Exported.swift
+//  DBModel.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,8 +23,21 @@
 //  THE SOFTWARE.
 //
 
-@_exported import DBDriver
+public protocol DBModel {
+    
+    associatedtype Key: Hashable, DBDataConvertible
+    
+    var id: Key { get set }
+}
 
-@_exported import DBQuery
-
-@_exported import DBFluent
+extension DBModel {
+    
+    var _$id: DBField<Key> {
+        guard let id = Mirror(reflecting: self).descendant("_id") as? DBField<Key> else { fatalError("id must be declared using @DBField") }
+        return id
+    }
+    
+    var _fields: [AnyField] {
+        return Mirror(reflecting: self).children.compactMap { $0.value as? AnyField }
+    }
+}

@@ -1,5 +1,5 @@
 //
-//  Exported.swift
+//  SQLExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,8 +23,6 @@
 //  THE SOFTWARE.
 //
 
-@_exported import DBDriver
-
-@_exported import DBQuery
-
-@_exported import DBFluent
+public protocol SQLExpression {
+    
+}
