@@ -105,7 +105,7 @@ extension BSON {
             
         case let .date(value):
             
-            guard let date = value.date else { throw Database.Error.unsupportedType }
+            guard let date = DBData.calendar.date(from: value) else { throw Database.Error.unsupportedType }
             self = .datetime(date)
             
         case let .binary(value): self = try .binary(BSONBinary(data: value, subtype: .generic))

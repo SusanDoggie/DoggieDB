@@ -69,7 +69,9 @@ extension RESPValue {
             let formatter = ISO8601DateFormatter()
             formatter.formatOptions = .withInternetDateTime
             
-            guard let date = value.date else { throw Database.Error.unsupportedType }
+            let calendar = value.calendar ?? DBData.calendar
+            guard let date = calendar.date(from: value) else { throw Database.Error.unsupportedType }
+            
             self = formatter.string(from: date).convertedToRESPValue()
             
         case let .binary(value): self = value.convertedToRESPValue()

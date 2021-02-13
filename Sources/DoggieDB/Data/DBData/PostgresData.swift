@@ -25,74 +25,190 @@
 
 import PostgresNIO
 
+extension PostgresData {
+    
+    static func _decodeDateString(_ string: String) -> DateComponents? {
+        
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        
+        return formatter.date(from: string).map { DBData.calendar.dateComponents(Calendar.componentsOfDate, from: $0) }
+    }
+    
+    static func _decodeTimeString(_ string: String, withTimeZone: Bool) -> DateComponents? {
+        
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullTime]
+        
+        if withTimeZone {
+            formatter.formatOptions.formUnion(.withTimeZone)
+        }
+        
+        if let timestamp = formatter.date(from: withTimeZone ? string : "\(string)Z") {
+            return DBData.calendar.dateComponents(Calendar.componentsOfTime, from: timestamp)
+        }
+        
+        formatter.formatOptions.formUnion(.withFractionalSeconds)
+        
+        return formatter.date(from: withTimeZone ? string : "\(string)Z").map { DBData.calendar.dateComponents(Calendar.componentsOfTime, from: $0) }
+    }
+    
+    static func _decodeTimestampString(_ string: String, withTimeZone: Bool) -> DateComponents? {
+        
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withSpaceBetweenDateAndTime]
+        
+        if withTimeZone {
+            formatter.formatOptions.formUnion(.withTimeZone)
+        }
+        
+        if let timestamp = formatter.date(from: withTimeZone ? string : "\(string)Z") {
+            return DBData.calendar.dateComponents(Calendar.componentsOfTimestamp, from: timestamp)
+        }
+        
+        formatter.formatOptions.formUnion(.withFractionalSeconds)
+        
+        return formatter.date(from: withTimeZone ? string : "\(string)Z").map { DBData.calendar.dateComponents(Calendar.componentsOfTimestamp, from: $0) }
+    }
+}
+
 extension DBData {
     
     init(_ value: PostgresData) throws {
-        switch value.formatCode {
-        case .binary:
-            switch value.type {
-            case .null: self = nil
-            case .bool: self = value.bool.map { DBData($0) } ?? nil
-            case .bytea: self = value.bytes.map { DBData(Data($0)) } ?? nil
-            case .char: self = value.uint8.map { DBData($0) } ?? nil
-            case .int8: self = value.int64.map { DBData($0) } ?? nil
-            case .int2: self = value.int16.map { DBData($0) } ?? nil
-            case .int4: self = value.int32.map { DBData($0) } ?? nil
+        switch value.type {
+        case .null: self = nil
+        case .bool: self = value.bool.map { DBData($0) } ?? nil
+        case .bytea: self = value.bytes.map { DBData(Data($0)) } ?? nil
+        case .char: self = value.uint8.map { DBData($0) } ?? nil
+        case .int8: self = value.int64.map { DBData($0) } ?? nil
+        case .int2: self = value.int16.map { DBData($0) } ?? nil
+        case .int4: self = value.int32.map { DBData($0) } ?? nil
+            
+        case .name,
+             .bpchar,
+             .varchar,
+             .text:
+            
+            self = value.string.map { DBData($0) } ?? nil
+            
+        case .float4: self = value.float.map { DBData($0) } ?? nil
+        case .float8: self = value.double.map { DBData($0) } ?? nil
+            
+        case .money,
+             .numeric:
+            
+            self = value.decimal.map { DBData($0) } ?? nil
+            
+        case .date:
+            
+            switch value.formatCode {
+            case .text:
                 
-            case .name,
-                 .bpchar,
-                 .varchar,
-                 .text:
+                guard let string = value.string else { throw Database.Error.unsupportedType }
+                guard let dateComponents = PostgresData._decodeDateString(string) else { throw Database.Error.unsupportedType }
                 
-                self = value.string.map { DBData($0) } ?? nil
+                self = DBData(dateComponents)
                 
-            case .float4: self = value.float.map { DBData($0) } ?? nil
-            case .float8: self = value.double.map { DBData($0) } ?? nil
-                
-            case .money,
-                 .numeric:
-                
-                self = value.decimal.map { DBData($0) } ?? nil
-                
-            case .date,
-                 .timestamp,
-                 .timestamptz:
-                
+            case .binary:
                 self = value.date.map { DBData($0) } ?? nil
-                
-            case .uuid: self = value.uuid.map { DBData($0) } ?? nil
-                
-            case .boolArray,
-                 .byteaArray,
-                 .charArray,
-                 .nameArray,
-                 .int2Array,
-                 .int4Array,
-                 .textArray,
-                 .varcharArray,
-                 .int8Array,
-                 .pointArray,
-                 .float4Array,
-                 .float8Array,
-                 .aclitemArray,
-                 .uuidArray,
-                 .jsonbArray:
-                
-                self = try value.array.map { try DBData($0.map { try DBData($0) }) } ?? nil
-                
-            case .json:
-                
-                guard let json = try? value.json(as: Json.self) else { throw Database.Error.unsupportedType }
-                self = DBData(json)
-                
-            case .jsonb:
-                
-                guard let json = try? value.jsonb(as: Json.self) else { throw Database.Error.unsupportedType }
-                self = DBData(json)
-                
-            default: throw Database.Error.unsupportedType
             }
-        case .text: self = value.string.map { DBData($0) } ?? nil
+            
+        case .time:
+            
+            switch value.formatCode {
+            case .text:
+                
+                guard let string = value.string else { throw Database.Error.unsupportedType }
+                guard let dateComponents = PostgresData._decodeTimeString(string, withTimeZone: false) else { throw Database.Error.unsupportedType }
+                
+                self = DBData(dateComponents)
+                
+            case .binary:
+                
+                guard var value = value.value else { throw Database.Error.unsupportedType }
+                
+                let microseconds = value.readInteger(as: Int64.self)!
+                let seconds = Double(microseconds) / Double(1_000_000)
+                let date = Date(timeInterval: seconds, since: Date(timeIntervalSince1970: 946_684_800))
+                
+                var dateComponents = DBData.calendar.dateComponents(Calendar.componentsOfTime, from: date)
+                dateComponents.timeZone = TimeZone(secondsFromGMT: 0)
+                
+                self = DBData(dateComponents)
+            }
+            
+        case .timetz:
+            
+            switch value.formatCode {
+            case .text:
+                
+                guard let string = value.string else { throw Database.Error.unsupportedType }
+                guard let dateComponents = PostgresData._decodeTimeString(string, withTimeZone: true) else { throw Database.Error.unsupportedType }
+                
+                self = DBData(dateComponents)
+                
+            case .binary: throw Database.Error.unsupportedType
+            }
+            
+        case .timestamp:
+            
+            switch value.formatCode {
+            case .text:
+                
+                guard let string = value.string else { throw Database.Error.unsupportedType }
+                guard let dateComponents = PostgresData._decodeTimestampString(string, withTimeZone: false) else { throw Database.Error.unsupportedType }
+                
+                self = DBData(dateComponents)
+                
+            case .binary:
+                self = value.date.map { DBData($0) } ?? nil
+            }
+            
+        case .timestamptz:
+            
+            switch value.formatCode {
+            case .text:
+                
+                guard let string = value.string else { throw Database.Error.unsupportedType }
+                guard let dateComponents = PostgresData._decodeTimestampString(string, withTimeZone: true) else { throw Database.Error.unsupportedType }
+                
+                self = DBData(dateComponents)
+                
+            case .binary:
+                self = value.date.map { DBData($0) } ?? nil
+            }
+            
+        case .uuid: self = value.uuid.map { DBData($0) } ?? nil
+            
+        case .boolArray,
+             .byteaArray,
+             .charArray,
+             .nameArray,
+             .int2Array,
+             .int4Array,
+             .textArray,
+             .varcharArray,
+             .int8Array,
+             .pointArray,
+             .float4Array,
+             .float8Array,
+             .aclitemArray,
+             .uuidArray,
+             .jsonbArray:
+            
+            self = try value.array.map { try DBData($0.map { try DBData($0) }) } ?? nil
+            
+        case .json:
+            
+            guard let json = try? value.json(as: Json.self) else { throw Database.Error.unsupportedType }
+            self = DBData(json)
+            
+        case .jsonb:
+            
+            guard let json = try? value.jsonb(as: Json.self) else { throw Database.Error.unsupportedType }
+            self = DBData(json)
+            
+        default: throw Database.Error.unsupportedType
         }
     }
 }
@@ -114,7 +230,37 @@ extension PostgresData {
         case let .decimal(value): self.init(decimal: value)
         case let .date(value):
             
-            if let date = value.date {
+            let calendar = value.calendar ?? DBData.calendar
+            
+            if !value.containsDate() && value.containsTime() {
+                
+                var value = value
+                value.year = 2000
+                value.month = 1
+                value.day = 1
+                
+                guard let date = calendar.date(from: value) else { throw Database.Error.unsupportedType }
+                
+                let formatter = ISO8601DateFormatter()
+                formatter.formatOptions = [.withFullTime, .withFractionalSeconds]
+                
+                var buffer = ByteBufferAllocator().buffer(capacity: 0)
+                buffer.writeString(formatter.string(from: date))
+                self.init(type: .time, formatCode: .text, value: buffer)
+                
+            } else if value.containsDate() && !value.containsTime() {
+                
+                guard let date = calendar.date(from: value) else { throw Database.Error.unsupportedType }
+                
+                let formatter = ISO8601DateFormatter()
+                formatter.timeZone = value.timeZone ?? TimeZone.current
+                formatter.formatOptions = [.withFullDate]
+                
+                var buffer = ByteBufferAllocator().buffer(capacity: 0)
+                buffer.writeString(formatter.string(from: date))
+                self.init(type: .date, formatCode: .text, value: buffer)
+                
+            } else if let date = calendar.date(from: value) {
                 self.init(date: date)
             } else {
                 throw Database.Error.unsupportedType

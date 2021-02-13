@@ -53,7 +53,9 @@ extension Json {
             let formatter = ISO8601DateFormatter()
             formatter.formatOptions = .withInternetDateTime
             
-            guard let date = value.date else { return nil }
+            let calendar = value.calendar ?? DBData.calendar
+            guard let date = calendar.date(from: value) else { return nil }
+            
             self.init(formatter.string(from: date))
             
         case let .uuid(value): self.init(value.uuidString)

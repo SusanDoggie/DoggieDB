@@ -194,4 +194,96 @@ class PostgreSQLTest: XCTestCase {
         }
     }
     
+    func testBindArray() throws {
+        
+        do {
+            
+            let array: [DBData] = [1, 2, 3]
+            
+            let result = try connection.execute("SELECT \(array) as array").wait()
+            
+            XCTAssertEqual(result.count, 1)
+            XCTAssertEqual(result[0]["array"]?.array, array)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testBindJson() throws {
+        
+        do {
+            
+            let array: [DBData] = [1.0, 2.0, "foo", nil]
+            
+            let result = try connection.execute("SELECT \(array) as array").wait()
+            
+            XCTAssertEqual(result.count, 1)
+            XCTAssertEqual(result[0]["array"]?.array, array)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testBindTimestamp() throws {
+        
+        do {
+            
+            let timestamp = Date()
+            
+            let result = try connection.execute("SELECT \(timestamp) as \"now\"").wait()
+            
+            XCTAssertEqual(result[0]["now"]?.date, timestamp)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testBindDate() throws {
+        
+        do {
+            
+            let date = DateComponents(year: 2000, month: 1, day: 1)
+            
+            let result = try connection.execute("SELECT \(date)::date as \"date\"").wait()
+            
+            print(result[0]["date"]?.dateComponents == date)
+            XCTAssertEqual(result[0]["date"]?.dateComponents?.year, date.year)
+            XCTAssertEqual(result[0]["date"]?.dateComponents?.month, date.month)
+            XCTAssertEqual(result[0]["date"]?.dateComponents?.day, date.day)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testBindTime() throws {
+        
+        do {
+            
+            let time = DateComponents(timeZone: .current, hour: 21, minute: 0, second: 0, nanosecond: 0)
+            
+            let result = try connection.execute("SELECT \(time)::time as \"time\"").wait()
+            
+            XCTAssertEqual(result[0]["time"]?.dateComponents?.hour, time.hour)
+            XCTAssertEqual(result[0]["time"]?.dateComponents?.minute, time.minute)
+            XCTAssertEqual(result[0]["time"]?.dateComponents?.second, time.second)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
 }

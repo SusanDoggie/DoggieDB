@@ -57,7 +57,7 @@ extension DBData {
         public init(
             dateDecodingStrategy: DateDecodingStrategy = .iso8601,
             calendar: Calendar = Calendar(identifier: .iso8601),
-            timeZone: TimeZone = TimeZone(identifier: "UTC")!,
+            timeZone: TimeZone = TimeZone(secondsFromGMT: 0)!,
             userInfo: [CodingUserInfoKey: Any] = [:]) {
             self.dateDecodingStrategy = dateDecodingStrategy
             self.calendar = calendar

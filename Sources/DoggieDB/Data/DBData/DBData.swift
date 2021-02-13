@@ -99,7 +99,7 @@ public struct DBData {
     public init(
         _ value: Date,
         calendar: Calendar = Calendar(identifier: .iso8601),
-        timeZone: TimeZone = TimeZone(identifier: "UTC")!
+        timeZone: TimeZone = TimeZone(secondsFromGMT: 0)!
     ) {
         self.base = .date(calendar.dateComponents(in: timeZone, from: value))
     }
@@ -186,7 +186,9 @@ extension DBData: CustomStringConvertible {
         case let .unsigned(value): return "\(value)"
         case let .number(value): return "\(value)"
         case let .decimal(value): return "\(value)"
-        case let .date(value): return value.date.map { "\($0)" } ?? "\(value)"
+        case let .date(value):
+            let calendar = value.calendar ?? DBData.calendar
+            return calendar.date(from: value).map { "\($0)" } ?? "\(value)"
         case let .binary(value): return "\(value)"
         case let .uuid(value): return "\(value)"
         case let .array(value): return "\(value)"
@@ -525,7 +527,9 @@ extension DBData {
     
     public var date: Date? {
         switch self.base {
-        case let .date(value): return value.date
+        case let .date(value):
+            let calendar = value.calendar ?? DBData.calendar
+            return calendar.date(from: value)
         default: return nil
         }
     }
@@ -551,6 +555,13 @@ extension DBData {
         case let .binary(data):
             guard data.count == 16 else { return nil }
             return UUID(uuid: data.load(as: uuid_t.self))
+        default: return nil
+        }
+    }
+    
+    public var array: [DBData]? {
+        switch self.base {
+        case let .array(value): return value
         default: return nil
         }
     }

@@ -122,6 +122,13 @@ extension Data: DBDataConvertible {
     }
 }
 
+extension DateComponents: DBDataConvertible {
+    
+    public func toDBData() -> DBData {
+        return DBData(self)
+    }
+}
+
 extension UUID: DBDataConvertible {
     
     public func toDBData() -> DBData {

@@ -199,5 +199,60 @@ class MySQLTest: XCTestCase {
             throw error
         }
     }
+    func testBindTimestamp() throws {
+        
+        do {
+            
+            let timestamp = Date(timeIntervalSince1970: round(Date().timeIntervalSince1970))
+            
+            let result = try connection.execute("SELECT CAST(\(timestamp) AS DATETIME) as \"now\"").wait()
+            
+            XCTAssertEqual(result[0]["now"]?.date, timestamp)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testBindDate() throws {
+        
+        do {
+            
+            let date = DateComponents(year: 2000, month: 1, day: 1)
+            
+            let result = try connection.execute("SELECT CAST(\(date) AS DATE) as \"date\"").wait()
+            
+            print(result[0]["date"]?.dateComponents == date)
+            XCTAssertEqual(result[0]["date"]?.dateComponents?.year, date.year)
+            XCTAssertEqual(result[0]["date"]?.dateComponents?.month, date.month)
+            XCTAssertEqual(result[0]["date"]?.dateComponents?.day, date.day)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testBindTime() throws {
+        
+        do {
+            
+            let time = DateComponents(timeZone: .current, hour: 21, minute: 0, second: 0, nanosecond: 0)
+            
+            let result = try connection.execute("SELECT CAST(\(time) AS TIME) as \"time\"").wait()
+            
+            XCTAssertEqual(result[0]["time"]?.dateComponents?.hour, time.hour)
+            XCTAssertEqual(result[0]["time"]?.dateComponents?.minute, time.minute)
+            XCTAssertEqual(result[0]["time"]?.dateComponents?.second, time.second)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
     
 }
