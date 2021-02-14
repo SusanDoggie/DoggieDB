@@ -1,5 +1,5 @@
 //
-//  SQLJoin.swift
+//  SQLSerializer.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,6 +23,41 @@
 //  THE SOFTWARE.
 //
 
-public struct SQLJoin: SQLExpression {
+enum SQLSerializerComponent: Hashable {
     
+    case string(String)
+    
+    case bind(DBData)
+}
+
+public struct SQLSerializer {
+    
+    var components: [SQLSerializerComponent]
+    
+    public init() {
+        self.components = []
+    }
+}
+
+extension SQLSerializer {
+    
+    var raw: SQLRaw {
+        return components.map {
+            switch $0 {
+            case let .string(string): return SQLRaw(string)
+            case let .bind(data): return SQLRaw(data)
+            }
+        }.joined(separator: " ")
+    }
+}
+
+extension SQLSerializer {
+    
+    public mutating func write<T: StringProtocol>(_ value: T) {
+        self.components.append(.string(value.trimmingCharacters(in: .whitespacesAndNewlines)))
+    }
+    
+    public mutating func write(_ value: DBData) {
+        self.components.append(.bind(value))
+    }
 }

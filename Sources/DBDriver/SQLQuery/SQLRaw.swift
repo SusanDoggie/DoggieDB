@@ -40,16 +40,56 @@ enum SQLRawComponent: Hashable {
     case bind(DBData)
 }
 
+extension SQLRawComponent {
+    
+    init(_ value: DBData) {
+        switch value.base {
+        case let .boolean(value): self = .boolean(value)
+        case let .signed(value): self = .signed(value)
+        case let .unsigned(value): self = .unsigned(value)
+        case let .number(value): self = value.isFinite ? .number(value) : .bind(DBData(value))
+        case let .decimal(value): self = value.isFinite ? .decimal(value) : .bind(DBData(value))
+        default: self = .bind(value)
+        }
+    }
+}
+
+extension SQLRawComponent {
+    
+    var isEmpty: Bool {
+        switch self {
+        case let .string(string): return string.isEmpty
+        default: return false
+        }
+    }
+}
+
 public struct SQLRaw: Hashable {
     
-    var components: [SQLRawComponent]
+    var components: [SQLRawComponent] {
+        didSet {
+            self.components = components.filter { !$0.isEmpty }
+        }
+    }
     
     init(components: [SQLRawComponent]) {
         self.components = components
     }
     
+    public init() {
+        self.components = []
+    }
+    
     public init<S: StringProtocol>(_ string: S) {
         self.components = [.string(String(string))]
+    }
+    
+    public init(_ value: DBData) {
+        self.components = [SQLRawComponent(value)]
+    }
+    
+    public init(bind value: DBData) {
+        self.components = [.bind(value)]
     }
 }
 
@@ -79,15 +119,7 @@ extension SQLRaw: ExpressibleByStringInterpolation {
         }
         
         public mutating func appendInterpolation<T: DBDataConvertible>(_ value: T) {
-            let value = value.toDBData()
-            switch value.base {
-            case let .boolean(value): self.components.append(.boolean(value))
-            case let .signed(value): self.components.append(.signed(value))
-            case let .unsigned(value): self.components.append(.unsigned(value))
-            case let .number(value): self.components.append(value.isFinite ? .number(value) : .bind(DBData(value)))
-            case let .decimal(value): self.components.append(value.isFinite ? .decimal(value) : .bind(DBData(value)))
-            default: self.components.append(.bind(value))
-            }
+            self.components.append(SQLRawComponent(value.toDBData()))
         }
         
         public mutating func appendInterpolation<T: DBDataConvertible>(bind value: T) {
@@ -102,8 +134,27 @@ extension SQLRaw: ExpressibleByStringInterpolation {
 
 extension SQLRaw {
     
+    public var isEmpty: Bool {
+        return self.components.isEmpty
+    }
+}
+
+extension SQLRaw {
+    
     public mutating func append(_ other: SQLRaw) {
         self.components.append(contentsOf: other.components)
+    }
+    
+    public mutating func append<T: StringProtocol>(_ value: T) {
+        self.components.append(.string(String(value)))
+    }
+    
+    public mutating func append(_ value: DBData) {
+        self.components.append(SQLRawComponent(value))
+    }
+    
+    public mutating func append(bind value: DBData) {
+        self.components.append(.bind(value))
     }
 }
 

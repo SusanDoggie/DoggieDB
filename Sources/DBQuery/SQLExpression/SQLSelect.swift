@@ -25,4 +25,8 @@
 
 public struct SQLSelect: SQLExpression {
     
+    public func serialize(to serializer: inout SQLSerializer) {
+        
+        
+    }
 }
