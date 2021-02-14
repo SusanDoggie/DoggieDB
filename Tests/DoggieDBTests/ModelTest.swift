@@ -42,7 +42,7 @@ struct Contact: DBModel {
     @Field(default: .now)
     var updatedAt: Date
     
-    @Field()
+    @Field
     var deletedAt: Date?
     
     init(id: UUID, name: String) {

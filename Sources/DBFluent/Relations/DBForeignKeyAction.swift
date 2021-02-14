@@ -1,5 +1,5 @@
 //
-//  DBParent.swift
+//  DBForeignKeyAction.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,50 +23,13 @@
 //  THE SOFTWARE.
 //
 
-extension DBModel {
+public enum DBForeignKeyAction {
     
-    public typealias Parent<To: _DBModel> = DBParent<Self, To>
-}
-
-extension Optional: _DBModel where Wrapped: DBModel {
+    case restrict
     
-    public var id: Wrapped.Key? {
-        return self?.id
-    }
-}
-
-@propertyWrapper
-public struct DBParent<From: DBModel, To: _DBModel> {
+    case cascade
     
-    public typealias ParentKey = To.Key
+    case setNull
     
-    @DBField<From, ParentKey>
-    public internal(set) var id: ParentKey
-    
-    public let onUpdate: DBForeignKeyAction
-    public let onDelete: DBForeignKeyAction
-
-    public internal(set) var parent: EventLoopFuture<To>!
-    
-    public init(
-        name: String? = nil,
-        type: String? = nil,
-        isUnique: Bool = false,
-        default: DBField<From, ParentKey>.Default? = nil,
-        onUpdate: DBForeignKeyAction = .restrict,
-        onDelete: DBForeignKeyAction = .restrict
-    ) {
-        self._id = DBField(name: name, type: type, isUnique: isUnique, default: `default`)
-        self.onUpdate = onUpdate
-        self.onDelete = onDelete
-        self.parent = nil
-    }
-    
-    public var wrappedValue: To {
-        return try! parent.wait()
-    }
-    
-    public var projectedValue: DBParent<From, To> {
-        return self
-    }
+    case setDefault
 }

@@ -30,7 +30,13 @@ public enum DBFieldModifier: Hashable {
 
 extension DBField where Value == Date {
     
-    public init(name: String, type: String? = nil, isUnique: Bool = false, withTimeZone: Bool = false, default: Default? = nil) {
+    public init(
+        name: String,
+        type: String? = nil,
+        isUnique: Bool = false,
+        withTimeZone: Bool = false,
+        default: Default? = nil
+    ) {
         self.name = name
         self.type = type
         self.isUnique = isUnique
@@ -45,7 +51,13 @@ extension DBField where Value == Date {
 
 extension DBField where Value == DateComponents {
     
-    public init(name: String, type: String? = nil, isUnique: Bool = false, withTimeZone: Bool = false, default: Default? = nil) {
+    public init(
+        name: String,
+        type: String? = nil,
+        isUnique: Bool = false,
+        withTimeZone: Bool = false,
+        default: Default? = nil
+    ) {
         self.name = name
         self.type = type
         self.isUnique = isUnique

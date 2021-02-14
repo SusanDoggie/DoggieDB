@@ -43,7 +43,12 @@ public struct DBField<Model: DBModel, Value: DBDataConvertible> {
     
     var value: Value?
     
-    public init(name: String? = nil, type: String? = nil, isUnique: Bool = false, default: Default? = nil) {
+    public init(
+        name: String? = nil,
+        type: String? = nil,
+        isUnique: Bool = false,
+        default: Default? = nil
+    ) {
         self.name = name
         self.type = type
         self.isUnique = isUnique
