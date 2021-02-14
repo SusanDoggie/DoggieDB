@@ -131,5 +131,6 @@ class ModelTest: XCTestCase {
         let fields = planet._$fields
         
         XCTAssertNotNil(fields.first { $0.name == "star" })
+        XCTAssertNil(planet.star)
     }
 }

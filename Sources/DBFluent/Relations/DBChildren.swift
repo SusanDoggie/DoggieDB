@@ -38,20 +38,20 @@ public struct DBChildren<From: DBModel, To: DBModel> {
     
     public let parentKey: ParentKey
     
-    var _children: EventLoopFuture<[To]>!
+    public internal(set) var children: EventLoopFuture<[To]>?
     
     public init(parentKey: KeyPath<To, To.Parent<From>>) {
         self.parentKey = .required(parentKey)
-        self._children = nil
+        self.children = nil
     }
     
     public init(parentKey: KeyPath<To, To.Parent<From?>>) {
         self.parentKey = .optional(parentKey)
-        self._children = nil
+        self.children = nil
     }
     
     public var wrappedValue: [To] {
-        return try! children.wait()
+        return try! children?.wait() ?? []
     }
     
     public var projectedValue: DBChildren<From, To> {
@@ -61,21 +61,14 @@ public struct DBChildren<From: DBModel, To: DBModel> {
 
 extension DBChildren {
     
-    public var eventLoop: EventLoop {
-        return children.eventLoop
-    }
-}
-
-extension DBChildren {
-    
-    public var children: EventLoopFuture<[To]> {
-        return _children
+    public var eventLoop: EventLoop? {
+        return children?.eventLoop
     }
 }
 
 extension DBChildren {
     
     public func wait() throws -> [To] {
-        return try children.wait()
+        return try children?.wait() ?? []
     }
 }

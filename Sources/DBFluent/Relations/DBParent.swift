@@ -28,10 +28,19 @@ extension DBModel {
     public typealias Parent<To: _DBModel> = DBParent<Self, To> where To.Key: Hashable, To.Key: DBDataConvertible
 }
 
-extension Optional: _DBModel where Wrapped: DBModel {
+private protocol NilRepresentable {
+    
+    static var null: NilRepresentable { get }
+}
+
+extension Optional: _DBModel, NilRepresentable where Wrapped: DBModel {
     
     public var id: Wrapped.Key? {
         return self?.id
+    }
+    
+    fileprivate static var null: NilRepresentable {
+        return Optional.none as NilRepresentable
     }
 }
 
@@ -46,7 +55,7 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
     public let onUpdate: DBForeignKeyAction
     public let onDelete: DBForeignKeyAction
 
-    var _parent: EventLoopFuture<To>!
+    public internal(set) var parent: EventLoopFuture<To>?
     
     public init(
         name: String? = nil,
@@ -59,16 +68,20 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
         self._id = DBField(name: name, type: type, isUnique: isUnique, default: `default`)
         self.onUpdate = onUpdate
         self.onDelete = onDelete
-        self._parent = nil
+        self.parent = nil
     }
     
     public var wrappedValue: To {
         get {
-            return try! parent.wait()
+            if let parent = self.parent {
+                return try! parent.wait()
+            }
+            guard let _To = To.self as? NilRepresentable.Type else { fatalError() }
+            return _To.null as! To
         }
         set {
             id = newValue.id
-            _parent = _parent?.eventLoop.makeSucceededFuture(newValue)
+            parent = parent?.eventLoop.makeSucceededFuture(newValue)
         }
     }
     
@@ -79,21 +92,14 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
 
 extension DBParent {
     
-    public var eventLoop: EventLoop {
-        return parent.eventLoop
-    }
-}
-
-extension DBParent {
-    
-    public var parent: EventLoopFuture<To> {
-        return _parent
+    public var eventLoop: EventLoop? {
+        return parent?.eventLoop
     }
 }
 
 extension DBParent {
     
     public func wait() throws -> To {
-        return try parent.wait()
+        return try parent!.wait()
     }
 }

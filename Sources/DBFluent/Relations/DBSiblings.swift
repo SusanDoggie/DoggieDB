@@ -35,7 +35,7 @@ public struct DBSiblings<From: DBModel, To: DBModel, Through: DBModel> {
     
     public let toKey: KeyPath<Through, Through.Parent<To>>
     
-    var _pivots: EventLoopFuture<[Through]>!
+    public internal(set) var pivots: EventLoopFuture<[Through]>?
     
     public init(
         through _: Through.Type,
@@ -44,11 +44,11 @@ public struct DBSiblings<From: DBModel, To: DBModel, Through: DBModel> {
     ) {
         self.fromKey = from
         self.toKey = to
-        self._pivots = nil
+        self.pivots = nil
     }
     
     public var wrappedValue: [To] {
-        return try! siblings.wait()
+        return try! siblings?.wait() ?? []
     }
     
     public var projectedValue: DBSiblings<From, To, Through> {
@@ -58,20 +58,17 @@ public struct DBSiblings<From: DBModel, To: DBModel, Through: DBModel> {
 
 extension DBSiblings {
     
-    public var eventLoop: EventLoop {
-        return pivots.eventLoop
+    public var eventLoop: EventLoop? {
+        return pivots?.eventLoop
     }
 }
 
 extension DBSiblings {
     
-    public var pivots: EventLoopFuture<[Through]> {
-        return _pivots
-    }
-    
-    public var siblings: EventLoopFuture<[To]> {
+    public var siblings: EventLoopFuture<[To]>? {
+        guard let pivots = self.pivots else { return nil }
         let eventLoop = pivots.eventLoop
-        let siblings = pivots.map { $0.map { $0[keyPath: toKey].parent } }
+        let siblings = pivots.map { $0.map { $0[keyPath: toKey].parent! } }
         return siblings.flatMap { EventLoopFuture.reduce(into: [], $0, on: eventLoop) { $0.append($1) } }
     }
 }
@@ -79,6 +76,6 @@ extension DBSiblings {
 extension DBSiblings {
     
     public func wait() throws -> [To] {
-        return try siblings.wait()
+        return try siblings?.wait() ?? []
     }
 }
