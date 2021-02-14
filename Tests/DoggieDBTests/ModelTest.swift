@@ -32,6 +32,8 @@ class ModelTest: XCTestCase {
         
         struct TestModel: DBModel {
             
+            static let schema: String = "test_model"
+            
             @DBField(default: .random)
             var id: UUID
             

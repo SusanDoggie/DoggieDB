@@ -27,6 +27,8 @@ public protocol DBModel {
     
     associatedtype Key: Hashable, DBDataConvertible
     
+    static var schema: String { get }
+    
     var id: Key { get set }
 }
 
