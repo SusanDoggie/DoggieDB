@@ -55,18 +55,18 @@ class ModelTest: XCTestCase {
 
         let object = TestModel(id: UUID(), name: "John")
         
-        let _fields = object._fields
+        let fields = object._$fields
         
-        XCTAssertEqual(_fields.count, 5)
+        XCTAssertEqual(fields.count, 5)
         
-        XCTAssertEqual(_fields.first { $0.name == "id" }?.value, DBData(object.id))
-        XCTAssertEqual(_fields.first { $0.name == "nick_name" }?.value, DBData(object.name))
+        XCTAssertEqual(fields.first { $0.name == "id" }?.value, DBData(object.id))
+        XCTAssertEqual(fields.first { $0.name == "nick_name" }?.value, DBData(object.name))
         
-        XCTAssertEqual(_fields.first { $0.name == "id" }?.isOptional, false)
-        XCTAssertEqual(_fields.first { $0.name == "nick_name" }?.isOptional, false)
-        XCTAssertEqual(_fields.first { $0.name == "createdAt" }?.isOptional, false)
-        XCTAssertEqual(_fields.first { $0.name == "updatedAt" }?.isOptional, false)
-        XCTAssertEqual(_fields.first { $0.name == "deletedAt" }?.isOptional, true)
+        XCTAssertEqual(fields.first { $0.name == "id" }?.isOptional, false)
+        XCTAssertEqual(fields.first { $0.name == "nick_name" }?.isOptional, false)
+        XCTAssertEqual(fields.first { $0.name == "createdAt" }?.isOptional, false)
+        XCTAssertEqual(fields.first { $0.name == "updatedAt" }?.isOptional, false)
+        XCTAssertEqual(fields.first { $0.name == "deletedAt" }?.isOptional, true)
         
     }
 }

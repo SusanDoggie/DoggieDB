@@ -95,7 +95,7 @@ extension AnyField {
 
 extension DBModel {
     
-    public var _fields: [AnyField<Self>] {
+    public var _$fields: [AnyField<Self>] {
         return Mirror(reflecting: self).children.compactMap { AnyField($0) }
     }
 }
