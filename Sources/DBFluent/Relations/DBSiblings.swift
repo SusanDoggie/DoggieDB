@@ -71,3 +71,10 @@ extension DBSiblings {
         return siblings.flatMap { EventLoopFuture.reduce(into: [], $0, on: eventLoop) { $0.append($1) } }
     }
 }
+
+extension DBSiblings {
+    
+    public func wait() throws -> [To] {
+        return try siblings.wait()
+    }
+}
