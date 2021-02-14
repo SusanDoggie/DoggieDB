@@ -73,7 +73,9 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
     
     public var wrappedValue: To {
         get {
-            assert(self.parent != nil, "property accessed before being initialized")
+            if self.parent == nil {
+                logger.warning("property accessed before being initialized")
+            }
             if let parent = self.parent {
                 return try! parent.wait()
             }

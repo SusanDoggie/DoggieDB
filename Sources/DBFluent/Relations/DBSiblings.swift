@@ -48,7 +48,9 @@ public struct DBSiblings<From: DBModel, To: DBModel, Through: DBModel> {
     }
     
     public var wrappedValue: [To] {
-        assert(self.siblings != nil, "property accessed before being initialized")
+        if self.siblings == nil {
+            logger.warning("property accessed before being initialized")
+        }
         return try! siblings?.wait() ?? []
     }
     
