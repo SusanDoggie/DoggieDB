@@ -23,8 +23,13 @@
 //  THE SOFTWARE.
 //
 
+extension DBModel {
+    
+    public typealias Field<Value: DBDataConvertible> = DBField<Self, Value>
+}
+
 @propertyWrapper
-public struct DBField<Value: DBDataConvertible> {
+public struct DBField<Model: DBModel, Value: DBDataConvertible> {
     
     public let name: String?
     
@@ -56,7 +61,7 @@ public struct DBField<Value: DBDataConvertible> {
         }
     }
     
-    public var projectedValue: DBField<Value> {
+    public var projectedValue: DBField<Model, Value> {
         return self
     }
 }

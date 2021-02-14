@@ -1,5 +1,5 @@
 //
-//  DBModel.swift
+//  DBSiblings.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,24 +23,44 @@
 //  THE SOFTWARE.
 //
 
-public protocol _DBModel {
-    
-    associatedtype Key: Hashable, DBDataConvertible
-    
-    var id: Key { get }
-}
-
-public protocol DBModel: _DBModel {
-    
-    static var schema: String { get }
-    
-    var id: Key { get set }
-}
-
 extension DBModel {
     
-    public var _$id: Field<Key> {
-        guard let id = Mirror(reflecting: self).descendant("_id") as? Field<Key> else { fatalError("id must be declared using @DBField") }
-        return id
+    public typealias Siblings<To: DBModel, Through: DBModel> = DBSiblings<Self, To, Through>
+}
+
+@propertyWrapper
+public struct DBSiblings<From: DBModel, To: DBModel, Through: DBModel> {
+    
+    public let fromKey: KeyPath<Through, Through.Parent<From>>
+    
+    public let toKey: KeyPath<Through, Through.Parent<To>>
+    
+    public internal(set) var pivots: EventLoopFuture<[Through]>!
+    
+    public init(
+        through _: Through.Type,
+        from: KeyPath<Through, Through.Parent<From>>,
+        to: KeyPath<Through, Through.Parent<To>>
+    ) {
+        self.fromKey = from
+        self.toKey = to
+        self.pivots = nil
+    }
+    
+    public var wrappedValue: [To] {
+        return try! siblings.wait()
+    }
+    
+    public var projectedValue: DBSiblings<From, To, Through> {
+        return self
+    }
+}
+
+extension DBSiblings {
+    
+    public var siblings: EventLoopFuture<[To]> {
+        let eventLoop = pivots.eventLoop
+        let siblings = pivots.map { $0.map { $0[keyPath: toKey].parent! } }
+        return siblings.flatMap { EventLoopFuture.reduce(into: [], $0, on: eventLoop) { $0.append($1) } }
     }
 }

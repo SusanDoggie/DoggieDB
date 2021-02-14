@@ -1,5 +1,5 @@
 //
-//  AnyField.swift
+//  DBAnyField.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-private protocol AnyFieldBox {
+private protocol _DBField {
     
     var name: String? { get }
     
@@ -41,7 +41,7 @@ private protocol AnyFieldBox {
 private protocol _Optional { }
 extension Optional: _Optional { }
 
-extension DBField: AnyFieldBox {
+extension DBField: _DBField {
     
     public var isOptional: Bool {
         return Value.self is _Optional.Type
@@ -52,21 +52,48 @@ extension DBField: AnyFieldBox {
     }
 }
 
-public struct AnyField<Model: DBModel> {
+extension DBParent: _DBField {
+    
+    public var name: String? {
+        return $id.name
+    }
+    
+    public var isOptional: Bool {
+        return $id.isOptional
+    }
+    
+    public var type: String? {
+        return $id.type
+    }
+    
+    public var isUnique: Bool {
+        return $id.isUnique
+    }
+    
+    public var modifier: Set<DBFieldModifier> {
+        return $id.modifier
+    }
+    
+    fileprivate func _data() -> DBData? {
+        return $id._data()
+    }
+}
+
+public struct DBAnyField<Model: DBModel> {
     
     private let label: String
     
-    private let box: AnyFieldBox
+    private let box: _DBField
     
     fileprivate init?(_ mirror: Mirror.Child) {
         guard let label = mirror.label, label.hasPrefix("_") else { return nil }
-        guard let box = mirror.value as? AnyFieldBox else { return nil }
+        guard let box = mirror.value as? _DBField else { return nil }
         self.label = String(label.dropFirst())
         self.box = box
     }
 }
 
-extension AnyField {
+extension DBAnyField {
     
     public var name: String {
         return box.name ?? label
@@ -95,7 +122,7 @@ extension AnyField {
 
 extension DBModel {
     
-    public var _$fields: [AnyField<Self>] {
-        return Mirror(reflecting: self).children.compactMap { AnyField($0) }
+    public var _$fields: [DBAnyField<Self>] {
+        return Mirror(reflecting: self).children.compactMap { DBAnyField($0) }
     }
 }

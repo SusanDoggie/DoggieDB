@@ -1,5 +1,5 @@
 //
-//  DBModel.swift
+//  DBChildren.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,24 +23,38 @@
 //  THE SOFTWARE.
 //
 
-public protocol _DBModel {
-    
-    associatedtype Key: Hashable, DBDataConvertible
-    
-    var id: Key { get }
-}
-
-public protocol DBModel: _DBModel {
-    
-    static var schema: String { get }
-    
-    var id: Key { get set }
-}
-
 extension DBModel {
     
-    public var _$id: Field<Key> {
-        guard let id = Mirror(reflecting: self).descendant("_id") as? Field<Key> else { fatalError("id must be declared using @DBField") }
-        return id
+    public typealias Children<To: DBModel> = DBChildren<Self, To>
+}
+
+@propertyWrapper
+public struct DBChildren<From: DBModel, To: DBModel> {
+    
+    public enum ParentKey {
+        case required(KeyPath<To, To.Parent<From>>)
+        case optional(KeyPath<To, To.Parent<From?>>)
+    }
+    
+    public let parentKey: ParentKey
+    
+    public internal(set) var children: EventLoopFuture<[To]>!
+    
+    public init(parentKey: KeyPath<To, To.Parent<From>>) {
+        self.parentKey = .required(parentKey)
+        self.children = nil
+    }
+    
+    public init(parentKey: KeyPath<To, To.Parent<From?>>) {
+        self.parentKey = .optional(parentKey)
+        self.children = nil
+    }
+    
+    public var wrappedValue: [To] {
+        return try! children.wait()
+    }
+    
+    public var projectedValue: DBChildren<From, To> {
+        return self
     }
 }

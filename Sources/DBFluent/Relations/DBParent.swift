@@ -1,5 +1,5 @@
 //
-//  DBModel.swift
+//  DBParent.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,24 +23,38 @@
 //  THE SOFTWARE.
 //
 
-public protocol _DBModel {
-    
-    associatedtype Key: Hashable, DBDataConvertible
-    
-    var id: Key { get }
-}
-
-public protocol DBModel: _DBModel {
-    
-    static var schema: String { get }
-    
-    var id: Key { get set }
-}
-
 extension DBModel {
     
-    public var _$id: Field<Key> {
-        guard let id = Mirror(reflecting: self).descendant("_id") as? Field<Key> else { fatalError("id must be declared using @DBField") }
-        return id
+    public typealias Parent<To: _DBModel> = DBParent<Self, To>
+}
+
+extension Optional: _DBModel where Wrapped: DBModel {
+    
+    public var id: Wrapped.Key? {
+        return self?.id
+    }
+}
+
+@propertyWrapper
+public struct DBParent<From: DBModel, To: _DBModel> {
+    
+    public typealias ParentKey = To.Key
+    
+    @DBField<From, ParentKey>
+    public internal(set) var id: ParentKey
+    
+    public internal(set) var parent: EventLoopFuture<To>!
+    
+    public init(name: String? = nil, type: String? = nil, isUnique: Bool = false, default: DBField<From, ParentKey>.Default? = nil) {
+        self._id = DBField(name: name, type: type, isUnique: isUnique, default: `default`)
+        self.parent = nil
+    }
+    
+    public var wrappedValue: To {
+        return try! parent.wait()
+    }
+    
+    public var projectedValue: DBParent<From, To> {
+        return self
     }
 }
