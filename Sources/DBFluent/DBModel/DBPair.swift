@@ -1,5 +1,5 @@
 //
-//  DBField.swift
+//  DBPair.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,40 +23,43 @@
 //  THE SOFTWARE.
 //
 
-@propertyWrapper
-public struct DBField<Value: DBDataConvertible> {
+@dynamicMemberLookup
+public struct DBPair<Left, Right> {
     
-    public let name: String?
+    public var left: Left
     
-    public let size: DBFieldSize?
+    public var right: Right
     
-    public let isUnique: Bool
+}
+
+extension DBPair {
     
-    public let `default`: Default?
-    
-    public let modifier: Set<DBFieldModifier>
-    
-    var value: Value?
-    
-    public init(name: String? = nil, size: DBFieldSize? = nil, isUnique: Bool = false, default: Default? = nil) {
-        self.name = name
-        self.size = size
-        self.isUnique = isUnique
-        self.default = `default`
-        self.modifier = []
+    public subscript<Value>(dynamicMember keyPath: KeyPath<Left, Value>) -> Value {
+        return self.left[keyPath: keyPath]
     }
     
-    public var wrappedValue: Value {
+    public subscript<Value>(dynamicMember keyPath: KeyPath<Right, Value>) -> Value {
+        return self.right[keyPath: keyPath]
+    }
+}
+
+extension DBPair {
+    
+    public subscript<Value>(dynamicMember keyPath: WritableKeyPath<Left, Value>) -> Value {
         get {
-            guard let value = self.value else { fatalError("property accessed before being initialized") }
-            return value
+            return self.left[keyPath: keyPath]
         }
         set {
-            self.value = newValue
+            self.left[keyPath: keyPath] = newValue
         }
     }
     
-    public var projectedValue: DBField<Value> {
-        return self
+    public subscript<Value>(dynamicMember keyPath: WritableKeyPath<Right, Value>) -> Value {
+        get {
+            return self.right[keyPath: keyPath]
+        }
+        set {
+            self.right[keyPath: keyPath] = newValue
+        }
     }
 }
