@@ -28,7 +28,7 @@ public struct DBField<Value: DBDataConvertible> {
     
     public let name: String?
     
-    public let size: DBFieldSize?
+    public let type: String?
     
     public let isUnique: Bool
     
@@ -38,9 +38,9 @@ public struct DBField<Value: DBDataConvertible> {
     
     var value: Value?
     
-    public init(name: String? = nil, size: DBFieldSize? = nil, isUnique: Bool = false, default: Default? = nil) {
+    public init(name: String? = nil, type: String? = nil, isUnique: Bool = false, default: Default? = nil) {
         self.name = name
-        self.size = size
+        self.type = type
         self.isUnique = isUnique
         self.default = `default`
         self.modifier = []

@@ -27,7 +27,7 @@ private protocol AnyFieldBox {
     
     var name: String? { get }
     
-    var size: DBFieldSize? { get }
+    var type: String? { get }
     
     var isUnique: Bool { get }
     
@@ -72,8 +72,8 @@ extension AnyField {
         return box.name ?? label
     }
     
-    public var size: DBFieldSize? {
-        return box.size
+    public var type: String? {
+        return box.type
     }
     
     public var isUnique: Bool {

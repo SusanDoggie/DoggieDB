@@ -54,7 +54,7 @@ class ModelTest: XCTestCase {
                 self.name = name
             }
         }
-
+        
         let object = TestModel(id: UUID(), name: "John")
         
         let fields = object._$fields
