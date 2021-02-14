@@ -46,7 +46,7 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
     public let onUpdate: DBForeignKeyAction
     public let onDelete: DBForeignKeyAction
 
-    public internal(set) var parent: EventLoopFuture<To>!
+    var _parent: EventLoopFuture<To>!
     
     public init(
         name: String? = nil,
@@ -59,7 +59,7 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
         self._id = DBField(name: name, type: type, isUnique: isUnique, default: `default`)
         self.onUpdate = onUpdate
         self.onDelete = onDelete
-        self.parent = nil
+        self._parent = nil
     }
     
     public var wrappedValue: To {
@@ -68,7 +68,7 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
         }
         set {
             id = newValue.id
-            parent = parent.eventLoop.makeSucceededFuture(newValue)
+            _parent = parent.eventLoop.makeSucceededFuture(newValue)
         }
     }
     
@@ -81,6 +81,13 @@ extension DBParent {
     
     public var eventLoop: EventLoop {
         return parent.eventLoop
+    }
+}
+
+extension DBParent {
+    
+    public var parent: EventLoopFuture<To> {
+        return _parent
     }
 }
 

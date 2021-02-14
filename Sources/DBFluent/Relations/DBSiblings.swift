@@ -35,7 +35,7 @@ public struct DBSiblings<From: DBModel, To: DBModel, Through: DBModel> {
     
     public let toKey: KeyPath<Through, Through.Parent<To>>
     
-    public internal(set) var pivots: EventLoopFuture<[Through]>!
+    var _pivots: EventLoopFuture<[Through]>!
     
     public init(
         through _: Through.Type,
@@ -44,7 +44,7 @@ public struct DBSiblings<From: DBModel, To: DBModel, Through: DBModel> {
     ) {
         self.fromKey = from
         self.toKey = to
-        self.pivots = nil
+        self._pivots = nil
     }
     
     public var wrappedValue: [To] {
@@ -65,9 +65,13 @@ extension DBSiblings {
 
 extension DBSiblings {
     
+    public var pivots: EventLoopFuture<[Through]> {
+        return _pivots
+    }
+    
     public var siblings: EventLoopFuture<[To]> {
         let eventLoop = pivots.eventLoop
-        let siblings = pivots.map { $0.map { $0[keyPath: toKey].parent! } }
+        let siblings = pivots.map { $0.map { $0[keyPath: toKey].parent } }
         return siblings.flatMap { EventLoopFuture.reduce(into: [], $0, on: eventLoop) { $0.append($1) } }
     }
 }

@@ -38,16 +38,16 @@ public struct DBChildren<From: DBModel, To: DBModel> {
     
     public let parentKey: ParentKey
     
-    public internal(set) var children: EventLoopFuture<[To]>!
+    var _children: EventLoopFuture<[To]>!
     
     public init(parentKey: KeyPath<To, To.Parent<From>>) {
         self.parentKey = .required(parentKey)
-        self.children = nil
+        self._children = nil
     }
     
     public init(parentKey: KeyPath<To, To.Parent<From?>>) {
         self.parentKey = .optional(parentKey)
-        self.children = nil
+        self._children = nil
     }
     
     public var wrappedValue: [To] {
@@ -63,6 +63,13 @@ extension DBChildren {
     
     public var eventLoop: EventLoop {
         return children.eventLoop
+    }
+}
+
+extension DBChildren {
+    
+    public var children: EventLoopFuture<[To]> {
+        return _children
     }
 }
 
