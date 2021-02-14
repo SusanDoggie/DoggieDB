@@ -24,7 +24,7 @@
 //
 
 @propertyWrapper
-public struct DBField<Value: DBDataConvertible>: AnyFieldBox {
+public struct DBField<Value: DBDataConvertible> {
     
     public let name: String?
     
@@ -36,7 +36,7 @@ public struct DBField<Value: DBDataConvertible>: AnyFieldBox {
     
     public let modifier: Set<DBFieldModifier>
     
-    private var value: Value?
+    var value: Value?
     
     public init(name: String? = nil, size: DBFieldSize? = nil, isUnique: Bool = false, default: Default? = nil) {
         self.name = name
@@ -54,19 +54,5 @@ public struct DBField<Value: DBDataConvertible>: AnyFieldBox {
         set {
             self.value = newValue
         }
-    }
-}
-
-protocol _Optional { }
-extension Optional: _Optional { }
-
-extension DBField {
-    
-    public var isOptional: Bool {
-        return Value.self is _Optional.Type
-    }
-    
-    func _data() -> DBData? {
-        return self.value?.toDBData()
     }
 }

@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-protocol AnyFieldBox {
+private protocol AnyFieldBox {
     
     var name: String? { get }
     
@@ -38,11 +38,25 @@ protocol AnyFieldBox {
     func _data() -> DBData?
 }
 
+protocol _Optional { }
+extension Optional: _Optional { }
+
+extension DBField: AnyFieldBox {
+    
+    public var isOptional: Bool {
+        return Value.self is _Optional.Type
+    }
+    
+    fileprivate func _data() -> DBData? {
+        return self.value?.toDBData()
+    }
+}
+
 struct AnyField<Model: DBModel> {
     
     let label: String
     
-    let box: AnyFieldBox
+    private let box: AnyFieldBox
     
     init?(_ mirror: Mirror.Child) {
         guard let label = mirror.label, label.hasPrefix("_") else { return nil }
