@@ -39,6 +39,15 @@ class ModelTest: XCTestCase {
             @DBField(name: "name")
             var name: String
             
+            @DBField(name: "createdAt", default: .now)
+            var createdAt: Date
+            
+            @DBField(name: "updatedAt", default: .now)
+            var updatedAt: Date
+            
+            @DBField(name: "deletedAt")
+            var deletedAt: Date?
+            
             init(id: UUID, name: String) {
                 self.id = id
                 self.name = name
@@ -48,9 +57,17 @@ class ModelTest: XCTestCase {
         let object = TestModel(id: UUID(), name: "John")
         
         let _fields = object._fields
-        XCTAssertEqual(_fields.count, 2)
+        
+        XCTAssertEqual(_fields.count, 5)
+        
         XCTAssertEqual(_fields.first { $0.name == "id" }?._data(), DBData(object.id))
         XCTAssertEqual(_fields.first { $0.name == "name" }?._data(), DBData(object.name))
+        
+        XCTAssertEqual(_fields.first { $0.name == "id" }?.isOptional, false)
+        XCTAssertEqual(_fields.first { $0.name == "name" }?.isOptional, false)
+        XCTAssertEqual(_fields.first { $0.name == "createdAt" }?.isOptional, false)
+        XCTAssertEqual(_fields.first { $0.name == "updatedAt" }?.isOptional, false)
+        XCTAssertEqual(_fields.first { $0.name == "deletedAt" }?.isOptional, true)
         
     }
 }

@@ -27,5 +27,13 @@ protocol AnyField {
     
     var name: String { get }
     
+    var size: DBFieldSize? { get }
+    
+    var isUnique: Bool { get }
+    
+    var modifier: Set<DBFieldModifier> { get }
+    
+    var isOptional: Bool { get }
+    
     func _data() -> DBData?
 }

@@ -23,20 +23,18 @@
 //  THE SOFTWARE.
 //
 
-extension DBField {
+public enum DBFieldModifier: Hashable {
     
-    public enum Modifier: Hashable {
-        
-        case withTimeZone
-    }
+    case withTimeZone
 }
 
 extension DBField where Value == Date {
     
-    public init(name: String, size: DBFieldSize? = nil, defaultValue: Value? = nil, withTimeZone: Bool = false) {
+    public init(name: String, size: DBFieldSize? = nil, isUnique: Bool = false, withTimeZone: Bool = false, default: Default? = nil) {
         self.name = name
         self.size = size
-        self.defaultValue = defaultValue
+        self.isUnique = isUnique
+        self.default = `default`
         self.modifier = withTimeZone ? [.withTimeZone] : []
     }
     
@@ -47,10 +45,11 @@ extension DBField where Value == Date {
 
 extension DBField where Value == DateComponents {
     
-    public init(name: String, size: DBFieldSize? = nil, defaultValue: Value? = nil, withTimeZone: Bool = false) {
+    public init(name: String, size: DBFieldSize? = nil, isUnique: Bool = false, withTimeZone: Bool = false, default: Default? = nil) {
         self.name = name
         self.size = size
-        self.defaultValue = defaultValue
+        self.isUnique = isUnique
+        self.default = `default`
         self.modifier = withTimeZone ? [.withTimeZone] : []
     }
     

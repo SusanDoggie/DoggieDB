@@ -1,5 +1,5 @@
 //
-//  DBField.swift
+//  DBFieldDefault.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,50 +23,14 @@
 //  THE SOFTWARE.
 //
 
-@propertyWrapper
-public struct DBField<Value: DBDataConvertible>: AnyField {
-    
-    public let name: String
-    
-    public let size: DBFieldSize?
-    
-    public let isUnique: Bool
-    
-    public let `default`: Default?
-    
-    public let modifier: Set<DBFieldModifier>
-    
-    private var value: Value?
-    
-    public init(name: String, size: DBFieldSize? = nil, isUnique: Bool = false, default: Default? = nil) {
-        self.name = name
-        self.size = size
-        self.isUnique = isUnique
-        self.default = `default`
-        self.modifier = []
-    }
-    
-    public var wrappedValue: Value {
-        get {
-            guard let value = self.value else { fatalError("property accessed before being initialized") }
-            return value
-        }
-        set {
-            self.value = newValue
-        }
-    }
-}
-
-protocol _Optional { }
-extension Optional: _Optional { }
-
 extension DBField {
     
-    public var isOptional: Bool {
-        return Value.self is _Optional.Type
-    }
-    
-    func _data() -> DBData? {
-        return self.value?.toDBData()
+    public enum Default {
+        
+        case value(Value)
+        
+        case random
+        
+        case now
     }
 }
