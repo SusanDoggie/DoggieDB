@@ -33,7 +33,7 @@ class ModelTest: XCTestCase {
         
         struct TestModel: DBModel {
             
-            @DBField(name: "id")
+            @DBField(name: "id", default: .random)
             var id: UUID
             
             @DBField(name: "name")
