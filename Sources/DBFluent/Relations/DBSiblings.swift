@@ -68,7 +68,7 @@ extension DBSiblings {
     public var siblings: EventLoopFuture<[To]>? {
         guard let pivots = self.pivots else { return nil }
         let eventLoop = pivots.eventLoop
-        let siblings = pivots.map { $0.map { $0[keyPath: toKey].parent! } }
+        let siblings = pivots.map { $0.compactMap { $0[keyPath: toKey].parent?.hop(to: eventLoop) } }
         return siblings.flatMap { EventLoopFuture.reduce(into: [], $0, on: eventLoop) { $0.append($1) } }
     }
 }
