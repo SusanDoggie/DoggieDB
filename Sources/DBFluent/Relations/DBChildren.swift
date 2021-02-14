@@ -51,6 +51,7 @@ public struct DBChildren<From: DBModel, To: DBModel> {
     }
     
     public var wrappedValue: [To] {
+        assert(self.children != nil, "property accessed before being initialized")
         return try! children?.wait() ?? []
     }
     
