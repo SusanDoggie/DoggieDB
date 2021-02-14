@@ -518,6 +518,7 @@ extension DBData {
     public var string: String? {
         switch self.base {
         case let .string(value): return value
+        case let .binary(value): return String(bytes: value, encoding: .utf8)
         default: return nil
         }
     }

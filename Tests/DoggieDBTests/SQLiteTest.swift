@@ -90,11 +90,11 @@ class SQLiteTest: XCTestCase {
             guard let email = tableInfo.first(where: { $0["name"] == "email" }) else { XCTFail(); return }
             guard let phone = tableInfo.first(where: { $0["name"] == "phone" }) else { XCTFail(); return }
             
-            XCTAssertEqual(contact_id["type"], "INTEGER")
-            XCTAssertEqual(first_name["type"], "TEXT")
-            XCTAssertEqual(last_name["type"], "TEXT")
-            XCTAssertEqual(email["type"], "TEXT")
-            XCTAssertEqual(phone["type"], "TEXT")
+            XCTAssertEqual(contact_id["type"]?.string, "INTEGER")
+            XCTAssertEqual(first_name["type"]?.string, "TEXT")
+            XCTAssertEqual(last_name["type"]?.string, "TEXT")
+            XCTAssertEqual(email["type"]?.string, "TEXT")
+            XCTAssertEqual(phone["type"]?.string, "TEXT")
             
             XCTAssertEqual(contact_id["pk"], 1)
             XCTAssertEqual(first_name["pk"], 0)

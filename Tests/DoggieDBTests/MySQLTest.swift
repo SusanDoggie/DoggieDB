@@ -104,22 +104,22 @@ class MySQLTest: XCTestCase {
             guard let phone = tableInfo.first(where: { $0["Field"] == "phone" }) else { XCTFail(); return }
             
             XCTAssertEqual(contact_id["Type"]?.string?.prefix(3), "int")
-            XCTAssertEqual(first_name["Type"], "varchar(255)")
-            XCTAssertEqual(last_name["Type"], "varchar(255)")
-            XCTAssertEqual(email["Type"], "varchar(255)")
-            XCTAssertEqual(phone["Type"], "varchar(255)")
+            XCTAssertEqual(first_name["Type"]?.string, "varchar(255)")
+            XCTAssertEqual(last_name["Type"]?.string, "varchar(255)")
+            XCTAssertEqual(email["Type"]?.string, "varchar(255)")
+            XCTAssertEqual(phone["Type"]?.string, "varchar(255)")
             
-            XCTAssertEqual(contact_id["Key"], "PRI")
-            XCTAssertEqual(first_name["Key"], "")
-            XCTAssertEqual(last_name["Key"], "")
-            XCTAssertEqual(email["Key"], "UNI")
-            XCTAssertEqual(phone["Key"], "UNI")
+            XCTAssertEqual(contact_id["Key"]?.string, "PRI")
+            XCTAssertEqual(first_name["Key"]?.string, "")
+            XCTAssertEqual(last_name["Key"]?.string, "")
+            XCTAssertEqual(email["Key"]?.string, "UNI")
+            XCTAssertEqual(phone["Key"]?.string, "UNI")
             
-            XCTAssertEqual(contact_id["Null"], "NO")
-            XCTAssertEqual(first_name["Null"], "NO")
-            XCTAssertEqual(last_name["Null"], "YES")
-            XCTAssertEqual(email["Null"], "NO")
-            XCTAssertEqual(phone["Null"], "NO")
+            XCTAssertEqual(contact_id["Null"]?.string, "NO")
+            XCTAssertEqual(first_name["Null"]?.string, "NO")
+            XCTAssertEqual(last_name["Null"]?.string, "YES")
+            XCTAssertEqual(email["Null"]?.string, "NO")
+            XCTAssertEqual(phone["Null"]?.string, "NO")
             
         } catch let error {
             

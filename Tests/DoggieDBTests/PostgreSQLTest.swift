@@ -103,17 +103,17 @@ class PostgreSQLTest: XCTestCase {
             guard let email = tableInfo.first(where: { $0["column_name"] == "email" }) else { XCTFail(); return }
             guard let phone = tableInfo.first(where: { $0["column_name"] == "phone" }) else { XCTFail(); return }
             
-            XCTAssertEqual(contact_id["data_type"], "integer")
-            XCTAssertEqual(first_name["data_type"], "text")
-            XCTAssertEqual(last_name["data_type"], "text")
-            XCTAssertEqual(email["data_type"], "text")
-            XCTAssertEqual(phone["data_type"], "text")
+            XCTAssertEqual(contact_id["data_type"]?.string, "integer")
+            XCTAssertEqual(first_name["data_type"]?.string, "text")
+            XCTAssertEqual(last_name["data_type"]?.string, "text")
+            XCTAssertEqual(email["data_type"]?.string, "text")
+            XCTAssertEqual(phone["data_type"]?.string, "text")
             
-            XCTAssertEqual(contact_id["is_nullable"], "NO")
-            XCTAssertEqual(first_name["is_nullable"], "NO")
-            XCTAssertEqual(last_name["is_nullable"], "YES")
-            XCTAssertEqual(email["is_nullable"], "NO")
-            XCTAssertEqual(phone["is_nullable"], "NO")
+            XCTAssertEqual(contact_id["is_nullable"]?.string, "NO")
+            XCTAssertEqual(first_name["is_nullable"]?.string, "NO")
+            XCTAssertEqual(last_name["is_nullable"]?.string, "YES")
+            XCTAssertEqual(email["is_nullable"]?.string, "NO")
+            XCTAssertEqual(phone["is_nullable"]?.string, "NO")
             
         } catch let error {
             

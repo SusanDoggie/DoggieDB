@@ -261,6 +261,11 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         switch value.base {
         case .null: throw Database.Error.valueNotFound
         case let .string(string): return string
+        case let .binary(data):
+            
+            guard let string = String(bytes: data, encoding: .utf8) else { throw Database.Error.unsupportedType }
+            return string
+            
         default: throw Database.Error.unsupportedType
         }
     }
