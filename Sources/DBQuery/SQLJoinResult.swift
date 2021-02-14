@@ -1,5 +1,5 @@
 //
-//  DBPair.swift
+//  SQLJoinResult.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -24,7 +24,7 @@
 //
 
 @dynamicMemberLookup
-public struct DBPair<Left, Right> {
+public struct SQLJoinResult<Left, Right> {
     
     public var left: Left
     
@@ -32,7 +32,7 @@ public struct DBPair<Left, Right> {
     
 }
 
-extension DBPair {
+extension SQLJoinResult {
     
     public subscript<Value>(dynamicMember keyPath: KeyPath<Left, Value>) -> Value {
         return self.left[keyPath: keyPath]
@@ -43,7 +43,7 @@ extension DBPair {
     }
 }
 
-extension DBPair {
+extension SQLJoinResult {
     
     public subscript<Value>(dynamicMember keyPath: WritableKeyPath<Left, Value>) -> Value {
         get {
