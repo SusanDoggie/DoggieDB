@@ -58,3 +58,17 @@ public struct DBChildren<From: DBModel, To: DBModel> {
         return self
     }
 }
+
+extension DBChildren {
+    
+    public var eventLoop: EventLoop {
+        return children.eventLoop
+    }
+}
+
+extension DBChildren {
+    
+    public func wait() throws -> [To] {
+        return try children.wait()
+    }
+}

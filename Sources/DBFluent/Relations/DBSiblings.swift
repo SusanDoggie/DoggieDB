@@ -58,6 +58,13 @@ public struct DBSiblings<From: DBModel, To: DBModel, Through: DBModel> {
 
 extension DBSiblings {
     
+    public var eventLoop: EventLoop {
+        return pivots.eventLoop
+    }
+}
+
+extension DBSiblings {
+    
     public var siblings: EventLoopFuture<[To]> {
         let eventLoop = pivots.eventLoop
         let siblings = pivots.map { $0.map { $0[keyPath: toKey].parent! } }

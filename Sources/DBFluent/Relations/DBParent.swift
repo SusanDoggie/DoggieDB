@@ -63,10 +63,30 @@ public struct DBParent<From: DBModel, To: _DBModel> {
     }
     
     public var wrappedValue: To {
-        return try! parent.wait()
+        get {
+            return try! parent.wait()
+        }
+        set {
+            id = newValue.id
+            parent = parent.eventLoop.makeSucceededFuture(newValue)
+        }
     }
     
     public var projectedValue: DBParent<From, To> {
         return self
+    }
+}
+
+extension DBParent {
+    
+    public var eventLoop: EventLoop {
+        return parent.eventLoop
+    }
+}
+
+extension DBParent {
+    
+    public func wait() throws -> To {
+        return try parent.wait()
     }
 }
