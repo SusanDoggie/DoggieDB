@@ -41,13 +41,29 @@ public struct SQLSerializer {
 
 extension SQLSerializer {
     
-    var raw: SQLRaw {
+    fileprivate var raw: SQLRaw {
         return components.map {
             switch $0 {
             case let .string(string): return SQLRaw(string)
             case let .bind(data): return SQLRaw(data)
             }
         }.joined(separator: " ")
+    }
+}
+
+extension DBConnection {
+    
+    func execute(
+        _ sql: SQLSerializer
+    ) -> EventLoopFuture<[DBQueryRow]> {
+        return self.execute(sql.raw)
+    }
+    
+    func execute(
+        _ sql: SQLSerializer,
+        onRow: @escaping (DBQueryRow) -> Void
+    ) -> EventLoopFuture<DBQueryMetadata> {
+        return self.execute(sql.raw, onRow: onRow)
     }
 }
 
