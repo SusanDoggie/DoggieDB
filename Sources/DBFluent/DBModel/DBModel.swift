@@ -32,12 +32,8 @@ public protocol DBModel {
 
 extension DBModel {
     
-    var _$id: DBField<Key> {
+    public var _$id: DBField<Key> {
         guard let id = Mirror(reflecting: self).descendant("_id") as? DBField<Key> else { fatalError("id must be declared using @DBField") }
         return id
-    }
-    
-    var _fields: [AnyField<Self>] {
-        return Mirror(reflecting: self).children.compactMap { AnyField($0) }
     }
 }

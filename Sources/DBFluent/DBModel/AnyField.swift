@@ -38,7 +38,7 @@ private protocol AnyFieldBox {
     func _data() -> DBData?
 }
 
-protocol _Optional { }
+private protocol _Optional { }
 extension Optional: _Optional { }
 
 extension DBField: AnyFieldBox {
@@ -52,13 +52,13 @@ extension DBField: AnyFieldBox {
     }
 }
 
-struct AnyField<Model: DBModel> {
+public struct AnyField<Model: DBModel> {
     
-    let label: String
+    private let label: String
     
     private let box: AnyFieldBox
     
-    init?(_ mirror: Mirror.Child) {
+    fileprivate init?(_ mirror: Mirror.Child) {
         guard let label = mirror.label, label.hasPrefix("_") else { return nil }
         guard let box = mirror.value as? AnyFieldBox else { return nil }
         self.label = String(label.dropFirst())
@@ -68,27 +68,34 @@ struct AnyField<Model: DBModel> {
 
 extension AnyField {
     
-    var name: String {
+    public var name: String {
         return box.name ?? label
     }
     
-    var size: DBFieldSize? {
+    public var size: DBFieldSize? {
         return box.size
     }
     
-    var isUnique: Bool {
+    public var isUnique: Bool {
         return box.isUnique
     }
     
-    var modifier: Set<DBFieldModifier> {
+    public var modifier: Set<DBFieldModifier> {
         return box.modifier
     }
     
-    var isOptional: Bool {
+    public var isOptional: Bool {
         return box.isOptional
     }
     
-    var value: DBData? {
+    public var value: DBData? {
         return box._data()
+    }
+}
+
+extension DBModel {
+    
+    public var _fields: [AnyField<Self>] {
+        return Mirror(reflecting: self).children.compactMap { AnyField($0) }
     }
 }

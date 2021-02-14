@@ -23,7 +23,6 @@
 //  THE SOFTWARE.
 //
 
-@testable import DBFluent
 import DoggieDB
 import XCTest
 
