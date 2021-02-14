@@ -1,5 +1,5 @@
 //
-//  DBField.swift
+//  DBFieldSize.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,40 +23,33 @@
 //  THE SOFTWARE.
 //
 
-@propertyWrapper
-public struct DBField<Value: DBDataConvertible> {
+public struct DBFieldSize {
     
-    public let name: String
+    public var size: Int
     
-    public let size: DBFieldSize?
+    public var unit: Unit
     
-    public let defaultValue: Value?
-    
-    public let modifier: Set<Modifier>
-    
-    private var value: Value?
-    
-    public init(name: String, size: DBFieldSize? = nil, defaultValue: Value? = nil) {
-        self.name = name
+    public init(size: Int, unit: Unit = .byte) {
         self.size = size
-        self.defaultValue = defaultValue
-        self.modifier = []
-    }
-    
-    public var wrappedValue: Value {
-        get {
-            guard let value = self.value else { fatalError("property accessed before being initialized") }
-            return value
-        }
-        set {
-            self.value = newValue
-        }
+        self.unit = unit
     }
 }
 
-extension DBField: AnyField {
+extension DBFieldSize: ExpressibleByIntegerLiteral {
     
-    func _data() -> DBData? {
-        return self.value?.toDBData()
+    public init(integerLiteral value: IntegerLiteralType) {
+        self.init(size: value)
+    }
+}
+
+extension DBFieldSize {
+    
+    public enum Unit {
+        
+        case byte
+        
+        case bit
+        
+        case char
     }
 }

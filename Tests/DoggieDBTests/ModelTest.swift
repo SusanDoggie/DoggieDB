@@ -1,5 +1,5 @@
 //
-//  ModelText.swift
+//  ModelTest.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -27,7 +27,7 @@
 import DoggieDB
 import XCTest
 
-class ModelText: XCTestCase {
+class ModelTest: XCTestCase {
     
     func testModel() {
         

@@ -1,5 +1,5 @@
 //
-//  DBField.swift
+//  DBFieldModifier.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,40 +23,38 @@
 //  THE SOFTWARE.
 //
 
-@propertyWrapper
-public struct DBField<Value: DBDataConvertible> {
+extension DBField {
     
-    public let name: String
-    
-    public let size: DBFieldSize?
-    
-    public let defaultValue: Value?
-    
-    public let modifier: Set<Modifier>
-    
-    private var value: Value?
-    
-    public init(name: String, size: DBFieldSize? = nil, defaultValue: Value? = nil) {
-        self.name = name
-        self.size = size
-        self.defaultValue = defaultValue
-        self.modifier = []
-    }
-    
-    public var wrappedValue: Value {
-        get {
-            guard let value = self.value else { fatalError("property accessed before being initialized") }
-            return value
-        }
-        set {
-            self.value = newValue
-        }
+    public enum Modifier: Hashable {
+        
+        case withTimeZone
     }
 }
 
-extension DBField: AnyField {
+extension DBField where Value == Date {
     
-    func _data() -> DBData? {
-        return self.value?.toDBData()
+    public init(name: String, size: DBFieldSize? = nil, defaultValue: Value? = nil, withTimeZone: Bool = false) {
+        self.name = name
+        self.size = size
+        self.defaultValue = defaultValue
+        self.modifier = withTimeZone ? [.withTimeZone] : []
+    }
+    
+    public var withTimeZone: Bool {
+        return self.modifier.contains(.withTimeZone)
+    }
+}
+
+extension DBField where Value == DateComponents {
+    
+    public init(name: String, size: DBFieldSize? = nil, defaultValue: Value? = nil, withTimeZone: Bool = false) {
+        self.name = name
+        self.size = size
+        self.defaultValue = defaultValue
+        self.modifier = withTimeZone ? [.withTimeZone] : []
+    }
+    
+    public var withTimeZone: Bool {
+        return self.modifier.contains(.withTimeZone)
     }
 }
