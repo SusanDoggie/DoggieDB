@@ -51,6 +51,7 @@ extension DBConnection {
         
         var raw = ""
         var binds: [DBData] = []
+        var mapping: [DBData: String] = [:]
         
         for component in sql.components {
             switch component {
@@ -61,8 +62,20 @@ extension DBConnection {
             case let .number(value): raw.append("\(Decimal(value))")
             case let .decimal(value): raw.append("\(value)")
             case let .bind(value):
-                binds.append(value)
-                raw.append(dialect.bindPlaceholder(at: binds.count))
+                
+                if let binding = mapping[value] {
+                    
+                    raw.append(binding)
+                    
+                } else {
+                    
+                    binds.append(value)
+                    
+                    let binding = dialect.bindPlaceholder(at: binds.count)
+                    
+                    raw.append(binding)
+                    mapping[value] = binding
+                }
             }
         }
         
