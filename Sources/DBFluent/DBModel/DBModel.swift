@@ -34,6 +34,8 @@ public protocol DBModel: _DBModel {
     
     static var schema: String { get }
     
+    init()
+    
     var id: Key { get set }
 }
 

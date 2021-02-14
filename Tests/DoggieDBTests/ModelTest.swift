@@ -45,6 +45,8 @@ struct Contact: DBModel {
     @Field
     var deletedAt: Date?
     
+    init() {}
+    
     init(id: UUID, name: String) {
         self.id = id
         self.name = name
@@ -60,7 +62,6 @@ struct Star: DBModel {
     
     @Children(parentKey: \.$star)
     var planets: [Planet]
-    
 }
 
 struct Planet: DBModel {
@@ -75,7 +76,6 @@ struct Planet: DBModel {
     
     @Siblings(through: PlanetTag.self, from: \.$planet, to: \.$tag)
     var tags: [Tag]
-    
 }
 
 struct PlanetTag: DBModel {
@@ -90,7 +90,6 @@ struct PlanetTag: DBModel {
     
     @Parent
     var tag: Tag
-    
 }
 
 struct Tag: DBModel {
@@ -102,7 +101,6 @@ struct Tag: DBModel {
     
     @Siblings(through: PlanetTag.self, from: \.$tag, to: \.$planet)
     var planets: [Planet]
-    
 }
 
 class ModelTest: XCTestCase {
