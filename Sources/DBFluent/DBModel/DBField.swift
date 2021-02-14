@@ -24,9 +24,9 @@
 //
 
 @propertyWrapper
-public struct DBField<Value: DBDataConvertible>: AnyField {
+public struct DBField<Value: DBDataConvertible>: AnyFieldBox {
     
-    public let name: String
+    public let name: String?
     
     public let size: DBFieldSize?
     
@@ -38,7 +38,7 @@ public struct DBField<Value: DBDataConvertible>: AnyField {
     
     private var value: Value?
     
-    public init(name: String, size: DBFieldSize? = nil, isUnique: Bool = false, default: Default? = nil) {
+    public init(name: String? = nil, size: DBFieldSize? = nil, isUnique: Bool = false, default: Default? = nil) {
         self.name = name
         self.size = size
         self.isUnique = isUnique

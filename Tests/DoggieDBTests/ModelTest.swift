@@ -33,19 +33,19 @@ class ModelTest: XCTestCase {
         
         struct TestModel: DBModel {
             
-            @DBField(name: "id", default: .random)
+            @DBField(default: .random)
             var id: UUID
             
-            @DBField(name: "name")
+            @DBField(name: "nick_name")
             var name: String
             
-            @DBField(name: "createdAt", default: .now)
+            @DBField(default: .now)
             var createdAt: Date
             
-            @DBField(name: "updatedAt", default: .now)
+            @DBField(default: .now)
             var updatedAt: Date
             
-            @DBField(name: "deletedAt")
+            @DBField()
             var deletedAt: Date?
             
             init(id: UUID, name: String) {
@@ -61,10 +61,10 @@ class ModelTest: XCTestCase {
         XCTAssertEqual(_fields.count, 5)
         
         XCTAssertEqual(_fields.first { $0.name == "id" }?._data(), DBData(object.id))
-        XCTAssertEqual(_fields.first { $0.name == "name" }?._data(), DBData(object.name))
+        XCTAssertEqual(_fields.first { $0.name == "nick_name" }?._data(), DBData(object.name))
         
         XCTAssertEqual(_fields.first { $0.name == "id" }?.isOptional, false)
-        XCTAssertEqual(_fields.first { $0.name == "name" }?.isOptional, false)
+        XCTAssertEqual(_fields.first { $0.name == "nick_name" }?.isOptional, false)
         XCTAssertEqual(_fields.first { $0.name == "createdAt" }?.isOptional, false)
         XCTAssertEqual(_fields.first { $0.name == "updatedAt" }?.isOptional, false)
         XCTAssertEqual(_fields.first { $0.name == "deletedAt" }?.isOptional, true)

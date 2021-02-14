@@ -23,9 +23,9 @@
 //  THE SOFTWARE.
 //
 
-protocol AnyField {
+protocol AnyFieldBox {
     
-    var name: String { get }
+    var name: String? { get }
     
     var size: DBFieldSize? { get }
     
@@ -36,4 +36,45 @@ protocol AnyField {
     var isOptional: Bool { get }
     
     func _data() -> DBData?
+}
+
+struct AnyField {
+    
+    let label: String
+    
+    let box: AnyFieldBox
+    
+    init?(_ mirror: Mirror.Child) {
+        guard let label = mirror.label, label.hasPrefix("_") else { return nil }
+        guard let box = mirror.value as? AnyFieldBox else { return nil }
+        self.label = String(label.dropFirst())
+        self.box = box
+    }
+}
+
+extension AnyField {
+    
+    var name: String {
+        return box.name ?? label
+    }
+    
+    var size: DBFieldSize? {
+        return box.size
+    }
+    
+    var isUnique: Bool {
+        return box.isUnique
+    }
+    
+    var modifier: Set<DBFieldModifier> {
+        return box.modifier
+    }
+    
+    var isOptional: Bool {
+        return box.isOptional
+    }
+    
+    func _data() -> DBData? {
+        return box._data()
+    }
 }
