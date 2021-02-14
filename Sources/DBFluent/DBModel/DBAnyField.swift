@@ -35,6 +35,10 @@ private protocol _DBField {
     
     var isOptional: Bool { get }
     
+    var onUpdate: DBForeignKeyAction { get }
+    
+    var onDelete: DBForeignKeyAction { get }
+    
     func _data() -> DBData?
 }
 
@@ -50,6 +54,15 @@ extension DBField: _DBField {
     fileprivate func _data() -> DBData? {
         return self.value?.toDBData()
     }
+    
+    fileprivate var onUpdate: DBForeignKeyAction {
+        return .restrict
+    }
+    
+    fileprivate var onDelete: DBForeignKeyAction {
+        return .restrict
+    }
+    
 }
 
 extension DBParent: _DBField {
@@ -113,6 +126,14 @@ extension DBAnyField {
     
     public var isOptional: Bool {
         return box.isOptional
+    }
+    
+    public var onUpdate: DBForeignKeyAction {
+        return box.onUpdate
+    }
+    
+    public var onDelete: DBForeignKeyAction {
+        return box.onDelete
     }
     
     public var value: DBData? {
