@@ -25,18 +25,22 @@
 
 public protocol _DBModel {
     
-    associatedtype Key: Hashable, DBDataConvertible
+    associatedtype Key
     
     var id: Key { get }
 }
 
-public protocol DBModel: _DBModel {
+public protocol DBModel: _DBModel where Key: Hashable, Key: DBDataConvertible {
     
     static var schema: String { get }
     
     init()
     
     var id: Key { get set }
+    
+    var _$id: Field<Key> { get }
+    
+    var _$fields: [DBAnyField<Self>] { get }
 }
 
 extension DBModel {
