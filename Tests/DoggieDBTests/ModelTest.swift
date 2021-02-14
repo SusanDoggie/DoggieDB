@@ -107,14 +107,14 @@ class ModelTest: XCTestCase {
     
     func testModel() {
         
-        let object = Contact(id: UUID(), name: "John")
+        let contact = Contact(id: UUID(), name: "John")
         
-        let fields = object._$fields
+        let fields = contact._$fields
         
         XCTAssertEqual(fields.count, 5)
         
-        XCTAssertEqual(fields.first { $0.name == "id" }?.value, DBData(object.id))
-        XCTAssertEqual(fields.first { $0.name == "nick_name" }?.value, DBData(object.name))
+        XCTAssertEqual(fields.first { $0.name == "id" }?.value, DBData(contact.id))
+        XCTAssertEqual(fields.first { $0.name == "nick_name" }?.value, DBData(contact.name))
         
         XCTAssertEqual(fields.first { $0.name == "id" }?.isOptional, false)
         XCTAssertEqual(fields.first { $0.name == "nick_name" }?.isOptional, false)
@@ -122,5 +122,14 @@ class ModelTest: XCTestCase {
         XCTAssertEqual(fields.first { $0.name == "updatedAt" }?.isOptional, false)
         XCTAssertEqual(fields.first { $0.name == "deletedAt" }?.isOptional, true)
         
+    }
+    
+    func testParentRelation() {
+        
+        let planet = Planet()
+        
+        let fields = planet._$fields
+        
+        XCTAssertNotNil(fields.first { $0.name == "star" })
     }
 }
