@@ -68,7 +68,7 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
         }
         set {
             id = newValue.id
-            _parent = parent.eventLoop.makeSucceededFuture(newValue)
+            _parent = _parent?.eventLoop.makeSucceededFuture(newValue)
         }
     }
     
