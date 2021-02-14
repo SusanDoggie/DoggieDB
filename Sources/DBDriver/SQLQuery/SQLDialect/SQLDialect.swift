@@ -23,12 +23,27 @@
 //  THE SOFTWARE.
 //
 
-protocol SQLDialect {
+public protocol SQLDialect {
+    
+    static var literalNull: String { get }
+    
+    static var literalDefault: String { get }
     
     static func bindPlaceholder(at position: Int) -> String
     
     static func literalBoolean(_ value: Bool) -> String
     
+}
+
+extension SQLDialect {
+    
+    static var literalNull: String {
+        return "NULL"
+    }
+    
+    static var literalDefault: String {
+        return "DEFAULT"
+    }
 }
 
 extension DBConnection {
@@ -54,6 +69,7 @@ extension DBConnection {
         
         for component in sql.components {
             switch component {
+            case .null: raw.append(dialect.literalNull)
             case let .string(string): raw.append(string)
             case let .boolean(bool): raw.append(dialect.literalBoolean(bool))
             case let .signed(value): raw.append("\(value)")

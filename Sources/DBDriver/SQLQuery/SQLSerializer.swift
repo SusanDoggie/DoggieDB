@@ -32,9 +32,12 @@ enum SQLSerializerComponent: Hashable {
 
 public struct SQLSerializer {
     
+    public let dialect: SQLDialect.Type
+    
     var components: [SQLSerializerComponent]
     
-    public init() {
+    init(dialect: SQLDialect.Type) {
+        self.dialect = dialect
         self.components = []
     }
 }
@@ -53,17 +56,49 @@ extension SQLSerializer {
 
 extension DBConnection {
     
-    func execute(
-        _ sql: SQLSerializer
+    public func execute(
+        _ sql: SQLExpression
     ) -> EventLoopFuture<[DBQueryRow]> {
-        return self.execute(sql.raw)
+        
+        do {
+            
+            guard let dialect = self.sqlDialect else {
+                throw Database.Error.invalidOperation(message: "unsupported operation")
+            }
+            
+            var serializer = SQLSerializer(dialect: dialect)
+            
+            sql.serialize(to: &serializer)
+            
+            return self.execute(serializer.raw)
+            
+        } catch let error {
+            
+            return eventLoop.makeFailedFuture(error)
+        }
     }
     
-    func execute(
-        _ sql: SQLSerializer,
+    public func execute(
+        _ sql: SQLExpression,
         onRow: @escaping (DBQueryRow) -> Void
     ) -> EventLoopFuture<DBQueryMetadata> {
-        return self.execute(sql.raw, onRow: onRow)
+        
+        do {
+            
+            guard let dialect = self.sqlDialect else {
+                throw Database.Error.invalidOperation(message: "unsupported operation")
+            }
+            
+            var serializer = SQLSerializer(dialect: dialect)
+            
+            sql.serialize(to: &serializer)
+            
+            return self.execute(serializer.raw, onRow: onRow)
+            
+        } catch let error {
+            
+            return eventLoop.makeFailedFuture(error)
+        }
     }
 }
 

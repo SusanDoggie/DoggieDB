@@ -1,5 +1,5 @@
 //
-//  SQLSelect.swift
+//  SQLLiteral.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,30 +23,22 @@
 //  THE SOFTWARE.
 //
 
-public struct SQLSelect: SQLExpression {
+public enum SQLLiteral: SQLExpression {
     
-    public var table: String
+    case all
     
-    public var columns: [SQLExpression] = []
+    case null
     
-    public var isDistinct: Bool = false
+    case `default`
     
-    public var limit: Int?
-    
-    public var offset: Int?
-    
-    public init(table: String) {
-        self.table = table
-    }
+    case string(String)
     
     public func serialize(to serializer: inout SQLSerializer) {
-        
-        serializer.write("SELECT")
-        
-        if self.isDistinct {
-            serializer.write("DISTINCT")
+        switch self {
+        case .all: serializer.write("*")
+        case .null: serializer.write(serializer.dialect.literalNull)
+        case .default: serializer.write(serializer.dialect.literalDefault)
+        case let .string(string): serializer.write(string)
         }
-        
-        
     }
 }
