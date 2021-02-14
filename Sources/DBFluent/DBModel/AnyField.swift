@@ -38,7 +38,7 @@ protocol AnyFieldBox {
     func _data() -> DBData?
 }
 
-struct AnyField {
+struct AnyField<Model: DBModel> {
     
     let label: String
     
@@ -74,7 +74,7 @@ extension AnyField {
         return box.isOptional
     }
     
-    func _data() -> DBData? {
+    var value: DBData? {
         return box._data()
     }
 }

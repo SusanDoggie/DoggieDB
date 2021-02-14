@@ -37,7 +37,7 @@ extension DBModel {
         return id
     }
     
-    var _fields: [AnyField] {
+    var _fields: [AnyField<Self>] {
         return Mirror(reflecting: self).children.compactMap { AnyField($0) }
     }
 }

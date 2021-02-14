@@ -27,6 +27,8 @@ extension DBField {
     
     public enum Default {
         
+        case autoIncrement
+        
         case value(Value)
         
         case random

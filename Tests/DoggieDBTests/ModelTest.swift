@@ -60,8 +60,8 @@ class ModelTest: XCTestCase {
         
         XCTAssertEqual(_fields.count, 5)
         
-        XCTAssertEqual(_fields.first { $0.name == "id" }?._data(), DBData(object.id))
-        XCTAssertEqual(_fields.first { $0.name == "nick_name" }?._data(), DBData(object.name))
+        XCTAssertEqual(_fields.first { $0.name == "id" }?.value, DBData(object.id))
+        XCTAssertEqual(_fields.first { $0.name == "nick_name" }?.value, DBData(object.name))
         
         XCTAssertEqual(_fields.first { $0.name == "id" }?.isOptional, false)
         XCTAssertEqual(_fields.first { $0.name == "nick_name" }?.isOptional, false)
