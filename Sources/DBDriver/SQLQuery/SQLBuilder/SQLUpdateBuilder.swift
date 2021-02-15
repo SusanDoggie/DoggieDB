@@ -39,4 +39,5 @@ public struct SQLUpdateBuilder: SQLBuilderProtocol {
 
 extension SQLUpdateBuilder: SQLWhereExpression {}
 extension SQLUpdateBuilder: SQLFromExpression {}
+extension SQLUpdateBuilder: SQLSetExpression {}
 extension SQLUpdateBuilder: SQLReturningExpression {}

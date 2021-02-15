@@ -1,5 +1,5 @@
 //
-//  SQLLiteral.swift
+//  SQLWhereExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,50 +23,34 @@
 //  THE SOFTWARE.
 //
 
-public enum SQLLiteral {
+public protocol SQLSetExpression: SQLBuilderProtocol {
     
-    case null
-    
-    case `default`
-    
-    case bool(Bool)
-    
-    case string(String)
-    
-    case bind(DBData)
 }
 
-extension SQLLiteral: ExpressibleByNilLiteral {
+extension SQLSetExpression {
     
-    public init(nilLiteral value: Void) {
-        self = .null
+    public var set: SQLSetExpressionBuilder<Self> {
+        return SQLSetExpressionBuilder(expression: self)
     }
 }
 
-extension SQLLiteral: ExpressibleByBooleanLiteral {
+@dynamicCallable
+public struct SQLSetExpressionBuilder<Expression: SQLSetExpression> {
     
-    public init(booleanLiteral value: BooleanLiteralType) {
-        self = .bool(value)
-    }
-}
-
-extension SQLLiteral: ExpressibleByStringLiteral {
+    let expression: Expression
     
-    public init(stringLiteral value: StringLiteralType) {
-        self = .string(value)
-    }
-}
-
-extension SQLBuilder {
-    
-    public mutating func append(_ literal: SQLLiteral) {
-        guard let dialect = self.dialect else { return }
-        switch literal {
-        case .null: self.append(dialect.literalNull)
-        case .default: self.append(dialect.literalDefault)
-        case let .bool(bool): self.append(dialect.literalBoolean(bool))
-        case let .string(string): self.append(string)
-        case let .bind(value): self.append(value)
+    public func dynamicallyCall(withKeywordArguments args: KeyValuePairs<String, SQLLiteral>) -> Expression {
+        
+        guard self.expression.dialect != nil else { return self.expression }
+        
+        var expression = self.expression
+        
+        expression.builder.append("SET")
+        for (i, (key, value)) in args.enumerated() {
+            expression.builder.append(i == 0 ? "\(key) =" : ", \(key) =")
+            expression.builder.append(value)
         }
+        
+        return expression
     }
 }
