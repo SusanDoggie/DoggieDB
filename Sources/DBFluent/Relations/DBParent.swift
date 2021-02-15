@@ -53,7 +53,13 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
     public let onUpdate: DBForeignKeyAction
     public let onDelete: DBForeignKeyAction
 
-    public internal(set) var parent: Future<To>?
+    public private(set) var parent: Future<To>?
+    
+    var loader: ((ParentKey) -> EventLoopFuture<To>)! {
+        didSet {
+            self.reload()
+        }
+    }
     
     public init(
         name: String? = nil,
@@ -85,6 +91,13 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
     
     public var projectedValue: DBParent {
         return self
+    }
+}
+
+extension DBParent {
+    
+    public mutating func reload() {
+        self.parent = .future(loader(self.id))
     }
 }
 

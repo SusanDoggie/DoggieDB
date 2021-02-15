@@ -35,7 +35,13 @@ public struct DBSiblings<From: DBModel, To: DBModel, Through: DBModel> {
     
     public let toKey: KeyPath<Through, Through.Parent<To>>
     
-    public internal(set) var pivots: EventLoopFuture<[Through]>?
+    public private(set) var pivots: EventLoopFuture<[Through]>?
+    
+    var loader: (() -> EventLoopFuture<[Through]>)! {
+        didSet {
+            self.reload()
+        }
+    }
     
     public init(
         through _: Through.Type,
@@ -53,6 +59,13 @@ public struct DBSiblings<From: DBModel, To: DBModel, Through: DBModel> {
     
     public var projectedValue: DBSiblings {
         return self
+    }
+}
+
+extension DBSiblings {
+    
+    public mutating func reload() {
+        self.pivots = loader()
     }
 }
 

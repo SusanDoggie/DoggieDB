@@ -38,7 +38,13 @@ public struct DBChildren<From: DBModel, To: DBModel> {
     
     public let parentKey: ParentKey
     
-    public internal(set) var children: EventLoopFuture<[To]>?
+    public private(set) var children: EventLoopFuture<[To]>?
+    
+    var loader: (() -> EventLoopFuture<[To]>)! {
+        didSet {
+            self.reload()
+        }
+    }
     
     public init(parentKey: KeyPath<To, To.Parent<From>>) {
         self.parentKey = .required(parentKey)
@@ -56,6 +62,13 @@ public struct DBChildren<From: DBModel, To: DBModel> {
     
     public var projectedValue: DBChildren {
         return self
+    }
+}
+
+extension DBChildren {
+    
+    public mutating func reload() {
+        self.children = loader()
     }
 }
 
