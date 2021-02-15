@@ -41,7 +41,7 @@ public struct DBField<Model: DBModel, Value: DBDataConvertible> {
     
     public let modifier: Set<DBFieldModifier>
     
-    var value: Value?
+    public internal(set) var value: Value?
     
     public init(
         name: String? = nil,
