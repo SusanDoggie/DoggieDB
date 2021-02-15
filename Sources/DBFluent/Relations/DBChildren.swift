@@ -67,8 +67,11 @@ public struct DBChildren<From: DBModel, To: DBModel> {
 
 extension DBChildren {
     
-    public mutating func reload() {
-        self.children = loader()
+    @discardableResult
+    public mutating func reload() -> EventLoopFuture<[To]> {
+        let future = loader()
+        self.children = future
+        return future
     }
 }
 

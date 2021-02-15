@@ -96,8 +96,11 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
 
 extension DBParent {
     
-    public mutating func reload() {
-        self.parent = .future(loader(self.id))
+    @discardableResult
+    public mutating func reload() -> EventLoopFuture<To> {
+        let future = loader(self.id)
+        self.parent = .future(future)
+        return future
     }
 }
 

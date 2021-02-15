@@ -64,8 +64,11 @@ public struct DBSiblings<From: DBModel, To: DBModel, Through: DBModel> {
 
 extension DBSiblings {
     
-    public mutating func reload() {
-        self.pivots = loader()
+    @discardableResult
+    public mutating func reload() -> EventLoopFuture<[Through]> {
+        let future = loader()
+        self.pivots = future
+        return future
     }
 }
 
