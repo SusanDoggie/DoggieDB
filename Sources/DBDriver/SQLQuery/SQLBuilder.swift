@@ -93,7 +93,12 @@ extension SQLBuilder {
         return self.build { sql, dialect in sql.append("FROM \(tables.joined(separator: ", "))") }
     }
     
-    public func join(_ table: String, on predicate: (SQLPredicateBuilder) -> SQLPredicateBuilder) -> SQLBuilder {
+    public func join(_ table: String, method: SQLJoinMethod? = nil, on predicate: (SQLPredicateBuilder) -> SQLPredicateBuilder) -> SQLBuilder {
+        
+        if let method = method {
+            return self.build { sql, dialect in sql.append("\(method.serialize()) JOIN \(table) ON \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())") }
+        }
+        
         return self.build { sql, dialect in sql.append("JOIN \(table) ON \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())") }
     }
     
@@ -119,5 +124,22 @@ extension SQLBuilder {
     
     public func offset(_ offset: Int) -> SQLBuilder {
         return self.build { sql, dialect in sql.append("OFFSET \(offset)") }
+    }
+}
+
+public enum SQLJoinMethod {
+    
+    case inner
+    case outer
+    case left
+    case right
+    
+    func serialize() -> String {
+        switch self {
+        case .inner: return "INNER"
+        case .outer: return "OUTER"
+        case .left: return "LEFT"
+        case .right: return "RIGHT"
+        }
     }
 }
