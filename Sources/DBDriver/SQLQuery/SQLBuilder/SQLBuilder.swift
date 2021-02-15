@@ -116,4 +116,8 @@ extension SQLBuilder {
     public func select() -> SQLSelectBuilder {
         return SQLSelectBuilder(builder: self)
     }
+    
+    public func delete(_ table: String, alias: String? = nil) -> SQLDeleteBuilder {
+        return SQLDeleteBuilder(builder: self, table: table, alias: alias)
+    }
 }
