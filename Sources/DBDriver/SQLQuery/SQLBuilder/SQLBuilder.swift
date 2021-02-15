@@ -126,20 +126,3 @@ extension SQLBuilder {
         return self.build { sql, dialect in sql.append("OFFSET \(offset)") }
     }
 }
-
-public enum SQLJoinMethod {
-    
-    case inner
-    case outer
-    case left
-    case right
-    
-    func serialize() -> String {
-        switch self {
-        case .inner: return "INNER"
-        case .outer: return "OUTER"
-        case .left: return "LEFT"
-        case .right: return "RIGHT"
-        }
-    }
-}
