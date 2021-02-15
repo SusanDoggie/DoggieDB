@@ -25,19 +25,27 @@
 
 public struct SQLSelect: SQLExpression {
     
-    public var table: String
+    public var columns: [SQLLiteral] = []
     
-    public var columns: [SQLExpression] = []
+    public var tables: [SQLExpression] = []
     
     public var isDistinct: Bool = false
+    
+    public var joins: [SQLJoin]
+    
+    public var predicate: SQLPredicate?
+    
+    public var groupBy: [SQLLiteral]
+    
+    public var having: SQLPredicate?
+    
+    public var orderBy: [SQLLiteral]
     
     public var limit: Int?
     
     public var offset: Int?
     
-    public init(table: String) {
-        self.table = table
-    }
+    public var lockingClause: SQLExpression?
     
     public func serialize(to serializer: inout SQLSerializer) {
         
@@ -47,6 +55,48 @@ public struct SQLSelect: SQLExpression {
             serializer.write("DISTINCT")
         }
         
+        serializer.write(self.columns, separator: ",")
         
+        serializer.write("FROM")
+        
+        serializer.write(self.tables, separator: ",")
+        
+        if !self.joins.isEmpty {
+            serializer.write(self.joins)
+        }
+        
+        if let predicate = self.predicate {
+            serializer.write("WHERE")
+            predicate.serialize(to: &serializer)
+        }
+        
+        if !self.groupBy.isEmpty {
+            serializer.write("GROUP BY")
+            serializer.write(self.groupBy, separator: ",")
+        }
+        
+        if let having = self.having {
+            serializer.write("HAVING")
+            having.serialize(to: &serializer)
+        }
+        
+        if !self.orderBy.isEmpty {
+            serializer.write("ORDER BY")
+            serializer.write(self.orderBy, separator: ",")
+        }
+        
+        if let limit = self.limit {
+            serializer.write("LIMIT")
+            serializer.write(limit.description)
+        }
+        
+        if let offset = self.offset {
+            serializer.write("OFFSET")
+            serializer.write(offset.description)
+        }
+        
+        if let lockingClause = self.lockingClause {
+            lockingClause.serialize(to: &serializer)
+        }
     }
 }

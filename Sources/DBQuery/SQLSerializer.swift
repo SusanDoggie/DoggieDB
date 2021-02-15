@@ -1,5 +1,5 @@
 //
-//  SQLJoinResult.swift
+//  SQLSerializer.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,43 +23,21 @@
 //  THE SOFTWARE.
 //
 
-@dynamicMemberLookup
-public struct SQLJoinResult<Left, Right> {
+extension SQLSerializer {
     
-    public var left: Left
-    
-    public var right: Right
-    
-}
-
-extension SQLJoinResult {
-    
-    public subscript<Value>(dynamicMember keyPath: KeyPath<Left, Value>) -> Value {
-        return self.left[keyPath: keyPath]
+    public mutating func write(_ value: SQLExpression) {
+        value.serialize(to: &self)
     }
     
-    public subscript<Value>(dynamicMember keyPath: KeyPath<Right, Value>) -> Value {
-        return self.right[keyPath: keyPath]
-    }
-}
-
-extension SQLJoinResult {
-    
-    public subscript<Value>(dynamicMember keyPath: WritableKeyPath<Left, Value>) -> Value {
-        get {
-            return self.left[keyPath: keyPath]
-        }
-        set {
-            self.left[keyPath: keyPath] = newValue
+    public mutating func write<C: Collection>(_ elements: C, separator: String = "") where C.Element == SQLExpression {
+        guard let first = elements.first else { return }
+        first.serialize(to: &self)
+        for element in elements.dropFirst() {
+            if !separator.isEmpty {
+                self.write(separator)
+            }
+            element.serialize(to: &self)
         }
     }
     
-    public subscript<Value>(dynamicMember keyPath: WritableKeyPath<Right, Value>) -> Value {
-        get {
-            return self.right[keyPath: keyPath]
-        }
-        set {
-            self.right[keyPath: keyPath] = newValue
-        }
-    }
 }
