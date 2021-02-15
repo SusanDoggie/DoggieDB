@@ -46,15 +46,27 @@ extension SQLBuilderProtocol {
     }
 }
 
+enum SQLBuilderComponent {
+    case raw(SQLRaw)
+    case string(String)
+    case literal(SQLLiteral)
+    case value(DBData)
+}
+
 public struct SQLBuilder {
     
     public typealias BuilderClosure<T> = (T) -> T
     
-    let connection: DBConnection
+    let connection: DBConnection?
     
     let dialect: SQLDialect.Type?
     
-    private var raw: SQLRaw = SQLRaw()
+    private var components: [SQLBuilderComponent] = []
+    
+    init() {
+        self.connection = nil
+        self.dialect = nil
+    }
     
     init(connection: DBConnection) {
         self.connection = connection
@@ -69,11 +81,46 @@ extension DBConnection {
     }
 }
 
+extension SQLRawComponent {
+    
+    var string: String? {
+        switch self {
+        case let .string(string): return string
+        default: return nil
+        }
+    }
+}
+
 extension SQLBuilder {
+    
+    var raw: SQLRaw? {
+        
+        guard let dialect = self.dialect else { return nil }
+        
+        var raw = SQLRaw()
+        
+        for component in components {
+            
+            if !raw.isEmpty && raw.components.last?.string?.last != " " {
+                raw.append(" ")
+            }
+            
+            switch component {
+            case let .raw(value): raw.append(value)
+            case let .string(value): raw.append(value)
+            case let .literal(value): raw.append(value, dialect)
+            case let .value(value): raw.append(value)
+            }
+        }
+        
+        return raw
+    }
     
     func execute() -> EventLoopFuture<[DBQueryRow]> {
         
-        guard dialect != nil else {
+        guard let connection = self.connection else { fatalError() }
+        
+        guard let raw = self.raw else {
             return connection.eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
         }
         
@@ -82,7 +129,9 @@ extension SQLBuilder {
     
     func execute(onRow: @escaping (DBQueryRow) -> Void) -> EventLoopFuture<DBQueryMetadata> {
         
-        guard dialect != nil else {
+        guard let connection = self.connection else { fatalError() }
+        
+        guard let raw = self.raw else {
             return connection.eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
         }
         
@@ -92,55 +141,20 @@ extension SQLBuilder {
 
 extension SQLBuilder {
     
-    private mutating func appendSpaceIfNeed() {
-        
-        guard self.dialect != nil else { return }
-        guard !self.raw.isEmpty else { return }
-        
-        switch self.raw.components.last {
-        
-        case let .string(string):
-            
-            if string.last != " " {
-                self.raw.append(" ")
-            }
-            
-        default:
-            
-            self.raw.append(" ")
-        }
+    public mutating func append(_ raw: SQLRaw) {
+        self.components.append(.raw(raw))
     }
     
-    public mutating func append(_ raw: SQLRaw) {
-        
-        guard self.dialect != nil else { return }
-        
-        self.appendSpaceIfNeed()
-        self.raw.append(raw)
+    public mutating func append(_ literal: SQLLiteral) {
+        self.components.append(.literal(literal))
     }
     
     mutating func append<T: StringProtocol>(_ value: T) {
-        
-        guard self.dialect != nil else { return }
-        
-        self.appendSpaceIfNeed()
-        self.raw.append(value)
+        self.components.append(.string(String(value)))
     }
     
     mutating func append(_ value: DBData) {
-        
-        guard self.dialect != nil else { return }
-        
-        self.appendSpaceIfNeed()
-        self.raw.append(value)
-    }
-    
-    mutating func append(bind value: DBData) {
-        
-        guard self.dialect != nil else { return }
-        
-        self.appendSpaceIfNeed()
-        self.raw.append(bind: value)
+        self.components.append(.value(value))
     }
 }
 

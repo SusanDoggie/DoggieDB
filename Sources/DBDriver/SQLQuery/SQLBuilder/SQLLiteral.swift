@@ -59,10 +59,9 @@ extension SQLLiteral: ExpressibleByStringLiteral {
     }
 }
 
-extension SQLBuilder {
+extension SQLRaw {
     
-    public mutating func append(_ literal: SQLLiteral) {
-        guard let dialect = self.dialect else { return }
+    public mutating func append(_ literal: SQLLiteral, _ dialect: SQLDialect.Type) {
         switch literal {
         case .null: self.append(dialect.literalNull)
         case .default: self.append(dialect.literalDefault)
