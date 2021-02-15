@@ -31,8 +31,6 @@ extension SQLReturningExpression {
     
     public func returning(_ column: String, _ res: String ...) -> Self {
         
-        guard self.dialect != nil else { return self }
-        
         var builder = self
         
         let columns = [column] + res

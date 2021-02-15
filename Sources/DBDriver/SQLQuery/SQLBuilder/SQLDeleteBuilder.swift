@@ -44,8 +44,6 @@ extension SQLDeleteBuilder {
     
     public func using(_ table: String, alias: String? = nil) -> SQLDeleteBuilder {
         
-        guard self.dialect != nil else { return self }
-        
         var builder = self
         
         builder.builder.append("USING \(table)")
@@ -57,14 +55,12 @@ extension SQLDeleteBuilder {
         return builder
     }
     
-    public func using(_ alias: String, _ block: BuilderClosure<SQLSelectBuilder>) -> SQLDeleteBuilder {
-        
-        guard self.dialect != nil else { return self }
+    public func using(_ alias: String, _ query: SQLSelectBuilder) -> SQLDeleteBuilder {
         
         var builder = self
         
         builder.builder.append("USING (")
-        builder.builder = block(SQLSelectBuilder(builder: builder.builder)).builder
+        builder.builder.append(query.builder)
         builder.builder.append(") \(alias)")
         
         return builder

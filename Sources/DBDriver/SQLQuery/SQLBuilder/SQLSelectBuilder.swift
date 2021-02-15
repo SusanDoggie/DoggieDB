@@ -33,6 +33,13 @@ public struct SQLSelectBuilder: SQLBuilderProtocol {
     }
 }
 
+extension SQLSelectBuilder {
+    
+    public static func select() -> SQLSelectBuilder {
+        return SQLSelectBuilder(builder: SQLBuilder())
+    }
+}
+
 extension SQLSelectBuilder: SQLFromExpression {}
 extension SQLSelectBuilder: SQLWhereExpression {}
 extension SQLSelectBuilder: SQLJoinExpression {}
@@ -41,8 +48,6 @@ extension SQLSelectBuilder {
     
     public func distinct() -> SQLSelectBuilder {
         
-        guard self.dialect != nil else { return self }
-        
         var builder = self
         
         builder.builder.append("DISTINCT")
@@ -50,20 +55,11 @@ extension SQLSelectBuilder {
         return builder
     }
     
-    public func union() -> SQLSelectBuilder  {
-        
-        guard self.dialect != nil else { return self }
-        
-        var builder = self
-        
-        builder.builder.append("UNION SELECT")
-        
-        return builder
+    public func union() -> SQLUnionBuilder  {
+        return SQLUnionBuilder(builder: self.builder)
     }
     
     public func columns(_ column: String, _ res: String ...) -> SQLSelectBuilder {
-        
-        guard self.dialect != nil else { return self }
         
         var builder = self
         
@@ -76,8 +72,6 @@ extension SQLSelectBuilder {
     
     public func groupBy(_ groupBy: String, _ res: String ...) -> SQLSelectBuilder {
         
-        guard self.dialect != nil else { return self }
-        
         var builder = self
         
         let list = [groupBy] + res
@@ -89,18 +83,14 @@ extension SQLSelectBuilder {
     
     public func having(_ predicate: BuilderClosure<SQLPredicateBuilder>) -> SQLSelectBuilder {
         
-        guard let dialect = self.dialect else { return self }
-        
         var builder = self
         
-        builder.builder.append("HAVING \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())")
+        builder.builder.append("HAVING \(predicate(SQLPredicateBuilder()).serialize())")
         
         return builder
     }
     
     public func orderBy(_ orderBy: String, _ res: String ...) -> SQLSelectBuilder {
-        
-        guard self.dialect != nil else { return self }
         
         var builder = self
         
@@ -113,8 +103,6 @@ extension SQLSelectBuilder {
     
     public func limit(_ limit: Int) -> SQLSelectBuilder {
         
-        guard self.dialect != nil else { return self }
-        
         var builder = self
         
         builder.builder.append("LIMIT \(limit)")
@@ -124,8 +112,6 @@ extension SQLSelectBuilder {
     
     public func offset(_ offset: Int) -> SQLSelectBuilder {
         
-        guard self.dialect != nil else { return self }
-        
         var builder = self
         
         builder.builder.append("OFFSET \(offset)")
@@ -134,8 +120,6 @@ extension SQLSelectBuilder {
     }
     
     public func locking(_ lock: SQLLockingClause) -> SQLSelectBuilder {
-        
-        guard self.dialect != nil else { return self }
         
         var builder = self
         

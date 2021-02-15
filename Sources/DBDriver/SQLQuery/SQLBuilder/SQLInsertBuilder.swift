@@ -43,8 +43,6 @@ extension SQLInsertBuilder {
     
     public func columns(_ column: String, _ res: String ...) -> SQLInsertBuilder {
         
-        guard self.dialect != nil else { return self }
-        
         var builder = self
         
         let columns = [column] + res
@@ -55,8 +53,6 @@ extension SQLInsertBuilder {
     }
     
     public func values(_ value: SQLLiteral, _ res: SQLLiteral ...) -> SQLInsertBuilder {
-        
-        guard self.dialect != nil else { return self }
         
         var builder = self
         
@@ -74,13 +70,11 @@ extension SQLInsertBuilder {
         return builder
     }
     
-    public func values(_ block: BuilderClosure<SQLSelectBuilder>) -> SQLInsertBuilder {
-        
-        guard self.dialect != nil else { return self }
+    public func values(_ query: SQLSelectBuilder) -> SQLInsertBuilder {
         
         var builder = self
         
-        builder.builder = block(SQLSelectBuilder(builder: builder.builder)).builder
+        builder.builder.append(query.builder)
         
         return builder
     }

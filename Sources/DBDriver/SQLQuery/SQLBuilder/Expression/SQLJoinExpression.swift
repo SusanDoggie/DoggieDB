@@ -48,14 +48,12 @@ extension SQLJoinExpression {
     
     public func join(_ table: String, method: SQLJoinMethod? = nil, on predicate: BuilderClosure<SQLPredicateBuilder>) -> Self {
         
-        guard let dialect = self.dialect else { return self }
-        
         var builder = self
         
         if let method = method {
-            builder.builder.append("\(method.serialize()) JOIN \(table) ON \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())")
+            builder.builder.append("\(method.serialize()) JOIN \(table) ON \(predicate(SQLPredicateBuilder()).serialize())")
         } else {
-            builder.builder.append("JOIN \(table) ON \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())")
+            builder.builder.append("JOIN \(table) ON \(predicate(SQLPredicateBuilder()).serialize())")
         }
         
         return builder
@@ -64,11 +62,9 @@ extension SQLJoinExpression {
     public func join(
         _ alias: String,
         method: SQLJoinMethod? = nil,
-        query: BuilderClosure<SQLSelectBuilder>,
+        query: SQLSelectBuilder,
         on predicate: BuilderClosure<SQLPredicateBuilder>
     ) -> Self {
-        
-        guard let dialect = self.dialect else { return self }
         
         var builder = self
         
@@ -79,10 +75,10 @@ extension SQLJoinExpression {
         }
         
         builder.builder.append("(")
-        builder.builder = query(SQLSelectBuilder(builder: builder.builder)).builder
+        builder.builder.append(query.builder)
         builder.builder.append(") \(alias)")
         
-        builder.builder.append("ON \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())")
+        builder.builder.append("ON \(predicate(SQLPredicateBuilder()).serialize())")
         
         return builder
     }

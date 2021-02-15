@@ -1,5 +1,5 @@
 //
-//  SQLWithExpression.swift
+//  SQLSelectBuilder.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,39 +23,19 @@
 //  THE SOFTWARE.
 //
 
-extension SQLBuilder {
+public struct SQLUnionBuilder: SQLBuilderProtocol {
     
-    public var with: SQLWithExpressionBuilder {
-        return SQLWithExpressionBuilder(builder: self, recursive: false)
-    }
+    public var builder: SQLBuilder
     
-    public var withRecursive: SQLWithExpressionBuilder {
-        return SQLWithExpressionBuilder(builder: self, recursive: true)
+    init(builder: SQLBuilder) {
+        self.builder = builder
+        self.builder.append("UNION")
     }
 }
 
-@dynamicCallable
-public struct SQLWithExpressionBuilder {
+extension SQLUnionBuilder {
     
-    var builder: SQLBuilder
-    
-    init(builder: SQLBuilder, recursive: Bool) {
-        self.builder = builder
-        self.builder.append(recursive ? "WITH" : "WITH RECURSIVE")
-    }
-    
-    public func dynamicallyCall(withKeywordArguments args: KeyValuePairs<String, SQLSelectBuilder>) -> SQLBuilder {
-        
-        guard self.builder.dialect != nil else { return self.builder }
-        
-        var builder = self.builder
-        
-        for (i, (key, query)) in args.enumerated() {
-            builder.append(i == 0 ? "\(key) AS (" : ", \(key) AS (")
-            builder.append(query.builder)
-            builder.append(")")
-        }
-        
-        return builder
+    public func select() -> SQLSelectBuilder {
+        return SQLSelectBuilder(builder: self.builder)
     }
 }

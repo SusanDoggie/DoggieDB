@@ -31,11 +31,9 @@ extension SQLWhereExpression {
     
     public func `where`(_ predicate: BuilderClosure<SQLPredicateBuilder>) -> Self {
         
-        guard let dialect = self.dialect else { return self }
-        
         var builder = self
         
-        builder.builder.append("WHERE \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())")
+        builder.builder.append("WHERE \(predicate(SQLPredicateBuilder()).serialize())")
         
         return builder
     }

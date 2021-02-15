@@ -288,7 +288,7 @@ class PostgreSQLTest: XCTestCase {
         do {
             
             let result = try connection.sql()
-                .withRecursive(test: { $0.columns("1 AS n").union().columns("n+1 AS n").from("test") })
+                .withRecursive(test: SQLSelectBuilder.select().columns("1 AS n").union().select().columns("n+1 AS n").from("test"))
                 .select().columns("n").from("test")
                 .limit(10)
                 .execute().wait()

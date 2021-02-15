@@ -141,11 +141,15 @@ extension SQLBuilder {
 
 extension SQLBuilder {
     
-    public mutating func append(_ raw: SQLRaw) {
+    mutating func append(_ other: SQLBuilder) {
+        self.components.append(contentsOf: other.components)
+    }
+    
+    mutating func append(_ raw: SQLRaw) {
         self.components.append(.raw(raw))
     }
     
-    public mutating func append(_ literal: SQLLiteral) {
+    mutating func append(_ literal: SQLLiteral) {
         self.components.append(.literal(literal))
     }
     

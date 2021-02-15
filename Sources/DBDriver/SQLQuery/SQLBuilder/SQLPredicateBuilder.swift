@@ -25,8 +25,6 @@
 
 public struct SQLPredicateBuilder {
     
-    let dialect: SQLDialect.Type
-    
 }
 
 extension SQLPredicateBuilder {

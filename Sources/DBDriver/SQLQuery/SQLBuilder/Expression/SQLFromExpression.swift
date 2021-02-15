@@ -31,8 +31,6 @@ extension SQLFromExpression {
     
     public func from(_ table: String, _ res: String ...) -> Self {
         
-        guard self.dialect != nil else { return self }
-        
         var builder = self
         
         let tables = [table] + res
@@ -42,14 +40,12 @@ extension SQLFromExpression {
         return builder
     }
     
-    public func from(_ alias: String, _ block: BuilderClosure<SQLSelectBuilder>) -> Self {
-        
-        guard self.dialect != nil else { return self }
+    public func from(_ alias: String, _ query: SQLSelectBuilder) -> Self {
         
         var builder = self
         
         builder.builder.append("(")
-        builder.builder = block(SQLSelectBuilder(builder: builder.builder)).builder
+        builder.builder.append(query.builder)
         builder.builder.append(") \(alias)")
         
         return builder
