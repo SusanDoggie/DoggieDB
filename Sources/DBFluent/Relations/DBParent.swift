@@ -50,8 +50,8 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
     @DBField<From, ParentKey>
     public internal(set) var id: ParentKey
     
-    public let onUpdate: DBForeignKeyAction
-    public let onDelete: DBForeignKeyAction
+    public let onUpdate: SQLForeignKeyAction
+    public let onDelete: SQLForeignKeyAction
 
     public private(set) var parent: Future<To>?
     
@@ -66,8 +66,8 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
         type: String? = nil,
         isUnique: Bool = false,
         default: DBField<From, ParentKey>.Default? = nil,
-        onUpdate: DBForeignKeyAction = .restrict,
-        onDelete: DBForeignKeyAction = .restrict
+        onUpdate: SQLForeignKeyAction = .restrict,
+        onDelete: SQLForeignKeyAction = .restrict
     ) {
         self._id = DBField(name: name, type: type, isUnique: isUnique, default: `default`)
         self.onUpdate = onUpdate

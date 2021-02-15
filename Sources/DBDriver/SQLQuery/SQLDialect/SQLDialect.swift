@@ -48,7 +48,7 @@ extension SQLDialect {
 
 extension DBConnection {
     
-    var sqlDialect: SQLDialect.Type? {
+    var dialect: SQLDialect.Type? {
         switch driver {
         case .mySQL: return MySQLDialect.self
         case .postgreSQL: return PostgreSQLDialect.self
@@ -62,7 +62,7 @@ extension DBConnection {
     
     func serialize(_ sql: SQLRaw) -> (String, [DBData])? {
         
-        guard let dialect = self.sqlDialect else { return nil }
+        guard let dialect = self.dialect else { return nil }
         
         var raw = ""
         var binds: [DBData] = []

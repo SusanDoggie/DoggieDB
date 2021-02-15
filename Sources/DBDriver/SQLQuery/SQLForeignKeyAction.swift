@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public enum DBForeignKeyAction {
+public enum SQLForeignKeyAction {
     
     case restrict
     

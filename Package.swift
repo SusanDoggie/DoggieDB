@@ -58,22 +58,15 @@ let package = Package(
             ]
         ),
         .target(
-            name: "DBQuery",
-            dependencies: [
-                .target(name: "DBDriver"),
-            ]
-        ),
-        .target(
             name: "DBFluent",
             dependencies: [
-                .target(name: "DBQuery"),
+                .target(name: "DBDriver"),
             ]
         ),
         .target(
             name: "DoggieDB",
             dependencies: [
                 .target(name: "DBDriver"),
-                .target(name: "DBQuery"),
                 .target(name: "DBFluent"),
             ]
         ),

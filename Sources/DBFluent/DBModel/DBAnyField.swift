@@ -35,9 +35,9 @@ private protocol _DBField {
     
     var isOptional: Bool { get }
     
-    var onUpdate: DBForeignKeyAction { get }
+    var onUpdate: SQLForeignKeyAction { get }
     
-    var onDelete: DBForeignKeyAction { get }
+    var onDelete: SQLForeignKeyAction { get }
     
     func _data() -> DBData?
 }
@@ -55,11 +55,11 @@ extension DBField: _DBField {
         return self.value?.toDBData()
     }
     
-    fileprivate var onUpdate: DBForeignKeyAction {
+    fileprivate var onUpdate: SQLForeignKeyAction {
         return .restrict
     }
     
-    fileprivate var onDelete: DBForeignKeyAction {
+    fileprivate var onDelete: SQLForeignKeyAction {
         return .restrict
     }
     
@@ -128,11 +128,11 @@ extension DBAnyField {
         return box.isOptional
     }
     
-    public var onUpdate: DBForeignKeyAction {
+    public var onUpdate: SQLForeignKeyAction {
         return box.onUpdate
     }
     
-    public var onDelete: DBForeignKeyAction {
+    public var onDelete: SQLForeignKeyAction {
         return box.onDelete
     }
     

@@ -1,5 +1,5 @@
 //
-//  SQLExpression.swift
+//  SQLLiteral.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,7 +23,49 @@
 //  THE SOFTWARE.
 //
 
-public protocol SQLExpression {
+public enum SQLLiteral {
     
-    func serialize(to serializer: inout SQLSerializer)
+    case null
+    
+    case `default`
+    
+    case bool(Bool)
+    
+    case string(String)
+    
+    case bind(DBData)
+}
+
+extension SQLLiteral: ExpressibleByNilLiteral {
+    
+    public init(nilLiteral value: Void) {
+        self = .null
+    }
+}
+
+extension SQLLiteral: ExpressibleByBooleanLiteral {
+    
+    public init(booleanLiteral value: BooleanLiteralType) {
+        self = .bool(value)
+    }
+}
+
+extension SQLLiteral: ExpressibleByStringLiteral {
+    
+    public init(stringLiteral value: StringLiteralType) {
+        self = .string(value)
+    }
+}
+
+extension SQLRaw {
+    
+    public mutating func append(_ literal: SQLLiteral, dialect: SQLDialect.Type) {
+        switch literal {
+        case .null: self.append(dialect.literalNull)
+        case .default: self.append(dialect.literalDefault)
+        case let .bool(bool): self.append(dialect.literalBoolean(bool))
+        case let .string(string): self.append(string)
+        case let .bind(value): self.append(value)
+        }
+    }
 }
