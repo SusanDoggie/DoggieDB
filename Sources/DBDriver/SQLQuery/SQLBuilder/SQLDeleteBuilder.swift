@@ -69,15 +69,4 @@ extension SQLDeleteBuilder {
         
         return builder
     }
-    
-    public func returning(_ columns: String ...) -> SQLDeleteBuilder {
-        
-        guard self.dialect != nil else { return self }
-        
-        var builder = self
-        
-        builder.builder.append("RETURNING \(columns.joined(separator: ", "))")
-        
-        return builder
-    }
 }
