@@ -51,10 +51,7 @@ public struct DBChildren<From: DBModel, To: DBModel> {
     }
     
     public var wrappedValue: [To] {
-        if self.children == nil {
-            logger.warning("property accessed before being initialized")
-        }
-        return try! children?.wait() ?? []
+        return try! self.wait()
     }
     
     public var projectedValue: DBChildren {
@@ -72,6 +69,9 @@ extension DBChildren {
 extension DBChildren {
     
     public func wait() throws -> [To] {
+        if self.children == nil {
+            logger.warning("property accessed before being initialized")
+        }
         return try children?.wait() ?? []
     }
 }

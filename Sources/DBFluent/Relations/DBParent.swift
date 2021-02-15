@@ -73,14 +73,7 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
     
     public var wrappedValue: To {
         get {
-            if self.parent == nil {
-                logger.warning("property accessed before being initialized")
-            }
-            if let parent = self.parent {
-                return try! parent.wait()
-            }
-            guard let _To = To.self as? NilRepresentable.Type else { fatalError() }
-            return _To.null as! To
+            return try! self.wait()
         }
         set {
             id = newValue.id
@@ -107,6 +100,13 @@ extension DBParent {
 extension DBParent {
     
     public func wait() throws -> To {
-        return try parent!.wait()
+        if self.parent == nil {
+            logger.warning("property accessed before being initialized")
+        }
+        if let parent = self.parent {
+            return try parent.wait()
+        }
+        guard let _To = To.self as? NilRepresentable.Type else { fatalError() }
+        return _To.null as! To
     }
 }

@@ -48,10 +48,7 @@ public struct DBSiblings<From: DBModel, To: DBModel, Through: DBModel> {
     }
     
     public var wrappedValue: [To] {
-        if self.siblings == nil {
-            logger.warning("property accessed before being initialized")
-        }
-        return try! siblings?.wait() ?? []
+        return try! self.wait()
     }
     
     public var projectedValue: DBSiblings {
@@ -79,6 +76,9 @@ extension DBSiblings {
 extension DBSiblings {
     
     public func wait() throws -> [To] {
+        if self.siblings == nil {
+            logger.warning("property accessed before being initialized")
+        }
         return try siblings?.wait() ?? []
     }
 }
