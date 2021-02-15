@@ -1,5 +1,5 @@
 //
-//  SQLDeleteBuilder.swift
+//  SQLFromExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,60 +23,32 @@
 //  THE SOFTWARE.
 //
 
-public struct SQLDeleteBuilder: SQLBuilderProtocol {
+public protocol SQLFromExpression: SQLBuilderProtocol {
     
-    public var builder: SQLBuilder
-    
-    init(builder: SQLBuilder, table: String, alias: String?) {
-        self.builder = builder
-        self.builder.append("DELETE FROM \(table)")
-        
-        if let alias = alias {
-            self.builder.append("AS \(alias)")
-        }
-    }
 }
 
-extension SQLDeleteBuilder: SQLWhereExpression {}
-extension SQLDeleteBuilder: SQLReturningExpression {}
-
-extension SQLDeleteBuilder {
+extension SQLFromExpression {
     
-    public func using(_ table: String, alias: String? = nil) -> SQLDeleteBuilder {
+    public func from(_ tables: String ...) -> Self {
         
         guard self.dialect != nil else { return self }
         
         var builder = self
         
-        builder.builder.append("USING \(table)")
-        
-        if let alias = alias {
-            builder.builder.append("AS \(alias)")
-        }
+        builder.builder.append("FROM \(tables.joined(separator: ", "))")
         
         return builder
     }
     
-    public func using(_ alias: String, _ block: (SQLSelectBuilder) -> SQLSelectBuilder) -> SQLDeleteBuilder {
+    public func from(_ alias: String, _ block: (SQLSelectBuilder) -> SQLSelectBuilder) -> Self {
         
         guard self.dialect != nil else { return self }
         
         var builder = self
         
-        builder.builder.append("USING (")
+        builder.builder.append("(")
         builder.builder = block(SQLSelectBuilder(builder: builder.builder)).builder
         builder.builder.append(") \(alias)")
-        
-        return builder
-    }
-    
-    public func returning(_ columns: String ...) -> SQLDeleteBuilder {
-        
-        guard self.dialect != nil else { return self }
-        
-        var builder = self
-        
-        builder.builder.append("RETURNING \(columns.joined(separator: ", "))")
         
         return builder
     }

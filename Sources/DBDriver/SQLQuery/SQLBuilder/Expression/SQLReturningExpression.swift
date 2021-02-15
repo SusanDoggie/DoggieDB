@@ -1,5 +1,5 @@
 //
-//  SQLDeleteBuilder.swift
+//  SQLReturningExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,54 +23,13 @@
 //  THE SOFTWARE.
 //
 
-public struct SQLDeleteBuilder: SQLBuilderProtocol {
+public protocol SQLReturningExpression: SQLBuilderProtocol {
     
-    public var builder: SQLBuilder
-    
-    init(builder: SQLBuilder, table: String, alias: String?) {
-        self.builder = builder
-        self.builder.append("DELETE FROM \(table)")
-        
-        if let alias = alias {
-            self.builder.append("AS \(alias)")
-        }
-    }
 }
 
-extension SQLDeleteBuilder: SQLWhereExpression {}
-extension SQLDeleteBuilder: SQLReturningExpression {}
-
-extension SQLDeleteBuilder {
+extension SQLReturningExpression {
     
-    public func using(_ table: String, alias: String? = nil) -> SQLDeleteBuilder {
-        
-        guard self.dialect != nil else { return self }
-        
-        var builder = self
-        
-        builder.builder.append("USING \(table)")
-        
-        if let alias = alias {
-            builder.builder.append("AS \(alias)")
-        }
-        
-        return builder
-    }
-    
-    public func using(_ alias: String, _ block: (SQLSelectBuilder) -> SQLSelectBuilder) -> SQLDeleteBuilder {
-        
-        guard self.dialect != nil else { return self }
-        
-        var builder = self
-        
-        builder.builder.append("USING (")
-        builder.builder = block(SQLSelectBuilder(builder: builder.builder)).builder
-        builder.builder.append(") \(alias)")
-        
-        return builder
-    }
-    
-    public func returning(_ columns: String ...) -> SQLDeleteBuilder {
+    public func returning(_ columns: String ...) -> Self {
         
         guard self.dialect != nil else { return self }
         

@@ -23,6 +23,27 @@
 //  THE SOFTWARE.
 //
 
+public protocol SQLBuilderProtocol {
+    
+    var builder: SQLBuilder { get set }
+    
+}
+
+extension SQLBuilderProtocol {
+    
+    var dialect: SQLDialect.Type? {
+        return builder.dialect
+    }
+    
+    public func execute() -> EventLoopFuture<[DBQueryRow]> {
+        return builder.execute()
+    }
+    
+    public func execute(onRow: @escaping (DBQueryRow) -> Void) -> EventLoopFuture<DBQueryMetadata> {
+        return builder.execute(onRow: onRow)
+    }
+}
+
 public struct SQLBuilder {
     
     let connection: DBConnection
@@ -119,5 +140,9 @@ extension SQLBuilder {
     
     public func delete(_ table: String, alias: String? = nil) -> SQLDeleteBuilder {
         return SQLDeleteBuilder(builder: self, table: table, alias: alias)
+    }
+    
+    public func update(_ table: String, alias: String? = nil) -> SQLUpdateBuilder {
+        return SQLUpdateBuilder(builder: self, table: table, alias: alias)
     }
 }

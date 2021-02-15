@@ -23,9 +23,9 @@
 //  THE SOFTWARE.
 //
 
-public struct SQLSelectBuilder {
+public struct SQLSelectBuilder: SQLBuilderProtocol {
     
-    var builder: SQLBuilder
+    public var builder: SQLBuilder
     
     init(builder: SQLBuilder) {
         self.builder = builder
@@ -33,23 +33,8 @@ public struct SQLSelectBuilder {
     }
 }
 
-extension SQLSelectBuilder {
-    
-    var dialect: SQLDialect.Type? {
-        return builder.dialect
-    }
-}
-
-extension SQLSelectBuilder {
-    
-    public func execute() -> EventLoopFuture<[DBQueryRow]> {
-        return builder.execute()
-    }
-    
-    public func execute(onRow: @escaping (DBQueryRow) -> Void) -> EventLoopFuture<DBQueryMetadata> {
-        return builder.execute(onRow: onRow)
-    }
-}
+extension SQLSelectBuilder: SQLFromExpression {}
+extension SQLSelectBuilder: SQLWhereExpression {}
 
 extension SQLSelectBuilder {
     
@@ -84,30 +69,6 @@ extension SQLSelectBuilder {
         builder.builder.append("(")
         builder = block(builder)
         builder.builder.append(")")
-        
-        return builder
-    }
-    
-    public func from(_ tables: String ...) -> SQLSelectBuilder {
-        
-        guard self.dialect != nil else { return self }
-        
-        var builder = self
-        
-        builder.builder.append("FROM \(tables.joined(separator: ", "))")
-        
-        return builder
-    }
-    
-    public func from(_ alias: String, _ block: (SQLSelectBuilder) -> SQLSelectBuilder) -> SQLSelectBuilder {
-        
-        guard self.dialect != nil else { return self }
-        
-        var builder = self
-        
-        builder.builder.append("(")
-        builder = block(SQLSelectBuilder(builder: builder.builder))
-        builder.builder.append(") \(alias)")
         
         return builder
     }
@@ -149,17 +110,6 @@ extension SQLSelectBuilder {
         builder.builder.append(") \(alias)")
         
         builder.builder.append("ON \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())")
-        
-        return builder
-    }
-    
-    public func `where`(_ predicate: (SQLPredicateBuilder) -> SQLPredicateBuilder) -> SQLSelectBuilder {
-        
-        guard let dialect = self.dialect else { return self }
-        
-        var builder = self
-        
-        builder.builder.append("WHERE \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())")
         
         return builder
     }
