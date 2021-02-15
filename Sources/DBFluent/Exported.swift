@@ -23,4 +23,4 @@
 //  THE SOFTWARE.
 //
 
-@_exported import DBQuery
+@_exported import DBDriver
