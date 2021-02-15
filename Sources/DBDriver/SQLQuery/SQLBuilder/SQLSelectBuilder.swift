@@ -74,19 +74,6 @@ extension SQLSelectBuilder {
         return builder
     }
     
-    public func group(_ block: BuilderClosure<SQLSelectBuilder>) -> SQLSelectBuilder {
-        
-        guard self.dialect != nil else { return self }
-        
-        var builder = self
-        
-        builder.builder.append("(")
-        builder = block(builder)
-        builder.builder.append(")")
-        
-        return builder
-    }
-    
     public func groupBy(_ groupBy: String, _ res: String ...) -> SQLSelectBuilder {
         
         guard self.dialect != nil else { return self }
