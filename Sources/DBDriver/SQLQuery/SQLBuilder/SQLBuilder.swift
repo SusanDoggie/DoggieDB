@@ -92,6 +92,12 @@ extension SQLBuilder {
         return self.build { sql, dialect in sql.append(columns.joined(separator: ", ")) }
     }
     
+    public func group(_ block: (SQLBuilder) -> SQLBuilder) -> SQLBuilder {
+        var builder = self.build { sql, dialect in sql.append("(") }
+        builder = block(builder)
+        return builder.build { sql, dialect in sql.append(")") }
+    }
+    
     public func from(_ tables: String ...) -> SQLBuilder {
         return self.build { sql, dialect in sql.append("FROM \(tables.joined(separator: ", "))") }
     }
