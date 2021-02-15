@@ -1,5 +1,5 @@
 //
-//  DBChildren.swift
+//  Future.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,55 +23,36 @@
 //  THE SOFTWARE.
 //
 
-extension DBModel {
+public enum Future<Value> {
     
-    public typealias Children<To: DBModel> = DBChildren<Self, To>
+    case value(Value)
+    
+    case future(EventLoopFuture<Value>)
 }
 
-@propertyWrapper
-public struct DBChildren<From: DBModel, To: DBModel> {
-    
-    public enum ParentKey {
-        case required(KeyPath<To, To.Parent<From>>)
-        case optional(KeyPath<To, To.Parent<From?>>)
-    }
-    
-    public let parentKey: ParentKey
-    
-    public internal(set) var children: EventLoopFuture<[To]>?
-    
-    public init(parentKey: KeyPath<To, To.Parent<From>>) {
-        self.parentKey = .required(parentKey)
-        self.children = nil
-    }
-    
-    public init(parentKey: KeyPath<To, To.Parent<From?>>) {
-        self.parentKey = .optional(parentKey)
-        self.children = nil
-    }
-    
-    public var wrappedValue: [To] {
-        if self.children == nil {
-            logger.warning("property accessed before being initialized")
-        }
-        return try! children?.wait() ?? []
-    }
-    
-    public var projectedValue: DBChildren {
-        return self
-    }
-}
-
-extension DBChildren {
+extension Future {
     
     public var eventLoop: EventLoop? {
-        return children?.eventLoop
+        switch self {
+        case let .future(future): return future.eventLoop
+        default: return nil
+        }
     }
 }
 
-extension DBChildren {
+extension Future {
     
-    public func wait() throws -> [To] {
-        return try children?.wait() ?? []
+    public func hop(to target: EventLoop) -> EventLoopFuture<Value> {
+        switch self {
+        case let .value(value): return target.makeSucceededFuture(value)
+        case let .future(future): return future.hop(to: target)
+        }
+    }
+    
+    public func wait() throws -> Value {
+        switch self {
+        case let .value(value): return value
+        case let .future(future): return try future.wait()
+        }
     }
 }

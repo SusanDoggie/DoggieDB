@@ -55,7 +55,7 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
     public let onUpdate: DBForeignKeyAction
     public let onDelete: DBForeignKeyAction
 
-    public internal(set) var parent: EventLoopFuture<To>?
+    public internal(set) var parent: Future<To>?
     
     public init(
         name: String? = nil,
@@ -84,11 +84,15 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
         }
         set {
             id = newValue.id
-            parent = parent?.eventLoop.makeSucceededFuture(newValue)
+            if let eventLoop = parent?.eventLoop {
+                parent = .future(eventLoop.makeSucceededFuture(newValue))
+            } else {
+                parent = .value(newValue)
+            }
         }
     }
     
-    public var projectedValue: DBParent<From, To> {
+    public var projectedValue: DBParent {
         return self
     }
 }

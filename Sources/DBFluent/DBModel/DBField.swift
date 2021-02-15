@@ -66,7 +66,7 @@ public struct DBField<Model: DBModel, Value: DBDataConvertible> {
         }
     }
     
-    public var projectedValue: DBField<Model, Value> {
+    public var projectedValue: DBField {
         return self
     }
 }

@@ -54,7 +54,7 @@ public struct DBSiblings<From: DBModel, To: DBModel, Through: DBModel> {
         return try! siblings?.wait() ?? []
     }
     
-    public var projectedValue: DBSiblings<From, To, Through> {
+    public var projectedValue: DBSiblings {
         return self
     }
 }
