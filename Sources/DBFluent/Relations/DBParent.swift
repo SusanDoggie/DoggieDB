@@ -28,19 +28,17 @@ extension DBModel {
     public typealias Parent<To: _DBModel> = DBParent<Self, To> where To.Key: Hashable, To.Key: DBDataConvertible
 }
 
-private protocol NilRepresentable {
+extension ExpressibleByNilLiteral {
     
-    static var null: NilRepresentable { get }
+    fileprivate static var null: ExpressibleByNilLiteral {
+        return Self(nilLiteral: ()) as ExpressibleByNilLiteral
+    }
 }
 
-extension Optional: _DBModel, NilRepresentable where Wrapped: DBModel {
+extension Optional: _DBModel where Wrapped: DBModel {
     
     public var id: Wrapped.Key? {
         return self?.id
-    }
-    
-    fileprivate static var null: NilRepresentable {
-        return Optional.none as NilRepresentable
     }
 }
 
@@ -106,7 +104,7 @@ extension DBParent {
         if let parent = self.parent {
             return try parent.wait()
         }
-        guard let _To = To.self as? NilRepresentable.Type else { fatalError() }
+        guard let _To = To.self as? ExpressibleByNilLiteral.Type else { fatalError() }
         return _To.null as! To
     }
 }
