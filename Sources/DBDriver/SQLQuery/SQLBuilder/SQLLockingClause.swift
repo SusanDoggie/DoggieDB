@@ -31,7 +31,7 @@ public enum SQLLockingClause {
     
     func serialize() -> String {
         switch self {
-        case .share: return "SHARE")
+        case .share: return "SHARE"
         case .update: return "UPDATE"
         }
     }

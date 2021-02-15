@@ -29,7 +29,7 @@ public struct SQLBuilder {
     
     let dialect: SQLDialect.Type?
     
-    var raw: SQLRaw = SQLRaw()
+    private var raw: SQLRaw = SQLRaw()
     
     init(connection: DBConnection) {
         self.connection = connection
@@ -46,7 +46,7 @@ extension DBConnection {
 
 extension SQLBuilder {
     
-    public func excute() -> EventLoopFuture<[DBQueryRow]> {
+    func execute() -> EventLoopFuture<[DBQueryRow]> {
         
         guard dialect != nil else {
             return connection.eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
@@ -55,7 +55,7 @@ extension SQLBuilder {
         return connection.execute(raw)
     }
     
-    public func execute(onRow: @escaping (DBQueryRow) -> Void) -> EventLoopFuture<DBQueryMetadata> {
+    func execute(onRow: @escaping (DBQueryRow) -> Void) -> EventLoopFuture<DBQueryMetadata> {
         
         guard dialect != nil else {
             return connection.eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
@@ -67,80 +67,53 @@ extension SQLBuilder {
 
 extension SQLBuilder {
     
-    private func build(_ block: (inout SQLRaw, SQLDialect.Type) -> Void) -> SQLBuilder {
-        guard let dialect = self.dialect else { return self }
-        var builder = self
-        if !builder.raw.isEmpty {
-            builder.raw.append(" ")
+    private mutating func appendSpaceIfNeed() {
+        
+        guard self.dialect != nil else { return }
+        guard !self.raw.isEmpty else { return }
+        
+        switch self.raw.components.last {
+        
+        case let .string(string):
+            
+            if string.last != " " {
+                self.raw.append(" ")
+            }
+            
+        default:
+            
+            self.raw.append(" ")
         }
-        block(&builder.raw, dialect)
-        return builder
+    }
+    
+    mutating func append<T: StringProtocol>(_ value: T) {
+        
+        guard self.dialect != nil else { return }
+        
+        self.appendSpaceIfNeed()
+        self.raw.append(value)
+    }
+    
+    mutating func append(_ value: DBData) {
+        
+        guard self.dialect != nil else { return }
+        
+        self.appendSpaceIfNeed()
+        self.raw.append(value)
+    }
+    
+    mutating func append(bind value: DBData) {
+        
+        guard self.dialect != nil else { return }
+        
+        self.appendSpaceIfNeed()
+        self.raw.append(bind: value)
     }
 }
 
 extension SQLBuilder {
     
-    public func select() -> SQLBuilder {
-        return self.build { sql, dialect in sql.append("SELECT") }
+    public func select() -> SQLSelectBuilder {
+        return SQLSelectBuilder(builder: self)
     }
-    
-    public func distinct() -> SQLBuilder {
-        return self.build { sql, dialect in sql.append("DISTINCT") }
-    }
-    
-    public func column(_ columns: String ...) -> SQLBuilder {
-        return self.build { sql, dialect in sql.append(columns.joined(separator: ", ")) }
-    }
-    
-    public func group(_ block: (SQLBuilder) -> SQLBuilder) -> SQLBuilder {
-        var builder = self.build { sql, dialect in sql.append("(") }
-        builder = block(builder)
-        return builder.build { sql, dialect in sql.append(")") }
-    }
-    
-    public func from(_ tables: String ...) -> SQLBuilder {
-        return self.build { sql, dialect in sql.append("FROM \(tables.joined(separator: ", "))") }
-    }
-    
-    public func join(_ table: String, method: SQLJoinMethod? = nil, on predicate: (SQLPredicateBuilder) -> SQLPredicateBuilder) -> SQLBuilder {
-        
-        if let method = method {
-            return self.build { sql, dialect in sql.append("\(method.serialize()) JOIN \(table) ON \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())") }
-        }
-        
-        return self.build { sql, dialect in sql.append("JOIN \(table) ON \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())") }
-    }
-    
-    public func `where`(_ predicate: (SQLPredicateBuilder) -> SQLPredicateBuilder) -> SQLBuilder {
-        return self.build { sql, dialect in sql.append("WHERE \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())") }
-    }
-    
-    public func groupBy(_ groupBy: String ...) -> SQLBuilder {
-        return self.build { sql, dialect in sql.append("GROUP BY \(groupBy.joined(separator: ", "))") }
-    }
-    
-    public func having(_ predicate: (SQLPredicateBuilder) -> SQLPredicateBuilder) -> SQLBuilder {
-        return self.build { sql, dialect in sql.append("HAVING \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())") }
-    }
-    
-    public func orderBy(_ orderBy: String ...) -> SQLBuilder {
-        return self.build { sql, dialect in sql.append("ORDER BY \(orderBy.joined(separator: ", "))") }
-    }
-    
-    public func limit(_ limit: Int) -> SQLBuilder {
-        return self.build { sql, dialect in sql.append("LIMIT \(limit)") }
-    }
-    
-    public func offset(_ offset: Int) -> SQLBuilder {
-        return self.build { sql, dialect in sql.append("OFFSET \(offset)") }
-    }
-    
-    public func locking(_ lock: SQLLockingClause) -> SQLBuilder {
-        return self.build { sql, dialect in sql.append("FOR \(lock.serialize())") }
-    }
-    
-    public func delete(_ table: String) -> SQLBuilder {
-        return self.build { sql, dialect in sql.append("DELETE FROM \(table)") }
-    }
-    
 }
