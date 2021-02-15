@@ -35,6 +35,7 @@ public struct SQLSelectBuilder: SQLBuilderProtocol {
 
 extension SQLSelectBuilder: SQLFromExpression {}
 extension SQLSelectBuilder: SQLWhereExpression {}
+extension SQLSelectBuilder: SQLJoinExpression {}
 
 extension SQLSelectBuilder {
     
@@ -49,7 +50,7 @@ extension SQLSelectBuilder {
         return builder
     }
     
-    public func column(_ columns: String ...) -> SQLSelectBuilder {
+    public func columns(_ columns: String ...) -> SQLSelectBuilder {
         
         guard self.dialect != nil else { return self }
         
@@ -69,47 +70,6 @@ extension SQLSelectBuilder {
         builder.builder.append("(")
         builder = block(builder)
         builder.builder.append(")")
-        
-        return builder
-    }
-    
-    public func join(_ table: String, method: SQLJoinMethod? = nil, on predicate: (SQLPredicateBuilder) -> SQLPredicateBuilder) -> SQLSelectBuilder {
-        
-        guard let dialect = self.dialect else { return self }
-        
-        var builder = self
-        
-        if let method = method {
-            builder.builder.append("\(method.serialize()) JOIN \(table) ON \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())")
-        } else {
-            builder.builder.append("JOIN \(table) ON \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())")
-        }
-        
-        return builder
-    }
-    
-    public func join(
-        _ alias: String,
-        method: SQLJoinMethod? = nil,
-        query: (SQLSelectBuilder) -> SQLSelectBuilder,
-        on predicate: (SQLPredicateBuilder) -> SQLPredicateBuilder
-    ) -> SQLSelectBuilder {
-        
-        guard let dialect = self.dialect else { return self }
-        
-        var builder = self
-        
-        if let method = method {
-            builder.builder.append("\(method.serialize()) JOIN")
-        } else {
-            builder.builder.append("JOIN")
-        }
-        
-        builder.builder.append("(")
-        builder = query(SQLSelectBuilder(builder: builder.builder))
-        builder.builder.append(") \(alias)")
-        
-        builder.builder.append("ON \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())")
         
         return builder
     }

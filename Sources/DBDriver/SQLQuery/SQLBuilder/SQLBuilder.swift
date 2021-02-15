@@ -145,4 +145,8 @@ extension SQLBuilder {
     public func update(_ table: String, alias: String? = nil) -> SQLUpdateBuilder {
         return SQLUpdateBuilder(builder: self, table: table, alias: alias)
     }
+    
+    public func insert(_ table: String, alias: String? = nil) -> SQLInsertBuilder {
+        return SQLInsertBuilder(builder: self, table: table, alias: alias)
+    }
 }
