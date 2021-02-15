@@ -37,7 +37,7 @@ extension DBData {
             if let value = String(fromRESP: value) {
                 self.init(value)
             } else {
-                self.init(Data(buffer: buffer))
+                self.init(buffer)
             }
             
         case .bulkString(.none): self.init(String(fromRESP: value)!)

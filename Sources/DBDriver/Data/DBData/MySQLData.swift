@@ -129,7 +129,7 @@ extension DBData {
              .blob:
             
             guard let buffer = value.buffer else { throw Database.Error.unsupportedType }
-            self = DBData(Data(buffer: buffer))
+            self = DBData(buffer)
             
         case .json:
             

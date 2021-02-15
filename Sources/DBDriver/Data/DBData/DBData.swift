@@ -112,6 +112,14 @@ public struct DBData {
         self.base = .binary(binary)
     }
     
+    public init(_ binary: ByteBuffer) {
+        self.base = .binary(binary.getData(at: binary.readerIndex, length: binary.readableBytes) ?? Data())
+    }
+    
+    public init(_ binary: ByteBufferView) {
+        self.base = .binary(Data(binary))
+    }
+    
     public init(_ uuid: UUID) {
         self.base = .uuid(uuid)
     }

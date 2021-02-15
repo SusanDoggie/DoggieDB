@@ -129,6 +129,20 @@ extension Data: DBDataConvertible {
     }
 }
 
+extension ByteBuffer: DBDataConvertible {
+    
+    public func toDBData() -> DBData {
+        return DBData(self)
+    }
+}
+
+extension ByteBufferView: DBDataConvertible {
+    
+    public func toDBData() -> DBData {
+        return DBData(self)
+    }
+}
+
 extension DateComponents: DBDataConvertible {
     
     public func toDBData() -> DBData {

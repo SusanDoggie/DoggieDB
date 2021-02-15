@@ -33,7 +33,7 @@ extension DBData {
         case let .integer(value): self.init(value)
         case let .float(value): self.init(value)
         case let .text(value): self.init(value)
-        case let .blob(value): self.init(Data(buffer: value))
+        case let .blob(value): self.init(value)
         }
     }
 }

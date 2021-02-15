@@ -378,6 +378,22 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         }
     }
     
+    func _decode(_ type: ByteBuffer.Type) throws -> ByteBuffer {
+        switch value.base {
+        case .null: throw Database.Error.valueNotFound
+        case let .binary(data): return ByteBuffer(data: data)
+        default: throw Database.Error.unsupportedType
+        }
+    }
+    
+    func _decode(_ type: ByteBufferView.Type) throws -> ByteBufferView {
+        switch value.base {
+        case .null: throw Database.Error.valueNotFound
+        case let .binary(data): return ByteBufferView(data)
+        default: throw Database.Error.unsupportedType
+        }
+    }
+    
     func decode<T: Decodable>(_ type: T.Type) throws -> T {
         switch type {
         case is Bool.Type: return try self._decode(Bool.self) as! T
@@ -399,6 +415,8 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         case is Date.Type: return try self._decode(Date.self) as! T
         case is DateComponents.Type: return try self._decode(DateComponents.self) as! T
         case is Data.Type: return try self._decode(Data.self) as! T
+        case is ByteBuffer.Type: return try self._decode(ByteBuffer.self) as! T
+        case is ByteBufferView.Type: return try self._decode(ByteBufferView.self) as! T
         case is Json.Type:
             guard let json = Json(value) else { throw Database.Error.invalidDateFormat }
             return json as! T
