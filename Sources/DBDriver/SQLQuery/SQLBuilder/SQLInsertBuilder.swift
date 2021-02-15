@@ -41,22 +41,26 @@ extension SQLInsertBuilder: SQLReturningExpression {}
 
 extension SQLInsertBuilder {
     
-    public func columns(_ columns: String ...) -> SQLInsertBuilder {
+    public func columns(_ column: String, _ res: String ...) -> SQLInsertBuilder {
         
         guard self.dialect != nil else { return self }
         
         var builder = self
+        
+        let columns = [column] + res
         
         builder.builder.append("(\(columns.joined(separator: ", ")))")
         
         return builder
     }
     
-    public func values(_ values: SQLLiteral ...) -> SQLInsertBuilder {
+    public func values(_ value: SQLLiteral, _ res: SQLLiteral ...) -> SQLInsertBuilder {
         
         guard self.dialect != nil else { return self }
         
         var builder = self
+        
+        let values = [value] + res
         
         builder.builder.append("VALUES (")
         for (i, value) in values.enumerated() {
@@ -70,7 +74,7 @@ extension SQLInsertBuilder {
         return builder
     }
     
-    public func values(_ block: (SQLSelectBuilder) -> SQLSelectBuilder) -> SQLInsertBuilder {
+    public func values(_ block: BuilderClosure<SQLSelectBuilder>) -> SQLInsertBuilder {
         
         guard self.dialect != nil else { return self }
         

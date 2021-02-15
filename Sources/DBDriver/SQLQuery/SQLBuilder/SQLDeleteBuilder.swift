@@ -57,7 +57,7 @@ extension SQLDeleteBuilder {
         return builder
     }
     
-    public func using(_ alias: String, _ block: (SQLSelectBuilder) -> SQLSelectBuilder) -> SQLDeleteBuilder {
+    public func using(_ alias: String, _ block: BuilderClosure<SQLSelectBuilder>) -> SQLDeleteBuilder {
         
         guard self.dialect != nil else { return self }
         

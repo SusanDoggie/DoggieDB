@@ -1,5 +1,5 @@
 //
-//  SQLReturningExpression.swift
+//  SQLWithExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,21 +23,38 @@
 //  THE SOFTWARE.
 //
 
-public protocol SQLReturningExpression: SQLBuilderProtocol {
+extension SQLBuilder {
     
+    public var with: SQLWithExpressionBuilder {
+        return SQLWithExpressionBuilder(builder: self, recursive: false)
+    }
+    
+    public var withRecursive: SQLWithExpressionBuilder {
+        return SQLWithExpressionBuilder(builder: self, recursive: true)
+    }
 }
 
-extension SQLReturningExpression {
+@dynamicCallable
+public struct SQLWithExpressionBuilder {
     
-    public func returning(_ column: String, _ res: String ...) -> Self {
+    var builder: SQLBuilder
+    
+    init(builder: SQLBuilder, recursive: Bool) {
+        self.builder = builder
+        self.builder.append(recursive ? "WITH" : "WITH RECURSIVE")
+    }
+    
+    public func dynamicallyCall(withKeywordArguments args: KeyValuePairs<String, SQLBuilder.BuilderClosure<SQLSelectBuilder>>) -> SQLBuilder {
         
-        guard self.dialect != nil else { return self }
+        guard self.builder.dialect != nil else { return self.builder }
         
-        var builder = self
+        var builder = self.builder
         
-        let columns = [column] + res
-        
-        builder.builder.append("RETURNING \(columns.joined(separator: ", "))")
+        for (i, (key, closure)) in args.enumerated() {
+            builder.append(i == 0 ? "\(key) AS (" : ", \(key) AS (")
+            builder = closure(SQLSelectBuilder(builder: builder)).builder
+            builder.append(")")
+        }
         
         return builder
     }
