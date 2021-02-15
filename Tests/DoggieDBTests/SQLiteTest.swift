@@ -28,16 +28,16 @@ import XCTest
 
 class SQLiteTest: XCTestCase {
     
-    let threadPool = NIOThreadPool(numberOfThreads: 2)
-    let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    
+    var threadPool: NIOThreadPool!
+    var eventLoopGroup: MultiThreadedEventLoopGroup!
     var connection: DBConnection!
     
     override func setUpWithError() throws {
         
-        print("SQLiteTest.setUpWithError")
-        
         do {
+            
+            threadPool = NIOThreadPool(numberOfThreads: 2)
+            eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
             
             self.connection = try Database.createSQLite(threadPool: threadPool, on: eventLoopGroup.next()).wait()
             print("SQLITE:", try connection.version().wait())
@@ -50,8 +50,6 @@ class SQLiteTest: XCTestCase {
     }
     
     override func tearDownWithError() throws {
-        
-        print("SQLiteTest.tearDownWithError")
         
         do {
             

@@ -28,15 +28,14 @@ import XCTest
 
 class MySQLTest: XCTestCase {
     
-    let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    
+    var eventLoopGroup: MultiThreadedEventLoopGroup!
     var connection: DBConnection!
     
     override func setUpWithError() throws {
         
-        print("MySQLTest.setUpWithError")
-        
         do {
+            
+            eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
             
             var url = URLComponents()
             url.scheme = "mysql"
@@ -64,8 +63,6 @@ class MySQLTest: XCTestCase {
     }
     
     override func tearDownWithError() throws {
-        
-        print("MySQLTest.tearDownWithError")
         
         do {
             

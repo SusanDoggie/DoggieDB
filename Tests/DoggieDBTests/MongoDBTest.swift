@@ -28,15 +28,14 @@ import XCTest
 
 class MongoDBTest: XCTestCase {
     
-    let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    
+    var eventLoopGroup: MultiThreadedEventLoopGroup!
     var connection: DBConnection!
     
     override func setUpWithError() throws {
         
-        print("MongoDBTest.setUpWithError")
-        
         do {
+            
+            eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
             
             var url = URLComponents()
             url.scheme = "mongodb"
@@ -62,8 +61,6 @@ class MongoDBTest: XCTestCase {
     }
     
     override func tearDownWithError() throws {
-        
-        print("MongoDBTest.tearDownWithError")
         
         do {
             

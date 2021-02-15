@@ -28,15 +28,14 @@ import XCTest
 
 class PostgreSQLTest: XCTestCase {
     
-    let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    
+    var eventLoopGroup: MultiThreadedEventLoopGroup!
     var connection: DBConnection!
     
     override func setUpWithError() throws {
         
-        print("PostgreSQLTest.setUpWithError")
-        
         do {
+            
+            eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
             
             var url = URLComponents()
             url.scheme = "postgres"
@@ -64,8 +63,6 @@ class PostgreSQLTest: XCTestCase {
     }
     
     override func tearDownWithError() throws {
-        
-        print("PostgreSQLTest.tearDownWithError")
         
         do {
             

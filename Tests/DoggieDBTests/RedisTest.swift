@@ -28,15 +28,14 @@ import XCTest
 
 class RedisTest: XCTestCase {
     
-    let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    
+    var eventLoopGroup: MultiThreadedEventLoopGroup!
     var connection: DBConnection!
     
     override func setUpWithError() throws {
         
-        print("RedisTest.setUpWithError")
-        
         do {
+            
+            eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
             
             var url = URLComponents()
             url.scheme = "redis"
@@ -62,8 +61,6 @@ class RedisTest: XCTestCase {
     }
     
     override func tearDownWithError() throws {
-        
-        print("RedisTest.tearDownWithError")
         
         do {
             
