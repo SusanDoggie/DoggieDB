@@ -34,6 +34,8 @@ public enum SQLLiteral {
     case string(String)
     
     case bind(DBData)
+    
+    case raw(SQLRaw)
 }
 
 extension SQLLiteral: ExpressibleByNilLiteral {
@@ -67,6 +69,7 @@ extension SQLBuilder {
         case let .bool(bool): self.append(dialect.literalBoolean(bool))
         case let .string(string): self.append(string)
         case let .bind(value): self.append(value)
+        case let .raw(value): self.append(value)
         }
     }
 }

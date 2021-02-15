@@ -107,6 +107,14 @@ extension SQLBuilder {
         }
     }
     
+    public mutating func append(_ raw: SQLRaw) {
+        
+        guard self.dialect != nil else { return }
+        
+        self.appendSpaceIfNeed()
+        self.raw.append(raw)
+    }
+    
     mutating func append<T: StringProtocol>(_ value: T) {
         
         guard self.dialect != nil else { return }
