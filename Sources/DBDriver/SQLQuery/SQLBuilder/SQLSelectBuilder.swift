@@ -50,6 +50,17 @@ extension SQLSelectBuilder {
         return builder
     }
     
+    public func union() -> SQLSelectBuilder  {
+        
+        guard self.dialect != nil else { return self }
+        
+        var builder = self
+        
+        builder.builder.append("UNION SELECT")
+        
+        return builder
+    }
+    
     public func columns(_ column: String, _ res: String ...) -> SQLSelectBuilder {
         
         guard self.dialect != nil else { return self }
