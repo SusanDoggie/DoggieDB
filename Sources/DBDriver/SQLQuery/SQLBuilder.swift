@@ -93,8 +93,20 @@ extension SQLBuilder {
         return self.build { sql, dialect in sql.append("FROM \(tables.joined(separator: ", "))") }
     }
     
+    public func join(_ table: String, on predicate: (SQLPredicateBuilder) -> SQLPredicateBuilder) -> SQLBuilder {
+        return self.build { sql, dialect in sql.append("JOIN \(table) ON \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())") }
+    }
+    
+    public func `where`(_ predicate: (SQLPredicateBuilder) -> SQLPredicateBuilder) -> SQLBuilder {
+        return self.build { sql, dialect in sql.append("WHERE \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())") }
+    }
+    
     public func groupBy(_ groupBy: String ...) -> SQLBuilder {
         return self.build { sql, dialect in sql.append("GROUP BY \(groupBy.joined(separator: ", "))") }
+    }
+    
+    public func having(_ predicate: (SQLPredicateBuilder) -> SQLPredicateBuilder) -> SQLBuilder {
+        return self.build { sql, dialect in sql.append("HAVING \(predicate(SQLPredicateBuilder(dialect: dialect)).serialize())") }
     }
     
     public func orderBy(_ orderBy: String ...) -> SQLBuilder {
@@ -108,5 +120,4 @@ extension SQLBuilder {
     public func offset(_ offset: Int) -> SQLBuilder {
         return self.build { sql, dialect in sql.append("OFFSET \(offset)") }
     }
-    
 }
