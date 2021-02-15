@@ -1,5 +1,5 @@
 //
-//  PostgreSQLDialect.swift
+//  SQLLockingClause.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,17 +23,16 @@
 //  THE SOFTWARE.
 //
 
-struct PostgreSQLDialect: SQLDialect {
+public enum SQLLockingClause {
     
-    static func bindPlaceholder(at position: Int) -> String {
-        return "$\(position)"
-    }
+    case update
     
-    static func literalBoolean(_ value: Bool) -> String {
-        return value ? "true" : "false"
-    }
+    case share
     
-    static var supportsReturning: Bool {
-        return true
+    func serialize() -> String {
+        switch self {
+        case .share: return "SHARE")
+        case .update: return "UPDATE"
+        }
     }
 }

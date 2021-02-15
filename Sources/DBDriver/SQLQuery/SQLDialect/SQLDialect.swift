@@ -33,6 +33,7 @@ public protocol SQLDialect {
     
     static func literalBoolean(_ value: Bool) -> String
     
+    static var supportsReturning: Bool { get }
 }
 
 extension SQLDialect {

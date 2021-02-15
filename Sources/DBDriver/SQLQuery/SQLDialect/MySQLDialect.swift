@@ -32,4 +32,8 @@ struct MySQLDialect: SQLDialect {
     static func literalBoolean(_ value: Bool) -> String {
         return value ? "1" : "0"
     }
+    
+    static var supportsReturning: Bool {
+        return false
+    }
 }

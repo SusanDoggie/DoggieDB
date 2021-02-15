@@ -76,6 +76,9 @@ extension SQLBuilder {
         block(&builder.raw, dialect)
         return builder
     }
+}
+
+extension SQLBuilder {
     
     public func select() -> SQLBuilder {
         return self.build { sql, dialect in sql.append("SELECT") }
@@ -125,4 +128,13 @@ extension SQLBuilder {
     public func offset(_ offset: Int) -> SQLBuilder {
         return self.build { sql, dialect in sql.append("OFFSET \(offset)") }
     }
+    
+    public func locking(_ lock: SQLLockingClause) -> SQLBuilder {
+        return self.build { sql, dialect in sql.append("FOR \(lock.serialize())") }
+    }
+    
+    public func delete(_ table: String) -> SQLBuilder {
+        return self.build { sql, dialect in sql.append("DELETE FROM \(table)") }
+    }
+    
 }
