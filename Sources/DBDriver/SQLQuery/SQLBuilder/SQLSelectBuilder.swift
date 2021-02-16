@@ -43,6 +43,8 @@ extension SQLSelectBuilder {
 extension SQLSelectBuilder: SQLFromExpression {}
 extension SQLSelectBuilder: SQLWhereExpression {}
 extension SQLSelectBuilder: SQLJoinExpression {}
+extension SQLSelectBuilder: SQLOrderByExpression {}
+extension SQLSelectBuilder: SQLGroupByExpression {}
 
 extension SQLSelectBuilder {
     
@@ -58,28 +60,32 @@ extension SQLSelectBuilder {
     public func union() -> SQLUnionBuilder  {
         return SQLUnionBuilder(builder: self.builder)
     }
+}
+
+extension SQLSelectBuilder {
     
-    public func columns(_ column: String, _ res: String ...) -> SQLSelectBuilder {
+    public func columns(_ column: String) -> SQLSelectBuilder {
         
         var builder = self
         
-        let columns = [column] + res
+        builder.builder.append(column)
+        
+        return builder
+    }
+    
+    public func columns(_ column: String, _ column2: String, _ res: String ...) -> SQLSelectBuilder {
+        
+        var builder = self
+        
+        let columns = [column, column2] + res
         
         builder.builder.append(columns.joined(separator: ", "))
         
         return builder
     }
-    
-    public func groupBy(_ groupBy: String, _ res: String ...) -> SQLSelectBuilder {
-        
-        var builder = self
-        
-        let list = [groupBy] + res
-        
-        builder.builder.append("GROUP BY \(list.joined(separator: ", "))")
-        
-        return builder
-    }
+}
+
+extension SQLSelectBuilder {
     
     public func having(_ predicate: BuilderClosure<SQLPredicateBuilder>) -> SQLSelectBuilder {
         
@@ -89,17 +95,9 @@ extension SQLSelectBuilder {
         
         return builder
     }
-    
-    public func orderBy(_ orderBy: String, _ res: String ...) -> SQLSelectBuilder {
-        
-        var builder = self
-        
-        let list = [orderBy] + res
-        
-        builder.builder.append("ORDER BY \(list.joined(separator: ", "))")
-        
-        return builder
-    }
+}
+
+extension SQLSelectBuilder {
     
     public func limit(_ limit: Int) -> SQLSelectBuilder {
         
@@ -118,6 +116,9 @@ extension SQLSelectBuilder {
         
         return builder
     }
+}
+
+extension SQLSelectBuilder {
     
     public func locking(_ lock: SQLLockingClause) -> SQLSelectBuilder {
         

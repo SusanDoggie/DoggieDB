@@ -27,8 +27,6 @@ extension SQLBuilder {
     
     public func with(_ queries: [String: SQLSelectBuilder]) -> SQLBuilder {
         
-        guard self.dialect != nil else { return self }
-        
         var builder = self
         
         builder.append("WITH")
@@ -42,8 +40,6 @@ extension SQLBuilder {
     }
     
     public func withRecursive(_ queries: [String: SQLSelectBuilder]) -> SQLBuilder {
-        
-        guard self.dialect != nil else { return self }
         
         var builder = self
         

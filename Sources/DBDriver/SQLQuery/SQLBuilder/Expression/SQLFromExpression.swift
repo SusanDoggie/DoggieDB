@@ -29,11 +29,20 @@ public protocol SQLFromExpression: SQLBuilderProtocol {
 
 extension SQLFromExpression {
     
-    public func from(_ table: String, _ res: String ...) -> Self {
+    public func from(_ table: String) -> Self {
         
         var builder = self
         
-        let tables = [table] + res
+        builder.builder.append("FROM \(table)")
+        
+        return builder
+    }
+    
+    public func from(_ table: String, _ table2: String, _ res: String ...) -> Self {
+        
+        var builder = self
+        
+        let tables = [table, table2] + res
         
         builder.builder.append("FROM \(tables.joined(separator: ", "))")
         

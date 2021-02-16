@@ -29,11 +29,20 @@ public protocol SQLReturningExpression: SQLBuilderProtocol {
 
 extension SQLReturningExpression {
     
-    public func returning(_ column: String, _ res: String ...) -> Self {
+    public func returning(_ column: String) -> Self {
         
         var builder = self
         
-        let columns = [column] + res
+        builder.builder.append("RETURNING \(column)")
+        
+        return builder
+    }
+    
+    public func returning(_ column: String, _ column2: String, _ res: String ...) -> Self {
+        
+        var builder = self
+        
+        let columns = [column, column2] + res
         
         builder.builder.append("RETURNING \(columns.joined(separator: ", "))")
         

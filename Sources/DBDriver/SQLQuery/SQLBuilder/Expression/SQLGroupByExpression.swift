@@ -1,5 +1,5 @@
 //
-//  SQLLiteral.swift
+//  SQLGroupByExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,53 +23,29 @@
 //  THE SOFTWARE.
 //
 
-public enum SQLLiteral {
+public protocol SQLGroupByExpression: SQLBuilderProtocol {
     
-    case null
-    
-    case `default`
-    
-    case bool(Bool)
-    
-    case raw(SQLRaw)
 }
 
-extension SQLLiteral: ExpressibleByNilLiteral {
+extension SQLGroupByExpression {
     
-    public init(nilLiteral value: Void) {
-        self = .null
+    public func groupBy(_ groupBy: String) -> Self {
+        
+        var builder = self
+        
+        builder.builder.append("GROUP BY \(groupBy)")
+        
+        return builder
     }
-}
-
-extension SQLLiteral: ExpressibleByBooleanLiteral {
     
-    public init(booleanLiteral value: BooleanLiteralType) {
-        self = .bool(value)
-    }
-}
-
-extension SQLLiteral: ExpressibleByStringLiteral {
-    
-    public init(stringLiteral value: StringLiteralType) {
-        self = .raw(SQLRaw(value))
-    }
-}
-
-extension SQLLiteral: ExpressibleByStringInterpolation {
-    
-    public init(stringInterpolation: SQLRaw.StringInterpolation) {
-        self = .raw(SQLRaw(stringInterpolation: stringInterpolation))
-    }
-}
-
-extension SQLRaw {
-    
-    public mutating func append(_ literal: SQLLiteral, _ dialect: SQLDialect.Type) {
-        switch literal {
-        case .null: self.append(dialect.literalNull)
-        case .default: self.append(dialect.literalDefault)
-        case let .bool(bool): self.append(dialect.literalBoolean(bool))
-        case let .raw(value): self.append(value)
-        }
+    public func groupBy(_ groupBy: String, _ groupBy2: String, _ res: String ...) -> Self {
+        
+        var builder = self
+        
+        let list = [groupBy, groupBy2] + res
+        
+        builder.builder.append("GROUP BY \(list.joined(separator: ", "))")
+        
+        return builder
     }
 }

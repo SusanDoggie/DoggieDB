@@ -41,22 +41,45 @@ extension SQLInsertBuilder: SQLReturningExpression {}
 
 extension SQLInsertBuilder {
     
-    public func columns(_ column: String, _ res: String ...) -> SQLInsertBuilder {
+    public func columns(_ column: String) -> SQLInsertBuilder {
         
         var builder = self
         
-        let columns = [column] + res
+        builder.builder.append("(\(column))")
+        
+        return builder
+    }
+    
+    public func columns(_ column: String, _ column2: String, _ res: String ...) -> SQLInsertBuilder {
+        
+        var builder = self
+        
+        let columns = [column, column2] + res
         
         builder.builder.append("(\(columns.joined(separator: ", ")))")
         
         return builder
     }
+}
+
+extension SQLInsertBuilder {
     
-    public func values(_ value: SQLLiteral, _ res: SQLLiteral ...) -> SQLInsertBuilder {
+    public func values(_ value: SQLLiteral) -> SQLInsertBuilder {
         
         var builder = self
         
-        let values = [value] + res
+        builder.builder.append("VALUES (")
+        builder.builder.append(value)
+        builder.builder.append(")")
+        
+        return builder
+    }
+    
+    public func values(_ value: SQLLiteral, _ value2: SQLLiteral, _ res: SQLLiteral ...) -> SQLInsertBuilder {
+        
+        var builder = self
+        
+        let values = [value, value2] + res
         
         builder.builder.append("VALUES (")
         for (i, value) in values.enumerated() {

@@ -31,8 +31,6 @@ extension SQLSetExpression {
     
     public func set(_ values: [String: SQLLiteral]) -> Self {
         
-        guard self.dialect != nil else { return self }
-        
         var builder = self
         
         builder.builder.append("SET")
