@@ -29,28 +29,18 @@ public protocol SQLSetExpression: SQLBuilderProtocol {
 
 extension SQLSetExpression {
     
-    public var set: SQLSetExpressionBuilder<Self> {
-        return SQLSetExpressionBuilder(expression: self)
-    }
-}
-
-@dynamicCallable
-public struct SQLSetExpressionBuilder<Expression: SQLSetExpression> {
-    
-    let expression: Expression
-    
-    public func dynamicallyCall(withKeywordArguments args: KeyValuePairs<String, SQLLiteral>) -> Expression {
+    public func set(_ values: [String: SQLLiteral]) -> Self {
         
-        guard self.expression.dialect != nil else { return self.expression }
+        guard self.dialect != nil else { return self }
         
-        var expression = self.expression
+        var builder = self
         
-        expression.builder.append("SET")
-        for (i, (key, value)) in args.enumerated() {
-            expression.builder.append(i == 0 ? "\(key) =" : ", \(key) =")
-            expression.builder.append(value)
+        builder.builder.append("SET")
+        for (i, (key, value)) in values.enumerated() {
+            builder.builder.append(i == 0 ? "\(key) =" : ", \(key) =")
+            builder.builder.append(value)
         }
         
-        return expression
+        return builder
     }
 }

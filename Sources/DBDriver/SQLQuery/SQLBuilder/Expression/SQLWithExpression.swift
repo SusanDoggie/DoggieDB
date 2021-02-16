@@ -25,32 +25,30 @@
 
 extension SQLBuilder {
     
-    public var with: SQLWithExpressionBuilder {
-        return SQLWithExpressionBuilder(builder: self, recursive: false)
+    public func with(_ queries: [String: SQLSelectBuilder]) -> SQLBuilder {
+        
+        guard self.dialect != nil else { return self }
+        
+        var builder = self
+        
+        builder.append("WITH")
+        for (i, (key, query)) in queries.enumerated() {
+            builder.append(i == 0 ? "\(key) AS (" : ", \(key) AS (")
+            builder.append(query.builder)
+            builder.append(")")
+        }
+        
+        return builder
     }
     
-    public var withRecursive: SQLWithExpressionBuilder {
-        return SQLWithExpressionBuilder(builder: self, recursive: true)
-    }
-}
-
-@dynamicCallable
-public struct SQLWithExpressionBuilder {
-    
-    var builder: SQLBuilder
-    
-    init(builder: SQLBuilder, recursive: Bool) {
-        self.builder = builder
-        self.builder.append(recursive ? "WITH" : "WITH RECURSIVE")
-    }
-    
-    public func dynamicallyCall(withKeywordArguments args: KeyValuePairs<String, SQLSelectBuilder>) -> SQLBuilder {
+    public func withRecursive(_ queries: [String: SQLSelectBuilder]) -> SQLBuilder {
         
-        guard self.builder.dialect != nil else { return self.builder }
+        guard self.dialect != nil else { return self }
         
-        var builder = self.builder
+        var builder = self
         
-        for (i, (key, query)) in args.enumerated() {
+        builder.append("WITH RECURSIVE")
+        for (i, (key, query)) in queries.enumerated() {
             builder.append(i == 0 ? "\(key) AS (" : ", \(key) AS (")
             builder.append(query.builder)
             builder.append(")")
