@@ -180,3 +180,10 @@ extension SQLBuilder {
         return SQLInsertBuilder(builder: self, table: table, alias: alias)
     }
 }
+
+extension SQLBuilder {
+    
+    public func createView(_ view: String, options: SQLCreateViewOptions = []) -> SQLCreateViewBuilder {
+        return SQLCreateViewBuilder(builder: self, view: view, options: options)
+    }
+}
