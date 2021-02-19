@@ -11,7 +11,7 @@ A cross platform Javascript engine for Swift.
 
 ## System Requirements
 
-For Ubuntu platforms, you need to install some of database drivers.
+For linux platforms, you need to install some of database drivers.
 
 ### Ubuntu
 
