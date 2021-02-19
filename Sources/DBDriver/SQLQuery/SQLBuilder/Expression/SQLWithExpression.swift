@@ -25,7 +25,7 @@
 
 extension SQLBuilder {
     
-    public func with(_ queries: [String: SQLSelectBuilder]) -> SQLBuilder {
+    public func with(_ queries: [String: SQLSelectBuilder]) -> SQLWithBuilder {
         
         var builder = self
         
@@ -36,10 +36,10 @@ extension SQLBuilder {
             builder.append(")")
         }
         
-        return builder
+        return SQLWithBuilder(builder: builder)
     }
     
-    public func withRecursive(_ queries: [String: SQLSelectBuilder]) -> SQLBuilder {
+    public func withRecursive(_ queries: [String: SQLSelectBuilder]) -> SQLWithBuilder {
         
         var builder = self
         
@@ -50,6 +50,34 @@ extension SQLBuilder {
             builder.append(")")
         }
         
-        return builder
+        return SQLWithBuilder(builder: builder)
+    }
+}
+
+public struct SQLWithBuilder: SQLBuilderProtocol {
+    
+    public var builder: SQLBuilder
+    
+    init(builder: SQLBuilder) {
+        self.builder = builder
+    }
+}
+
+extension SQLWithBuilder {
+    
+    public func select() -> SQLSelectBuilder {
+        return SQLSelectBuilder(builder: self.builder)
+    }
+    
+    public func delete(_ table: String, alias: String? = nil) -> SQLDeleteBuilder {
+        return SQLDeleteBuilder(builder: self.builder, table: table, alias: alias)
+    }
+    
+    public func update(_ table: String, alias: String? = nil) -> SQLUpdateBuilder {
+        return SQLUpdateBuilder(builder: self.builder, table: table, alias: alias)
+    }
+    
+    public func insert(_ table: String, alias: String? = nil) -> SQLInsertBuilder {
+        return SQLInsertBuilder(builder: self.builder, table: table, alias: alias)
     }
 }
