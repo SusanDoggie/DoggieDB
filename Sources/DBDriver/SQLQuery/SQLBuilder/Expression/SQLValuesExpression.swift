@@ -1,5 +1,5 @@
 //
-//  SQLInsertBuilder.swift
+//  SQLValuesExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,50 +23,49 @@
 //  THE SOFTWARE.
 //
 
-public struct SQLInsertBuilder: SQLBuilderProtocol {
+public protocol SQLValuesExpression: SQLBuilderProtocol {
+    
+}
+
+extension SQLValuesExpression {
+    
+    public func values(_ value: SQLLiteral) -> SQLValuesBuilder {
+        
+        var builder = self
+        
+        builder.builder.append("VALUES (")
+        builder.builder.append(value)
+        builder.builder.append(")")
+        
+        return SQLValuesBuilder(builder: builder.builder)
+    }
+    
+    public func values(_ value: SQLLiteral, _ value2: SQLLiteral, _ res: SQLLiteral ...) -> SQLValuesBuilder {
+        
+        var builder = self
+        
+        let values = [value, value2] + res
+        
+        builder.builder.append("VALUES (")
+        for (i, value) in values.enumerated() {
+            if i != 0 {
+                builder.builder.append(",")
+            }
+            builder.builder.append(value)
+        }
+        builder.builder.append(")")
+        
+        return SQLValuesBuilder(builder: builder.builder)
+    }
+}
+
+public struct SQLValuesBuilder: SQLBuilderProtocol {
     
     public var builder: SQLBuilder
     
-    init(builder: SQLBuilder, table: String, alias: String?) {
+    init(builder: SQLBuilder) {
         self.builder = builder
-        self.builder.append("INSERT INTO \(table)")
-        
-        if let alias = alias {
-            self.builder.append("AS \(alias)")
-        }
     }
 }
 
-extension SQLInsertBuilder: SQLReturningExpression {}
-
-extension SQLInsertBuilder {
-    
-    public func columns(_ column: String) -> SQLInsertBuilder {
-        
-        var builder = self
-        
-        builder.builder.append("(\(column))")
-        
-        return builder
-    }
-    
-    public func columns(_ column: String, _ column2: String, _ res: String ...) -> SQLInsertBuilder {
-        
-        var builder = self
-        
-        let columns = [column, column2] + res
-        
-        builder.builder.append("(\(columns.joined(separator: ", ")))")
-        
-        return builder
-    }
-}
-
-extension SQLInsertBuilder: SQLValuesExpression { }
-
-extension SQLInsertBuilder {
-    
-    public func select() -> SQLSelectBuilder {
-        return SQLSelectBuilder(builder: self.builder)
-    }
-}
+extension SQLValuesBuilder: SQLOrderByExpression {}

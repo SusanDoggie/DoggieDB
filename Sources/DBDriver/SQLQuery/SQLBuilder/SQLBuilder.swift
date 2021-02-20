@@ -173,6 +173,7 @@ extension SQLBuilder: SQLBuilderProtocol {
 }
 
 extension SQLBuilder: SQLWithModifyingExpression { }
+extension SQLBuilder: SQLValuesExpression { }
 
 extension SQLBuilder {
     
