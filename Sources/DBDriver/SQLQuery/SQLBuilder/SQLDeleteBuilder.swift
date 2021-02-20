@@ -42,7 +42,7 @@ extension SQLDeleteBuilder: SQLReturningExpression {}
 
 extension SQLDeleteBuilder {
     
-    public func using(_ table: String, alias: String? = nil) -> SQLDeleteBuilder {
+    public func using(_ table: String, as alias: String? = nil) -> SQLDeleteBuilder {
         
         var builder = self
         

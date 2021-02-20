@@ -180,15 +180,15 @@ extension SQLBuilder {
         return SQLSelectBuilder(builder: self)
     }
     
-    public func delete(_ table: String, alias: String? = nil) -> SQLDeleteBuilder {
+    public func delete(_ table: String, as alias: String? = nil) -> SQLDeleteBuilder {
         return SQLDeleteBuilder(builder: self, table: table, alias: alias)
     }
     
-    public func update(_ table: String, alias: String? = nil) -> SQLUpdateBuilder {
+    public func update(_ table: String, as alias: String? = nil) -> SQLUpdateBuilder {
         return SQLUpdateBuilder(builder: self, table: table, alias: alias)
     }
     
-    public func insert(_ table: String, alias: String? = nil) -> SQLInsertBuilder {
+    public func insert(_ table: String, as alias: String? = nil) -> SQLInsertBuilder {
         return SQLInsertBuilder(builder: self, table: table, alias: alias)
     }
 }

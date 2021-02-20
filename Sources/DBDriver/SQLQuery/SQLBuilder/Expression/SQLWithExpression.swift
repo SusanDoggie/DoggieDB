@@ -80,15 +80,15 @@ public protocol SQLWithModifyingExpression: SQLWithExpression {
 
 extension SQLWithBuilder where Base: SQLWithModifyingExpression {
     
-    public func delete(_ table: String, alias: String? = nil) -> SQLDeleteBuilder {
+    public func delete(_ table: String, as alias: String? = nil) -> SQLDeleteBuilder {
         return SQLDeleteBuilder(builder: self.builder, table: table, alias: alias)
     }
     
-    public func update(_ table: String, alias: String? = nil) -> SQLUpdateBuilder {
+    public func update(_ table: String, as alias: String? = nil) -> SQLUpdateBuilder {
         return SQLUpdateBuilder(builder: self.builder, table: table, alias: alias)
     }
     
-    public func insert(_ table: String, alias: String? = nil) -> SQLInsertBuilder {
+    public func insert(_ table: String, as alias: String? = nil) -> SQLInsertBuilder {
         return SQLInsertBuilder(builder: self.builder, table: table, alias: alias)
     }
 }
