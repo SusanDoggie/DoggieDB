@@ -197,7 +197,78 @@ extension SQLBuilder {
 
 extension SQLBuilder {
     
+    public struct SQLDropViewOptions: OptionSet {
+        
+        public var rawValue: Int
+        
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
+        
+        public static let ifExists = SQLDropViewOptions(rawValue: 1 << 0)
+    }
+    
+    public struct SQLRefreshViewOptions: OptionSet {
+        
+        public var rawValue: Int
+        
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
+        
+        public static let concurrent = SQLRefreshViewOptions(rawValue: 1 << 0)
+    }
+}
+
+extension SQLBuilder {
+    
     public func createView(_ view: String, options: SQLCreateViewOptions = []) -> SQLCreateViewBuilder {
         return SQLCreateViewBuilder(builder: self, view: view, options: options)
+    }
+    
+    public func dropView(_ view: String, options: SQLDropViewOptions = []) -> SQLBuilder {
+        
+        var builder = self
+        
+        builder.append("DROP VIEW")
+        if options.contains(.ifExists) {
+            builder.append("IF EXISTS")
+        }
+        builder.append("\(view) AS")
+        
+        return builder
+    }
+}
+
+extension SQLBuilder {
+    
+    public func createMaterializedView(_ view: String, options: SQLCreateMaterializedViewOptions = []) -> SQLCreateMaterializedViewBuilder {
+        return SQLCreateMaterializedViewBuilder(builder: self, view: view, options: options)
+    }
+    
+    public func dropMaterializedView(_ view: String, options: SQLDropViewOptions = []) -> SQLBuilder {
+        
+        var builder = self
+        
+        builder.append("DROP MATERIALIZED VIEW")
+        if options.contains(.ifExists) {
+            builder.append("IF EXISTS")
+        }
+        builder.append("\(view) AS")
+        
+        return builder
+    }
+    
+    public func refreshMaterializedView(_ view: String, options: SQLRefreshViewOptions = []) -> SQLBuilder {
+        
+        var builder = self
+        
+        builder.append("REFRESH MATERIALIZED VIEW")
+        if options.contains(.concurrent) {
+            builder.append("CONCURRENTLY")
+        }
+        builder.append(view)
+        
+        return builder
     }
 }

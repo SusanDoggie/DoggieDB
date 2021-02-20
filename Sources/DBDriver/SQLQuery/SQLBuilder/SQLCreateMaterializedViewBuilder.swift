@@ -1,5 +1,5 @@
 //
-//  SQLCreateViewBuilder.swift
+//  SQLCreateMaterializedViewBuilder.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public struct SQLCreateViewOptions: OptionSet {
+public struct SQLCreateMaterializedViewOptions: OptionSet {
     
     public var rawValue: Int
     
@@ -31,29 +31,16 @@ public struct SQLCreateViewOptions: OptionSet {
         self.rawValue = rawValue
     }
     
-    public static let replacing         = SQLCreateViewOptions(rawValue: 1 << 0)
-    public static let temporary         = SQLCreateViewOptions(rawValue: 1 << 1)
-    public static let recursive         = SQLCreateViewOptions(rawValue: 1 << 2)
-    public static let ifNotExists       = SQLCreateViewOptions(rawValue: 1 << 3)
+    public static let ifNotExists = SQLCreateMaterializedViewOptions(rawValue: 1 << 0)
 }
 
-public struct SQLCreateViewBuilder: SQLBuilderProtocol {
+public struct SQLCreateMaterializedViewBuilder: SQLBuilderProtocol {
     
     public var builder: SQLBuilder
     
-    init(builder: SQLBuilder, view: String, options: SQLCreateViewOptions = []) {
+    init(builder: SQLBuilder, view: String, options: SQLCreateMaterializedViewOptions = []) {
         self.builder = builder
-        self.builder.append("CREATE")
-        if options.contains(.replacing) {
-            self.builder.append("OR REPLACE")
-        }
-        if options.contains(.temporary) {
-            self.builder.append("TEMP")
-        }
-        if options.contains(.recursive) {
-            self.builder.append("RECURSIVE")
-        }
-        self.builder.append("VIEW")
+        self.builder.append("CREATE MATERIALIZED VIEW")
         if options.contains(.ifNotExists) {
             self.builder.append("IF NOT EXISTS")
         }
@@ -61,9 +48,9 @@ public struct SQLCreateViewBuilder: SQLBuilderProtocol {
     }
 }
 
-extension SQLCreateViewBuilder: SQLWithExpression { }
+extension SQLCreateMaterializedViewBuilder: SQLWithExpression { }
 
-extension SQLCreateViewBuilder {
+extension SQLCreateMaterializedViewBuilder {
     
     public func select() -> SQLSelectBuilder {
         return SQLSelectBuilder(builder: self.builder)
