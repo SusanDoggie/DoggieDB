@@ -25,10 +25,6 @@
 
 public enum SQLPredicateValue {
     
-    case null
-    
-    case bool(Bool)
-    
     case name(String)
     
     case value(DBData)
@@ -37,14 +33,49 @@ public enum SQLPredicateValue {
 extension SQLPredicateValue: ExpressibleByNilLiteral {
     
     public init(nilLiteral value: Void) {
-        self = .null
+        self = .value(nil)
     }
 }
 
 extension SQLPredicateValue: ExpressibleByBooleanLiteral {
     
     public init(booleanLiteral value: BooleanLiteralType) {
-        self = .bool(value)
+        self = .value(DBData(value))
+    }
+}
+
+extension SQLPredicateValue: ExpressibleByIntegerLiteral {
+    
+    public init(integerLiteral value: IntegerLiteralType) {
+        self = .value(DBData(value))
+    }
+}
+
+extension SQLPredicateValue: ExpressibleByFloatLiteral {
+    
+    public init(floatLiteral value: FloatLiteralType) {
+        self = .value(DBData(value))
+    }
+}
+
+extension SQLPredicateValue: ExpressibleByStringLiteral {
+    
+    public init(stringLiteral value: StringLiteralType) {
+        self = .value(DBData(value))
+    }
+}
+
+extension SQLPredicateValue: ExpressibleByArrayLiteral {
+    
+    public init(arrayLiteral elements: DBData ...) {
+        self = .value(DBData(elements))
+    }
+}
+
+extension SQLPredicateValue: ExpressibleByDictionaryLiteral {
+    
+    public init(dictionaryLiteral elements: (String, DBData) ...) {
+        self = .value(DBData(Dictionary(uniqueKeysWithValues: elements)))
     }
 }
 
@@ -89,4 +120,52 @@ public func <= (lhs: SQLPredicateValue, rhs: SQLPredicateValue) -> SQLPredicateE
 
 public func >= (lhs: SQLPredicateValue, rhs: SQLPredicateValue) -> SQLPredicateExpression {
     return .greaterThanOrEqualTo(lhs, rhs)
+}
+
+public func == (lhs: SQLPredicateValue, rhs: DBData) -> SQLPredicateExpression {
+    return .equal(lhs, .value(rhs))
+}
+
+public func != (lhs: SQLPredicateValue, rhs: DBData) -> SQLPredicateExpression {
+    return .notEqual(lhs, .value(rhs))
+}
+
+public func < (lhs: SQLPredicateValue, rhs: DBData) -> SQLPredicateExpression {
+    return .lessThan(lhs, .value(rhs))
+}
+
+public func > (lhs: SQLPredicateValue, rhs: DBData) -> SQLPredicateExpression {
+    return .greaterThan(lhs, .value(rhs))
+}
+
+public func <= (lhs: SQLPredicateValue, rhs: DBData) -> SQLPredicateExpression {
+    return .lessThanOrEqualTo(lhs, .value(rhs))
+}
+
+public func >= (lhs: SQLPredicateValue, rhs: DBData) -> SQLPredicateExpression {
+    return .greaterThanOrEqualTo(lhs, .value(rhs))
+}
+
+public func == (lhs: DBData, rhs: SQLPredicateValue) -> SQLPredicateExpression {
+    return .equal(.value(lhs), rhs)
+}
+
+public func != (lhs: DBData, rhs: SQLPredicateValue) -> SQLPredicateExpression {
+    return .notEqual(.value(lhs), rhs)
+}
+
+public func < (lhs: DBData, rhs: SQLPredicateValue) -> SQLPredicateExpression {
+    return .lessThan(.value(lhs), rhs)
+}
+
+public func > (lhs: DBData, rhs: SQLPredicateValue) -> SQLPredicateExpression {
+    return .greaterThan(.value(lhs), rhs)
+}
+
+public func <= (lhs: DBData, rhs: SQLPredicateValue) -> SQLPredicateExpression {
+    return .lessThanOrEqualTo(.value(lhs), rhs)
+}
+
+public func >= (lhs: DBData, rhs: SQLPredicateValue) -> SQLPredicateExpression {
+    return .greaterThanOrEqualTo(.value(lhs), rhs)
 }
