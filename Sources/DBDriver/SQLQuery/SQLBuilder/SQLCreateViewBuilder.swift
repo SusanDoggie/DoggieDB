@@ -33,8 +33,7 @@ public struct SQLCreateViewOptions: OptionSet {
     
     public static let replacing         = SQLCreateViewOptions(rawValue: 1 << 0)
     public static let temporary         = SQLCreateViewOptions(rawValue: 1 << 1)
-    public static let recursive         = SQLCreateViewOptions(rawValue: 1 << 2)
-    public static let ifNotExists       = SQLCreateViewOptions(rawValue: 1 << 3)
+    public static let ifNotExists       = SQLCreateViewOptions(rawValue: 1 << 2)
 }
 
 public struct SQLCreateViewBuilder: SQLBuilderProtocol {
@@ -49,9 +48,6 @@ public struct SQLCreateViewBuilder: SQLBuilderProtocol {
         }
         if options.contains(.temporary) {
             self.builder.append("TEMP")
-        }
-        if options.contains(.recursive) {
-            self.builder.append("RECURSIVE")
         }
         self.builder.append("VIEW")
         if options.contains(.ifNotExists) {
