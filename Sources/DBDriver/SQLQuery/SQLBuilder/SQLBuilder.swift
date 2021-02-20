@@ -55,8 +55,6 @@ enum SQLBuilderComponent {
 
 public struct SQLBuilder {
     
-    public typealias BuilderClosure<T> = (T) -> T
-    
     let connection: DBConnection?
     
     let dialect: SQLDialect.Type?
@@ -226,7 +224,7 @@ extension SQLBuilder {
         return SQLCreateViewBuilder(builder: self, view: view, options: options)
     }
     
-    public func dropView(_ view: String, options: SQLDropViewOptions = []) -> SQLBuilder {
+    public func dropView(_ view: String, options: SQLDropViewOptions = []) -> SQLFinalizedBuilder {
         
         var builder = self
         
@@ -234,9 +232,9 @@ extension SQLBuilder {
         if options.contains(.ifExists) {
             builder.append("IF EXISTS")
         }
-        builder.append("\(view) AS")
+        builder.append(view)
         
-        return builder
+        return SQLFinalizedBuilder(builder: builder)
     }
 }
 
@@ -246,7 +244,7 @@ extension SQLBuilder {
         return SQLCreateMaterializedViewBuilder(builder: self, view: view, options: options)
     }
     
-    public func dropMaterializedView(_ view: String, options: SQLDropViewOptions = []) -> SQLBuilder {
+    public func dropMaterializedView(_ view: String, options: SQLDropViewOptions = []) -> SQLFinalizedBuilder {
         
         var builder = self
         
@@ -254,12 +252,12 @@ extension SQLBuilder {
         if options.contains(.ifExists) {
             builder.append("IF EXISTS")
         }
-        builder.append("\(view) AS")
+        builder.append(view)
         
-        return builder
+        return SQLFinalizedBuilder(builder: builder)
     }
     
-    public func refreshMaterializedView(_ view: String, options: SQLRefreshViewOptions = []) -> SQLBuilder {
+    public func refreshMaterializedView(_ view: String, options: SQLRefreshViewOptions = []) -> SQLFinalizedBuilder {
         
         var builder = self
         
@@ -269,6 +267,6 @@ extension SQLBuilder {
         }
         builder.append(view)
         
-        return builder
+        return SQLFinalizedBuilder(builder: builder)
     }
 }
