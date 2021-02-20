@@ -31,8 +31,6 @@ public protocol SQLBuilderProtocol {
 
 extension SQLBuilderProtocol {
     
-    public typealias BuilderClosure<T> = (T) -> T
-    
     var dialect: SQLDialect.Type? {
         return builder.dialect
     }

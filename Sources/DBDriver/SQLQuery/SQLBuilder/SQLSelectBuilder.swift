@@ -87,7 +87,7 @@ extension SQLSelectBuilder {
 
 extension SQLSelectBuilder {
     
-    public func having(_ predicate: BuilderClosure<SQLPredicateBuilder>) -> SQLSelectBuilder {
+    public func having(_ predicate: (SQLPredicateBuilder) -> SQLPredicateExpression) -> SQLSelectBuilder {
         
         var builder = self
         

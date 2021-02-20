@@ -46,7 +46,7 @@ public protocol SQLJoinExpression: SQLBuilderProtocol {
 
 extension SQLJoinExpression {
     
-    public func join(_ table: String, method: SQLJoinMethod? = nil, on predicate: BuilderClosure<SQLPredicateBuilder>) -> Self {
+    public func join(_ table: String, method: SQLJoinMethod? = nil, on predicate: (SQLPredicateBuilder) -> SQLPredicateExpression) -> Self {
         
         var builder = self
         
@@ -63,7 +63,7 @@ extension SQLJoinExpression {
         _ alias: String,
         method: SQLJoinMethod? = nil,
         query: SQLSelectBuilder,
-        on predicate: BuilderClosure<SQLPredicateBuilder>
+        on predicate: (SQLPredicateBuilder) -> SQLPredicateExpression
     ) -> Self {
         
         var builder = self

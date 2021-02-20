@@ -1,5 +1,5 @@
 //
-//  SQLPredicate.swift
+//  SQLPredicateBuilder.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -29,7 +29,7 @@ public struct SQLPredicateBuilder {
 
 extension SQLPredicateBuilder {
     
-    func serialize() -> SQLRaw {
-        return ""
+    public subscript(_ name: String) -> SQLPredicateValue {
+        return .name(name)
     }
 }

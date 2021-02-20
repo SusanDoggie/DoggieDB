@@ -29,7 +29,7 @@ public protocol SQLWhereExpression: SQLBuilderProtocol {
 
 extension SQLWhereExpression {
     
-    public func `where`(_ predicate: BuilderClosure<SQLPredicateBuilder>) -> Self {
+    public func `where`(_ predicate: (SQLPredicateBuilder) -> SQLPredicateExpression) -> Self {
         
         var builder = self
         
