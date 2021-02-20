@@ -67,16 +67,39 @@ extension SQLRawComponent {
     }
 }
 
+extension Array where Element == SQLRawComponent {
+    
+    func simplify() -> [SQLRawComponent] {
+        
+        var components: [SQLRawComponent] = []
+        var last_string = ""
+        
+        for component in self {
+            switch component {
+            case let .string(string): last_string.append(string)
+            default:
+                if !last_string.isEmpty {
+                    components.append(.string(last_string))
+                    last_string = ""
+                }
+                components.append(component)
+            }
+        }
+        
+        if !last_string.isEmpty {
+            components.append(.string(last_string))
+        }
+        
+        return components
+    }
+}
+
 public struct SQLRaw: Hashable {
     
-    var components: [SQLRawComponent] {
-        didSet {
-            self.components = components.filter { !$0.isEmpty }
-        }
-    }
+    var components: [SQLRawComponent]
     
     init(components: [SQLRawComponent]) {
-        self.components = components
+        self.components = components.simplify()
     }
     
     public init() {
@@ -84,7 +107,7 @@ public struct SQLRaw: Hashable {
     }
     
     public init<S: StringProtocol>(_ string: S) {
-        self.components = [.string(String(string))]
+        self.components = string.isEmpty ? [] : [.string(String(string))]
     }
     
     public init(_ value: DBData) {
@@ -131,7 +154,7 @@ extension SQLRaw: ExpressibleByStringInterpolation {
     }
     
     public init(stringInterpolation: StringInterpolation) {
-        self.components = stringInterpolation.components
+        self.components = stringInterpolation.components.simplify()
     }
 }
 
@@ -146,10 +169,16 @@ extension SQLRaw {
     
     public mutating func append(_ other: SQLRaw) {
         self.components.append(contentsOf: other.components)
+        self.components = self.components.simplify()
     }
     
     public mutating func append<T: StringProtocol>(_ value: T) {
-        self.components.append(.string(String(value)))
+        if case var .string(last_string) = self.components.last {
+            last_string.append(String(value))
+            self.components[self.components.count - 1] = .string(last_string)
+        } else {
+            self.components.append(.string(String(value)))
+        }
     }
     
     public mutating func append(_ value: DBData) {
@@ -164,7 +193,7 @@ extension SQLRaw {
 extension Array where Element == SQLRaw {
     
     public func joined(separator: SQLRaw) -> SQLRaw {
-        return self.reduce { $0 + separator + $1 } ?? ""
+        return SQLRaw(components: self.reduce([]) { $0 + separator.components + $1.components })
     }
 }
 
@@ -174,4 +203,5 @@ public func +(lhs: SQLRaw, rhs: SQLRaw) -> SQLRaw {
 
 public func +=(lhs: inout SQLRaw, rhs: SQLRaw) {
     lhs.components += rhs.components
+    lhs.components = lhs.components.simplify()
 }
