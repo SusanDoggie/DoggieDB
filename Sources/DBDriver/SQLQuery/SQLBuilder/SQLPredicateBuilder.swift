@@ -29,7 +29,7 @@ public struct SQLPredicateBuilder {
 
 extension SQLPredicateBuilder {
     
-    func serialize() -> String {
+    func serialize() -> SQLRaw {
         return ""
     }
 }
