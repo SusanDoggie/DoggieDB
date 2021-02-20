@@ -162,6 +162,20 @@ extension SQLBuilder {
     }
 }
 
+extension SQLBuilder: SQLBuilderProtocol {
+    
+    public var builder: SQLBuilder {
+        get {
+            return self
+        }
+        set {
+            self = newValue
+        }
+    }
+}
+
+extension SQLBuilder: SQLWithModifyingExpression { }
+
 extension SQLBuilder {
     
     public func select() -> SQLSelectBuilder {

@@ -1,5 +1,5 @@
 //
-//  SQLWithBuilder.swift
+//  SQLWithExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,11 +23,15 @@
 //  THE SOFTWARE.
 //
 
-extension SQLBuilder {
+public protocol SQLWithExpression: SQLBuilderProtocol {
     
-    public func with(_ queries: [String: SQLSelectBuilder]) -> SQLWithBuilder {
+}
+
+extension SQLWithExpression {
+    
+    public func with(_ queries: [String: SQLSelectBuilder]) -> SQLWithBuilder<Self> {
         
-        var builder = self
+        var builder = self.builder
         
         builder.append("WITH")
         for (i, (key, query)) in queries.enumerated() {
@@ -39,9 +43,9 @@ extension SQLBuilder {
         return SQLWithBuilder(builder: builder)
     }
     
-    public func withRecursive(_ queries: [String: SQLSelectBuilder]) -> SQLWithBuilder {
+    public func withRecursive(_ queries: [String: SQLSelectBuilder]) -> SQLWithBuilder<Self> {
         
-        var builder = self
+        var builder = self.builder
         
         builder.append("WITH RECURSIVE")
         for (i, (key, query)) in queries.enumerated() {
@@ -54,7 +58,7 @@ extension SQLBuilder {
     }
 }
 
-public struct SQLWithBuilder: SQLBuilderProtocol {
+public struct SQLWithBuilder<Base>: SQLBuilderProtocol {
     
     public var builder: SQLBuilder
     
@@ -68,6 +72,13 @@ extension SQLWithBuilder {
     public func select() -> SQLSelectBuilder {
         return SQLSelectBuilder(builder: self.builder)
     }
+}
+
+public protocol SQLWithModifyingExpression: SQLWithExpression {
+    
+}
+
+extension SQLWithBuilder where Base: SQLWithModifyingExpression {
     
     public func delete(_ table: String, alias: String? = nil) -> SQLDeleteBuilder {
         return SQLDeleteBuilder(builder: self.builder, table: table, alias: alias)

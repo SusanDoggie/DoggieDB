@@ -60,6 +60,8 @@ public struct SQLCreateViewBuilder: SQLBuilderProtocol {
     }
 }
 
+extension SQLCreateViewBuilder: SQLWithExpression { }
+
 extension SQLCreateViewBuilder {
     
     public func select() -> SQLSelectBuilder {
