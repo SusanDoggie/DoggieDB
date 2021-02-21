@@ -78,8 +78,40 @@ extension SQLPredicateExpression {
     func serialize() -> SQLRaw {
         switch self {
         case let .not(x): return "NOT (\(x))"
-        case let .equal(lhs, rhs): return "\(lhs) = \(rhs)"
-        case let .notEqual(lhs, rhs): return "\(lhs) != \(rhs)"
+        case let .equal(lhs, rhs):
+            
+            if rhs.isNil {
+                return "\(lhs) IS \(nil)"
+            }
+            if lhs.isNil {
+                return "\(rhs) IS \(nil)"
+            }
+            if rhs.isBool {
+                return "\(lhs) IS \(rhs)"
+            }
+            if lhs.isBool {
+                return "\(rhs) IS \(lhs)"
+            }
+            
+            return "\(lhs) = \(rhs)"
+            
+        case let .notEqual(lhs, rhs):
+            
+            if rhs.isNil {
+                return "\(lhs) IS NOT \(nil)"
+            }
+            if lhs.isNil {
+                return "\(rhs) IS NOT \(nil)"
+            }
+            if rhs.isBool {
+                return "\(lhs) IS NOT \(rhs)"
+            }
+            if lhs.isBool {
+                return "\(rhs) IS NOT \(lhs)"
+            }
+            
+            return "\(lhs) != \(rhs)"
+            
         case let .lessThan(lhs, rhs): return "\(lhs) < \(rhs)"
         case let .greaterThan(lhs, rhs): return "\(lhs) > \(rhs)"
         case let .lessThanOrEqualTo(lhs, rhs): return "\(lhs) <= \(rhs)"

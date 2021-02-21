@@ -90,6 +90,23 @@ extension SQLPredicateValue: ExpressibleByStringInterpolation {
 
 extension SQLPredicateValue {
     
+    var isNil: Bool {
+        switch self {
+        case let .value(value): return value.isNil
+        default: return false
+        }
+    }
+    
+    var isBool: Bool {
+        switch self {
+        case let .value(value): return value.isBool
+        default: return false
+        }
+    }
+}
+
+extension SQLPredicateValue {
+    
     public func between(from: SQLPredicateValue, to: SQLPredicateValue) -> SQLPredicateExpression {
         return .between(self, from, to)
     }

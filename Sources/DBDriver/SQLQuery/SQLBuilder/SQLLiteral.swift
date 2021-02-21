@@ -25,11 +25,7 @@
 
 public enum SQLLiteral {
     
-    case null
-    
     case `default`
-    
-    case bool(Bool)
     
     case raw(SQLRaw)
 }
@@ -37,14 +33,14 @@ public enum SQLLiteral {
 extension SQLLiteral: ExpressibleByNilLiteral {
     
     public init(nilLiteral value: Void) {
-        self = .null
+        self = .raw(SQLRaw(nil))
     }
 }
 
 extension SQLLiteral: ExpressibleByBooleanLiteral {
     
     public init(booleanLiteral value: BooleanLiteralType) {
-        self = .bool(value)
+        self = .raw(SQLRaw(DBData(value)))
     }
 }
 
@@ -66,9 +62,7 @@ extension SQLRaw {
     
     public mutating func append(_ literal: SQLLiteral, _ dialect: SQLDialect.Type) {
         switch literal {
-        case .null: self.append(dialect.literalNull)
         case .default: self.append(dialect.literalDefault)
-        case let .bool(bool): self.append(dialect.literalBoolean(bool))
         case let .raw(value): self.append(value)
         }
     }
