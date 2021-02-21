@@ -144,6 +144,10 @@ extension SQLRaw: ExpressibleByStringInterpolation {
             self.components.append(.string(String(value)))
         }
         
+        public mutating func appendInterpolation(_ raw: SQLRaw) {
+            self.components.append(contentsOf: raw.components)
+        }
+        
         public mutating func appendInterpolation<T: DBDataConvertible>(_ value: T) {
             self.components.append(SQLRawComponent(value.toDBData()))
         }

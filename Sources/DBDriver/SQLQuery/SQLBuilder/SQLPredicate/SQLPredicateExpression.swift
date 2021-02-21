@@ -52,23 +52,73 @@ public indirect enum SQLPredicateExpression {
     case or(SQLPredicateExpression, SQLPredicateExpression)
 }
 
+extension SQLRaw.StringInterpolation {
+    
+    mutating func appendInterpolation(_ expression: SQLPredicateExpression) {
+        self.appendInterpolation(expression.serialize())
+    }
+}
+
 extension SQLPredicateExpression {
+    
+    var isAndOperator: Bool {
+        switch self {
+        case .and: return true
+        default: return false
+        }
+    }
+    
+    var isOrOperator: Bool {
+        switch self {
+        case .or: return true
+        default: return false
+        }
+    }
     
     func serialize() -> SQLRaw {
         switch self {
-        case let .not(x): return "NOT (" + x.serialize() + ")"
-        case let .equal(lhs, rhs): return ""
-        case let .notEqual(lhs, rhs): return ""
-        case let .lessThan(lhs, rhs): return ""
-        case let .greaterThan(lhs, rhs): return ""
-        case let .greaterThanOrEqualTo(lhs, rhs): return ""
-        case let .lessThanOrEqualTo(lhs, rhs): return ""
-        case let .between(x, from, to): return ""
-        case let .notBetween(x, from, to): return ""
-        case let .like(x, pattern): return ""
-        case let .notLike(x, pattern): return ""
-        case let .and(lhs, rhs): return "(" + lhs.serialize() + " && " + rhs.serialize() + ")"
-        case let .or(lhs, rhs): return "(" + lhs.serialize() + " || " + rhs.serialize() + ")"
+        case let .not(x): return "NOT (\(x))"
+        case let .equal(lhs, rhs): return "\(lhs) = \(rhs)"
+        case let .notEqual(lhs, rhs): return "\(lhs) != \(rhs)"
+        case let .lessThan(lhs, rhs): return "\(lhs) < \(rhs)"
+        case let .greaterThan(lhs, rhs): return "\(lhs) > \(rhs)"
+        case let .lessThanOrEqualTo(lhs, rhs): return "\(lhs) <= \(rhs)"
+        case let .greaterThanOrEqualTo(lhs, rhs): return "\(lhs) >= \(rhs)"
+        case let .between(x, from, to): return "\(x) BETWEEN \(from) AND \(to)"
+        case let .notBetween(x, from, to): return "\(x) NOT BETWEEN \(from) AND \(to)"
+        case let .like(x, pattern): return "\(x) LIKE \(pattern)"
+        case let .notLike(x, pattern): return "\(x) NOT LIKE \(pattern)"
+        case let .and(lhs, rhs):
+            
+            if lhs.isOrOperator {
+                if rhs.isOrOperator {
+                    return "(\(lhs)) AND (\(rhs))"
+                } else {
+                    return "(\(lhs)) AND \(rhs)"
+                }
+            } else {
+                if rhs.isOrOperator {
+                    return "\(lhs) AND (\(rhs))"
+                } else {
+                    return "\(lhs) AND \(rhs)"
+                }
+            }
+            
+        case let .or(lhs, rhs):
+            
+            if lhs.isAndOperator {
+                if rhs.isAndOperator {
+                    return "(\(lhs)) OR (\(rhs))"
+                } else {
+                    return "(\(lhs)) OR \(rhs)"
+                }
+            } else {
+                if rhs.isAndOperator {
+                    return "\(lhs) OR (\(rhs))"
+                } else {
+                    return "\(lhs) OR \(rhs)"
+                }
+            }
         }
     }
 }
