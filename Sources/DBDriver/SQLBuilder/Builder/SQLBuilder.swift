@@ -92,7 +92,16 @@ extension SQLRawComponent {
     }
 }
 
-extension SQLBuilder {
+extension SQLBuilder: SQLBuilderProtocol {
+    
+    public var builder: SQLBuilder {
+        get {
+            return self
+        }
+        set {
+            self = newValue
+        }
+    }
     
     var raw: SQLRaw? {
         
@@ -157,18 +166,6 @@ extension SQLBuilder {
     
     mutating func append(_ value: DBData) {
         self.components.append(.value(value))
-    }
-}
-
-extension SQLBuilder: SQLBuilderProtocol {
-    
-    public var builder: SQLBuilder {
-        get {
-            return self
-        }
-        set {
-            self = newValue
-        }
     }
 }
 
