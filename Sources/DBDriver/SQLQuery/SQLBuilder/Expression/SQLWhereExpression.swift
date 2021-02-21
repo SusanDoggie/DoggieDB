@@ -33,7 +33,8 @@ extension SQLWhereExpression {
         
         var builder = self
         
-        builder.builder.append("WHERE \(predicate(SQLPredicateBuilder()).serialize())")
+        builder.builder.append("WHERE")
+        predicate(SQLPredicateBuilder()).serialize(into: &builder.builder)
         
         return builder
     }

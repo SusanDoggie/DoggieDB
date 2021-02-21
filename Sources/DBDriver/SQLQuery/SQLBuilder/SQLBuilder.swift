@@ -51,6 +51,10 @@ enum SQLBuilderComponent {
     case string(String)
     
     case value(DBData)
+    
+    case nullSafeEqual(SQLPredicateValue, SQLPredicateValue)
+    
+    case nullSafeNotEqual(SQLPredicateValue, SQLPredicateValue)
 }
 
 public struct SQLBuilder {
@@ -59,7 +63,7 @@ public struct SQLBuilder {
     
     let dialect: SQLDialect.Type?
     
-    private var components: [SQLBuilderComponent] = []
+    var components: [SQLBuilderComponent] = []
     
     init() {
         self.connection = nil
@@ -91,7 +95,9 @@ extension SQLRawComponent {
 
 extension SQLBuilder {
     
-    var raw: SQLRaw {
+    var raw: SQLRaw? {
+        
+        guard let dialect = self.dialect else { return nil }
         
         var raw = SQLRaw()
         
@@ -105,6 +111,8 @@ extension SQLBuilder {
             case let .raw(value): raw.append(value)
             case let .string(value): raw.append(value)
             case let .value(value): raw.append(value)
+            case let .nullSafeEqual(lhs, rhs): raw.append(dialect.nullSafeEqual(lhs, rhs))
+            case let .nullSafeNotEqual(lhs, rhs): raw.append(dialect.nullSafeNotEqual(lhs, rhs))
             }
         }
         
@@ -115,14 +123,22 @@ extension SQLBuilder {
         
         guard let connection = self.connection else { fatalError() }
         
-        return connection.execute(self.raw)
+        guard let raw = self.raw else {
+            return connection.eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+        }
+        
+        return connection.execute(raw)
     }
     
     func execute(onRow: @escaping (DBQueryRow) -> Void) -> EventLoopFuture<DBQueryMetadata> {
         
         guard let connection = self.connection else { fatalError() }
         
-        return connection.execute(self.raw, onRow: onRow)
+        guard let raw = self.raw else {
+            return connection.eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+        }
+        
+        return connection.execute(raw, onRow: onRow)
     }
 }
 

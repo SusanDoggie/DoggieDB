@@ -25,11 +25,17 @@
 
 public protocol SQLDialect {
     
+    static var quote: String { get }
+    
+    static func bindPlaceholder(at position: Int) -> String
+    
+    static func nullSafeEqual(_ lhs: SQLPredicateValue, _ rhs: SQLPredicateValue) -> SQLRaw
+    
+    static func nullSafeNotEqual(_ lhs: SQLPredicateValue, _ rhs: SQLPredicateValue) -> SQLRaw
+    
     static var literalNull: String { get }
     
     static var literalDefault: String { get }
-    
-    static func bindPlaceholder(at position: Int) -> String
     
     static func literalBoolean(_ value: Bool) -> String
     

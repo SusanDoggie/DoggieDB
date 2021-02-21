@@ -51,10 +51,11 @@ extension SQLJoinExpression {
         var builder = self
         
         if let method = method {
-            builder.builder.append("\(method.serialize()) JOIN \(table) ON \(predicate(SQLPredicateBuilder()).serialize())")
+            builder.builder.append("\(method.serialize()) JOIN \(table) ON")
         } else {
-            builder.builder.append("JOIN \(table) ON \(predicate(SQLPredicateBuilder()).serialize())")
+            builder.builder.append("JOIN \(table) ON")
         }
+        predicate(SQLPredicateBuilder()).serialize(into: &builder.builder)
         
         return builder
     }
@@ -76,9 +77,8 @@ extension SQLJoinExpression {
         
         builder.builder.append("(")
         builder.builder.append(query.builder)
-        builder.builder.append(") \(alias)")
-        
-        builder.builder.append("ON \(predicate(SQLPredicateBuilder()).serialize())")
+        builder.builder.append(") \(alias) ON")
+        predicate(SQLPredicateBuilder()).serialize(into: &builder.builder)
         
         return builder
     }

@@ -91,7 +91,8 @@ extension SQLSelectBuilder {
         
         var builder = self
         
-        builder.builder.append("HAVING \(predicate(SQLPredicateBuilder()).serialize())")
+        builder.builder.append("HAVING")
+        predicate(SQLPredicateBuilder()).serialize(into: &builder.builder)
         
         return builder
     }

@@ -25,8 +25,20 @@
 
 struct MySQLDialect: SQLDialect {
     
+    static var quote: String {
+        return "`"
+    }
+    
     static func bindPlaceholder(at position: Int) -> String {
         return "?"
+    }
+    
+    static func nullSafeEqual(_ lhs: SQLPredicateValue, _ rhs: SQLPredicateValue) -> SQLRaw {
+        return "\(lhs) <=> \(rhs)"
+    }
+    
+    static func nullSafeNotEqual(_ lhs: SQLPredicateValue, _ rhs: SQLPredicateValue) -> SQLRaw {
+        return "NOT \(lhs) <=> \(rhs)"
     }
     
     static func literalBoolean(_ value: Bool) -> String {

@@ -52,13 +52,6 @@ public indirect enum SQLPredicateExpression {
     case or(SQLPredicateExpression, SQLPredicateExpression)
 }
 
-extension SQLRaw.StringInterpolation {
-    
-    mutating func appendInterpolation(_ expression: SQLPredicateExpression) {
-        self.appendInterpolation(expression.serialize())
-    }
-}
-
 extension SQLPredicateExpression {
     
     var isAndOperator: Bool {
@@ -75,64 +68,32 @@ extension SQLPredicateExpression {
         }
     }
     
-    func serialize() -> SQLRaw {
+    func serialize(into builder: inout SQLBuilder) {
         switch self {
-        case let .not(x): return "NOT (\(x))"
-        case let .equal(lhs, rhs):
-            
-            if rhs.isNil {
-                return "\(lhs) IS \(nil)"
-            }
-            if lhs.isNil {
-                return "\(rhs) IS \(nil)"
-            }
-            if rhs.isBool {
-                return "\(lhs) IS \(rhs)"
-            }
-            if lhs.isBool {
-                return "\(rhs) IS \(lhs)"
-            }
-            
-            return "\(lhs) = \(rhs)"
-            
-        case let .notEqual(lhs, rhs):
-            
-            if rhs.isNil {
-                return "\(lhs) IS NOT \(nil)"
-            }
-            if lhs.isNil {
-                return "\(rhs) IS NOT \(nil)"
-            }
-            if rhs.isBool {
-                return "\(lhs) IS NOT \(rhs)"
-            }
-            if lhs.isBool {
-                return "\(rhs) IS NOT \(lhs)"
-            }
-            
-            return "\(lhs) != \(rhs)"
-            
-        case let .lessThan(lhs, rhs): return "\(lhs) < \(rhs)"
-        case let .greaterThan(lhs, rhs): return "\(lhs) > \(rhs)"
-        case let .lessThanOrEqualTo(lhs, rhs): return "\(lhs) <= \(rhs)"
-        case let .greaterThanOrEqualTo(lhs, rhs): return "\(lhs) >= \(rhs)"
-        case let .between(x, from, to): return "\(x) BETWEEN \(from) AND \(to)"
-        case let .notBetween(x, from, to): return "\(x) NOT BETWEEN \(from) AND \(to)"
-        case let .like(x, pattern): return "\(x) LIKE \(pattern)"
-        case let .notLike(x, pattern): return "\(x) NOT LIKE \(pattern)"
+        case let .not(x): builder.append("NOT (\(x))")
+        case let .equal(lhs, rhs): builder.builder.components.append(.nullSafeEqual(lhs, rhs))
+        case let .notEqual(lhs, rhs): builder.builder.components.append(.nullSafeNotEqual(lhs, rhs))
+        case let .lessThan(lhs, rhs): builder.append("\(lhs) < \(rhs)")
+        case let .greaterThan(lhs, rhs): builder.append("\(lhs) > \(rhs)")
+        case let .lessThanOrEqualTo(lhs, rhs): builder.append("\(lhs) <= \(rhs)")
+        case let .greaterThanOrEqualTo(lhs, rhs): builder.append("\(lhs) >= \(rhs)")
+        case let .between(x, from, to): builder.append("\(x) BETWEEN \(from) AND \(to)")
+        case let .notBetween(x, from, to): builder.append("\(x) NOT BETWEEN \(from) AND \(to)")
+        case let .like(x, pattern): builder.append("\(x) LIKE \(pattern)")
+        case let .notLike(x, pattern): builder.append("\(x) NOT LIKE \(pattern)")
         case let .and(lhs, rhs):
             
             if lhs.isOrOperator {
                 if rhs.isOrOperator {
-                    return "(\(lhs)) AND (\(rhs))"
+                    builder.append("(\(lhs)) AND (\(rhs))")
                 } else {
-                    return "(\(lhs)) AND \(rhs)"
+                    builder.append("(\(lhs)) AND \(rhs)")
                 }
             } else {
                 if rhs.isOrOperator {
-                    return "\(lhs) AND (\(rhs))"
+                    builder.append("\(lhs) AND (\(rhs))")
                 } else {
-                    return "\(lhs) AND \(rhs)"
+                    builder.append("\(lhs) AND \(rhs)")
                 }
             }
             
@@ -140,15 +101,15 @@ extension SQLPredicateExpression {
             
             if lhs.isAndOperator {
                 if rhs.isAndOperator {
-                    return "(\(lhs)) OR (\(rhs))"
+                    builder.append("(\(lhs)) OR (\(rhs))")
                 } else {
-                    return "(\(lhs)) OR \(rhs)"
+                    builder.append("(\(lhs)) OR \(rhs)")
                 }
             } else {
                 if rhs.isAndOperator {
-                    return "\(lhs) OR (\(rhs))"
+                    builder.append("\(lhs) OR (\(rhs))")
                 } else {
-                    return "\(lhs) OR \(rhs)"
+                    builder.append("\(lhs) OR \(rhs)")
                 }
             }
         }

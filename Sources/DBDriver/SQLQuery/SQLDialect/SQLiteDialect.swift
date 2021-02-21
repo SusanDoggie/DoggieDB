@@ -25,8 +25,20 @@
 
 struct SQLiteDialect: SQLDialect {
     
+    static var quote: String {
+        return "\""
+    }
+    
     static func bindPlaceholder(at position: Int) -> String {
         return "?"
+    }
+    
+    static func nullSafeEqual(_ lhs: SQLPredicateValue, _ rhs: SQLPredicateValue) -> SQLRaw {
+        return "\(lhs) IS \(rhs)"
+    }
+    
+    static func nullSafeNotEqual(_ lhs: SQLPredicateValue, _ rhs: SQLPredicateValue) -> SQLRaw {
+        return "\(lhs) IS NOT \(rhs)"
     }
     
     static func literalBoolean(_ value: Bool) -> String {
