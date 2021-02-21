@@ -45,9 +45,11 @@ extension SQLBuilderProtocol {
 }
 
 enum SQLBuilderComponent {
+    
     case raw(SQLRaw)
+    
     case string(String)
-    case literal(SQLLiteral)
+    
     case value(DBData)
 }
 
@@ -89,9 +91,7 @@ extension SQLRawComponent {
 
 extension SQLBuilder {
     
-    var raw: SQLRaw? {
-        
-        guard let dialect = self.dialect else { return nil }
+    var raw: SQLRaw {
         
         var raw = SQLRaw()
         
@@ -104,7 +104,6 @@ extension SQLBuilder {
             switch component {
             case let .raw(value): raw.append(value)
             case let .string(value): raw.append(value)
-            case let .literal(value): raw.append(value, dialect)
             case let .value(value): raw.append(value)
             }
         }
@@ -116,22 +115,14 @@ extension SQLBuilder {
         
         guard let connection = self.connection else { fatalError() }
         
-        guard let raw = self.raw else {
-            return connection.eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-        }
-        
-        return connection.execute(raw)
+        return connection.execute(self.raw)
     }
     
     func execute(onRow: @escaping (DBQueryRow) -> Void) -> EventLoopFuture<DBQueryMetadata> {
         
         guard let connection = self.connection else { fatalError() }
         
-        guard let raw = self.raw else {
-            return connection.eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-        }
-        
-        return connection.execute(raw, onRow: onRow)
+        return connection.execute(self.raw, onRow: onRow)
     }
 }
 
@@ -143,10 +134,6 @@ extension SQLBuilder {
     
     mutating func append(_ raw: SQLRaw) {
         self.components.append(.raw(raw))
-    }
-    
-    mutating func append(_ literal: SQLLiteral) {
-        self.components.append(.literal(literal))
     }
     
     mutating func append<T: StringProtocol>(_ value: T) {

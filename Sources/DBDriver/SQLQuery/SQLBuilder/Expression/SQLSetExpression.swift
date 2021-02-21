@@ -29,7 +29,7 @@ public protocol SQLSetExpression: SQLBuilderProtocol {
 
 extension SQLSetExpression {
     
-    public func set(_ values: [String: SQLLiteral]) -> Self {
+    public func set(_ values: [String: SQLRaw]) -> Self {
         
         var builder = self
         

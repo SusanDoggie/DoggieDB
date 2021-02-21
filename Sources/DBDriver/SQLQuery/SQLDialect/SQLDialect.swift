@@ -71,6 +71,7 @@ extension DBConnection {
         for component in sql.components {
             switch component {
             case .null: raw.append(dialect.literalNull)
+            case .default: raw.append(dialect.literalDefault)
             case let .string(string): raw.append(string)
             case let .boolean(bool): raw.append(dialect.literalBoolean(bool))
             case let .signed(value): raw.append("\(value)")
