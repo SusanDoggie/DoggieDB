@@ -28,6 +28,8 @@ public enum SQLPredicateValue {
     case name(String)
     
     case value(DBData)
+    
+    case raw(SQLRaw)
 }
 
 extension SQLPredicateValue: ExpressibleByNilLiteral {
@@ -79,6 +81,13 @@ extension SQLPredicateValue: ExpressibleByDictionaryLiteral {
     }
 }
 
+extension SQLPredicateValue: ExpressibleByStringInterpolation {
+    
+    public init(stringInterpolation: SQLRaw.StringInterpolation) {
+        self = .raw(SQLRaw(stringInterpolation: stringInterpolation))
+    }
+}
+
 extension SQLPredicateValue {
     
     public func between(from: SQLPredicateValue, to: SQLPredicateValue) -> SQLPredicateExpression {
@@ -104,6 +113,7 @@ extension SQLRaw.StringInterpolation {
         switch value {
         case let .name(name): self.appendLiteral(name)
         case let .value(value): self.appendInterpolation(value)
+        case let .raw(raw): self.appendInterpolation(raw)
         }
     }
 }
