@@ -51,6 +51,8 @@ enum SQLBuilderComponent {
     
     case value(DBData)
     
+    case autoIncrement
+    
     case nullSafeEqual(SQLPredicateValue, SQLPredicateValue)
     
     case nullSafeNotEqual(SQLPredicateValue, SQLPredicateValue)
@@ -119,6 +121,7 @@ extension SQLBuilder: SQLBuilderProtocol {
             case let .raw(value): raw.append(value)
             case let .string(value): raw.append(value)
             case let .value(value): raw.append(value)
+            case .autoIncrement: raw.append(dialect.autoIncrementClause)
             case let .nullSafeEqual(lhs, rhs): raw.append(dialect.nullSafeEqual(lhs, rhs))
             case let .nullSafeNotEqual(lhs, rhs): raw.append(dialect.nullSafeNotEqual(lhs, rhs))
             }
@@ -158,6 +161,10 @@ extension SQLBuilder {
     
     mutating func append(_ raw: SQLRaw) {
         self.components.append(.raw(raw))
+    }
+    
+    mutating func append(_ value: SQLBuilderComponent) {
+        self.components.append(value)
     }
     
     mutating func append<T: StringProtocol>(_ value: T) {

@@ -39,6 +39,8 @@ public protocol SQLDialect {
     
     static func literalBoolean(_ value: Bool) -> String
     
+    static var autoIncrementClause: String { get }
+    
     static var supportsReturning: Bool { get }
 }
 

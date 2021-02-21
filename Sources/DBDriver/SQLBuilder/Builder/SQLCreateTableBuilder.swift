@@ -39,6 +39,8 @@ public struct SQLCreateTableBuilder: SQLBuilderProtocol {
     
     public var builder: SQLBuilder
     
+    var flag = false
+    
     init(builder: SQLBuilder, table: String, options: SQLCreateTableOptions = []) {
         self.builder = builder
         self.builder.append("CREATE")
@@ -65,5 +67,174 @@ extension SQLCreateTableBuilder {
         var builder = self.builder
         builder.append(")")
         return builder.execute(onRow: onRow)
+    }
+}
+
+extension SQLCreateTableBuilder {
+    
+    public func column(
+        name: String,
+        type: String,
+        optional: Bool = true,
+        default: DBData? = nil,
+        autoIncrement: Bool = false
+    ) -> SQLCreateTableBuilder {
+        
+        var builder = self
+        
+        if flag {
+            builder.builder.append(",")
+        }
+        
+        builder.builder.append(name)
+        builder.builder.append(type)
+        
+        if !optional {
+            builder.builder.append("NOT NULL")
+        }
+        if let `default` = `default` {
+            builder.builder.append("DEFAULT")
+            builder.builder.append(`default`)
+        }
+        if autoIncrement {
+            builder.builder.append(.autoIncrement)
+        }
+        
+        builder.flag = true
+        
+        return builder
+    }
+}
+
+extension SQLCreateTableBuilder {
+    
+    public func unique(_ column: String) -> SQLCreateTableBuilder {
+        
+        var builder = self
+        
+        if flag {
+            builder.builder.append(",")
+        }
+        
+        builder.builder.append("UNIQUE (\(column))")
+        
+        builder.flag = true
+        
+        return builder
+    }
+    
+    public func unique(_ column: String, _ column2: String, _ res: String ...) -> SQLCreateTableBuilder {
+        
+        var builder = self
+        
+        if flag {
+            builder.builder.append(",")
+        }
+        
+        let columns = [column, column2] + res
+        
+        builder.builder.append("UNIQUE (\(columns.joined(separator: ", ")))")
+        
+        builder.flag = true
+        
+        return builder
+    }
+}
+
+extension SQLCreateTableBuilder {
+    
+    public func primaryKey(_ column: String) -> SQLCreateTableBuilder {
+        
+        var builder = self
+        
+        if flag {
+            builder.builder.append(",")
+        }
+        
+        builder.builder.append("PRIMARY KEY (\(column))")
+        
+        builder.flag = true
+        
+        return builder
+    }
+    
+    public func primaryKey(_ column: String, _ column2: String, _ res: String ...) -> SQLCreateTableBuilder {
+        
+        var builder = self
+        
+        if flag {
+            builder.builder.append(",")
+        }
+        
+        let columns = [column, column2] + res
+        
+        builder.builder.append("PRIMARY KEY (\(columns.joined(separator: ", ")))")
+        
+        builder.flag = true
+        
+        return builder
+    }
+}
+
+public struct SQLForeignKey: Hashable {
+    
+    public var table: String
+    
+    public var column: String
+    
+    public init(table: String, column: String) {
+        self.table = table
+        self.column = column
+    }
+}
+
+public enum SQLForeignKeyAction {
+    
+    case restrict
+    
+    case cascade
+    
+    case setNull
+    
+    case setDefault
+}
+
+extension SQLCreateTableBuilder {
+    
+    public func foreignKey(
+        _ column: String,
+        _ reference: SQLForeignKey,
+        onUpdate: SQLForeignKeyAction? = nil,
+        onDelete: SQLForeignKeyAction? = nil
+    ) -> SQLCreateTableBuilder {
+        
+        var builder = self
+        
+        if flag {
+            builder.builder.append(",")
+        }
+        
+        builder.builder.append("FOREIGN KEY (\(column)) REFERENCES \(reference.table)(\(reference.column))")
+        
+        if let onDelete = onDelete {
+            switch onDelete {
+            case .restrict: builder.builder.append("ON DELETE RESTRICT")
+            case .cascade: builder.builder.append("ON DELETE CASCADE")
+            case .setNull: builder.builder.append("ON DELETE SET NULL")
+            case .setDefault: builder.builder.append("ON DELETE SET DEFAULT")
+            }
+        }
+        if let onUpdate = onUpdate {
+            switch onUpdate {
+            case .restrict: builder.builder.append("ON UPDATE RESTRICT")
+            case .cascade: builder.builder.append("ON UPDATE CASCADE")
+            case .setNull: builder.builder.append("ON UPDATE SET NULL")
+            case .setDefault: builder.builder.append("ON UPDATE SET DEFAULT")
+            }
+        }
+        
+        builder.flag = true
+        
+        return builder
     }
 }
