@@ -240,6 +240,10 @@ extension SQLBuilder {
         return SQLCreateTableBuilder(builder: self, table: table, options: options)
     }
     
+    public func createTable(_ table: String, options: SQLCreateTableOptions = []) -> SQLCreateTableAsBuilder {
+        return SQLCreateTableAsBuilder(builder: self, table: table, options: options)
+    }
+    
     public func dropTable(_ table: String, options: SQLDropTableOptions = []) -> SQLFinalizedBuilder {
         
         var builder = self
