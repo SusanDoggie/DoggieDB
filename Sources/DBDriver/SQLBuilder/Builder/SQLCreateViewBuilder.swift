@@ -58,10 +58,5 @@ public struct SQLCreateViewBuilder: SQLBuilderProtocol {
 }
 
 extension SQLCreateViewBuilder: SQLWithExpression { }
-
-extension SQLCreateViewBuilder {
-    
-    public func select() -> SQLSelectBuilder {
-        return SQLSelectBuilder(builder: self.builder)
-    }
-}
+extension SQLCreateViewBuilder: SQLValuesExpression { }
+extension SQLCreateViewBuilder: SQLSelectExpression { }

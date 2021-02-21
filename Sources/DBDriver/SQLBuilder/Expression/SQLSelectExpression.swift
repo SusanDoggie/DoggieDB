@@ -1,5 +1,5 @@
 //
-//  SQLInsertBuilder.swift
+//  SQLSelectExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,44 +23,13 @@
 //  THE SOFTWARE.
 //
 
-public struct SQLInsertBuilder: SQLBuilderProtocol {
+public protocol SQLSelectExpression: SQLBuilderProtocol {
     
-    public var builder: SQLBuilder
-    
-    init(builder: SQLBuilder, table: String, alias: String?) {
-        self.builder = builder
-        self.builder.append("INSERT INTO \(table)")
-        
-        if let alias = alias {
-            self.builder.append("AS \(alias)")
-        }
-    }
 }
 
-extension SQLInsertBuilder: SQLReturningExpression {}
-
-extension SQLInsertBuilder {
+extension SQLSelectExpression {
     
-    public func columns(_ column: String) -> SQLInsertBuilder {
-        
-        var builder = self
-        
-        builder.builder.append("(\(column))")
-        
-        return builder
-    }
-    
-    public func columns(_ column: String, _ column2: String, _ res: String ...) -> SQLInsertBuilder {
-        
-        var builder = self
-        
-        let columns = [column, column2] + res
-        
-        builder.builder.append("(\(columns.joined(separator: ", ")))")
-        
-        return builder
+    public func select() -> SQLSelectBuilder {
+        return SQLSelectBuilder(builder: self.builder)
     }
 }
-
-extension SQLInsertBuilder: SQLValuesExpression { }
-extension SQLInsertBuilder: SQLSelectExpression { }

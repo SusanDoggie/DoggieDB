@@ -42,10 +42,5 @@ public struct SQLCreateTableAsBuilder: SQLBuilderProtocol {
 }
 
 extension SQLCreateTableAsBuilder: SQLWithExpression { }
-
-extension SQLCreateTableAsBuilder {
-    
-    public func select() -> SQLSelectBuilder {
-        return SQLSelectBuilder(builder: self.builder)
-    }
-}
+extension SQLCreateTableAsBuilder: SQLValuesExpression { }
+extension SQLCreateTableAsBuilder: SQLSelectExpression { }

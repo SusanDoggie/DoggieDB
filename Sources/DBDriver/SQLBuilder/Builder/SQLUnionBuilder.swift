@@ -33,9 +33,4 @@ public struct SQLUnionBuilder: SQLBuilderProtocol {
     }
 }
 
-extension SQLUnionBuilder {
-    
-    public func select() -> SQLSelectBuilder {
-        return SQLSelectBuilder(builder: self.builder)
-    }
-}
+extension SQLUnionBuilder: SQLSelectExpression { }

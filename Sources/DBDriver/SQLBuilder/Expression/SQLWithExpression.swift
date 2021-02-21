@@ -67,12 +67,7 @@ public struct SQLWithBuilder<Base>: SQLBuilderProtocol {
     }
 }
 
-extension SQLWithBuilder {
-    
-    public func select() -> SQLSelectBuilder {
-        return SQLSelectBuilder(builder: self.builder)
-    }
-}
+extension SQLWithBuilder: SQLSelectExpression { }
 
 public protocol SQLWithModifyingExpression: SQLWithExpression {
     

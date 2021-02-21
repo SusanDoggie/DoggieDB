@@ -178,12 +178,9 @@ extension SQLBuilder {
 
 extension SQLBuilder: SQLWithModifyingExpression { }
 extension SQLBuilder: SQLValuesExpression { }
+extension SQLBuilder: SQLSelectExpression { }
 
 extension SQLBuilder {
-    
-    public func select() -> SQLSelectBuilder {
-        return SQLSelectBuilder(builder: self)
-    }
     
     public func delete(_ table: String, as alias: String? = nil) -> SQLDeleteBuilder {
         return SQLDeleteBuilder(builder: self, table: table, alias: alias)
