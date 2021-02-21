@@ -27,13 +27,12 @@ public protocol SQLBuilderProtocol {
     
     var builder: SQLBuilder { get set }
     
+    func execute() -> EventLoopFuture<[DBQueryRow]>
+    
+    func execute(onRow: @escaping (DBQueryRow) -> Void) -> EventLoopFuture<DBQueryMetadata>
 }
 
 extension SQLBuilderProtocol {
-    
-    var dialect: SQLDialect.Type? {
-        return builder.dialect
-    }
     
     public func execute() -> EventLoopFuture<[DBQueryRow]> {
         return builder.execute()
@@ -119,7 +118,7 @@ extension SQLBuilder {
         return raw
     }
     
-    func execute() -> EventLoopFuture<[DBQueryRow]> {
+    public func execute() -> EventLoopFuture<[DBQueryRow]> {
         
         guard let connection = self.connection else { fatalError() }
         
@@ -130,7 +129,7 @@ extension SQLBuilder {
         return connection.execute(raw)
     }
     
-    func execute(onRow: @escaping (DBQueryRow) -> Void) -> EventLoopFuture<DBQueryMetadata> {
+    public func execute(onRow: @escaping (DBQueryRow) -> Void) -> EventLoopFuture<DBQueryMetadata> {
         
         guard let connection = self.connection else { fatalError() }
         
@@ -197,6 +196,17 @@ extension SQLBuilder {
 
 extension SQLBuilder {
     
+    public struct SQLDropTableOptions: OptionSet {
+        
+        public var rawValue: Int
+        
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
+        
+        public static let ifExists = SQLDropTableOptions(rawValue: 1 << 0)
+    }
+    
     public struct SQLDropViewOptions: OptionSet {
         
         public var rawValue: Int
@@ -217,6 +227,26 @@ extension SQLBuilder {
         }
         
         public static let concurrent = SQLRefreshViewOptions(rawValue: 1 << 0)
+    }
+}
+
+extension SQLBuilder {
+    
+    public func createTable(_ table: String, options: SQLCreateTableOptions = []) -> SQLCreateTableBuilder {
+        return SQLCreateTableBuilder(builder: self, table: table, options: options)
+    }
+    
+    public func dropTable(_ table: String, options: SQLDropTableOptions = []) -> SQLFinalizedBuilder {
+        
+        var builder = self
+        
+        builder.append("DROP VIEW")
+        if options.contains(.ifExists) {
+            builder.append("IF EXISTS")
+        }
+        builder.append(table)
+        
+        return SQLFinalizedBuilder(builder: builder)
     }
 }
 
