@@ -250,28 +250,6 @@ class MySQLTest: XCTestCase {
         }
     }
     
-    func testRecursive() throws {
-        
-        do {
-            
-            let result = try connection.sql()
-                .withRecursive([
-                    "test": SQLSelectBuilder.select().columns("1 AS n").union().select().columns("n+1 AS n").from("test").limit(9)
-                ])
-                .select().columns("n").from("test")
-                .execute().wait()
-            
-            for (i, row) in result.enumerated() {
-                XCTAssertEqual(row["n"]?.intValue, i + 1)
-            }
-            
-        } catch let error {
-            
-            print(error)
-            throw error
-        }
-    }
-    
     func testTransaction() throws {
         
         do {
