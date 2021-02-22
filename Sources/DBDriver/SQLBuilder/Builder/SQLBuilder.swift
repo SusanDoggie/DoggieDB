@@ -241,6 +241,10 @@ extension SQLBuilder {
         return SQLCreateTableAsBuilder(builder: self, table: table, options: options)
     }
     
+    public func alterTable(_ table: String) -> SQLAlterTableBuilder {
+        return SQLAlterTableBuilder(builder: self, table: table)
+    }
+    
     public func dropTable(_ table: String, options: SQLDropTableOptions = []) -> SQLFinalizedBuilder {
         
         var builder = self
