@@ -166,6 +166,25 @@ extension RedisDriver.Connection {
 
 extension RedisDriver.Connection {
     
+    func increment(_ key: String) -> EventLoopFuture<Int> {
+        return self.connection.increment(RedisKey(key))
+    }
+    
+    func decrement(_ key: String) -> EventLoopFuture<Int> {
+        return self.connection.decrement(RedisKey(key))
+    }
+    
+    func increment(_ key: String, by count: Int) -> EventLoopFuture<Int> {
+        return self.connection.increment(RedisKey(key), by: count)
+    }
+    
+    func decrement(_ key: String, by count: Int) -> EventLoopFuture<Int> {
+        return self.connection.decrement(RedisKey(key), by: count)
+    }
+}
+
+extension RedisDriver.Connection {
+    
     func get<D: Decodable>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> {
         return self.connection.get(RedisKey(key), as: Data.self).flatMapThrowing { data in try data.flatMap { try JSONDecoder().decode(D.self, from: $0) } }
     }

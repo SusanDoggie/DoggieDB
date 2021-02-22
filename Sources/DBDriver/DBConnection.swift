@@ -78,6 +78,14 @@ public protocol DBConnection: AnyObject {
     
     func unsubscribe(fromPatterns patterns: [String]) -> EventLoopFuture<Void>
     
+    func increment(_ key: String) -> EventLoopFuture<Int>
+    
+    func decrement(_ key: String) -> EventLoopFuture<Int>
+    
+    func increment(_ key: String, by count: Int) -> EventLoopFuture<Int>
+    
+    func decrement(_ key: String, by count: Int) -> EventLoopFuture<Int>
+    
     func get<D: Decodable>(_ key: String, as type: D.Type) -> EventLoopFuture<D?>
     
     func set<E: Encodable>(_ key: String, as type: E) -> EventLoopFuture<Void>
@@ -173,6 +181,22 @@ extension DBConnection {
 }
 
 extension DBConnection {
+    
+    public func increment(_ key: String) -> EventLoopFuture<Int> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func decrement(_ key: String) -> EventLoopFuture<Int> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func increment(_ key: String, by count: Int) -> EventLoopFuture<Int> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func decrement(_ key: String, by count: Int) -> EventLoopFuture<Int> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
     
     public func get<D: Decodable>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
