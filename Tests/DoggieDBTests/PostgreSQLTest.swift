@@ -303,4 +303,23 @@ class PostgreSQLTest: XCTestCase {
             throw error
         }
     }
+    
+    func testTransaction() throws {
+        
+        do {
+            
+            _ = try connection.sql().beginTransaction().execute().wait()
+            
+            let result = try connection.execute("SELECT \(1) as value").wait()
+            
+            _ = try connection.sql().commit().execute().wait()
+            
+            XCTAssertEqual(result[0]["value"]?.intValue, 1)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
 }

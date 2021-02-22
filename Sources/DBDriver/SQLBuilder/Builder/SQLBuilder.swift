@@ -311,3 +311,33 @@ extension SQLBuilder {
         return SQLFinalizedBuilder(builder: builder)
     }
 }
+
+extension SQLBuilder {
+    
+    public func beginTransaction() -> SQLFinalizedBuilder {
+        
+        var builder = self
+        
+        builder.append("BEGIN")
+        
+        return SQLFinalizedBuilder(builder: builder)
+    }
+    
+    public func commit() -> SQLFinalizedBuilder {
+        
+        var builder = self
+        
+        builder.append("COMMIT")
+        
+        return SQLFinalizedBuilder(builder: builder)
+    }
+    
+    public func rollback() -> SQLFinalizedBuilder {
+        
+        var builder = self
+        
+        builder.append("ROLLBACK")
+        
+        return SQLFinalizedBuilder(builder: builder)
+    }
+}
