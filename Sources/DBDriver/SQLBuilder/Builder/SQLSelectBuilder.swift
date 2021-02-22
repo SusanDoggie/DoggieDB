@@ -64,7 +64,7 @@ extension SQLSelectBuilder {
 
 extension SQLSelectBuilder {
     
-    public func columns(_ column: String) -> SQLSelectBuilder {
+    public func columns(_ column: SQLRaw) -> SQLSelectBuilder {
         
         var builder = self
         
@@ -73,7 +73,7 @@ extension SQLSelectBuilder {
         return builder
     }
     
-    public func columns(_ column: String, _ column2: String, _ res: String ...) -> SQLSelectBuilder {
+    public func columns(_ column: SQLRaw, _ column2: SQLRaw, _ res: SQLRaw ...) -> SQLSelectBuilder {
         
         var builder = self
         

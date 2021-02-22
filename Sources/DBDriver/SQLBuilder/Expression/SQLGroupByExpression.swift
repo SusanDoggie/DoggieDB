@@ -29,7 +29,7 @@ public protocol SQLGroupByExpression: SQLBuilderProtocol {
 
 extension SQLGroupByExpression {
     
-    public func groupBy(_ groupBy: String) -> Self {
+    public func groupBy(_ groupBy: SQLRaw) -> Self {
         
         var builder = self
         
@@ -38,7 +38,7 @@ extension SQLGroupByExpression {
         return builder
     }
     
-    public func groupBy(_ groupBy: String, _ groupBy2: String, _ res: String ...) -> Self {
+    public func groupBy(_ groupBy: SQLRaw, _ groupBy2: SQLRaw, _ res: SQLRaw ...) -> Self {
         
         var builder = self
         
