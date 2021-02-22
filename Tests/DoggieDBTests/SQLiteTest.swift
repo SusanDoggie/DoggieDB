@@ -68,15 +68,13 @@ class SQLiteTest: XCTestCase {
         
         do {
             
-            _ = try connection.execute("""
-            CREATE TABLE contacts (
-                contact_id INTEGER PRIMARY KEY NOT NULL,
-                first_name TEXT NOT NULL,
-                last_name TEXT,
-                email TEXT NOT NULL UNIQUE,
-                phone TEXT NOT NULL UNIQUE
-            )
-            """).wait()
+            _ = try connection.sql().createTable("contacts")
+                .column(name: "contact_id", type: "INTEGER", optional: false, primaryKey: true)
+                .column(name: "first_name", type: "TEXT", optional: false)
+                .column(name: "last_name", type: "TEXT")
+                .column(name: "email", type: "TEXT", optional: false, unique: true)
+                .column(name: "phone", type: "TEXT", optional: false, unique: true)
+                .execute().wait()
             
             XCTAssertTrue(try connection.tables().wait().contains("contacts"))
             

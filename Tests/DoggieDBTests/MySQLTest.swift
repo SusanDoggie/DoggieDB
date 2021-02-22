@@ -80,15 +80,13 @@ class MySQLTest: XCTestCase {
         
         do {
             
-            _ = try connection.execute("""
-            CREATE TABLE contacts (
-                contact_id INTEGER PRIMARY KEY NOT NULL,
-                first_name VARCHAR(255) NOT NULL,
-                last_name VARCHAR(255),
-                email VARCHAR(255) NOT NULL UNIQUE,
-                phone VARCHAR(255) NOT NULL UNIQUE
-            )
-            """).wait()
+            _ = try connection.sql().createTable("contacts")
+                .column(name: "contact_id", type: "INTEGER", optional: false, primaryKey: true)
+                .column(name: "first_name", type: "VARCHAR(255)", optional: false)
+                .column(name: "last_name", type: "VARCHAR(255)")
+                .column(name: "email", type: "VARCHAR(255)", optional: false, unique: true)
+                .column(name: "phone", type: "VARCHAR(255)", optional: false, unique: true)
+                .execute().wait()
             
             XCTAssertTrue(try connection.tables().wait().contains("contacts"))
             

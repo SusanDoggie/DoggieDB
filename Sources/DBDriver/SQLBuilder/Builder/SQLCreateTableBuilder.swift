@@ -77,7 +77,9 @@ extension SQLCreateTableBuilder {
         type: String,
         optional: Bool = true,
         default: DBData? = nil,
-        autoIncrement: Bool = false
+        autoIncrement: Bool = false,
+        unique: Bool = false,
+        primaryKey: Bool = false
     ) -> SQLCreateTableBuilder {
         
         var builder = self
@@ -98,6 +100,12 @@ extension SQLCreateTableBuilder {
         }
         if autoIncrement {
             builder.builder.append(.autoIncrement)
+        }
+        if unique {
+            builder.builder.append("UNIQUE")
+        }
+        if primaryKey {
+            builder.builder.append("PRIMARY KEY")
         }
         
         builder.flag = true
