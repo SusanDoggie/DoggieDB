@@ -256,10 +256,9 @@ class MySQLTest: XCTestCase {
             
             let result = try connection.sql()
                 .withRecursive([
-                    "test": SQLSelectBuilder.select().columns("1 AS n").union().select().columns("n+1 AS n").from("test")
+                    "test": SQLSelectBuilder.select().columns("1 AS n").union().select().columns("n+1 AS n").from("test").limit(9)
                 ])
                 .select().columns("n").from("test")
-                .limit(10)
                 .execute().wait()
             
             for (i, row) in result.enumerated() {
