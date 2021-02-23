@@ -99,16 +99,3 @@ extension MongoDBDriver.Connection {
         return self.client.listDatabaseNames()
     }
 }
-
-extension MongoDBDriver.Connection {
-    
-    func runCommand(
-        _ command: BSONDocument,
-        options: RunCommandOptions?
-    ) -> EventLoopFuture<BSONDocument> {
-        guard let database = self.database else {
-            return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "database not selected."))
-        }
-        return database.runCommand(command, options: options)
-    }
-}
