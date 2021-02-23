@@ -185,6 +185,17 @@ extension RedisDriver.Connection {
 
 extension RedisDriver.Connection {
     
+    public func echo(_ message: String) -> EventLoopFuture<String> {
+        return self.connection.echo(message)
+    }
+    
+    public func ping(with message: String? = nil) -> EventLoopFuture<String> {
+        return self.connection.ping(with: message)
+    }
+}
+
+extension RedisDriver.Connection {
+    
     public func exists(_ keys: [String]) -> EventLoopFuture<Int> {
         return self.connection.exists(keys.map { RedisKey($0) })
     }
@@ -192,6 +203,9 @@ extension RedisDriver.Connection {
     public func delete(_ keys: [String]) -> EventLoopFuture<Int> {
         return self.connection.delete(keys.map { RedisKey($0) })
     }
+}
+
+extension RedisDriver.Connection {
     
     public func get<D: Decodable>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> {
         return self.connection.get(RedisKey(key), as: Data.self).flatMapThrowing { data in try data.flatMap { try JSONDecoder().decode(D.self, from: $0) } }
