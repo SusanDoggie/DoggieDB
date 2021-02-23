@@ -86,6 +86,10 @@ public protocol DBConnection: AnyObject {
     
     func decrement(_ key: String, by count: Int) -> EventLoopFuture<Int>
     
+    func exists(_ keys: [String]) -> EventLoopFuture<Int>
+    
+    func delete(_ keys: [String]) -> EventLoopFuture<Int>
+    
     func get<D: Decodable>(_ key: String, as type: D.Type) -> EventLoopFuture<D?>
     
     func set<E: Encodable>(_ key: String, as type: E) -> EventLoopFuture<Void>
@@ -195,6 +199,14 @@ extension DBConnection {
     }
     
     public func decrement(_ key: String, by count: Int) -> EventLoopFuture<Int> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func exists(_ keys: [String]) -> EventLoopFuture<Int> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func delete(_ keys: [String]) -> EventLoopFuture<Int> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     

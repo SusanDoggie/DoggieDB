@@ -185,6 +185,14 @@ extension RedisDriver.Connection {
 
 extension RedisDriver.Connection {
     
+    func exists(_ keys: [String]) -> EventLoopFuture<Int> {
+        return self.connection.exists(keys.map { RedisKey($0) })
+    }
+    
+    func delete(_ keys: [String]) -> EventLoopFuture<Int> {
+        return self.connection.delete(keys.map { RedisKey($0) })
+    }
+    
     func get<D: Decodable>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> {
         return self.connection.get(RedisKey(key), as: Data.self).flatMapThrowing { data in try data.flatMap { try JSONDecoder().decode(D.self, from: $0) } }
     }
