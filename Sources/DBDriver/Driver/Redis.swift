@@ -25,26 +25,26 @@
 
 import RediStack
 
-struct RedisDriver: DBDriverProtocol {
+public struct RedisDriver: DBDriverProtocol {
     
     static var defaultPort: Int { 6379 }
 }
 
 extension RedisDriver {
     
-    class Connection: DBConnection {
+    public class Connection: DBConnection {
         
-        var driver: DBDriver { return .redis }
+        public var driver: DBDriver { return .redis }
         
         let connection: RedisConnection
         
-        var eventLoop: EventLoop { connection.eventLoop }
+        public var eventLoop: EventLoop { connection.eventLoop }
         
         init(_ connection: RedisConnection) {
             self.connection = connection
         }
         
-        func close() -> EventLoopFuture<Void> {
+        public func close() -> EventLoopFuture<Void> {
             return connection.close()
         }
     }
@@ -81,7 +81,7 @@ extension RedisDriver {
 
 extension RedisDriver.Connection {
     
-    var isClosed: Bool {
+    public var isClosed: Bool {
         return !self.connection.isConnected
     }
 }
@@ -108,7 +108,7 @@ extension RedisDriver.Connection {
 
 extension RedisDriver.Connection {
     
-    var allowSubscriptions: Bool {
+    public var allowSubscriptions: Bool {
         get {
             return self.connection.allowSubscriptions
         }
@@ -117,15 +117,15 @@ extension RedisDriver.Connection {
         }
     }
     
-    var isSubscribed: Bool {
+    public var isSubscribed: Bool {
         return self.connection.isSubscribed
     }
     
-    func activeChannels(matching match: String? = nil) -> EventLoopFuture<[String]> {
+    public func activeChannels(matching match: String? = nil) -> EventLoopFuture<[String]> {
         return self.connection.activeChannels(matching: match).map { $0.map { $0.rawValue } }
     }
     
-    func subscribe(
+    public func subscribe(
         toChannels channels: [String],
         messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
@@ -140,11 +140,11 @@ extension RedisDriver.Connection {
         )
     }
     
-    func unsubscribe(fromChannels channels: [String]) -> EventLoopFuture<Void> {
+    public func unsubscribe(fromChannels channels: [String]) -> EventLoopFuture<Void> {
         return self.connection.unsubscribe(from: channels.map { RedisChannelName($0) })
     }
     
-    func subscribe(
+    public func subscribe(
         toPatterns patterns: [String],
         messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
@@ -159,45 +159,45 @@ extension RedisDriver.Connection {
         )
     }
     
-    func unsubscribe(fromPatterns patterns: [String]) -> EventLoopFuture<Void> {
+    public func unsubscribe(fromPatterns patterns: [String]) -> EventLoopFuture<Void> {
         return self.connection.punsubscribe(from: patterns)
     }
 }
 
 extension RedisDriver.Connection {
     
-    func increment(_ key: String) -> EventLoopFuture<Int> {
+    public func increment(_ key: String) -> EventLoopFuture<Int> {
         return self.connection.increment(RedisKey(key))
     }
     
-    func decrement(_ key: String) -> EventLoopFuture<Int> {
+    public func decrement(_ key: String) -> EventLoopFuture<Int> {
         return self.connection.decrement(RedisKey(key))
     }
     
-    func increment(_ key: String, by count: Int) -> EventLoopFuture<Int> {
+    public func increment(_ key: String, by count: Int) -> EventLoopFuture<Int> {
         return self.connection.increment(RedisKey(key), by: count)
     }
     
-    func decrement(_ key: String, by count: Int) -> EventLoopFuture<Int> {
+    public func decrement(_ key: String, by count: Int) -> EventLoopFuture<Int> {
         return self.connection.decrement(RedisKey(key), by: count)
     }
 }
 
 extension RedisDriver.Connection {
     
-    func exists(_ keys: [String]) -> EventLoopFuture<Int> {
+    public func exists(_ keys: [String]) -> EventLoopFuture<Int> {
         return self.connection.exists(keys.map { RedisKey($0) })
     }
     
-    func delete(_ keys: [String]) -> EventLoopFuture<Int> {
+    public func delete(_ keys: [String]) -> EventLoopFuture<Int> {
         return self.connection.delete(keys.map { RedisKey($0) })
     }
     
-    func get<D: Decodable>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> {
+    public func get<D: Decodable>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> {
         return self.connection.get(RedisKey(key), as: Data.self).flatMapThrowing { data in try data.flatMap { try JSONDecoder().decode(D.self, from: $0) } }
     }
     
-    func set<E: Encodable>(_ key: String, as type: E) -> EventLoopFuture<Void> {
+    public func set<E: Encodable>(_ key: String, as type: E) -> EventLoopFuture<Void> {
         do {
             return try self.connection.set(RedisKey(key), to: JSONEncoder().encode(type))
         } catch {

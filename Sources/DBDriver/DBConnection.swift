@@ -54,45 +54,6 @@ public protocol DBConnection: AnyObject {
         onRow: @escaping (DBQueryRow) -> Void
     ) -> EventLoopFuture<DBQueryMetadata>
     
-    var allowSubscriptions: Bool { get set }
-    
-    var isSubscribed: Bool { get }
-    
-    func activeChannels(matching match: String?) -> EventLoopFuture<[String]>
-    
-    func subscribe(
-        toChannels channels: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
-        onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
-        onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
-    ) -> EventLoopFuture<Void>
-    
-    func unsubscribe(fromChannels channels: [String]) -> EventLoopFuture<Void>
-    
-    func subscribe(
-        toPatterns patterns: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
-        onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
-        onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
-    ) -> EventLoopFuture<Void>
-    
-    func unsubscribe(fromPatterns patterns: [String]) -> EventLoopFuture<Void>
-    
-    func increment(_ key: String) -> EventLoopFuture<Int>
-    
-    func decrement(_ key: String) -> EventLoopFuture<Int>
-    
-    func increment(_ key: String, by count: Int) -> EventLoopFuture<Int>
-    
-    func decrement(_ key: String, by count: Int) -> EventLoopFuture<Int>
-    
-    func exists(_ keys: [String]) -> EventLoopFuture<Int>
-    
-    func delete(_ keys: [String]) -> EventLoopFuture<Int>
-    
-    func get<D: Decodable>(_ key: String, as type: D.Type) -> EventLoopFuture<D?>
-    
-    func set<E: Encodable>(_ key: String, as type: E) -> EventLoopFuture<Void>
 }
 
 extension DBConnection {
@@ -124,97 +85,16 @@ extension DBConnection {
 
 extension DBConnection {
     
-    func execute(
+    public func execute(
         _ sql: SQLRaw
     ) -> EventLoopFuture<[DBQueryRow]> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
-    
+    public   
     func execute(
         _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) -> Void
     ) -> EventLoopFuture<DBQueryMetadata> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-}
-
-extension DBConnection {
-    
-    public var allowSubscriptions: Bool {
-        get {
-            return false
-        }
-        set {
-            fatalError("unsupported operation")
-        }
-    }
-    
-    public var isSubscribed: Bool {
-        return false
-    }
-    
-    public func activeChannels(matching match: String? = nil) -> EventLoopFuture<[String]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func subscribe(
-        toChannels channels: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
-        onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
-        onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
-    ) -> EventLoopFuture<Void> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func unsubscribe(fromChannels channels: [String]) -> EventLoopFuture<Void> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func subscribe(
-        toPatterns patterns: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
-        onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
-        onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
-    ) -> EventLoopFuture<Void> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func unsubscribe(fromPatterns patterns: [String]) -> EventLoopFuture<Void> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-}
-
-extension DBConnection {
-    
-    public func increment(_ key: String) -> EventLoopFuture<Int> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func decrement(_ key: String) -> EventLoopFuture<Int> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func increment(_ key: String, by count: Int) -> EventLoopFuture<Int> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func decrement(_ key: String, by count: Int) -> EventLoopFuture<Int> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func exists(_ keys: [String]) -> EventLoopFuture<Int> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func delete(_ keys: [String]) -> EventLoopFuture<Int> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func get<D: Decodable>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func set<E: Encodable>(_ key: String, as type: E) -> EventLoopFuture<Void> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
 }
