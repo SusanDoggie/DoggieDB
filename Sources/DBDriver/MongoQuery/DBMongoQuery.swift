@@ -46,16 +46,32 @@ extension DBMongoQuery {
     
     public func collection<T>(
         _ name: String,
+        withType _: T.Type,
         options: MongoCollectionOptions? = nil
     ) -> DBMongoCollection<T> {
         return DBMongoCollection(collection: database.collection(name, withType: T.self, options: options), session: session)
     }
     
+    public func collection(
+        _ name: String,
+        options: MongoCollectionOptions? = nil
+    ) -> DBMongoCollection<BSONDocument> {
+        return DBMongoCollection(collection: database.collection(name, options: options), session: session)
+    }
+    
     public func createCollection<T>(
         _ name: String,
+        withType _: T.Type,
         options: CreateCollectionOptions? = nil
     ) -> EventLoopFuture<MongoCollection<T>> {
         return database.createCollection(name, withType: T.self, options: options, session: session)
+    }
+    
+    public func createCollection(
+        _ name: String,
+        options: CreateCollectionOptions? = nil
+    ) -> EventLoopFuture<MongoCollection<BSONDocument>> {
+        return database.createCollection(name, options: options, session: session)
     }
     
     public func collections(
