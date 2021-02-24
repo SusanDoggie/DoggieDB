@@ -90,9 +90,9 @@ class RedisTest: XCTestCase {
             
             let value = Contact(name: "John", email: "john@example.com", phone: "98765432")
             
-            try connection.set("test", value: value).wait()
+            try connection.set("contact", value: value).wait()
             
-            let result = try connection.get("test", as: Contact.self).wait()
+            let result = try connection.get("contact", as: Contact.self).wait()
             
             XCTAssertEqual(value, result)
             

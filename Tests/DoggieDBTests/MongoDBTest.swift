@@ -28,8 +28,18 @@ import XCTest
 
 class MongoDBTest: XCTestCase {
     
+    struct Contact: Codable, Equatable {
+        
+        var name: String
+        
+        var email: String
+        
+        var phone: String
+        
+    }
+    
     var eventLoopGroup: MultiThreadedEventLoopGroup!
-    var connection: DBConnection!
+    var connection: MongoDBDriver.Connection!
     
     override func setUpWithError() throws {
         
@@ -51,7 +61,7 @@ class MongoDBTest: XCTestCase {
                 ]
             }
             
-            self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
+            self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait() as? MongoDBDriver.Connection
             
         } catch let error {
             
@@ -66,6 +76,27 @@ class MongoDBTest: XCTestCase {
             
             try self.connection.close().wait()
             try eventLoopGroup.syncShutdownGracefully()
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testSetAndGet() throws {
+        
+        do {
+            
+            let value = Contact(name: "John", email: "john@example.com", phone: "98765432")
+            
+            _ = try connection.query().createCollection("contacts", withType: Contact.self).wait()
+            
+            _ = try connection.query().collection("contacts", withType: Contact.self).insertOne(value).wait()
+            
+            let result = try connection.query().collection("contacts", withType: Contact.self).first().wait()
+            
+            XCTAssertEqual(value, result)
             
         } catch let error {
             
