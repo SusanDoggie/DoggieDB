@@ -96,6 +96,14 @@ extension DBMongoCollection {
 extension DBMongoCollection {
     
     public func createIndex(
+        _ keys: BSONDocument,
+        indexOptions: IndexOptions? = nil,
+        options: CreateIndexOptions? = nil
+    ) -> EventLoopFuture<String> {
+        return collection.createIndex(keys, indexOptions: indexOptions, options: options, session: session)
+    }
+    
+    public func createIndex(
         _ model: IndexModel,
         options: CreateIndexOptions? = nil
     ) -> EventLoopFuture<String> {
