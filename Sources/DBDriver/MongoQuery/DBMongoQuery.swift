@@ -44,17 +44,24 @@ extension MongoDBDriver.Connection {
 
 extension DBMongoQuery {
     
-    public func collection(
+    public func collection<T>(
         _ name: String,
         options: MongoCollectionOptions? = nil
-    ) -> DBMongoCollection {
-        return DBMongoCollection(collection: database.collection(name, options: options), session: session)
+    ) -> DBMongoCollection<T> {
+        return DBMongoCollection(collection: database.collection(name, withType: T.self, options: options), session: session)
     }
     
-    public func createCollection(
+    public func createCollection<T>(
         _ name: String,
         options: CreateCollectionOptions? = nil
-    ) -> EventLoopFuture<MongoCollection<BSONDocument>> {
-        return database.createCollection(name, options: options, session: session)
+    ) -> EventLoopFuture<MongoCollection<T>> {
+        return database.createCollection(name, withType: T.self, options: options, session: session)
+    }
+    
+    public func collections(
+        _ filter: BSONDocument? = nil,
+        options: ListCollectionsOptions? = nil
+    ) -> EventLoopFuture<MongoCursor<CollectionSpecification>> {
+        return database.listCollections(filter, options: options, session: session)
     }
 }

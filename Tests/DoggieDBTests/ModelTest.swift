@@ -26,85 +26,85 @@
 import DoggieDB
 import XCTest
 
-struct Contact: DBModel {
-    
-    static let schema: String = "Contact"
-    
-    @Field(default: .random)
-    var id: UUID
-    
-    @Field(name: "nick_name")
-    var name: String
-    
-    @Field(default: .now)
-    var createdAt: Date
-    
-    @Field(default: .now)
-    var updatedAt: Date
-    
-    @Field
-    var deletedAt: Date?
-    
-    init() {}
-    
-    init(id: UUID, name: String) {
-        self.id = id
-        self.name = name
-    }
-}
-
-struct Star: DBModel {
-    
-    static let schema: String = "Star"
-    
-    @Field(default: .random)
-    var id: UUID
-    
-    @Children(parentKey: \.$star)
-    var planets: [Planet]
-}
-
-struct Planet: DBModel {
-    
-    static let schema: String = "Planet"
-    
-    @Field(default: .random)
-    var id: UUID
-    
-    @Parent
-    var star: Star?
-    
-    @Siblings(through: PlanetTag.self, from: \.$planet, to: \.$tag)
-    var tags: [Tag]
-}
-
-struct PlanetTag: DBModel {
-    
-    static let schema = "PlanetTag"
-    
-    @Field(default: .random)
-    var id: UUID
-    
-    @Parent
-    var planet: Planet
-    
-    @Parent
-    var tag: Tag
-}
-
-struct Tag: DBModel {
-    
-    static let schema = "Tag"
-    
-    @Field(default: .random)
-    var id: UUID
-    
-    @Siblings(through: PlanetTag.self, from: \.$tag, to: \.$planet)
-    var planets: [Planet]
-}
-
 class ModelTest: XCTestCase {
     
+    struct Contact: DBModel {
+        
+        static let schema: String = "Contact"
+        
+        @Field(default: .random)
+        var id: UUID
+        
+        @Field(name: "nick_name")
+        var name: String
+        
+        @Field(default: .now)
+        var createdAt: Date
+        
+        @Field(default: .now)
+        var updatedAt: Date
+        
+        @Field
+        var deletedAt: Date?
+        
+        init() {}
+        
+        init(id: UUID, name: String) {
+            self.id = id
+            self.name = name
+        }
+    }
+    
+    struct Star: DBModel {
+        
+        static let schema: String = "Star"
+        
+        @Field(default: .random)
+        var id: UUID
+        
+        @Children(parentKey: \.$star)
+        var planets: [Planet]
+    }
+    
+    struct Planet: DBModel {
+        
+        static let schema: String = "Planet"
+        
+        @Field(default: .random)
+        var id: UUID
+        
+        @Parent
+        var star: Star?
+        
+        @Siblings(through: PlanetTag.self, from: \.$planet, to: \.$tag)
+        var tags: [Tag]
+    }
+    
+    struct PlanetTag: DBModel {
+        
+        static let schema = "PlanetTag"
+        
+        @Field(default: .random)
+        var id: UUID
+        
+        @Parent
+        var planet: Planet
+        
+        @Parent
+        var tag: Tag
+    }
+    
+    struct Tag: DBModel {
+        
+        static let schema = "Tag"
+        
+        @Field(default: .random)
+        var id: UUID
+        
+        @Siblings(through: PlanetTag.self, from: \.$tag, to: \.$planet)
+        var planets: [Planet]
+    }
+
     func testModel() {
         
         let contact = Contact(id: UUID(), name: "John")

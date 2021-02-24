@@ -28,6 +28,16 @@ import XCTest
 
 class RedisTest: XCTestCase {
     
+    struct Contact: Codable, Equatable {
+        
+        var name: String
+        
+        var email: String
+        
+        var phone: String
+        
+    }
+    
     var eventLoopGroup: MultiThreadedEventLoopGroup!
     var connection: RedisDriver.Connection!
     
@@ -77,16 +87,6 @@ class RedisTest: XCTestCase {
     func testSetAndGet() throws {
         
         do {
-            
-            struct Contact: Codable, Equatable {
-                
-                var name: String
-                
-                var email: String
-                
-                var phone: String
-                
-            }
             
             let value = Contact(name: "John", email: "john@example.com", phone: "98765432")
             

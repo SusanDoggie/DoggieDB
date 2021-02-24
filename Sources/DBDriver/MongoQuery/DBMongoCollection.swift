@@ -25,9 +25,9 @@
 
 import MongoSwift
 
-public struct DBMongoCollection {
+public struct DBMongoCollection<T: Codable> {
     
-    let collection: MongoCollection<BSONDocument>
+    let collection: MongoCollection<T>
     
     let session: ClientSession?
 }
@@ -44,14 +44,14 @@ extension DBMongoCollection {
     public func find(
         _ filter: BSONDocument = [:],
         options: FindOptions? = nil
-    ) -> EventLoopFuture<MongoCursor<BSONDocument>> {
+    ) -> EventLoopFuture<MongoCursor<T>> {
         return collection.find(filter, options: options, session: session)
     }
     
     public func first(
         _ filter: BSONDocument = [:],
         options: FindOneOptions? = nil
-    ) -> EventLoopFuture<BSONDocument?> {
+    ) -> EventLoopFuture<T?> {
         return collection.findOne(filter, options: options, session: session)
     }
 }
@@ -69,7 +69,7 @@ extension DBMongoCollection {
 extension DBMongoCollection {
     
     public func bulkWrite(
-        _ requests: [WriteModel<BSONDocument>],
+        _ requests: [WriteModel<T>],
         options: BulkWriteOptions? = nil
     ) -> EventLoopFuture<BulkWriteResult?> {
         return collection.bulkWrite(requests, options: options, session: session)
@@ -139,14 +139,14 @@ extension DBMongoCollection {
         return collection.dropIndex(name, options: options, session: session)
     }
     
-    func dropIndex(
+    public func dropIndex(
         _ keys: BSONDocument,
         options: DropIndexOptions? = nil
     ) -> EventLoopFuture<Void> {
         return collection.dropIndex(keys, options: options, session: session)
     }
     
-    func dropIndex(
+    public func dropIndex(
         _ model: IndexModel,
         options: DropIndexOptions? = nil
     ) -> EventLoopFuture<Void> {
@@ -165,7 +165,7 @@ extension DBMongoCollection {
     public func deleteFirst(
         _ filter: BSONDocument,
         options: FindOneAndDeleteOptions? = nil
-    ) -> EventLoopFuture<BSONDocument?> {
+    ) -> EventLoopFuture<T?> {
         return collection.findOneAndDelete(filter, options: options, session: session)
     }
     
@@ -173,15 +173,15 @@ extension DBMongoCollection {
         filter: BSONDocument,
         update: BSONDocument,
         options: FindOneAndUpdateOptions? = nil
-    ) -> EventLoopFuture<BSONDocument?> {
+    ) -> EventLoopFuture<T?> {
         return collection.findOneAndUpdate(filter: filter, update: update, options: options, session: session)
     }
     
     public func replaceFirst(
         filter: BSONDocument,
-        replacement: BSONDocument,
+        replacement: T,
         options: FindOneAndReplaceOptions? = nil
-    ) -> EventLoopFuture<BSONDocument?> {
+    ) -> EventLoopFuture<T?> {
         return collection.findOneAndReplace(filter: filter, replacement: replacement, options: options, session: session)
     }
 }
@@ -189,14 +189,14 @@ extension DBMongoCollection {
 extension DBMongoCollection {
     
     public func insertOne(
-        _ value: BSONDocument,
+        _ value: T,
         options: InsertOneOptions? = nil
     ) -> EventLoopFuture<InsertOneResult?> {
         return collection.insertOne(value, options: options, session: session)
     }
     
     public func insertMany(
-        _ values: [BSONDocument],
+        _ values: [T],
         options: InsertManyOptions? = nil
     ) -> EventLoopFuture<InsertManyResult?> {
         return collection.insertMany(values, options: options, session: session)
@@ -207,7 +207,7 @@ extension DBMongoCollection {
     
     public func replaceOne(
         filter: BSONDocument,
-        replacement: BSONDocument,
+        replacement: T,
         options: ReplaceOptions? = nil
     ) -> EventLoopFuture<UpdateResult?> {
         return collection.replaceOne(filter: filter, replacement: replacement, options: options, session: session)

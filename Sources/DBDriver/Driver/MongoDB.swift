@@ -25,23 +25,23 @@
 
 import MongoSwift
 
-struct MongoDBDriver: DBDriverProtocol {
+public struct MongoDBDriver: DBDriverProtocol {
     
     static var defaultPort: Int { 27017 }
 }
 
 extension MongoDBDriver {
     
-    class Connection: DBConnection {
+    public class Connection: DBConnection {
         
-        var driver: DBDriver { return .mongoDB }
+        public var driver: DBDriver { return .mongoDB }
         
-        private(set) var isClosed: Bool = false
+        public private(set) var isClosed: Bool = false
         
         let client: MongoClient
         let database: MongoDatabase?
         
-        let eventLoop: EventLoop
+        public let eventLoop: EventLoop
         
         init(client: MongoClient, database: MongoDatabase?, eventLoop: EventLoop) {
             self.client = client
@@ -49,7 +49,7 @@ extension MongoDBDriver {
             self.eventLoop = eventLoop
         }
         
-        func close() -> EventLoopFuture<Void> {
+        public func close() -> EventLoopFuture<Void> {
             let closeResult = client.close()
             closeResult.whenComplete { _ in self.isClosed = true }
             return closeResult
@@ -95,7 +95,7 @@ extension MongoDBDriver {
 
 extension MongoDBDriver.Connection {
     
-    func databases() -> EventLoopFuture<[String]> {
+    public func databases() -> EventLoopFuture<[String]> {
         return self.client.listDatabaseNames()
     }
 }
