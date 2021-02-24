@@ -99,3 +99,17 @@ extension MongoDBDriver.Connection {
         return self.client.listDatabaseNames()
     }
 }
+
+extension MongoDBDriver.Connection {
+    
+    public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
+        return self.client.startSession(options: options)
+    }
+    
+    public func withSession<T>(
+        options: ClientSessionOptions? = nil,
+        _ sessionBody: (ClientSession) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        return self.client.withSession(options: options, sessionBody)
+    }
+}
