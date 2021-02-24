@@ -90,8 +90,8 @@ extension DBConnection {
     ) -> EventLoopFuture<[DBQueryRow]> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
-    public   
-    func execute(
+    
+    public func execute(
         _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) -> Void
     ) -> EventLoopFuture<DBQueryMetadata> {
