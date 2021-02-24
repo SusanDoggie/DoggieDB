@@ -29,7 +29,7 @@ import XCTest
 class RedisTest: XCTestCase {
     
     var eventLoopGroup: MultiThreadedEventLoopGroup!
-    var connection: DBConnection!
+    var connection: RedisDriver.Connection!
     
     override func setUpWithError() throws {
         
@@ -51,7 +51,7 @@ class RedisTest: XCTestCase {
                 ]
             }
             
-            self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
+            self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait() as? RedisDriver.Connection
             
         } catch let error {
             
@@ -66,6 +66,35 @@ class RedisTest: XCTestCase {
             
             try self.connection.close().wait()
             try eventLoopGroup.syncShutdownGracefully()
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testSetAndGet() throws {
+        
+        do {
+            
+            struct Contact: Codable, Equatable {
+                
+                var name: String
+                
+                var email: String
+                
+                var phone: String
+                
+            }
+            
+            let value = Contact(name: "John", email: "john@example.com", phone: "98765432")
+            
+            try connection.set("test", value: value).wait()
+            
+            let result = try connection.get("test", as: Contact.self).wait()
+            
+            XCTAssertEqual(value, result)
             
         } catch let error {
             

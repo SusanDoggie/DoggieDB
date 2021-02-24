@@ -211,9 +211,9 @@ extension RedisDriver.Connection {
         return self.connection.get(RedisKey(key), as: Data.self).flatMapThrowing { data in try data.flatMap { try JSONDecoder().decode(D.self, from: $0) } }
     }
     
-    public func set<E: Encodable>(_ key: String, as type: E) -> EventLoopFuture<Void> {
+    public func set<E: Encodable>(_ key: String, value: E) -> EventLoopFuture<Void> {
         do {
-            return try self.connection.set(RedisKey(key), to: JSONEncoder().encode(type))
+            return try self.connection.set(RedisKey(key), to: JSONEncoder().encode(value))
         } catch {
             return self.eventLoop.makeFailedFuture(error)
         }
