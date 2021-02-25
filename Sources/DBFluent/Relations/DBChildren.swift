@@ -36,9 +36,13 @@ public struct DBChildren<From: DBModel, To: DBModel> {
         case optional(KeyPath<To, To.Parent<From?>>)
     }
     
-    public let parentKey: ParentKey
+    private let _parentKey: ParentKey!
     
-    public private(set) var children: EventLoopFuture<[To]>?
+    public var parentKey: ParentKey {
+        return _parentKey
+    }
+    
+    public private(set) var children: Future<[To]>?
     
     var loader: (() -> EventLoopFuture<[To]>)! {
         didSet {
@@ -47,21 +51,39 @@ public struct DBChildren<From: DBModel, To: DBModel> {
     }
     
     public init(parentKey: KeyPath<To, To.Parent<From>>) {
-        self.parentKey = .required(parentKey)
+        self._parentKey = .required(parentKey)
         self.children = nil
     }
     
     public init(parentKey: KeyPath<To, To.Parent<From?>>) {
-        self.parentKey = .optional(parentKey)
+        self._parentKey = .optional(parentKey)
         self.children = nil
     }
     
     public var wrappedValue: [To] {
-        return try! self.wait()
+        get {
+            return try! self.wait()
+        }
+        set {
+            if let eventLoop = children?.eventLoop {
+                children = .future(eventLoop.makeSucceededFuture(newValue))
+            } else {
+                children = .value(newValue)
+            }
+        }
     }
     
     public var projectedValue: DBChildren {
         return self
+    }
+}
+
+extension DBChildren: Decodable where To: Decodable {
+    
+    public init(from decoder: Decoder) throws {
+        self._parentKey = nil
+        self.children = nil
+        self.wrappedValue = try [To](from: decoder)
     }
 }
 
@@ -72,12 +94,26 @@ extension DBChildren: Encodable where To: Encodable {
     }
 }
 
+extension DBChildren: Equatable where To: Equatable {
+    
+    public static func == (lhs: DBChildren, rhs: DBChildren) -> Bool {
+        return lhs.wrappedValue == rhs.wrappedValue
+    }
+}
+
+extension DBChildren: Hashable where To: Hashable {
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.wrappedValue)
+    }
+}
+
 extension DBChildren {
     
     @discardableResult
     public mutating func reload() -> EventLoopFuture<[To]> {
         let future = loader()
-        self.children = future
+        self.children = .future(future)
         return future
     }
 }

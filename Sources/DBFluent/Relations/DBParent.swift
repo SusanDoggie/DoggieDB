@@ -94,10 +94,32 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
     }
 }
 
+extension DBParent: Decodable where To: Decodable {
+    
+    public init(from decoder: Decoder) throws {
+        self.init()
+        self.wrappedValue = try To(from: decoder)
+    }
+}
+
 extension DBParent: Encodable where To: Encodable {
     
     public func encode(to encoder: Encoder) throws {
         try self.wait().encode(to: encoder)
+    }
+}
+
+extension DBParent: Equatable where To: Equatable {
+    
+    public static func == (lhs: DBParent, rhs: DBParent) -> Bool {
+        return lhs.wrappedValue == rhs.wrappedValue
+    }
+}
+
+extension DBParent: Hashable where To: Hashable {
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.wrappedValue)
     }
 }
 

@@ -69,6 +69,20 @@ extension DBSiblings: Encodable where To: Encodable {
     }
 }
 
+extension DBSiblings: Equatable where To: Equatable {
+    
+    public static func == (lhs: DBSiblings, rhs: DBSiblings) -> Bool {
+        return lhs.wrappedValue == rhs.wrappedValue
+    }
+}
+
+extension DBSiblings: Hashable where To: Hashable {
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.wrappedValue)
+    }
+}
+
 extension DBSiblings {
     
     @discardableResult

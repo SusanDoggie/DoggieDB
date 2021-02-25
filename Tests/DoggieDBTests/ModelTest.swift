@@ -28,7 +28,7 @@ import XCTest
 
 class ModelTest: XCTestCase {
     
-    struct Contact: DBModel, Encodable {
+    struct Contact: DBModel, Codable {
         
         static let schema: String = "Contact"
         
@@ -173,5 +173,65 @@ class ModelTest: XCTestCase {
         """
         
         try XCTAssertEqual(Json(decode: result), Json(decode: answer))
+    }
+    
+    struct Star2: DBModel, Codable, Equatable {
+        
+        static let schema: String = "Star"
+        
+        @Field(default: .random)
+        var id: UUID
+        
+        @Children(parentKey: \.$star)
+        var planets: [Planet2]
+        
+        init() {}
+        
+        init(id: UUID) {
+            self.id = id
+        }
+    }
+    
+    struct Planet2: DBModel, Codable, Equatable {
+        
+        static let schema: String = "Planet"
+        
+        @Field(default: .random)
+        var id: UUID
+        
+        @Parent
+        var star: Star2?
+        
+        init() {}
+        
+        init(id: UUID, star: Star2? = nil) {
+            self.id = id
+            self.star = star
+        }
+    }
+    
+    func testModelDecode() throws {
+        
+        let id1 = UUID()
+        let id2 = UUID()
+        
+        let json = """
+        {
+            "id": "\(id2)",
+            "star": {
+                "id": "\(id1)",
+                "planets": []
+            }
+        }
+        """
+        
+        let decoder = JSONDecoder()
+        
+        let planet = try decoder.decode(Planet2.self, from: json.data(using: .utf8) ?? Data())
+        
+        XCTAssertEqual(planet.id, id2)
+        XCTAssertEqual(planet.star?.id, id1)
+        XCTAssertEqual(planet.star?.planets, [])
+        
     }
 }

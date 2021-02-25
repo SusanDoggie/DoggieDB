@@ -71,9 +71,31 @@ public struct DBField<Model: DBModel, Value: DBDataConvertible> {
     }
 }
 
+extension DBField: Decodable where Value: Decodable {
+    
+    public init(from decoder: Decoder) throws {
+        self.init()
+        self.value = try Value(from: decoder)
+    }
+}
+
 extension DBField: Encodable where Value: Encodable {
     
     public func encode(to encoder: Encoder) throws {
         try self.value?.encode(to: encoder)
+    }
+}
+
+extension DBField: Equatable where Value: Equatable {
+    
+    public static func == (lhs: DBField, rhs: DBField) -> Bool {
+        return lhs.value == rhs.value
+    }
+}
+
+extension DBField: Hashable where Value: Hashable {
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.value)
     }
 }
