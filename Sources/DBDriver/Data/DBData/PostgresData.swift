@@ -311,7 +311,7 @@ extension PostgresData {
                 
                 let days = Int64(date.timeIntervalSince(psqlDateStart)) / secondsInDay
                 
-                var buffer = ByteBufferAllocator().buffer(capacity: 0)
+                var buffer = ByteBufferAllocator().buffer(capacity: 4)
                 buffer.writeInteger(Int32(days))
                 self.init(type: .date, formatCode: .binary, value: buffer)
                 
