@@ -41,6 +41,12 @@ extension DBMongoCollection {
         return collection.countDocuments(filter, options: options, session: session)
     }
     
+    public func estimatedCount(
+        options: EstimatedDocumentCountOptions? = nil
+    ) -> EventLoopFuture<Int> {
+        return collection.estimatedDocumentCount(options: options)
+    }
+    
     public func find(
         _ filter: BSONDocument = [:],
         options: FindOptions? = nil
