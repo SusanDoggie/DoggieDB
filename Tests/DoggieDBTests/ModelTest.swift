@@ -28,7 +28,7 @@ import XCTest
 
 class ModelTest: XCTestCase {
     
-    struct Contact: DBModel {
+    struct Contact: DBModel, Encodable {
         
         static let schema: String = "Contact"
         
@@ -55,7 +55,7 @@ class ModelTest: XCTestCase {
         }
     }
     
-    struct Star: DBModel {
+    struct Star: DBModel, Encodable {
         
         static let schema: String = "Star"
         
@@ -64,9 +64,15 @@ class ModelTest: XCTestCase {
         
         @Children(parentKey: \.$star)
         var planets: [Planet]
+        
+        init() {}
+        
+        init(id: UUID) {
+            self.id = id
+        }
     }
     
-    struct Planet: DBModel {
+    struct Planet: DBModel, Encodable {
         
         static let schema: String = "Planet"
         
@@ -78,9 +84,16 @@ class ModelTest: XCTestCase {
         
         @Siblings(through: PlanetTag.self, from: \.$planet, to: \.$tag)
         var tags: [Tag]
+        
+        init() {}
+        
+        init(id: UUID, star: Star? = nil) {
+            self.id = id
+            self.star = star
+        }
     }
     
-    struct PlanetTag: DBModel {
+    struct PlanetTag: DBModel, Encodable {
         
         static let schema = "PlanetTag"
         
@@ -94,7 +107,7 @@ class ModelTest: XCTestCase {
         var tag: Tag
     }
     
-    struct Tag: DBModel {
+    struct Tag: DBModel, Encodable {
         
         static let schema = "Tag"
         
@@ -132,5 +145,33 @@ class ModelTest: XCTestCase {
         
         XCTAssertNotNil(fields.first { $0.name == "star" })
         XCTAssertNil(planet.star)
+    }
+    
+    func testModelEncode() throws {
+        
+        let id1 = UUID()
+        let id2 = UUID()
+        
+        let star = Star(id: id1)
+        
+        let planet = Planet(id: id2, star: star)
+        
+        let encoder = JSONEncoder()
+        let json = try encoder.encode(planet)
+        
+        let result = String(bytes: json, encoding: .utf8) ?? ""
+        
+        let answer = """
+        {
+            "id": "\(id2)",
+            "star": {
+                "id": "\(id1)",
+                "planets": []
+            },
+            "tags": []
+        }
+        """
+        
+        try XCTAssertEqual(Json(decode: result), Json(decode: answer))
     }
 }
