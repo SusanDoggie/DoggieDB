@@ -70,3 +70,10 @@ public struct DBField<Model: DBModel, Value: DBDataConvertible> {
         return self
     }
 }
+
+extension DBField: Encodable where Value: Encodable {
+    
+    public func encode(to encoder: Encoder) throws {
+        try self.value?.encode(to: encoder)
+    }
+}

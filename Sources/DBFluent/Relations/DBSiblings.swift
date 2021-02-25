@@ -62,6 +62,13 @@ public struct DBSiblings<From: DBModel, To: DBModel, Through: DBModel> {
     }
 }
 
+extension DBSiblings: Encodable where To: Encodable {
+    
+    public func encode(to encoder: Encoder) throws {
+        try self.wait().encode(to: encoder)
+    }
+}
+
 extension DBSiblings {
     
     @discardableResult

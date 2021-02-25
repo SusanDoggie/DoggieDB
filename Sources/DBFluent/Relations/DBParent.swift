@@ -94,6 +94,13 @@ public struct DBParent<From: DBModel, To: _DBModel> where To.Key: Hashable, To.K
     }
 }
 
+extension DBParent: Encodable where To: Encodable {
+    
+    public func encode(to encoder: Encoder) throws {
+        try self.wait().encode(to: encoder)
+    }
+}
+
 extension DBParent {
     
     @discardableResult
