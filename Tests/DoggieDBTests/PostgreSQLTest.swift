@@ -266,10 +266,32 @@ class PostgreSQLTest: XCTestCase {
         
         do {
             
-            let time = DateComponents(hour: 21, minute: 0, second: 0, nanosecond: 0)
+            let time = DateComponents(hour: 21, minute: 16, second: 32, nanosecond: 0)
             
             let result = try connection.execute("SELECT \(time)::time as \"time\"").wait()
             
+            XCTAssertEqual(result[0]["time"]?.dateComponents?.hour, time.hour)
+            XCTAssertEqual(result[0]["time"]?.dateComponents?.minute, time.minute)
+            XCTAssertEqual(result[0]["time"]?.dateComponents?.second, time.second)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testBindTimetz() throws {
+        
+        do {
+            
+            let timeZone = TimeZone(secondsFromGMT: 28800)
+            
+            let time = DateComponents(timeZone: timeZone, hour: 21, minute: 16, second: 32, nanosecond: 0)
+            
+            let result = try connection.execute("SELECT \(time)::timetz as \"time\"").wait()
+            
+            XCTAssertEqual(result[0]["time"]?.dateComponents?.timeZone?.secondsFromGMT(), timeZone?.secondsFromGMT())
             XCTAssertEqual(result[0]["time"]?.dateComponents?.hour, time.hour)
             XCTAssertEqual(result[0]["time"]?.dateComponents?.minute, time.minute)
             XCTAssertEqual(result[0]["time"]?.dateComponents?.second, time.second)
