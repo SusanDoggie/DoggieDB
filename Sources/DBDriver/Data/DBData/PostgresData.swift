@@ -307,7 +307,7 @@ extension PostgresData {
                 formatter.formatOptions = [.withFullDate]
                 
                 let psqlDateStart = Date(timeIntervalSince1970: 946_684_800)
-                let secondsInDay: Double = 24 * 60 * 60
+                let secondsInDay: TimeInterval = 24 * 60 * 60
                 
                 let days = Int32(floor(date.timeIntervalSince(psqlDateStart) / secondsInDay))
                 
