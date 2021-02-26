@@ -303,6 +303,24 @@ class PostgreSQLTest: XCTestCase {
         }
     }
     
+    func testBindTimetz2() throws {
+        
+        do {
+            
+            let result = try connection.execute("SELECT '21:16:32+08:00'::timetz as \"time\"").wait()
+            
+            XCTAssertEqual(result[0]["time"]?.dateComponents?.timeZone?.secondsFromGMT(), 28800)
+            XCTAssertEqual(result[0]["time"]?.dateComponents?.hour, 21)
+            XCTAssertEqual(result[0]["time"]?.dateComponents?.minute, 16)
+            XCTAssertEqual(result[0]["time"]?.dateComponents?.second, 32)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
     func testRecursive() throws {
         
         do {
