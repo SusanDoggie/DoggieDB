@@ -183,7 +183,20 @@ extension DBData {
                 
                 self = DBData(dateComponents)
                 
-            case .binary: throw Database.Error.unsupportedType
+            case .binary:
+                
+                guard var value = value.value else { throw Database.Error.unsupportedType }
+                
+                let microseconds = value.readInteger(as: Int64.self)!
+                let zone = value.readInteger(as: Int32.self)!
+                
+                let seconds = Double(microseconds) / Double(1_000_000)
+                let date = Date(timeInterval: seconds, since: psqlDateStart)
+                
+                var dateComponents = DBData.calendar.dateComponents(Calendar.componentsOfTime, from: date)
+                dateComponents.timeZone = TimeZone(secondsFromGMT: Int(-zone))
+                
+                self = DBData(dateComponents)
             }
             
         case .timestamp:
@@ -290,9 +303,14 @@ extension PostgresData {
                 
                 let time = ((hour * 60 + minute) * 60 + second) * 1_000_000 + microsecond
                 
-                var buffer = ByteBufferAllocator().buffer(capacity: 8)
+                var buffer = ByteBufferAllocator().buffer(capacity: value.timeZone == nil ? 8 : 12)
                 buffer.writeInteger(time)
-                self.init(type: .time, formatCode: .binary, value: buffer)
+                
+                if let timeZone = value.timeZone {
+                    buffer.writeInteger(Int32(-timeZone.secondsFromGMT()))
+                }
+                
+                self.init(type: value.timeZone == nil ? .time : .timetz, formatCode: .binary, value: buffer)
                 
             } else if value.containsDate() && !value.containsTime() {
                 
