@@ -303,14 +303,9 @@ extension PostgresData {
                 
                 let time = ((hour * 60 + minute) * 60 + second) * 1_000_000 + microsecond
                 
-                var buffer = ByteBufferAllocator().buffer(capacity: value.timeZone == nil ? 8 : 12)
+                var buffer = ByteBufferAllocator().buffer(capacity: 8)
                 buffer.writeInteger(time)
-                
-                if let timeZone = value.timeZone {
-                    buffer.writeInteger(Int32(-timeZone.secondsFromGMT()))
-                }
-                
-                self.init(type: value.timeZone == nil ? .time : .timetz, formatCode: .binary, value: buffer)
+                self.init(type: .time, formatCode: .binary, value: buffer)
                 
             } else if value.containsDate() && !value.containsTime() {
                 
