@@ -307,12 +307,12 @@ extension PostgresData {
                 formatter.formatOptions = [.withFullDate]
                 
                 let psqlDateStart = Date(timeIntervalSince1970: 946_684_800)
-                let secondsInDay: Int64 = 24 * 60 * 60
+                let secondsInDay: Double = 24 * 60 * 60
                 
-                let days = Int64(date.timeIntervalSince(psqlDateStart)) / secondsInDay
+                let days = Int32(floor(date.timeIntervalSince(psqlDateStart) / secondsInDay))
                 
                 var buffer = ByteBufferAllocator().buffer(capacity: 4)
-                buffer.writeInteger(Int32(days))
+                buffer.writeInteger(days)
                 self.init(type: .date, formatCode: .binary, value: buffer)
                 
             } else if let date = calendar.date(from: value) {
