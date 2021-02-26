@@ -25,6 +25,9 @@
 
 import PostgresNIO
 
+private let psqlDateStart = Date(timeIntervalSince1970: 946_684_800)
+private let secondsInDay: TimeInterval = 24 * 60 * 60
+
 extension PostgresData {
     
     static func _decodeDateString(_ string: String) -> DateComponents? {
@@ -162,7 +165,7 @@ extension DBData {
                 
                 let microseconds = value.readInteger(as: Int64.self)!
                 let seconds = Double(microseconds) / Double(1_000_000)
-                let date = Date(timeInterval: seconds, since: Date(timeIntervalSince1970: 946_684_800))
+                let date = Date(timeInterval: seconds, since: psqlDateStart)
                 
                 var dateComponents = DBData.calendar.dateComponents(Calendar.componentsOfTime, from: date)
                 dateComponents.timeZone = TimeZone(secondsFromGMT: 0)
@@ -280,20 +283,16 @@ extension PostgresData {
             
             if !value.containsDate() && value.containsTime() {
                 
-                var value = value
-                value.timeZone = .current
-                value.year = 2000
-                value.month = 1
-                value.day = 1
+                let hour = value.hour.map(Int64.init) ?? 0
+                let minute = value.minute.map(Int64.init) ?? 0
+                let second = value.second.map(Int64.init) ?? 0
+                let microsecond = value.nanosecond.map { Int64($0 / 1000) } ?? 0
                 
-                guard let date = calendar.date(from: value) else { throw Database.Error.unsupportedType }
+                let time = ((hour * 60 + minute) * 60 + second) * 1_000_000 + microsecond
                 
-                let formatter = ISO8601DateFormatter()
-                formatter.formatOptions = [.withFullTime, .withFractionalSeconds]
-                
-                var buffer = ByteBufferAllocator().buffer(capacity: 0)
-                buffer.writeString(formatter.string(from: date))
-                self.init(type: .time, formatCode: .text, value: buffer)
+                var buffer = ByteBufferAllocator().buffer(capacity: 8)
+                buffer.writeInteger(time)
+                self.init(type: .time, formatCode: .binary, value: buffer)
                 
             } else if value.containsDate() && !value.containsTime() {
                 
@@ -305,9 +304,6 @@ extension PostgresData {
                 let formatter = ISO8601DateFormatter()
                 formatter.timeZone = value.timeZone ?? TimeZone.current
                 formatter.formatOptions = [.withFullDate]
-                
-                let psqlDateStart = Date(timeIntervalSince1970: 946_684_800)
-                let secondsInDay: TimeInterval = 24 * 60 * 60
                 
                 let days = Int32(floor(date.timeIntervalSince(psqlDateStart) / secondsInDay))
                 
