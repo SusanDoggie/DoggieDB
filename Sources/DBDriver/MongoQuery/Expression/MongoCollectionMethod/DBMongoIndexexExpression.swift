@@ -1,5 +1,5 @@
 //
-//  DBMongoQuery.swift
+//  DBMongoIndexexExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,34 +25,21 @@
 
 import MongoSwift
 
-public struct DBMongoQuery {
+public struct DBMongoIndexexExpression<T: Codable> {
     
-    let database: MongoDatabase
-    
-    let session: ClientSession?
+    let query: DBMongoCollection<T>
 }
 
-extension MongoDBDriver.Connection {
+extension DBMongoCollectionExpression {
     
-    public func mongoQuery(session: ClientSession? = nil) throws -> DBMongoQuery {
-        guard let database = self.database else {
-            throw Database.Error.invalidOperation(message: "database not selected.")
-        }
-        return DBMongoQuery(database: database, session: session)
+    public func indexes() -> DBMongoIndexexExpression<T> {
+        return DBMongoIndexexExpression(query: query())
     }
 }
 
-extension DBMongoQuery {
+extension DBMongoIndexexExpression {
     
-    public func collection(_ name: String) -> DBMongoCollectionExpression<BSONDocument> {
-        return DBMongoCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func createCollection(_ name: String) -> DBMongoCreateCollectionExpression<BSONDocument> {
-        return DBMongoCreateCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func collections(_ name: String) -> DBMongoListCollectionsExpression<BSONDocument> {
-        return DBMongoListCollectionsExpression(database: database, session: session)
+    public func execute() -> EventLoopFuture<MongoCursor<IndexModel>> {
+        return query.collection.listIndexes(session: query.session)
     }
 }

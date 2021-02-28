@@ -1,5 +1,5 @@
 //
-//  DBMongoQuery.swift
+//  DBMongoCountDocumentsExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,34 +25,36 @@
 
 import MongoSwift
 
-public struct DBMongoQuery {
+public struct DBMongoCountDocumentsExpression<T: Codable>: DBMongoExpression {
     
-    let database: MongoDatabase
+    let query: DBMongoCollection<T>
     
-    let session: ClientSession?
+    public var filter: BSONDocument
+    
+    public var options: CountDocumentsOptions = CountDocumentsOptions()
 }
 
-extension MongoDBDriver.Connection {
+extension DBMongoCountDocumentsExpression: DBMongoFilterOptions {}
+
+
+extension DBMongoCollectionExpression {
     
-    public func mongoQuery(session: ClientSession? = nil) throws -> DBMongoQuery {
-        guard let database = self.database else {
-            throw Database.Error.invalidOperation(message: "database not selected.")
-        }
-        return DBMongoQuery(database: database, session: session)
+    public func count() -> DBMongoCountDocumentsExpression<T> {
+        return DBMongoCountDocumentsExpression(query: query(), filter: filter)
     }
 }
 
-extension DBMongoQuery {
+extension DBMongoCountDocumentsExpression {
     
-    public func collection(_ name: String) -> DBMongoCollectionExpression<BSONDocument> {
-        return DBMongoCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func createCollection(_ name: String) -> DBMongoCreateCollectionExpression<BSONDocument> {
-        return DBMongoCreateCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func collections(_ name: String) -> DBMongoListCollectionsExpression<BSONDocument> {
-        return DBMongoListCollectionsExpression(database: database, session: session)
+    public func execute() -> EventLoopFuture<Int> {
+        return query.collection.countDocuments(filter, options: options, session: query.session)
     }
 }
+
+extension CountDocumentsOptions: DBMongoCollationOptions {}
+extension CountDocumentsOptions: DBMongoIndexHintOptions {}
+extension CountDocumentsOptions: DBMongoLimitOptions {}
+extension CountDocumentsOptions: DBMongoSkipOptions {}
+extension CountDocumentsOptions: DBMongoReadConcernOptions {}
+extension CountDocumentsOptions: DBMongoReadPreferenceOptions {}
+extension CountDocumentsOptions: DBMongoMaxTimeMSOptions {}

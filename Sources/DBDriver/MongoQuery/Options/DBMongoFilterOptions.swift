@@ -1,5 +1,5 @@
 //
-//  DBMongoQuery.swift
+//  DBMongoFilterOptions.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,34 +25,18 @@
 
 import MongoSwift
 
-public struct DBMongoQuery {
+public protocol DBMongoFilterOptions {
     
-    let database: MongoDatabase
+    var filter: BSONDocument { get set }
     
-    let session: ClientSession?
 }
 
-extension MongoDBDriver.Connection {
+extension DBMongoFilterOptions {
     
-    public func mongoQuery(session: ClientSession? = nil) throws -> DBMongoQuery {
-        guard let database = self.database else {
-            throw Database.Error.invalidOperation(message: "database not selected.")
-        }
-        return DBMongoQuery(database: database, session: session)
-    }
-}
-
-extension DBMongoQuery {
-    
-    public func collection(_ name: String) -> DBMongoCollectionExpression<BSONDocument> {
-        return DBMongoCollectionExpression(database: database, session: session, name: name)
+    public func filter(_ filter: BSONDocument) -> Self {
+        var result = self
+        result.filter = filter
+        return result
     }
     
-    public func createCollection(_ name: String) -> DBMongoCreateCollectionExpression<BSONDocument> {
-        return DBMongoCreateCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func collections(_ name: String) -> DBMongoListCollectionsExpression<BSONDocument> {
-        return DBMongoListCollectionsExpression(database: database, session: session)
-    }
 }

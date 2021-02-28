@@ -1,5 +1,5 @@
 //
-//  DBMongoQuery.swift
+//  DBMongoCreateIndexExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,34 +25,41 @@
 
 import MongoSwift
 
-public struct DBMongoQuery {
+public struct DBMongoCreateIndexExpression<T: Codable>: DBMongoExpression {
     
-    let database: MongoDatabase
+    let query: DBMongoCollection<T>
     
-    let session: ClientSession?
+    public var model: IndexModel?
+    
+    public var options: CreateIndexOptions = CreateIndexOptions()
 }
 
-extension MongoDBDriver.Connection {
+extension DBMongoCollectionExpression {
     
-    public func mongoQuery(session: ClientSession? = nil) throws -> DBMongoQuery {
-        guard let database = self.database else {
-            throw Database.Error.invalidOperation(message: "database not selected.")
-        }
-        return DBMongoQuery(database: database, session: session)
+    public func createIndex() -> DBMongoCreateIndexExpression<T> {
+        return DBMongoCreateIndexExpression(query: query())
     }
 }
 
-extension DBMongoQuery {
+extension DBMongoCreateIndexExpression {
     
-    public func collection(_ name: String) -> DBMongoCollectionExpression<BSONDocument> {
-        return DBMongoCollectionExpression(database: database, session: session, name: name)
+    public func index(_ keys: BSONDocument, indexOptions: IndexOptions? = nil) -> Self {
+        var result = self
+        result.model = IndexModel(keys: keys, options: indexOptions)
+        return result
     }
     
-    public func createCollection(_ name: String) -> DBMongoCreateCollectionExpression<BSONDocument> {
-        return DBMongoCreateCollectionExpression(database: database, session: session, name: name)
+    public func index(_ model: IndexModel) -> Self {
+        var result = self
+        result.model = model
+        return result
     }
+}
+
+extension DBMongoCreateIndexExpression {
     
-    public func collections(_ name: String) -> DBMongoListCollectionsExpression<BSONDocument> {
-        return DBMongoListCollectionsExpression(database: database, session: session)
+    public func execute() -> EventLoopFuture<String> {
+        guard let model = self.model else { fatalError() }
+        return query.collection.createIndex(model, options: options, session: query.session)
     }
 }

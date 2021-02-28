@@ -1,5 +1,5 @@
 //
-//  DBMongoQuery.swift
+//  DBMongoDistinctExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,34 +25,45 @@
 
 import MongoSwift
 
-public struct DBMongoQuery {
+public struct DBMongoDistinctExpression<T: Codable>: DBMongoExpression {
     
-    let database: MongoDatabase
+    let query: DBMongoCollection<T>
     
-    let session: ClientSession?
+    public var fieldName: String?
+    
+    public var filter: BSONDocument
+    
+    public var options: DistinctOptions = DistinctOptions()
 }
 
-extension MongoDBDriver.Connection {
+extension DBMongoDistinctExpression: DBMongoFilterOptions {}
+
+
+extension DBMongoCollectionExpression {
     
-    public func mongoQuery(session: ClientSession? = nil) throws -> DBMongoQuery {
-        guard let database = self.database else {
-            throw Database.Error.invalidOperation(message: "database not selected.")
-        }
-        return DBMongoQuery(database: database, session: session)
+    public func distinct() -> DBMongoDistinctExpression<T> {
+        return DBMongoDistinctExpression(query: query(), filter: filter)
     }
 }
 
-extension DBMongoQuery {
+extension DBMongoDistinctExpression {
     
-    public func collection(_ name: String) -> DBMongoCollectionExpression<BSONDocument> {
-        return DBMongoCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func createCollection(_ name: String) -> DBMongoCreateCollectionExpression<BSONDocument> {
-        return DBMongoCreateCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func collections(_ name: String) -> DBMongoListCollectionsExpression<BSONDocument> {
-        return DBMongoListCollectionsExpression(database: database, session: session)
+    public func fieldName(_ fieldName: String) -> Self {
+        var result = self
+        result.fieldName = fieldName
+        return result
     }
 }
+
+extension DBMongoDistinctExpression {
+    
+    public func execute() -> EventLoopFuture<[BSON]> {
+        guard let fieldName = self.fieldName else { fatalError() }
+        return query.collection.distinct(fieldName: fieldName, filter: filter, options: options, session: query.session)
+    }
+}
+
+extension DistinctOptions: DBMongoCollationOptions {}
+extension DistinctOptions: DBMongoMaxTimeMSOptions {}
+extension DistinctOptions: DBMongoReadConcernOptions {}
+extension DistinctOptions: DBMongoReadPreferenceOptions {}

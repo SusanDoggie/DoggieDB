@@ -1,5 +1,5 @@
 //
-//  DBMongoQuery.swift
+//  DBMongoDeleteFirstExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,34 +25,33 @@
 
 import MongoSwift
 
-public struct DBMongoQuery {
+public struct DBMongoDeleteFirstExpression<T: Codable>: DBMongoExpression {
     
-    let database: MongoDatabase
+    let query: DBMongoCollection<T>
     
-    let session: ClientSession?
+    public var filter: BSONDocument
+    
+    public var options: FindOneAndDeleteOptions = FindOneAndDeleteOptions()
 }
 
-extension MongoDBDriver.Connection {
+extension DBMongoDeleteFirstExpression: DBMongoFilterOptions {}
+
+extension DBMongoCollectionExpression {
     
-    public func mongoQuery(session: ClientSession? = nil) throws -> DBMongoQuery {
-        guard let database = self.database else {
-            throw Database.Error.invalidOperation(message: "database not selected.")
-        }
-        return DBMongoQuery(database: database, session: session)
+    public func deleteFirst() -> DBMongoDeleteFirstExpression<T> {
+        return DBMongoDeleteFirstExpression(query: query(), filter: filter)
     }
 }
 
-extension DBMongoQuery {
+extension DBMongoDeleteFirstExpression {
     
-    public func collection(_ name: String) -> DBMongoCollectionExpression<BSONDocument> {
-        return DBMongoCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func createCollection(_ name: String) -> DBMongoCreateCollectionExpression<BSONDocument> {
-        return DBMongoCreateCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func collections(_ name: String) -> DBMongoListCollectionsExpression<BSONDocument> {
-        return DBMongoListCollectionsExpression(database: database, session: session)
+    public func execute() -> EventLoopFuture<T?> {
+        return query.collection.findOneAndDelete(filter, options: options, session: query.session)
     }
 }
+
+extension FindOneAndDeleteOptions: DBMongoCollationOptions {}
+extension FindOneAndDeleteOptions: DBMongoMaxTimeMSOptions {}
+extension FindOneAndDeleteOptions: DBMongoProjectionOptions {}
+extension FindOneAndDeleteOptions: DBMongoSortOptions {}
+extension FindOneAndDeleteOptions: DBMongoWriteConcernOptions {}

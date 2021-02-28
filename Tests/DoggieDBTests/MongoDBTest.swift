@@ -50,9 +50,9 @@ class MongoDBTest: XCTestCase {
             var url = URLComponents()
             url.scheme = "mongodb"
             url.host = env("MONGO_HOST") ?? "localhost"
-            url.user = env("MONGO_USERNAME")
-            url.password = env("MONGO_PASSWORD")
-            url.path = "/\(env("MONGO_DATABASE") ?? "")"
+            url.user = env("MONGO_USERNAME") ?? "doggiedb"
+            url.password = env("MONGO_PASSWORD") ?? "doggiedb"
+            url.path = "/\(env("MONGO_DATABASE") ?? "0")"
             
             if let ssl_mode = env("MONGO_SSLMODE") {
                 url.queryItems = [
@@ -90,11 +90,11 @@ class MongoDBTest: XCTestCase {
             
             let value = Contact(name: "John", email: "john@example.com", phone: "98765432")
             
-            _ = try connection.query().createCollection("contacts", withType: Contact.self).wait()
+            _ = try connection.mongoQuery().createCollection("contacts").withType(Contact.self).execute().wait()
             
-            _ = try connection.query().collection("contacts", withType: Contact.self).insertOne(value).wait()
+            _ = try connection.mongoQuery().collection("contacts").withType(Contact.self).insertOne().value(value).execute().wait()
             
-            let result = try connection.query().collection("contacts", withType: Contact.self).first().wait()
+            let result = try connection.mongoQuery().collection("contacts").withType(Contact.self).findOne().execute().wait()
             
             XCTAssertEqual(value, result)
             

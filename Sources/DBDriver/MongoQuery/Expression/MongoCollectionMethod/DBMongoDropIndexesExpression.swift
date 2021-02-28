@@ -1,5 +1,5 @@
 //
-//  DBMongoQuery.swift
+//  DBMongoDropIndexesExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,34 +25,26 @@
 
 import MongoSwift
 
-public struct DBMongoQuery {
+public struct DBMongoDropIndexesExpression<T: Codable>: DBMongoExpression {
     
-    let database: MongoDatabase
+    let query: DBMongoCollection<T>
     
-    let session: ClientSession?
+    public var options: DropIndexOptions = DropIndexOptions()
 }
 
-extension MongoDBDriver.Connection {
+extension DBMongoCollectionExpression {
     
-    public func mongoQuery(session: ClientSession? = nil) throws -> DBMongoQuery {
-        guard let database = self.database else {
-            throw Database.Error.invalidOperation(message: "database not selected.")
-        }
-        return DBMongoQuery(database: database, session: session)
+    public func dropIndexes() -> DBMongoDropIndexesExpression<T> {
+        return DBMongoDropIndexesExpression(query: query())
     }
 }
 
-extension DBMongoQuery {
+extension DBMongoDropIndexesExpression {
     
-    public func collection(_ name: String) -> DBMongoCollectionExpression<BSONDocument> {
-        return DBMongoCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func createCollection(_ name: String) -> DBMongoCreateCollectionExpression<BSONDocument> {
-        return DBMongoCreateCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func collections(_ name: String) -> DBMongoListCollectionsExpression<BSONDocument> {
-        return DBMongoListCollectionsExpression(database: database, session: session)
+    public func execute() -> EventLoopFuture<Void> {
+        return query.collection.dropIndexes(options: options, session: query.session)
     }
 }
+
+extension DropIndexOptions: DBMongoMaxTimeMSOptions {}
+extension DropIndexOptions: DBMongoWriteConcernOptions {}

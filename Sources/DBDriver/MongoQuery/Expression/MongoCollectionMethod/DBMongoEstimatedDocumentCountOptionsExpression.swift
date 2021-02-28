@@ -1,5 +1,5 @@
 //
-//  DBMongoQuery.swift
+//  DBMongoEstimatedDocumentCountOptionsExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,34 +25,28 @@
 
 import MongoSwift
 
-public struct DBMongoQuery {
+public struct DBMongoEstimatedDocumentCountOptionsExpression<T: Codable>: DBMongoExpression {
     
-    let database: MongoDatabase
+    let query: DBMongoCollection<T>
     
-    let session: ClientSession?
+    public var options: EstimatedDocumentCountOptions = EstimatedDocumentCountOptions()
 }
 
-extension MongoDBDriver.Connection {
+extension DBMongoCollectionExpression {
     
-    public func mongoQuery(session: ClientSession? = nil) throws -> DBMongoQuery {
-        guard let database = self.database else {
-            throw Database.Error.invalidOperation(message: "database not selected.")
-        }
-        return DBMongoQuery(database: database, session: session)
+    public func estimatedCount() -> DBMongoEstimatedDocumentCountOptionsExpression<T> {
+        return DBMongoEstimatedDocumentCountOptionsExpression(query: query())
+    }
+    
+}
+
+extension DBMongoEstimatedDocumentCountOptionsExpression {
+    
+    public func execute() -> EventLoopFuture<Int> {
+        return query.collection.estimatedDocumentCount(options: options)
     }
 }
 
-extension DBMongoQuery {
-    
-    public func collection(_ name: String) -> DBMongoCollectionExpression<BSONDocument> {
-        return DBMongoCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func createCollection(_ name: String) -> DBMongoCreateCollectionExpression<BSONDocument> {
-        return DBMongoCreateCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func collections(_ name: String) -> DBMongoListCollectionsExpression<BSONDocument> {
-        return DBMongoListCollectionsExpression(database: database, session: session)
-    }
-}
+extension EstimatedDocumentCountOptions: DBMongoReadConcernOptions {}
+extension EstimatedDocumentCountOptions: DBMongoReadPreferenceOptions {}
+extension EstimatedDocumentCountOptions: DBMongoMaxTimeMSOptions {}

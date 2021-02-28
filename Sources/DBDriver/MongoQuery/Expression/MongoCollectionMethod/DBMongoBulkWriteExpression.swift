@@ -1,5 +1,5 @@
 //
-//  DBMongoQuery.swift
+//  DBMongoBulkWriteExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,34 +25,39 @@
 
 import MongoSwift
 
-public struct DBMongoQuery {
+public struct DBMongoBulkWriteExpression<T: Codable>: DBMongoExpression {
     
-    let database: MongoDatabase
+    let query: DBMongoCollection<T>
     
-    let session: ClientSession?
+    public var requests: [WriteModel<T>]?
+    
+    public var options: BulkWriteOptions = BulkWriteOptions()
 }
 
-extension MongoDBDriver.Connection {
+extension DBMongoCollectionExpression {
     
-    public func mongoQuery(session: ClientSession? = nil) throws -> DBMongoQuery {
-        guard let database = self.database else {
-            throw Database.Error.invalidOperation(message: "database not selected.")
-        }
-        return DBMongoQuery(database: database, session: session)
+    public func bulkWrite() -> DBMongoBulkWriteExpression<T> {
+        return DBMongoBulkWriteExpression(query: query())
     }
 }
 
-extension DBMongoQuery {
+extension DBMongoBulkWriteExpression {
     
-    public func collection(_ name: String) -> DBMongoCollectionExpression<BSONDocument> {
-        return DBMongoCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func createCollection(_ name: String) -> DBMongoCreateCollectionExpression<BSONDocument> {
-        return DBMongoCreateCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func collections(_ name: String) -> DBMongoListCollectionsExpression<BSONDocument> {
-        return DBMongoListCollectionsExpression(database: database, session: session)
+    public func requests(_ requests: [WriteModel<T>]) -> Self {
+        var result = self
+        result.requests = requests
+        return result
     }
 }
+
+extension DBMongoBulkWriteExpression {
+    
+    public func execute() -> EventLoopFuture<BulkWriteResult?> {
+        guard let requests = self.requests else { fatalError() }
+        return query.collection.bulkWrite(requests, options: options, session: query.session)
+    }
+}
+
+extension BulkWriteOptions: DBMongoBypassDocumentValidationOptions {}
+extension BulkWriteOptions: DBMongoOrderedOptions {}
+extension BulkWriteOptions: DBMongoWriteConcernOptions {}

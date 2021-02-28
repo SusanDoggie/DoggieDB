@@ -1,5 +1,5 @@
 //
-//  DBMongoQuery.swift
+//  DBMongoDateCodingStrategyOptions.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,34 +25,18 @@
 
 import MongoSwift
 
-public struct DBMongoQuery {
+public protocol DBMongoDateCodingStrategyOptions {
     
-    let database: MongoDatabase
+    var dateCodingStrategy: DateCodingStrategy? { get set }
     
-    let session: ClientSession?
 }
 
-extension MongoDBDriver.Connection {
+extension DBMongoExpression where Options: DBMongoDateCodingStrategyOptions {
     
-    public func mongoQuery(session: ClientSession? = nil) throws -> DBMongoQuery {
-        guard let database = self.database else {
-            throw Database.Error.invalidOperation(message: "database not selected.")
-        }
-        return DBMongoQuery(database: database, session: session)
-    }
-}
-
-extension DBMongoQuery {
-    
-    public func collection(_ name: String) -> DBMongoCollectionExpression<BSONDocument> {
-        return DBMongoCollectionExpression(database: database, session: session, name: name)
+    public func dateCodingStrategy(_ dateCodingStrategy: DateCodingStrategy) -> Self {
+        var result = self
+        result.options.dateCodingStrategy = dateCodingStrategy
+        return result
     }
     
-    public func createCollection(_ name: String) -> DBMongoCreateCollectionExpression<BSONDocument> {
-        return DBMongoCreateCollectionExpression(database: database, session: session, name: name)
-    }
-    
-    public func collections(_ name: String) -> DBMongoListCollectionsExpression<BSONDocument> {
-        return DBMongoListCollectionsExpression(database: database, session: session)
-    }
 }
