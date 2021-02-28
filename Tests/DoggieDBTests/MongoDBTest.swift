@@ -39,7 +39,7 @@ class MongoDBTest: XCTestCase {
     }
     
     var eventLoopGroup: MultiThreadedEventLoopGroup!
-    var connection: MongoDBDriver.Connection!
+    var connection: DBConnection!
     
     override func setUpWithError() throws {
         
@@ -61,7 +61,7 @@ class MongoDBTest: XCTestCase {
                 ]
             }
             
-            self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait() as? MongoDBDriver.Connection
+            self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             
         } catch let error {
             
