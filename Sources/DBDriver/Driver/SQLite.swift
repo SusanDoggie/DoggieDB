@@ -32,7 +32,7 @@ struct SQLiteDriver: DBDriverProtocol {
 
 extension SQLiteDriver {
     
-    class Connection: DBConnection {
+    class Connection: DBSQLConnection {
         
         var driver: DBDriver { return .sqlite }
         

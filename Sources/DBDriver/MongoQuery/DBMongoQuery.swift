@@ -29,16 +29,25 @@ public struct DBMongoQuery {
     
     let database: MongoDatabase
     
-    let session: ClientSession?
+    var session: ClientSession?
 }
 
 extension MongoDBDriver.Connection {
     
-    public func mongoQuery(session: ClientSession? = nil) throws -> DBMongoQuery {
+    public func mongoQuery() throws -> DBMongoQuery {
         guard let database = self.database else {
             throw Database.Error.invalidOperation(message: "database not selected.")
         }
-        return DBMongoQuery(database: database, session: session)
+        return DBMongoQuery(database: database, session: nil)
+    }
+}
+
+extension DBMongoQuery {
+    
+    public func session(_ session: ClientSession) -> Self {
+        var result = self
+        result.session = session
+        return result
     }
 }
 

@@ -32,7 +32,7 @@ struct MySQLDriver: DBDriverProtocol {
 
 extension MySQLDriver {
     
-    class Connection: DBConnection {
+    class Connection: DBSQLConnection {
         
         var driver: DBDriver { return .mySQL }
         

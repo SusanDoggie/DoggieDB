@@ -54,6 +54,9 @@ public protocol DBConnection: AnyObject {
         onRow: @escaping (DBQueryRow) -> Void
     ) -> EventLoopFuture<DBQueryMetadata>
     
+    func sql() -> SQLBuilder
+    
+    func mongoQuery() throws -> DBMongoQuery
 }
 
 extension DBConnection {
@@ -97,4 +100,22 @@ extension DBConnection {
     ) -> EventLoopFuture<DBQueryMetadata> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
+}
+
+extension DBConnection {
+    
+    public func sql() -> SQLBuilder {
+        fatalError("unsupported operation")
+    }
+}
+
+extension DBConnection {
+    
+    public func mongoQuery() throws -> DBMongoQuery {
+        throw Database.Error.invalidOperation(message: "unsupported operation")
+    }
+}
+
+public protocol DBSQLConnection: DBConnection {
+    
 }

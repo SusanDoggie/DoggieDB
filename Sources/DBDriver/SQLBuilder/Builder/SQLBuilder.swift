@@ -77,7 +77,7 @@ public struct SQLBuilder {
     }
 }
 
-extension DBConnection {
+extension DBConnection where Self: DBSQLConnection {
     
     public func sql() -> SQLBuilder {
         return SQLBuilder(connection: self)

@@ -32,7 +32,7 @@ struct PostgreSQLDriver: DBDriverProtocol {
 
 extension PostgreSQLDriver {
     
-    class Connection: DBConnection {
+    class Connection: DBSQLConnection {
         
         var driver: DBDriver { return .postgreSQL }
         
