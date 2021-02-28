@@ -99,9 +99,9 @@ public struct DBData {
     public init(
         _ value: Date,
         calendar: Calendar = Calendar(identifier: .iso8601),
-        timeZone: TimeZone = TimeZone(secondsFromGMT: 0)!
+        timeZone: TimeZone? = nil
     ) {
-        self.base = .date(calendar.dateComponents(in: timeZone, from: value))
+        self.base = .date(calendar.dateComponents(in: timeZone ?? calendar.timeZone, from: value))
     }
     
     public init(_ value: DateComponents) {

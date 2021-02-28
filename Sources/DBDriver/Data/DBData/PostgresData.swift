@@ -167,8 +167,7 @@ extension DBData {
                 let seconds = Double(microseconds) / Double(1_000_000)
                 let date = Date(timeInterval: seconds, since: psqlDateStart)
                 
-                var dateComponents = DBData.calendar.dateComponents(Calendar.componentsOfTime, from: date)
-                dateComponents.timeZone = TimeZone(secondsFromGMT: 0)
+                let dateComponents = DBData.calendar.dateComponents(Calendar.componentsOfTime, from: date)
                 
                 self = DBData(dateComponents)
             }
@@ -193,8 +192,10 @@ extension DBData {
                 let seconds = Double(microseconds) / Double(1_000_000)
                 let date = Date(timeInterval: seconds, since: psqlDateStart)
                 
-                var dateComponents = DBData.calendar.dateComponents(Calendar.componentsOfTime, from: date)
-                dateComponents.timeZone = TimeZone(secondsFromGMT: Int(-zone))
+                var calendar = DBData.calendar
+                calendar.timeZone = TimeZone(secondsFromGMT: Int(-zone))!
+                
+                let dateComponents = calendar.dateComponents(Calendar.componentsOfTime, from: date)
                 
                 self = DBData(dateComponents)
             }
@@ -315,13 +316,9 @@ extension PostgresData {
             } else if value.containsDate() && !value.containsTime() {
                 
                 var value = value
-                value.timeZone = .current
+                value.timeZone = value.timeZone ?? calendar.timeZone
                 
                 guard let date = calendar.date(from: value) else { throw Database.Error.unsupportedType }
-                
-                let formatter = ISO8601DateFormatter()
-                formatter.timeZone = value.timeZone ?? TimeZone.current
-                formatter.formatOptions = [.withFullDate]
                 
                 let days = Int32(floor(date.timeIntervalSince(psqlDateStart) / secondsInDay))
                 

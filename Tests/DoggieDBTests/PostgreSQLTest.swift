@@ -270,6 +270,7 @@ class PostgreSQLTest: XCTestCase {
             
             let result = try connection.execute("SELECT \(time)::time as \"time\"").wait()
             
+            XCTAssertEqual(result[0]["time"]?.dateComponents?.timeZone?.secondsFromGMT(), 0)
             XCTAssertEqual(result[0]["time"]?.dateComponents?.hour, time.hour)
             XCTAssertEqual(result[0]["time"]?.dateComponents?.minute, time.minute)
             XCTAssertEqual(result[0]["time"]?.dateComponents?.second, time.second)

@@ -176,7 +176,7 @@ extension MySQLData {
             if !value.containsDate() && value.containsTime() {
                 
                 var value = value
-                value.timeZone = .current
+                value.timeZone = value.timeZone ?? calendar.timeZone
                 value.year = 2000
                 value.month = 1
                 value.day = 1
@@ -195,7 +195,7 @@ extension MySQLData {
             } else if value.containsDate() && !value.containsTime() {
                 
                 var value = value
-                value.timeZone = .current
+                value.timeZone = value.timeZone ?? calendar.timeZone
                 
                 guard let date = calendar.date(from: value) else { throw Database.Error.unsupportedType }
                 

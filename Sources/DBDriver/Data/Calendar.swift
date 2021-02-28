@@ -25,7 +25,11 @@
 
 extension DBData {
     
-    static let calendar = Calendar(identifier: .iso8601)
+    static let calendar: Calendar = {
+        var calendar = Calendar(identifier: .iso8601)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        return calendar
+    }()
     
 }
 
