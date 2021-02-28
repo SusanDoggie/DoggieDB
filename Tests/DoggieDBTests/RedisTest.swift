@@ -39,7 +39,7 @@ class RedisTest: XCTestCase {
     }
     
     var eventLoopGroup: MultiThreadedEventLoopGroup!
-    var connection: RedisDriver.Connection!
+    var connection: DBConnection!
     
     override func setUpWithError() throws {
         
@@ -61,7 +61,7 @@ class RedisTest: XCTestCase {
                 ]
             }
             
-            self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait() as? RedisDriver.Connection
+            self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             
         } catch let error {
             
@@ -90,9 +90,9 @@ class RedisTest: XCTestCase {
             
             let value = Contact(name: "John", email: "john@example.com", phone: "98765432")
             
-            try connection.set("contact", value: value).wait()
+            try connection.redisQuery().set("contact", value: value).wait()
             
-            let result = try connection.get("contact", as: Contact.self).wait()
+            let result = try connection.redisQuery().get("contact", as: Contact.self).wait()
             
             XCTAssertEqual(value, result)
             

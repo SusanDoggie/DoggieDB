@@ -35,9 +35,7 @@ public struct DBMongoQuery {
 extension MongoDBDriver.Connection {
     
     public func mongoQuery() throws -> DBMongoQuery {
-        guard let database = self.database else {
-            throw Database.Error.invalidOperation(message: "database not selected.")
-        }
+        guard let database = self.database else { fatalError("database not selected.") }
         return DBMongoQuery(database: database, session: nil)
     }
 }

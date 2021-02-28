@@ -56,7 +56,9 @@ public protocol DBConnection: AnyObject {
     
     func sql() -> SQLBuilder
     
-    func mongoQuery() throws -> DBMongoQuery
+    func mongoQuery() -> DBMongoQuery
+    
+    func redisQuery() -> DBRedisQuery
 }
 
 extension DBConnection {
@@ -102,6 +104,10 @@ extension DBConnection {
     }
 }
 
+public protocol DBSQLConnection: DBConnection {
+    
+}
+
 extension DBConnection {
     
     public func sql() -> SQLBuilder {
@@ -111,11 +117,14 @@ extension DBConnection {
 
 extension DBConnection {
     
-    public func mongoQuery() throws -> DBMongoQuery {
-        throw Database.Error.invalidOperation(message: "unsupported operation")
+    public func mongoQuery() -> DBMongoQuery {
+        fatalError("unsupported operation")
     }
 }
 
-public protocol DBSQLConnection: DBConnection {
+extension DBConnection {
     
+    public func redisQuery() -> DBRedisQuery {
+        fatalError("unsupported operation")
+    }
 }
