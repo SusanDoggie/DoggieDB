@@ -51,13 +51,18 @@ extension DBMongoCreateCollectionExpression {
 }
 
 extension CreateCollectionOptions: DBMongoCollationOptions {}
-extension CreateCollectionOptions: DBMongoPipelineOptions {}
 extension CreateCollectionOptions: DBMongoWriteConcernOptions {}
 extension CreateCollectionOptions: DBMongoDataCodingStrategyOptions {}
 extension CreateCollectionOptions: DBMongoDateCodingStrategyOptions {}
 extension CreateCollectionOptions: DBMongoUUIDCodingStrategyOptions {}
 
 extension DBMongoCreateCollectionExpression {
+    
+    public func pipeline(_ pipeline: [BSONDocument]) -> Self {
+        var result = self
+        result.options.pipeline = pipeline
+        return result
+    }
     
     public func capped(_ capped: Bool) -> Self {
         var result = self
