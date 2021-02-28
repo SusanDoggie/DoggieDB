@@ -31,6 +31,11 @@ public struct SQLCreateMaterializedViewOptions: OptionSet {
         self.rawValue = rawValue
     }
     
+    /// It is usually an error to attempt to create a new table in a database that already contains a table, index or view of the
+    /// same name. However, if the "IF NOT EXISTS" clause is specified as part of the CREATE TABLE statement and a table or view
+    /// of the same name already exists, the CREATE TABLE command simply has no effect (and no error message is returned). An
+    /// error is still returned if the table cannot be created because of an existing index, even if the "IF NOT EXISTS" clause is
+    /// specified.
     public static let ifNotExists = SQLCreateMaterializedViewOptions(rawValue: 1 << 0)
 }
 

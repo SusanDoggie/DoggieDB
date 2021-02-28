@@ -46,6 +46,12 @@ public protocol SQLJoinExpression: SQLBuilderProtocol {
 
 extension SQLJoinExpression {
     
+    /// Include the given table in the list of those used by the query,
+    /// performing an explicit join using the given method and condition(s).
+    /// Tables are joined left to right, in the same order as invocations of
+    /// `from()` and `join()`. The table specifier is a string assumed to be a
+    /// valid SQL identifier. The condition is a strings assumed to be valid
+    /// (semi-))arbitrary SQL. The join method is any `SQLJoinMethod`.
     public func join(_ table: String, method: SQLJoinMethod? = nil, on predicate: (SQLPredicateBuilder) -> SQLPredicateExpression) -> Self {
         
         var builder = self
@@ -60,6 +66,12 @@ extension SQLJoinExpression {
         return builder
     }
     
+    /// Include the given table in the list of those used by the query,
+    /// performing an explicit join using the given method and condition(s).
+    /// Tables are joined left to right, in the same order as invocations of
+    /// `from()` and `join()`. The table specifier is a string assumed to be a
+    /// valid SQL identifier. The condition is a strings assumed to be valid
+    /// (semi-))arbitrary SQL. The join method is any `SQLJoinMethod`.
     public func join(
         _ alias: String,
         method: SQLJoinMethod? = nil,

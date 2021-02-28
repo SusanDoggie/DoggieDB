@@ -182,14 +182,17 @@ extension SQLBuilder: SQLSelectExpression { }
 
 extension SQLBuilder {
     
+    /// Creates a new `SQLDeleteBuilder`.
     public func delete(_ table: String, as alias: String? = nil) -> SQLDeleteBuilder {
         return SQLDeleteBuilder(builder: self, table: table, alias: alias)
     }
     
+    /// Creates a new `SQLUpdateBuilder`.
     public func update(_ table: String, as alias: String? = nil) -> SQLUpdateBuilder {
         return SQLUpdateBuilder(builder: self, table: table, alias: alias)
     }
     
+    /// Creates a new `SQLInsertBuilder`.
     public func insert(_ table: String, as alias: String? = nil) -> SQLInsertBuilder {
         return SQLInsertBuilder(builder: self, table: table, alias: alias)
     }
@@ -233,14 +236,17 @@ extension SQLBuilder {
 
 extension SQLBuilder {
     
+    /// Creates a new `SQLCreateTableBuilder`.
     public func createTable(_ table: String, options: SQLCreateTableOptions = []) -> SQLCreateTableBuilder {
         return SQLCreateTableBuilder(builder: self, table: table, options: options)
     }
     
+    /// Creates a new `SQLCreateTableBuilder`.
     public func createTable(_ table: String, options: SQLCreateTableOptions = []) -> SQLCreateTableAsBuilder {
         return SQLCreateTableAsBuilder(builder: self, table: table, options: options)
     }
     
+    /// Creates a new `SQLAlterTableBuilder`.
     public func alterTable(_ table: String) -> SQLAlterTableBuilder {
         return SQLAlterTableBuilder(builder: self, table: table)
     }
@@ -261,6 +267,7 @@ extension SQLBuilder {
 
 extension SQLBuilder {
     
+    /// Creates a new `SQLCreateViewBuilder`.
     public func createView(_ view: String, options: SQLCreateViewOptions = []) -> SQLCreateViewBuilder {
         return SQLCreateViewBuilder(builder: self, view: view, options: options)
     }
@@ -281,6 +288,7 @@ extension SQLBuilder {
 
 extension SQLBuilder {
     
+    /// Creates a new `SQLCreateMaterializedViewBuilder`.
     public func createMaterializedView(_ view: String, options: SQLCreateMaterializedViewOptions = []) -> SQLCreateMaterializedViewBuilder {
         return SQLCreateMaterializedViewBuilder(builder: self, view: view, options: options)
     }

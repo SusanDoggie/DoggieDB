@@ -32,7 +32,3 @@ public struct SQLAlterTableBuilder: SQLBuilderProtocol {
         self.builder.append("ALTER \(table) AS")
     }
 }
-
-extension SQLAlterTableBuilder {
-    
-}

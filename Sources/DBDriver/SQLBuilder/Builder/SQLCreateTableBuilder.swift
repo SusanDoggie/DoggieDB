@@ -31,7 +31,14 @@ public struct SQLCreateTableOptions: OptionSet {
         self.rawValue = rawValue
     }
     
+    /// If the "TEMP" or "TEMPORARY" keyword occurs between the "CREATE" and "TABLE" then the new table is created in the temp database.
     public static let temporary         = SQLCreateTableOptions(rawValue: 1 << 0)
+    
+    /// It is usually an error to attempt to create a new table in a database that already contains a table, index or view of the
+    /// same name. However, if the "IF NOT EXISTS" clause is specified as part of the CREATE TABLE statement and a table or view
+    /// of the same name already exists, the CREATE TABLE command simply has no effect (and no error message is returned). An
+    /// error is still returned if the table cannot be created because of an existing index, even if the "IF NOT EXISTS" clause is
+    /// specified.
     public static let ifNotExists       = SQLCreateTableOptions(rawValue: 1 << 1)
 }
 
@@ -116,6 +123,7 @@ extension SQLCreateTableBuilder {
 
 extension SQLCreateTableBuilder {
     
+    /// Adds `UNIQUE` modifier to the index being created.
     public func unique(_ column: String) -> SQLCreateTableBuilder {
         
         var builder = self
@@ -131,6 +139,7 @@ extension SQLCreateTableBuilder {
         return builder
     }
     
+    /// Adds `UNIQUE` modifier to the index being created.
     public func unique(_ column: String, _ column2: String, _ res: String ...) -> SQLCreateTableBuilder {
         
         var builder = self
@@ -151,6 +160,7 @@ extension SQLCreateTableBuilder {
 
 extension SQLCreateTableBuilder {
     
+    /// Adds a new `PRIMARY KEY` constraint to the table being built.
     public func primaryKey(_ column: String) -> SQLCreateTableBuilder {
         
         var builder = self
@@ -166,6 +176,7 @@ extension SQLCreateTableBuilder {
         return builder
     }
     
+    /// Adds a new `PRIMARY KEY` constraint to the table being built.
     public func primaryKey(_ column: String, _ column2: String, _ res: String ...) -> SQLCreateTableBuilder {
         
         var builder = self
@@ -209,6 +220,7 @@ public enum SQLForeignKeyAction {
 
 extension SQLCreateTableBuilder {
     
+    /// Adds a new `FOREIGN KEY` constraint to the table being built
     public func foreignKey(
         _ column: String,
         _ reference: SQLForeignKey,

@@ -29,6 +29,7 @@ public protocol SQLGroupByExpression: SQLBuilderProtocol {
 
 extension SQLGroupByExpression {
     
+    /// Adds a `GROUP BY` clause to the statement.
     public func groupBy(_ groupBy: SQLRaw) -> Self {
         
         var builder = self

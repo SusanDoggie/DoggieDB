@@ -29,6 +29,7 @@ public protocol SQLSetExpression: SQLBuilderProtocol {
 
 extension SQLSetExpression {
     
+    /// Set values to an expression.
     public func set(_ values: [String: SQLRaw]) -> Self {
         
         var builder = self

@@ -32,7 +32,15 @@ public struct SQLCreateViewOptions: OptionSet {
     }
     
     public static let replacing         = SQLCreateViewOptions(rawValue: 1 << 0)
+    
+    /// If the "TEMP" or "TEMPORARY" keyword occurs between the "CREATE" and "TABLE" then the new table is created in the temp database.
     public static let temporary         = SQLCreateViewOptions(rawValue: 1 << 1)
+    
+    /// It is usually an error to attempt to create a new table in a database that already contains a table, index or view of the
+    /// same name. However, if the "IF NOT EXISTS" clause is specified as part of the CREATE TABLE statement and a table or view
+    /// of the same name already exists, the CREATE TABLE command simply has no effect (and no error message is returned). An
+    /// error is still returned if the table cannot be created because of an existing index, even if the "IF NOT EXISTS" clause is
+    /// specified.
     public static let ifNotExists       = SQLCreateViewOptions(rawValue: 1 << 2)
 }
 

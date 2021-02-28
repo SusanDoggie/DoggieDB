@@ -29,6 +29,7 @@ public protocol SQLSelectExpression: SQLBuilderProtocol {
 
 extension SQLSelectExpression {
     
+    /// Creates a new `SQLSelectBuilder`.
     public func select() -> SQLSelectBuilder {
         return SQLSelectBuilder(builder: self.builder)
     }

@@ -75,14 +75,17 @@ public protocol SQLWithModifyingExpression: SQLWithExpression {
 
 extension SQLWithBuilder where Base: SQLWithModifyingExpression {
     
+    /// Creates a new `SQLDeleteBuilder`.
     public func delete(_ table: String, as alias: String? = nil) -> SQLDeleteBuilder {
         return SQLDeleteBuilder(builder: self.builder, table: table, alias: alias)
     }
     
+    /// Creates a new `SQLUpdateBuilder`.
     public func update(_ table: String, as alias: String? = nil) -> SQLUpdateBuilder {
         return SQLUpdateBuilder(builder: self.builder, table: table, alias: alias)
     }
     
+    /// Creates a new `SQLInsertBuilder`.
     public func insert(_ table: String, as alias: String? = nil) -> SQLInsertBuilder {
         return SQLInsertBuilder(builder: self.builder, table: table, alias: alias)
     }

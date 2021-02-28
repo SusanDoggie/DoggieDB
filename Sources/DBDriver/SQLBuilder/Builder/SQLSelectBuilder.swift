@@ -87,6 +87,7 @@ extension SQLSelectBuilder {
 
 extension SQLSelectBuilder {
     
+    /// Adds a column to column comparison to this builder's `HAVING`.
     public func having(_ predicate: (SQLPredicateBuilder) -> SQLPredicateExpression) -> SQLSelectBuilder {
         
         var builder = self
@@ -100,6 +101,7 @@ extension SQLSelectBuilder {
 
 extension SQLSelectBuilder {
     
+    /// Adds a `LIMIT` clause to the statement.
     public func limit(_ limit: Int) -> SQLSelectBuilder {
         
         var builder = self
@@ -109,6 +111,7 @@ extension SQLSelectBuilder {
         return builder
     }
     
+    /// Adds a `OFFSET` clause to the statement.
     public func offset(_ offset: Int) -> SQLSelectBuilder {
         
         var builder = self
@@ -119,8 +122,26 @@ extension SQLSelectBuilder {
     }
 }
 
+/// General locking expressions for a SQL locking clause.
+public enum SQLLockingClause {
+    
+    /// `UPDATE`
+    case update
+    
+    /// `SHARE`
+    case share
+    
+    func serialize() -> String {
+        switch self {
+        case .share: return "SHARE"
+        case .update: return "UPDATE"
+        }
+    }
+}
+
 extension SQLSelectBuilder {
     
+    /// Adds a locking expression to this statement.
     public func locking(_ lock: SQLLockingClause) -> SQLSelectBuilder {
         
         var builder = self

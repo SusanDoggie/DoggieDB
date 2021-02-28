@@ -29,6 +29,7 @@ public protocol SQLOrderByExpression: SQLBuilderProtocol {
 
 extension SQLOrderByExpression {
     
+    /// Adds an `ORDER BY` clause to the statement.
     public func orderBy(_ orderBy: SQLRaw) -> Self {
         
         var builder = self
@@ -38,6 +39,7 @@ extension SQLOrderByExpression {
         return builder
     }
     
+    /// Adds an `ORDER BY` clause to the statement.
     public func orderBy(_ orderBy: SQLRaw, _ orderBy2: SQLRaw, _ res: SQLRaw ...) -> Self {
         
         var builder = self

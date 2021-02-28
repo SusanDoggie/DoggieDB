@@ -29,6 +29,9 @@ public protocol SQLReturningExpression: SQLBuilderProtocol {
 
 extension SQLReturningExpression {
     
+    /// Specify a list of columns to be part of the result set of the query.
+    /// Each provided name is a string assumed to be a valid SQL identifier and
+    /// is not qualified.
     public func returning(_ column: String) -> Self {
         
         var builder = self
@@ -38,6 +41,9 @@ extension SQLReturningExpression {
         return builder
     }
     
+    /// Specify a list of columns to be part of the result set of the query.
+    /// Each provided name is a string assumed to be a valid SQL identifier and
+    /// is not qualified.
     public func returning(_ column: String, _ column2: String, _ res: String ...) -> Self {
         
         var builder = self
