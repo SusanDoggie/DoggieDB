@@ -164,10 +164,14 @@ extension DBData {
                 guard var value = value.value else { throw Database.Error.unsupportedType }
                 
                 let microseconds = value.readInteger(as: Int64.self)!
-                let seconds = Double(microseconds) / Double(1_000_000)
-                let date = Date(timeInterval: seconds, since: psqlDateStart)
                 
-                let dateComponents = DBData.calendar.dateComponents(Calendar.componentsOfTime, from: date)
+                let dateComponents = DateComponents(
+                    calendar: DBData.calendar,
+                    timeZone: TimeZone(secondsFromGMT: 0),
+                    hour: Int(microseconds / 3_600_000_000) % 60,
+                    minute: Int(microseconds / 60_000_000) % 60,
+                    second: Int(microseconds / 1_000_000) % 60,
+                    nanosecond: Int(microseconds % 1_000_000) * 1000)
                 
                 self = DBData(dateComponents)
             }
@@ -189,13 +193,18 @@ extension DBData {
                 let microseconds = value.readInteger(as: Int64.self)!
                 let zone = value.readInteger(as: Int32.self)!
                 
-                let seconds = Double(microseconds) / Double(1_000_000)
-                let date = Date(timeInterval: seconds, since: psqlDateStart)
+                let timeZone = TimeZone(secondsFromGMT: Int(-zone))!
                 
                 var calendar = DBData.calendar
-                calendar.timeZone = TimeZone(secondsFromGMT: Int(-zone))!
+                calendar.timeZone = timeZone
                 
-                let dateComponents = calendar.dateComponents(Calendar.componentsOfTime, from: date)
+                let dateComponents = DateComponents(
+                    calendar: calendar,
+                    timeZone: timeZone,
+                    hour: Int(microseconds / 3_600_000_000) % 60,
+                    minute: Int(microseconds / 60_000_000) % 60,
+                    second: Int(microseconds / 1_000_000) % 60,
+                    nanosecond: Int(microseconds % 1_000_000) * 1000)
                 
                 self = DBData(dateComponents)
             }
