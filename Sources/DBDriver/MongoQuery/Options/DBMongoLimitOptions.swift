@@ -33,6 +33,7 @@ public protocol DBMongoLimitOptions {
 
 extension DBMongoExpression where Options: DBMongoLimitOptions {
     
+    /// The maximum number of documents to return.
     public func limit(_ limit: Int) -> Self {
         var result = self
         result.options.limit = limit

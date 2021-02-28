@@ -33,6 +33,7 @@ public protocol DBMongoArrayFiltersOptions {
 
 extension DBMongoExpression where Options: DBMongoArrayFiltersOptions {
     
+    /// A set of filters specifying to which array elements an update should apply.
     public func arrayFilters(_ arrayFilters: [BSONDocument]) -> Self {
         var result = self
         result.options.arrayFilters = arrayFilters

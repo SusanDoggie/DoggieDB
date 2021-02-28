@@ -33,6 +33,8 @@ public protocol DBMongoBypassDocumentValidationOptions {
 
 extension DBMongoExpression where Options: DBMongoBypassDocumentValidationOptions {
     
+    /// If true, allows the write to opt-out of document level validation. This only applies
+    /// when the $out stage is specified.
     public func bypassDocumentValidation(_ bypassDocumentValidation: Bool) -> Self {
         var result = self
         result.options.bypassDocumentValidation = bypassDocumentValidation

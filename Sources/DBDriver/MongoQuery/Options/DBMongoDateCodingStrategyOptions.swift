@@ -33,6 +33,9 @@ public protocol DBMongoDateCodingStrategyOptions {
 
 extension DBMongoExpression where Options: DBMongoDateCodingStrategyOptions {
     
+    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `Date`s already stored in this collection can be
+    /// decoded using this strategy.
     public func dateCodingStrategy(_ dateCodingStrategy: DateCodingStrategy) -> Self {
         var result = self
         result.options.dateCodingStrategy = dateCodingStrategy

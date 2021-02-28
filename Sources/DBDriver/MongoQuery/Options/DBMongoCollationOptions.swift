@@ -33,6 +33,7 @@ public protocol DBMongoCollationOptions {
 
 extension DBMongoExpression where Options: DBMongoCollationOptions {
     
+    /// Specifies a collation.
     public func collation(_ collation: BSONDocument) -> Self {
         var result = self
         result.options.collation = collation

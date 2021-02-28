@@ -33,6 +33,7 @@ public protocol DBMongoMaxOptions {
 
 extension DBMongoExpression where Options: DBMongoMaxOptions {
     
+    /// The exclusive upper bound for a specific index.
     public func max(_ max: BSONDocument) -> Self {
         var result = self
         result.options.max = max

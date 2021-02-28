@@ -33,6 +33,7 @@ public protocol DBMongoUpsertOptions {
 
 extension DBMongoExpression where Options: DBMongoUpsertOptions {
     
+    /// When `true`, creates a new document if no document matches the query.
     public func upsert(_ upsert: Bool) -> Self {
         var result = self
         result.options.upsert = upsert

@@ -33,6 +33,7 @@ public protocol DBMongoAllowPartialResultsOptions {
 
 extension DBMongoExpression where Options: DBMongoAllowPartialResultsOptions {
     
+    /// Get partial results from a mongos if some shards are down (instead of throwing an error).
     public func allowPartialResults(_ allowPartialResults: Bool) -> Self {
         var result = self
         result.options.allowPartialResults = allowPartialResults

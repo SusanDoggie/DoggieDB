@@ -33,6 +33,7 @@ public protocol DBMongoSkipOptions {
 
 extension DBMongoExpression where Options: DBMongoSkipOptions {
     
+    /// The number of documents to skip before returning.
     public func skip(_ skip: Int) -> Self {
         var result = self
         result.options.skip = skip

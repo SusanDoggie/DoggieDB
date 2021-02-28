@@ -33,6 +33,9 @@ public protocol DBMongoMaxAwaitTimeMSOptions {
 
 extension DBMongoExpression where Options: DBMongoMaxAwaitTimeMSOptions {
     
+    /// The maximum amount of time, in milliseconds, for the server to wait on new documents to satisfy a tailable
+    /// cursor query. This only applies when used with `MongoCursorType.tailableAwait`. Otherwise, this option is
+    /// ignored.
     public func maxAwaitTimeMS(_ maxAwaitTimeMS: Int) -> Self {
         var result = self
         result.options.maxAwaitTimeMS = maxAwaitTimeMS

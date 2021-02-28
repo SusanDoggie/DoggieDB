@@ -33,6 +33,8 @@ public protocol DBMongoNoCursorTimeoutOptions {
 
 extension DBMongoExpression where Options: DBMongoNoCursorTimeoutOptions {
     
+    /// The server normally times out idle cursors after an inactivity period (10 minutes)
+    /// to prevent excess memory use. Set this option to prevent that.
     public func noCursorTimeout(_ noCursorTimeout: Bool) -> Self {
         var result = self
         result.options.noCursorTimeout = noCursorTimeout

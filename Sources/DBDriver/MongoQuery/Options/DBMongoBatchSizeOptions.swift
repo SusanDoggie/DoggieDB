@@ -33,6 +33,7 @@ public protocol DBMongoBatchSizeOptions {
 
 extension DBMongoExpression where Options: DBMongoBatchSizeOptions {
     
+    /// The number of `BSONDocument`s to return per batch.
     public func batchSize(_ batchSize: Int) -> Self {
         var result = self
         result.options.batchSize = batchSize

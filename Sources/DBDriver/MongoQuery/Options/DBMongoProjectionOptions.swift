@@ -33,6 +33,7 @@ public protocol DBMongoProjectionOptions {
 
 extension DBMongoExpression where Options: DBMongoProjectionOptions {
     
+    /// Limits the fields to return for all matching documents.
     public func projection(_ projection: BSONDocument) -> Self {
         var result = self
         result.options.projection = projection

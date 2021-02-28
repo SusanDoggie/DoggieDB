@@ -33,6 +33,7 @@ public protocol DBMongoFilterOptions {
 
 extension DBMongoFilterOptions {
     
+    /// a `BSONDocument`, the filter that documents must match
     public func filter(_ filter: BSONDocument) -> Self {
         var result = self
         result.filter = filter

@@ -33,6 +33,7 @@ public protocol DBMongoMaxTimeMSOptions {
 
 extension DBMongoExpression where Options: DBMongoMaxTimeMSOptions {
     
+    /// The maximum amount of time to allow the query to run.
     public func maxTimeMS(_ maxTimeMS: Int) -> Self {
         var result = self
         result.options.maxTimeMS = maxTimeMS

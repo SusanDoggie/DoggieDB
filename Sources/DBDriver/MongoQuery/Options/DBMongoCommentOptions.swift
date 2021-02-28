@@ -33,6 +33,8 @@ public protocol DBMongoCommentOptions {
 
 extension DBMongoExpression where Options: DBMongoCommentOptions {
     
+    /// Enables users to specify an arbitrary string to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
     public func comment(_ comment: String) -> Self {
         var result = self
         result.options.comment = comment

@@ -33,6 +33,7 @@ public protocol DBMongoReturnKeyOptions {
 
 extension DBMongoExpression where Options: DBMongoReturnKeyOptions {
     
+    /// If true, returns only the index keys in the resulting documents.
     public func returnKey(_ returnKey: Bool) -> Self {
         var result = self
         result.options.returnKey = returnKey

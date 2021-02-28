@@ -33,6 +33,7 @@ public protocol DBMongoWriteConcernOptions {
 
 extension DBMongoExpression where Options: DBMongoWriteConcernOptions {
     
+    /// A `WriteConcern` to use in `$out` stages of this operation.
     public func writeConcern(_ writeConcern: WriteConcern) -> Self {
         var result = self
         result.options.writeConcern = writeConcern

@@ -58,60 +58,72 @@ extension CreateCollectionOptions: DBMongoUUIDCodingStrategyOptions {}
 
 extension DBMongoCreateCollectionExpression {
     
+    /// An array consisting of aggregation pipeline stages. When used with `viewOn`, will create the view by applying
+    /// this pipeline to the source collection or view.
     public func pipeline(_ pipeline: [BSONDocument]) -> Self {
         var result = self
         result.options.pipeline = pipeline
         return result
     }
     
+    /// Indicates whether this will be a capped collection.
     public func capped(_ capped: Bool) -> Self {
         var result = self
         result.options.capped = capped
         return result
     }
     
+    /// Specify a default configuration for indexes created on this collection.
     public func indexOptionDefaults(_ indexOptionDefaults: BSONDocument) -> Self {
         var result = self
         result.options.indexOptionDefaults = indexOptionDefaults
         return result
     }
     
+    /// Maximum number of documents allowed in the collection (if capped).
     public func max(_ max: Int) -> Self {
         var result = self
         result.options.max = max
         return result
     }
     
+    /// Maximum size, in bytes, of this collection (if capped).
     public func size(_ size: Int) -> Self {
         var result = self
         result.options.size = size
         return result
     }
     
+    /// Specifies storage engine configuration for this collection.
     public func storageEngine(_ storageEngine: BSONDocument) -> Self {
         var result = self
         result.options.storageEngine = storageEngine
         return result
     }
     
+    /// Determines whether to error on invalid documents or just warn about the violations but allow invalid documents
+    /// to be inserted.
     public func validationAction(_ validationAction: String) -> Self {
         var result = self
         result.options.validationAction = validationAction
         return result
     }
     
+    /// Determines how strictly MongoDB applies the validation rules to existing documents during an update.
     public func validationLevel(_ validationLevel: String) -> Self {
         var result = self
         result.options.validationLevel = validationLevel
         return result
     }
     
+    /// What validator should be used for the collection.
     public func validator(_ validator: BSONDocument) -> Self {
         var result = self
         result.options.validator = validator
         return result
     }
     
+    /// The name of the source collection or view from which to create the view.
     public func viewOn(_ viewOn: String) -> Self {
         var result = self
         result.options.viewOn = viewOn

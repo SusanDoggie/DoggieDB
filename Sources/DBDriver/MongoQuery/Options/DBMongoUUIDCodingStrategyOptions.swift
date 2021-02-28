@@ -33,6 +33,9 @@ public protocol DBMongoUUIDCodingStrategyOptions {
 
 extension DBMongoExpression where Options: DBMongoUUIDCodingStrategyOptions {
     
+    /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `UUID`s already stored in this collection can be
+    /// decoded using this strategy.
     public func uuidCodingStrategy(_ uuidCodingStrategy: UUIDCodingStrategy) -> Self {
         var result = self
         result.options.uuidCodingStrategy = uuidCodingStrategy

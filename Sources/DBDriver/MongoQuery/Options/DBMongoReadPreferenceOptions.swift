@@ -33,6 +33,7 @@ public protocol DBMongoReadPreferenceOptions {
 
 extension DBMongoExpression where Options: DBMongoReadPreferenceOptions {
     
+    /// A ReadPreference to use for this operation.
     public func readPreference(_ readPreference: ReadPreference) -> Self {
         var result = self
         result.options.readPreference = readPreference

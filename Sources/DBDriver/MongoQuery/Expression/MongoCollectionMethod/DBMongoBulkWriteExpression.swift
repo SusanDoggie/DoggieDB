@@ -59,5 +59,21 @@ extension DBMongoBulkWriteExpression {
 }
 
 extension BulkWriteOptions: DBMongoBypassDocumentValidationOptions {}
-extension BulkWriteOptions: DBMongoOrderedOptions {}
 extension BulkWriteOptions: DBMongoWriteConcernOptions {}
+
+extension DBMongoBulkWriteExpression {
+    
+    /**
+     * If `true` (the default), operations will be executed serially in order
+     * and a write error will abort execution of the entire bulk write. If
+     * `false`, operations may execute in an arbitrary order and execution will
+     * not stop after encountering a write error (i.e. multiple errors may be
+     * reported after all operations have been attempted).
+     */
+    public func ordered(_ ordered: Bool) -> Self {
+        var result = self
+        result.options.ordered = ordered
+        return result
+    }
+    
+}

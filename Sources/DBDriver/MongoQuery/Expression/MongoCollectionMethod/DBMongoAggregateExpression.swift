@@ -29,25 +29,21 @@ public struct DBMongoAggregateExpression<T: Codable>: DBMongoExpression {
     
     let query: DBMongoCollection<T>
     
-    public var filter: BSONDocument
-    
     public var pipeline: [BSONDocument]?
     
     public var options: AggregateOptions = AggregateOptions()
 }
 
-extension DBMongoAggregateExpression: DBMongoFilterOptions {}
-
-
 extension DBMongoCollectionExpression {
     
     public func aggregate() -> DBMongoAggregateExpression<T> {
-        return DBMongoAggregateExpression(query: query(), filter: filter)
+        return DBMongoAggregateExpression(query: query())
     }
 }
 
 extension DBMongoAggregateExpression {
     
+    /// an `[Document]` containing the pipeline of aggregation operations to perform
     public func pipeline(pipeline: [BSONDocument]) -> Self {
         var result = self
         result.pipeline = pipeline

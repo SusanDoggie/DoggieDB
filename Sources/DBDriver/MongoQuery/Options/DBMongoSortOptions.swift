@@ -33,6 +33,7 @@ public protocol DBMongoSortOptions {
 
 extension DBMongoExpression where Options: DBMongoSortOptions {
     
+    /// The order in which to return matching documents.
     public func sort(_ sort: BSONDocument) -> Self {
         var result = self
         result.options.sort = sort

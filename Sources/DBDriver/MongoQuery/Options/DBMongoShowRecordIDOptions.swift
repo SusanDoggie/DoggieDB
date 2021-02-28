@@ -33,6 +33,8 @@ public protocol DBMongoShowRecordIDOptions {
 
 extension DBMongoExpression where Options: DBMongoShowRecordIDOptions {
     
+    /// Determines whether to return the record identifier for each document. If true, adds a field $recordId
+    /// to the returned documents.
     public func showRecordID(_ showRecordID: Bool) -> Self {
         var result = self
         result.options.showRecordID = showRecordID

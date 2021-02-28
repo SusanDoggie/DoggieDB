@@ -33,6 +33,7 @@ public protocol DBMongoReadConcernOptions {
 
 extension DBMongoExpression where Options: DBMongoReadConcernOptions {
     
+    /// A `ReadConcern` to use in read stages of this operation.
     public func readConcern(_ readConcern: ReadConcern) -> Self {
         var result = self
         result.options.readConcern = readConcern

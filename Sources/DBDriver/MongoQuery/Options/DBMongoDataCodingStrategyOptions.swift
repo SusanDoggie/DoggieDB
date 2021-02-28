@@ -33,6 +33,9 @@ public protocol DBMongoDataCodingStrategyOptions {
 
 extension DBMongoExpression where Options: DBMongoDataCodingStrategyOptions {
     
+    /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
+    /// decoded using this strategy.
     public func dataCodingStrategy(_ dataCodingStrategy: DataCodingStrategy) -> Self {
         var result = self
         result.options.dataCodingStrategy = dataCodingStrategy

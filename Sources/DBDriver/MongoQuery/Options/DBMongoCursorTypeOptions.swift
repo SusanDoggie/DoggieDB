@@ -33,6 +33,7 @@ public protocol DBMongoCursorTypeOptions {
 
 extension DBMongoExpression where Options: DBMongoCursorTypeOptions {
     
+    /// Indicates the type of cursor to use. This value includes both the tailable and awaitData options.
     public func cursorType(_ cursorType: MongoCursorType) -> Self {
         var result = self
         result.options.cursorType = cursorType

@@ -33,6 +33,7 @@ public protocol DBMongoMinOptions {
 
 extension DBMongoExpression where Options: DBMongoMinOptions {
     
+    /// The inclusive lower bound for a specific index.
     public func min(_ min: BSONDocument) -> Self {
         var result = self
         result.options.min = min

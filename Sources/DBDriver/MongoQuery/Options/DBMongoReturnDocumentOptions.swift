@@ -33,6 +33,7 @@ public protocol DBMongoReturnDocumentOptions {
 
 extension DBMongoExpression where Options: DBMongoReturnDocumentOptions {
     
+    /// When `ReturnDocument.After`, returns the replaced or inserted document rather than the original.
     public func returnDocument(_ returnDocument: ReturnDocument) -> Self {
         var result = self
         result.options.returnDocument = returnDocument

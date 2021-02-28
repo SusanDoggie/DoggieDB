@@ -33,6 +33,7 @@ public protocol DBMongoIndexHintOptions {
 
 extension DBMongoExpression where Options: DBMongoIndexHintOptions {
     
+    /// The index hint to use for the aggregation. The hint does not apply to $lookup and $graphLookup stages.
     public func hint(_ hint: IndexHint) -> Self {
         var result = self
         result.options.hint = hint
