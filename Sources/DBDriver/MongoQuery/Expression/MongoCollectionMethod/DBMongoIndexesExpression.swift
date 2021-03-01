@@ -1,5 +1,5 @@
 //
-//  DBMongoIndexexExpression.swift
+//  DBMongoIndexesExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,19 +25,19 @@
 
 import MongoSwift
 
-public struct DBMongoIndexexExpression<T: Codable> {
+public struct DBMongoIndexesExpression<T: Codable> {
     
     let query: DBMongoCollection<T>
 }
 
 extension DBMongoCollectionExpression {
     
-    public func indexes() -> DBMongoIndexexExpression<T> {
-        return DBMongoIndexexExpression(query: query())
+    public func indexes() -> DBMongoIndexesExpression<T> {
+        return DBMongoIndexesExpression(query: query())
     }
 }
 
-extension DBMongoIndexexExpression {
+extension DBMongoIndexesExpression {
     
     public func execute() -> EventLoopFuture<MongoCursor<IndexModel>> {
         return query.collection.listIndexes(session: query.session)
