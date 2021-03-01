@@ -39,6 +39,7 @@ extension SQLGroupByExpression {
         return builder
     }
     
+    /// Adds a `GROUP BY` clause to the statement.
     public func groupBy(_ groupBy: SQLRaw, _ groupBy2: SQLRaw, _ res: SQLRaw ...) -> Self {
         
         var builder = self
