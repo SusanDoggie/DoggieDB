@@ -250,6 +250,31 @@ class MySQLTest: XCTestCase {
         }
     }
     
+    func testBindMultiple() throws {
+        
+        do {
+            
+            let int = 42
+            let uuid = UUID()
+            let uuid2 = UUID()
+            let str = "Hello, world"
+            
+            let result = try connection.execute("SELECT CAST(\(bind: int) AS SIGNED) as value, HEX(CAST(\(uuid) AS BINARY(16))) as uuid, HEX(CAST(\(uuid2) AS BINARY(16))) as uuid2, CAST(\(str) AS CHAR CHARACTER SET utf8mb4) as str, CAST(\(str) AS CHAR CHARACTER SET utf8mb4) as str2").wait()
+            
+            XCTAssertEqual(result.count, 1)
+            XCTAssertEqual(result[0]["value"]?.intValue, int)
+            XCTAssertEqual(result[0]["uuid"]?.uuid, uuid)
+            XCTAssertEqual(result[0]["uuid2"]?.uuid, uuid2)
+            XCTAssertEqual(result[0]["str"]?.string, str)
+            XCTAssertEqual(result[0]["str2"]?.string, str)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
     func testTransaction() throws {
         
         do {

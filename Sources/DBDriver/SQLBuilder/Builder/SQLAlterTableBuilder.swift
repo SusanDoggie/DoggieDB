@@ -29,6 +29,6 @@ public struct SQLAlterTableBuilder: SQLBuilderProtocol {
     
     init(builder: SQLBuilder, table: String) {
         self.builder = builder
-        self.builder.append("ALTER \(table) AS")
+        self.builder.append("ALTER TABLE \(table) AS")
     }
 }

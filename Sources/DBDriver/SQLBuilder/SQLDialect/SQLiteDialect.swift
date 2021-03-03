@@ -25,12 +25,16 @@
 
 struct SQLiteDialect: SQLDialect {
     
-    static var quote: String {
-        return "\""
+    static func quote(_ str: String) -> String {
+        return "\"\(str)\""
+    }
+    
+    static var repeatablePlaceholder: Bool {
+        return true
     }
     
     static func bindPlaceholder(at position: Int) -> String {
-        return "?"
+        return "?\(position)"
     }
     
     static func nullSafeEqual(_ lhs: SQLPredicateValue, _ rhs: SQLPredicateValue) -> SQLRaw {

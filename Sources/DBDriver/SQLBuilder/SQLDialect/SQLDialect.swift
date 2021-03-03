@@ -25,7 +25,9 @@
 
 public protocol SQLDialect {
     
-    static var quote: String { get }
+    static func quote(_ str: String) -> String
+    
+    static var repeatablePlaceholder: Bool { get }
     
     static func bindPlaceholder(at position: Int) -> String
     
@@ -76,19 +78,50 @@ extension DBConnection {
         var raw = ""
         var binds: [DBData] = []
         
-        for component in sql.components {
-            switch component {
-            case .null: raw.append(dialect.literalNull)
-            case .default: raw.append(dialect.literalDefault)
-            case let .string(string): raw.append(string)
-            case let .boolean(bool): raw.append(dialect.literalBoolean(bool))
-            case let .signed(value): raw.append("\(value)")
-            case let .unsigned(value): raw.append("\(value)")
-            case let .number(value): raw.append("\(Decimal(value))")
-            case let .decimal(value): raw.append("\(value)")
-            case let .bind(value):
-                binds.append(value)
-                raw.append(dialect.bindPlaceholder(at: binds.count))
+        if dialect.repeatablePlaceholder {
+            
+            var mapping: [DBData: String] = [:]
+            
+            for component in sql.components {
+                switch component {
+                case .null: raw.append(dialect.literalNull)
+                case .default: raw.append(dialect.literalDefault)
+                case let .string(string): raw.append(string)
+                case let .boolean(bool): raw.append(dialect.literalBoolean(bool))
+                case let .signed(value): raw.append("\(value)")
+                case let .unsigned(value): raw.append("\(value)")
+                case let .number(value): raw.append("\(Decimal(value))")
+                case let .decimal(value): raw.append("\(value)")
+                case let .bind(value):
+                    
+                    var placeholder = mapping[value]
+                    
+                    if placeholder == nil {
+                        binds.append(value)
+                        placeholder = dialect.bindPlaceholder(at: binds.count)
+                        mapping[value] = placeholder
+                    }
+                    
+                    raw.append(placeholder!)
+                }
+            }
+            
+        } else {
+            
+            for component in sql.components {
+                switch component {
+                case .null: raw.append(dialect.literalNull)
+                case .default: raw.append(dialect.literalDefault)
+                case let .string(string): raw.append(string)
+                case let .boolean(bool): raw.append(dialect.literalBoolean(bool))
+                case let .signed(value): raw.append("\(value)")
+                case let .unsigned(value): raw.append("\(value)")
+                case let .number(value): raw.append("\(Decimal(value))")
+                case let .decimal(value): raw.append("\(value)")
+                case let .bind(value):
+                    binds.append(value)
+                    raw.append(dialect.bindPlaceholder(at: binds.count))
+                }
             }
         }
         

@@ -183,6 +183,31 @@ class SQLiteTest: XCTestCase {
         }
     }
     
+    func testBindMultiple() throws {
+        
+        do {
+            
+            let int = 42
+            let uuid = UUID()
+            let uuid2 = UUID()
+            let str = "Hello, world"
+            
+            let result = try connection.execute("SELECT \(bind: int) as value, \(uuid) as uuid, \(uuid2) as uuid2, \(str) as str, \(str) as str2").wait()
+            
+            XCTAssertEqual(result.count, 1)
+            XCTAssertEqual(result[0]["value"]?.intValue, int)
+            XCTAssertEqual(result[0]["uuid"]?.uuid, uuid)
+            XCTAssertEqual(result[0]["uuid2"]?.uuid, uuid2)
+            XCTAssertEqual(result[0]["str"]?.string, str)
+            XCTAssertEqual(result[0]["str2"]?.string, str)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
     func testRecursive() throws {
         
         do {

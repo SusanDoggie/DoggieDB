@@ -25,8 +25,12 @@
 
 struct PostgreSQLDialect: SQLDialect {
     
-    static var quote: String {
-        return "\""
+    static func quote(_ str: String) -> String {
+        return "\"\(str)\""
+    }
+    
+    static var repeatablePlaceholder: Bool {
+        return true
     }
     
     static func bindPlaceholder(at position: Int) -> String {
