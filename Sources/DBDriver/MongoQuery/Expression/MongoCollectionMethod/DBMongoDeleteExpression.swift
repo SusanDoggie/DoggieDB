@@ -53,7 +53,7 @@ extension DBMongoDeleteExpression {
 extension DBMongoCollectionExpression {
     
     public func deleteOne() -> DBMongoDeleteExpression<T> {
-        return DBMongoDeleteExpression(query: query(), type: .deleteMany, filter: filter)
+        return DBMongoDeleteExpression(query: query(), type: .deleteOne, filter: filter)
     }
     
     public func deleteMany() -> DBMongoDeleteExpression<T> {

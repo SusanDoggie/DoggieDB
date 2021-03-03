@@ -1,5 +1,5 @@
 //
-//  DBMongoDeleteFirstExpression.swift
+//  DBMongoFindOneAndDeleteExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,7 +25,7 @@
 
 import MongoSwift
 
-public struct DBMongoDeleteFirstExpression<T: Codable>: DBMongoExpression {
+public struct DBMongoFindOneAndDeleteExpression<T: Codable>: DBMongoExpression {
     
     let query: DBMongoCollection<T>
     
@@ -34,16 +34,16 @@ public struct DBMongoDeleteFirstExpression<T: Codable>: DBMongoExpression {
     public var options: FindOneAndDeleteOptions = FindOneAndDeleteOptions()
 }
 
-extension DBMongoDeleteFirstExpression: DBMongoFilterOptions {}
+extension DBMongoFindOneAndDeleteExpression: DBMongoFilterOptions {}
 
 extension DBMongoCollectionExpression {
     
-    public func deleteFirst() -> DBMongoDeleteFirstExpression<T> {
-        return DBMongoDeleteFirstExpression(query: query(), filter: filter)
+    public func findOneAndDelete() -> DBMongoFindOneAndDeleteExpression<T> {
+        return DBMongoFindOneAndDeleteExpression(query: query(), filter: filter)
     }
 }
 
-extension DBMongoDeleteFirstExpression {
+extension DBMongoFindOneAndDeleteExpression {
     
     public func execute() -> EventLoopFuture<T?> {
         return query.collection.findOneAndDelete(filter, options: options, session: query.session)

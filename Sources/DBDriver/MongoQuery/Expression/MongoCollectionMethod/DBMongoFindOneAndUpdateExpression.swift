@@ -1,5 +1,5 @@
 //
-//  DBMongoReplaceFirstExpression.swift
+//  DBMongoFindOneAndUpdateExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,48 +25,49 @@
 
 import MongoSwift
 
-public struct DBMongoReplaceFirstExpression<T: Codable>: DBMongoExpression {
+public struct DBMongoFindOneAndUpdateExpression<T: Codable>: DBMongoExpression {
     
     let query: DBMongoCollection<T>
     
     public var filter: BSONDocument
     
-    public var replacement: T?
+    public var update: BSONDocument?
     
-    public var options: FindOneAndReplaceOptions = FindOneAndReplaceOptions()
+    public var options: FindOneAndUpdateOptions = FindOneAndUpdateOptions()
 }
 
-extension DBMongoReplaceFirstExpression: DBMongoFilterOptions {}
+extension DBMongoFindOneAndUpdateExpression: DBMongoFilterOptions {}
 
 extension DBMongoCollectionExpression {
     
-    public func replaceFirst() -> DBMongoReplaceFirstExpression<T> {
-        return DBMongoReplaceFirstExpression(query: query(), filter: filter)
+    public func findOneAndUpdate() -> DBMongoFindOneAndUpdateExpression<T> {
+        return DBMongoFindOneAndUpdateExpression(query: query(), filter: filter)
     }
 }
 
-extension DBMongoReplaceFirstExpression {
+extension DBMongoFindOneAndUpdateExpression {
     
-    public func replacement(_ replacement: T) -> Self {
+    public func update(_ update: BSONDocument) -> Self {
         var result = self
-        result.replacement = replacement
+        result.update = update
         return result
     }
 }
 
-extension DBMongoReplaceFirstExpression {
+extension DBMongoFindOneAndUpdateExpression {
     
     public func execute() -> EventLoopFuture<T?> {
-        guard let replacement = self.replacement else { fatalError() }
-        return query.collection.findOneAndReplace(filter: filter, replacement: replacement, options: options, session: query.session)
+        guard let update = self.update else { fatalError() }
+        return query.collection.findOneAndUpdate(filter: filter, update: update, options: options, session: query.session)
     }
 }
 
-extension FindOneAndReplaceOptions: DBMongoBypassDocumentValidationOptions {}
-extension FindOneAndReplaceOptions: DBMongoCollationOptions {}
-extension FindOneAndReplaceOptions: DBMongoMaxTimeMSOptions {}
-extension FindOneAndReplaceOptions: DBMongoProjectionOptions {}
-extension FindOneAndReplaceOptions: DBMongoReturnDocumentOptions {}
-extension FindOneAndReplaceOptions: DBMongoSortOptions {}
-extension FindOneAndReplaceOptions: DBMongoUpsertOptions {}
-extension FindOneAndReplaceOptions: DBMongoWriteConcernOptions {}
+extension FindOneAndUpdateOptions: DBMongoArrayFiltersOptions {}
+extension FindOneAndUpdateOptions: DBMongoBypassDocumentValidationOptions {}
+extension FindOneAndUpdateOptions: DBMongoCollationOptions {}
+extension FindOneAndUpdateOptions: DBMongoMaxTimeMSOptions {}
+extension FindOneAndUpdateOptions: DBMongoProjectionOptions {}
+extension FindOneAndUpdateOptions: DBMongoReturnDocumentOptions {}
+extension FindOneAndUpdateOptions: DBMongoSortOptions {}
+extension FindOneAndUpdateOptions: DBMongoUpsertOptions {}
+extension FindOneAndUpdateOptions: DBMongoWriteConcernOptions {}

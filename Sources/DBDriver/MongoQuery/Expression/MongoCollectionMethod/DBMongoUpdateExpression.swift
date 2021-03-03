@@ -55,7 +55,7 @@ extension DBMongoUpdateExpression {
 extension DBMongoCollectionExpression {
     
     public func updateOne() -> DBMongoUpdateExpression<T> {
-        return DBMongoUpdateExpression(query: query(), type: .updateMany, filter: filter)
+        return DBMongoUpdateExpression(query: query(), type: .updateOne, filter: filter)
     }
     
     public func updateMany() -> DBMongoUpdateExpression<T> {
