@@ -50,7 +50,7 @@ extension DBMongoAggregateExpression {
         return result
     }
     
-    public func add(_ pipeline: BSONDocument) -> Self {
+    public func _appended(_ pipeline: BSONDocument) -> Self {
         var result = self
         result.pipeline.append(pipeline)
         return result
