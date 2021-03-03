@@ -29,7 +29,7 @@ public struct DBMongoBulkWriteExpression<T: Codable>: DBMongoExpression {
     
     let query: DBMongoCollection<T>
     
-    public var requests: [WriteModel<T>]?
+    public var requests: [WriteModel<T>] = []
     
     public var options: BulkWriteOptions = BulkWriteOptions()
 }
@@ -53,7 +53,7 @@ extension DBMongoBulkWriteExpression {
 extension DBMongoBulkWriteExpression {
     
     public func execute() -> EventLoopFuture<BulkWriteResult?> {
-        guard let requests = self.requests else { fatalError() }
+        guard !requests.isEmpty else { fatalError() }
         return query.collection.bulkWrite(requests, options: options, session: query.session)
     }
 }

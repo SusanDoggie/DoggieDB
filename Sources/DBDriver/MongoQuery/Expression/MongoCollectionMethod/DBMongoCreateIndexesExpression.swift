@@ -29,7 +29,7 @@ public struct DBMongoCreateIndexesExpression<T: Codable>: DBMongoExpression {
     
     let query: DBMongoCollection<T>
     
-    public var models: [IndexModel]?
+    public var models: [IndexModel] = []
     
     public var options: CreateIndexOptions = CreateIndexOptions()
 }
@@ -53,7 +53,7 @@ extension DBMongoCreateIndexesExpression {
 extension DBMongoCreateIndexesExpression {
     
     public func execute() -> EventLoopFuture<[String]> {
-        guard let models = self.models else { fatalError() }
+        guard !models.isEmpty else { fatalError() }
         return query.collection.createIndexes(models, options: options, session: query.session)
     }
 }

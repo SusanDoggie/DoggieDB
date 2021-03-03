@@ -29,7 +29,7 @@ public struct DBMongoAggregateExpression<T: Codable>: DBMongoExpression {
     
     let query: DBMongoCollection<T>
     
-    public var pipeline: [BSONDocument]?
+    public var pipeline: [BSONDocument] = []
     
     public var options: AggregateOptions = AggregateOptions()
 }
@@ -54,7 +54,7 @@ extension DBMongoAggregateExpression {
 extension DBMongoAggregateExpression {
     
     public func execute() -> EventLoopFuture<MongoCursor<BSONDocument>> {
-        guard let pipeline = self.pipeline else { fatalError() }
+        guard !pipeline.isEmpty else { fatalError() }
         return query.collection.aggregate(pipeline, options: options, session: query.session)
     }
 }

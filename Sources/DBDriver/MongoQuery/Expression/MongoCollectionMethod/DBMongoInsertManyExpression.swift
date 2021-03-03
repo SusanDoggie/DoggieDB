@@ -29,7 +29,7 @@ public struct DBMongoInsertManyExpression<T: Codable>: DBMongoExpression {
     
     let query: DBMongoCollection<T>
     
-    public var values: [T]?
+    public var values: [T] = []
     
     public var options: InsertManyOptions = InsertManyOptions()
 }
@@ -53,7 +53,7 @@ extension DBMongoInsertManyExpression {
 extension DBMongoInsertManyExpression {
     
     public func execute() -> EventLoopFuture<InsertManyResult?> {
-        guard let values = self.values else { fatalError() }
+        guard !values.isEmpty else { fatalError() }
         return query.collection.insertMany(values, options: options, session: query.session)
     }
 }
