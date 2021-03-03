@@ -43,7 +43,7 @@ public struct SQLCreateMaterializedViewBuilder: SQLBuilderProtocol {
     
     public var builder: SQLBuilder
     
-    init(builder: SQLBuilder, view: String, options: SQLCreateMaterializedViewOptions = []) {
+    init(builder: SQLBuilder, view: String, options: SQLCreateMaterializedViewOptions) {
         self.builder = builder
         self.builder.append("CREATE MATERIALIZED VIEW")
         if options.contains(.ifNotExists) {

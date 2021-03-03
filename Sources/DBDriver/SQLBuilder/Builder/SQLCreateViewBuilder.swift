@@ -48,7 +48,7 @@ public struct SQLCreateViewBuilder: SQLBuilderProtocol {
     
     public var builder: SQLBuilder
     
-    init(builder: SQLBuilder, view: String, options: SQLCreateViewOptions = []) {
+    init(builder: SQLBuilder, view: String, options: SQLCreateViewOptions) {
         self.builder = builder
         self.builder.append("CREATE")
         if options.contains(.replacing) {

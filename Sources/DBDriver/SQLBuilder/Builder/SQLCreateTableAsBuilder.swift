@@ -27,7 +27,7 @@ public struct SQLCreateTableAsBuilder: SQLBuilderProtocol {
     
     public var builder: SQLBuilder
     
-    init(builder: SQLBuilder, table: String, options: SQLCreateTableOptions = []) {
+    init(builder: SQLBuilder, table: String, options: SQLCreateTableOptions) {
         self.builder = builder
         self.builder.append("CREATE")
         if options.contains(.temporary) {

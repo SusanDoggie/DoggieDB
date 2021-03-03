@@ -247,8 +247,8 @@ extension SQLBuilder {
     }
     
     /// Creates a new `SQLAlterTableBuilder`.
-    public func alterTable(_ table: String) -> SQLAlterTableBuilder {
-        return SQLAlterTableBuilder(builder: self, table: table)
+    public func alterTable(_ table: String, options: SQLAlterTableOptions = []) -> SQLAlterTableBuilder {
+        return SQLAlterTableBuilder(builder: self, table: table, options: options)
     }
     
     public func dropTable(_ table: String, options: SQLDropTableOptions = []) -> SQLFinalizedBuilder {
