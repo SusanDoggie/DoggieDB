@@ -108,7 +108,10 @@ extension SQLAlterTableBuilder {
         default: DBData? = nil,
         autoIncrement: Bool = false,
         unique: Bool = false,
-        primaryKey: Bool = false
+        primaryKey: Bool = false,
+        reference: SQLForeignKey? = nil,
+        onUpdate: SQLForeignKeyAction? = nil,
+        onDelete: SQLForeignKeyAction? = nil
     ) -> SQLFinalizedBuilder {
         
         var builder = self.builder
@@ -133,6 +136,28 @@ extension SQLAlterTableBuilder {
         }
         if primaryKey {
             builder.append("PRIMARY KEY")
+        }
+        
+        if let reference = reference {
+            
+            builder.append("REFERENCES \(reference.table)(\(reference.column))")
+            
+            if let onDelete = onDelete {
+                switch onDelete {
+                case .restrict: builder.append("ON DELETE RESTRICT")
+                case .cascade: builder.append("ON DELETE CASCADE")
+                case .setNull: builder.append("ON DELETE SET NULL")
+                case .setDefault: builder.append("ON DELETE SET DEFAULT")
+                }
+            }
+            if let onUpdate = onUpdate {
+                switch onUpdate {
+                case .restrict: builder.append("ON UPDATE RESTRICT")
+                case .cascade: builder.append("ON UPDATE CASCADE")
+                case .setNull: builder.append("ON UPDATE SET NULL")
+                case .setDefault: builder.append("ON UPDATE SET DEFAULT")
+                }
+            }
         }
         
         return SQLFinalizedBuilder(builder: builder)

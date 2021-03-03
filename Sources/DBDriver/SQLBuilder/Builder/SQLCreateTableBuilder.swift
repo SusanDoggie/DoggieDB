@@ -86,7 +86,10 @@ extension SQLCreateTableBuilder {
         default: DBData? = nil,
         autoIncrement: Bool = false,
         unique: Bool = false,
-        primaryKey: Bool = false
+        primaryKey: Bool = false,
+        reference: SQLForeignKey? = nil,
+        onUpdate: SQLForeignKeyAction? = nil,
+        onDelete: SQLForeignKeyAction? = nil
     ) -> SQLCreateTableBuilder {
         
         var builder = self
@@ -113,6 +116,28 @@ extension SQLCreateTableBuilder {
         }
         if primaryKey {
             builder.builder.append("PRIMARY KEY")
+        }
+        
+        if let reference = reference {
+            
+            builder.builder.append("REFERENCES \(reference.table)(\(reference.column))")
+            
+            if let onDelete = onDelete {
+                switch onDelete {
+                case .restrict: builder.builder.append("ON DELETE RESTRICT")
+                case .cascade: builder.builder.append("ON DELETE CASCADE")
+                case .setNull: builder.builder.append("ON DELETE SET NULL")
+                case .setDefault: builder.builder.append("ON DELETE SET DEFAULT")
+                }
+            }
+            if let onUpdate = onUpdate {
+                switch onUpdate {
+                case .restrict: builder.builder.append("ON UPDATE RESTRICT")
+                case .cascade: builder.builder.append("ON UPDATE CASCADE")
+                case .setNull: builder.builder.append("ON UPDATE SET NULL")
+                case .setDefault: builder.builder.append("ON UPDATE SET DEFAULT")
+                }
+            }
         }
         
         builder.flag = true
