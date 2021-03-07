@@ -33,6 +33,7 @@ let package = Package(
     ],
     products: [
         .library(name: "DoggieDB", targets: ["DoggieDB"]),
+        .executable(name: "DBBrowser", targets: ["DBBrowser"]),
     ],
     dependencies: [
         .package(url: "https://github.com/SusanDoggie/Doggie.git", .branch("main")),
@@ -42,6 +43,7 @@ let package = Package(
         .package(url: "https://github.com/vapor/sqlite-nio.git", from: "1.0.0"),
         .package(url: "https://github.com/vapor/mysql-nio.git", from: "1.0.0"),
         .package(url: "https://github.com/vapor/postgres-nio.git", from: "1.0.0"),
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
     ],
     targets: [
         .target(
@@ -68,6 +70,18 @@ let package = Package(
             dependencies: [
                 .target(name: "DBDriver"),
                 .target(name: "DBFluent"),
+            ]
+        ),
+        .target(
+            name: "DBBrowser",
+            dependencies: [
+                .product(name: "Vapor", package: "vapor"),
+            ],
+            resources: [
+                .copy("Public"),
+            ],
+            swiftSettings: [
+                .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
             ]
         ),
         .testTarget(
