@@ -17,9 +17,9 @@ const babelLoaderConfiguration = {
 };
 
 const imageLoaderConfiguration = {
-  test: /\.(gif|jpe?g|png|svg)$/,
+  test: /\.(gif|jpe?g|a?png|svg)$/,
   use: {
-    loader: 'url-loader',
+    loader: 'file-loader',
     options: {
 		name: '[name].[ext]'
     }
