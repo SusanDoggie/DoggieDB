@@ -22,7 +22,11 @@ export default class App extends React.Component {
   render() {
     return (
       <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
-        <Drawer.Navigator>
+        <Drawer.Navigator
+          openByDefault
+          drawerType='permanent'
+          overlayColor="transparent"
+        >
           <Drawer.Screen name="Table" component={TableScreen} />
         </Drawer.Navigator>
       </NavigationContainer>
