@@ -16,4 +16,6 @@ RUN mkdir release && cp -r $BIN_PATH/ release/
 FROM swift:slim
 WORKDIR /app
 COPY --from=builder /worker/release .
-CMD ["DBBrowser"]
+
+ENTRYPOINT ["./DBBrowser"]
+CMD ["serve", "--env", "production", "--hostname", "0.0.0.0"]
