@@ -5,7 +5,7 @@
   "scripts": {
     "prebuild": "webpack --mode development",
     "build": "swift build -c release",
-    "prestart": "npm run build",
+    "prestart": "webpack --mode development",
     "start": "swift run -c release"
   },
   "devDependencies": {
