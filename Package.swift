@@ -77,6 +77,10 @@ let package = Package(
             dependencies: [
                 .product(name: "Vapor", package: "vapor"),
             ],
+            exclude: [
+                "js",
+                "asserts",
+            ],
             resources: [
                 .copy("Public"),
             ],
