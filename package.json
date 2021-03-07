@@ -3,9 +3,9 @@
   "license": "MIT",
   "repository": "https://github.com/SusanDoggie/DoggieDB",
   "scripts": {
-    "prebuild": "webpack --mode development",
+    "prebuild": "webpack --mode production",
     "build": "swift build -c release",
-    "prestart": "webpack --mode development",
+    "prestart": "webpack --mode production",
     "start": "swift run -c release"
   },
   "devDependencies": {

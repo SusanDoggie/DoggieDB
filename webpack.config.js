@@ -3,8 +3,6 @@
 var path = require("path");
 var webpack = require('webpack');
 
-const appDirectory = path.resolve(__dirname, '../');
-
 const babelLoaderConfiguration = {
 	test: /\.(ts|tsx|js)?$/,
 	use: {
@@ -34,6 +32,7 @@ const imageLoaderConfiguration = {
 
 function createConfig(isProductionMode) {
 	var config = {
+		mode: isProductionMode ? 'production' : 'development',
 		plugins: [ 
 			new webpack.DefinePlugin({
 				'process.env': {

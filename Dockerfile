@@ -2,7 +2,7 @@ FROM node AS bundler
 WORKDIR /worker
 COPY . .
 
-RUN npx webpack --mode development
+RUN npx webpack --mode production
 
 FROM swift AS builder
 WORKDIR /worker
