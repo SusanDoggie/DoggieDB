@@ -21,7 +21,9 @@ const imageLoaderConfiguration = {
   use: {
     loader: 'file-loader',
     options: {
-		name: '[name].[ext]'
+		name: '[name].[contenthash].[ext]',
+		publicPath: 'images',
+		outputPath: 'images',
     }
   }
 };
@@ -71,9 +73,9 @@ module.exports = [
 			main: './Sources/DBBrowser/js/main.js',
 		},
 		output: {
-			path: path.join(__dirname, "Sources/DBBrowser/Public/js"),
-			publicPath: "/js",
-			filename: "[name].js"
+			path: path.join(__dirname, "Sources/DBBrowser/Public"),
+			publicPath: 'js',
+			filename: "js/[name].js"
 		}
 	})
 ];
