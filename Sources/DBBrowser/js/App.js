@@ -2,12 +2,11 @@ import _ from 'lodash';
 import React from 'react';
 import { Text, View, Image } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import Sidebar from './Sidebar';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 
 import TableScreen from './pages/TableScreen';
 
-const Stack = createStackNavigator();
+const Drawer = createDrawerNavigator();
 
 const linking = {
   prefixes: [
@@ -22,14 +21,11 @@ const linking = {
 export default class App extends React.Component {
   render() {
     return (
-      <View style={{ flexDirection: 'row', flex: 1 }}>
-        <Sidebar style={{ width: 256 }} />
-        <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
-          <Stack.Navigator>
-            <Stack.Screen name="Table" component={TableScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </View>
+      <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
+        <Drawer.Navigator>
+          <Drawer.Screen name="Table" component={TableScreen} />
+        </Drawer.Navigator>
+      </NavigationContainer>
     );
   }
 }

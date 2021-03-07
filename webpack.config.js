@@ -12,6 +12,9 @@ const babelLoaderConfiguration = {
 	  options: {
 		cacheDirectory: true,
 		presets: ['@babel/preset-react'],
+		plugins: [
+			"react-native-reanimated/plugin"
+		]
 	  },
 	}
 };
