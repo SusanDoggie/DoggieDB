@@ -3,7 +3,10 @@
   "license": "MIT",
   "repository": "https://github.com/SusanDoggie/DoggieDB",
   "scripts": {
-    "build": "webpack --mode development && swift build"
+    "prebuild": "webpack --mode development",
+    "build": "swift build -c release",
+    "prestart": "npm run build",
+    "start": "swift run -c release"
   },
   "devDependencies": {
     "@babel/core": "^7.13.8",
