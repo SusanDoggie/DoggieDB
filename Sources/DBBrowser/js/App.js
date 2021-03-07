@@ -3,8 +3,9 @@ import React from 'react';
 import { Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import loadable from '@loadable/component';
 
-import TableScreen from './pages/TableScreen';
+const TableScreen = loadable(() => import('./pages/TableScreen'));
 
 const Drawer = createDrawerNavigator();
 

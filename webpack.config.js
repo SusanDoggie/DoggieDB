@@ -1,6 +1,6 @@
 /* eslint no-var: 0 */
 
-var path = require("path");
+var path = require('path');
 var webpack = require('webpack');
 
 const babelLoaderConfiguration = {
@@ -9,10 +9,13 @@ const babelLoaderConfiguration = {
 	  loader: 'babel-loader',
 	  options: {
 		cacheDirectory: true,
-		presets: ['@babel/preset-react'],
+		presets: [
+			'@babel/preset-react',
+		],
 		plugins: [
-			"@babel/plugin-proposal-class-properties",
-			"react-native-reanimated/plugin"
+			'@babel/plugin-syntax-dynamic-import',
+			'@babel/plugin-proposal-class-properties',
+			'react-native-reanimated/plugin',
 		]
 	  },
 	}
@@ -76,9 +79,9 @@ module.exports = [
 			main: './Sources/DBBrowser/js/main.js',
 		},
 		output: {
-			path: path.join(__dirname, "Sources/DBBrowser/Public"),
-			publicPath: '/js',
-			filename: "js/[name].js"
+			path: path.join(__dirname, 'Sources/DBBrowser/Public'),
+			publicPath: '/',
+			filename: 'js/[name].js'
 		}
 	})
 ];
