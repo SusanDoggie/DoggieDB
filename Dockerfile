@@ -14,8 +14,7 @@ COPY --from=bundler /worker .
 
 RUN swift build -c release
 
-RUN export BIN_PATH=$(swift build -c release --show-bin-path)
-RUN mkdir release && cp -r $BIN_PATH/ release/
+RUN mkdir release && cp -r "$(swift build -c release --show-bin-path)/" release/
 
 FROM swift:slim
 
