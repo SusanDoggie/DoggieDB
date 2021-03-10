@@ -23,5 +23,7 @@ RUN apt-get update && apt-get install -y libmongoc-1.0-0 libbson-1.0-0 libssl-de
 WORKDIR /app
 COPY --from=builder /worker/app .
 
+EXPOSE 8080
+
 ENTRYPOINT ["./release/DBBrowser"]
 CMD ["serve", "--env", "production", "--hostname", "0.0.0.0"]
