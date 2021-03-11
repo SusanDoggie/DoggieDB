@@ -29,34 +29,14 @@ public protocol MongoCursorProtocol {
     
     associatedtype Element: Codable
     
-    func isAlive() -> EventLoopFuture<Bool>
-    
-    func tryNext() -> EventLoopFuture<Element?>
-    
-    func next() -> EventLoopFuture<Element?>
-    
     func toArray() -> EventLoopFuture<[Element]>
     
     func forEach(_ body: @escaping (Element) throws -> Void) -> EventLoopFuture<Void>
-    
-    func kill() -> EventLoopFuture<Void>
 }
 
 extension MongoCursor: MongoCursorProtocol { }
 
 extension EventLoopFuture where Value: MongoCursorProtocol {
-    
-    public func isAlive() -> EventLoopFuture<Bool> {
-        return self.flatMap { $0.isAlive() }
-    }
-    
-    public func tryNext() -> EventLoopFuture<Value.Element?> {
-        return self.flatMap { $0.tryNext() }
-    }
-    
-    public func next() -> EventLoopFuture<Value.Element?> {
-        return self.flatMap { $0.next() }
-    }
     
     public func toArray() -> EventLoopFuture<[Value.Element]> {
         return self.flatMap { $0.toArray() }
@@ -64,9 +44,5 @@ extension EventLoopFuture where Value: MongoCursorProtocol {
     
     public func forEach(_ body: @escaping (Value.Element) throws -> Void) -> EventLoopFuture<Void> {
         return self.flatMap { $0.forEach(body) }
-    }
-    
-    public func kill() -> EventLoopFuture<Void> {
-        return self.flatMap { $0.kill() }
     }
 }
