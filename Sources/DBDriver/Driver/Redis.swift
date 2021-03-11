@@ -25,26 +25,26 @@
 
 import RediStack
 
-public struct RedisDriver: DBDriverProtocol {
+struct RedisDriver: DBDriverProtocol {
     
     static var defaultPort: Int { 6379 }
 }
 
 extension RedisDriver {
     
-    public class Connection: DBConnection {
+    class Connection: DBConnection {
         
-        public var driver: DBDriver { return .redis }
+        var driver: DBDriver { return .redis }
         
         let connection: RedisConnection
         
-        public var eventLoop: EventLoop { connection.eventLoop }
+        var eventLoop: EventLoop { connection.eventLoop }
         
         init(_ connection: RedisConnection) {
             self.connection = connection
         }
         
-        public func close() -> EventLoopFuture<Void> {
+        func close() -> EventLoopFuture<Void> {
             return connection.close()
         }
     }
@@ -81,7 +81,7 @@ extension RedisDriver {
 
 extension RedisDriver.Connection {
     
-    public var isClosed: Bool {
+    var isClosed: Bool {
         return !self.connection.isConnected
     }
 }
