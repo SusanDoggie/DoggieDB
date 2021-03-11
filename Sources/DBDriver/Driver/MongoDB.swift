@@ -25,23 +25,23 @@
 
 import MongoSwift
 
-public struct MongoDBDriver: DBDriverProtocol {
+struct MongoDBDriver: DBDriverProtocol {
     
     static var defaultPort: Int { 27017 }
 }
 
 extension MongoDBDriver {
     
-    public class Connection: DBConnection {
+    class Connection: DBConnection {
         
-        public var driver: DBDriver { return .mongoDB }
+        var driver: DBDriver { return .mongoDB }
         
-        public private(set) var isClosed: Bool = false
+        private(set) var isClosed: Bool = false
         
         let client: MongoClient
         let database: MongoDatabase?
         
-        public let eventLoop: EventLoop
+        let eventLoop: EventLoop
         
         init(client: MongoClient, database: MongoDatabase?, eventLoop: EventLoop) {
             self.client = client
@@ -49,7 +49,7 @@ extension MongoDBDriver {
             self.eventLoop = eventLoop
         }
         
-        public func close() -> EventLoopFuture<Void> {
+        func close() -> EventLoopFuture<Void> {
             let closeResult = client.close()
             closeResult.whenComplete { _ in self.isClosed = true }
             return closeResult
@@ -95,21 +95,7 @@ extension MongoDBDriver {
 
 extension MongoDBDriver.Connection {
     
-    public func databases() -> EventLoopFuture<[String]> {
+    func databases() -> EventLoopFuture<[String]> {
         return self.client.listDatabaseNames()
-    }
-}
-
-extension MongoDBDriver.Connection {
-    
-    public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
-        return self.client.startSession(options: options)
-    }
-    
-    public func withSession<T>(
-        options: ClientSessionOptions? = nil,
-        _ sessionBody: (ClientSession) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
-        return self.client.withSession(options: options, sessionBody)
     }
 }

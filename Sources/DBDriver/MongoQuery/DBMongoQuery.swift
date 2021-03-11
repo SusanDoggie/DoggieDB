@@ -27,7 +27,7 @@ import MongoSwift
 
 public struct DBMongoQuery {
     
-    let database: MongoDatabase
+    let connection: MongoDBDriver.Connection
     
     var session: ClientSession?
 }
@@ -35,12 +35,22 @@ public struct DBMongoQuery {
 extension MongoDBDriver.Connection {
     
     public func mongoQuery() -> DBMongoQuery {
-        guard let database = self.database else { fatalError("database not selected.") }
-        return DBMongoQuery(database: database, session: nil)
+        return DBMongoQuery(connection: self, session: nil)
     }
 }
 
 extension DBMongoQuery {
+    
+    public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
+        return connection.client.startSession(options: options)
+    }
+    
+    public func withSession<T>(
+        options: ClientSessionOptions? = nil,
+        _ sessionBody: (ClientSession) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        return connection.client.withSession(options: options, sessionBody)
+    }
     
     public func session(_ session: ClientSession) -> Self {
         var result = self
@@ -52,14 +62,17 @@ extension DBMongoQuery {
 extension DBMongoQuery {
     
     public func collection(_ name: String) -> DBMongoCollectionExpression<BSONDocument> {
+        guard let database = connection.database else { fatalError("database not selected.") }
         return DBMongoCollectionExpression(database: database, session: session, name: name)
     }
     
     public func createCollection(_ name: String) -> DBMongoCreateCollectionExpression<BSONDocument> {
+        guard let database = connection.database else { fatalError("database not selected.") }
         return DBMongoCreateCollectionExpression(database: database, session: session, name: name)
     }
     
     public func collections(_ name: String) -> DBMongoListCollectionsExpression<BSONDocument> {
+        guard let database = connection.database else { fatalError("database not selected.") }
         return DBMongoListCollectionsExpression(database: database, session: session)
     }
 }
