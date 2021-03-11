@@ -75,6 +75,12 @@ extension SQLCreateTableBuilder {
         builder.append(")")
         return builder.execute(onRow: onRow)
     }
+    
+    public func execute(onRow: @escaping (DBQueryRow) throws -> Void) -> EventLoopFuture<DBQueryMetadata> {
+        var builder = self.builder
+        builder.append(")")
+        return builder.execute(onRow: onRow)
+    }
 }
 
 extension SQLCreateTableBuilder {

@@ -41,4 +41,8 @@ extension SQLFinalizedBuilder {
     public func execute(onRow: @escaping (DBQueryRow) -> Void) -> EventLoopFuture<DBQueryMetadata> {
         return builder.execute(onRow: onRow)
     }
+    
+    public func execute(onRow: @escaping (DBQueryRow) throws -> Void) -> EventLoopFuture<DBQueryMetadata> {
+        return builder.execute(onRow: onRow)
+    }
 }

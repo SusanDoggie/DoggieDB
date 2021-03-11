@@ -30,6 +30,8 @@ public protocol SQLBuilderProtocol {
     func execute() -> EventLoopFuture<[DBQueryRow]>
     
     func execute(onRow: @escaping (DBQueryRow) -> Void) -> EventLoopFuture<DBQueryMetadata>
+    
+    func execute(onRow: @escaping (DBQueryRow) throws -> Void) -> EventLoopFuture<DBQueryMetadata>
 }
 
 extension SQLBuilderProtocol {
@@ -39,6 +41,10 @@ extension SQLBuilderProtocol {
     }
     
     public func execute(onRow: @escaping (DBQueryRow) -> Void) -> EventLoopFuture<DBQueryMetadata> {
+        return builder.execute(onRow: onRow)
+    }
+    
+    public func execute(onRow: @escaping (DBQueryRow) throws -> Void) -> EventLoopFuture<DBQueryMetadata> {
         return builder.execute(onRow: onRow)
     }
 }
@@ -142,6 +148,17 @@ extension SQLBuilder: SQLBuilderProtocol {
     }
     
     public func execute(onRow: @escaping (DBQueryRow) -> Void) -> EventLoopFuture<DBQueryMetadata> {
+        
+        guard let connection = self.connection else { fatalError() }
+        
+        guard let raw = self.raw else {
+            return connection.eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+        }
+        
+        return connection.execute(raw, onRow: onRow)
+    }
+    
+    public func execute(onRow: @escaping (DBQueryRow) throws -> Void) -> EventLoopFuture<DBQueryMetadata> {
         
         guard let connection = self.connection else { fatalError() }
         

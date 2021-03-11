@@ -153,7 +153,7 @@ extension PostgreSQLDriver.Connection {
     
     func execute(
         _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) -> Void
+        onRow: @escaping (DBQueryRow) throws -> Void
     ) -> EventLoopFuture<DBQueryMetadata> {
         
         do {
@@ -169,7 +169,7 @@ extension PostgreSQLDriver.Connection {
                 raw,
                 _binds,
                 onMetadata: { metadata = $0 },
-                onRow: { onRow(DBQueryRow($0)) }
+                onRow: { try onRow(DBQueryRow($0)) }
             ).map { metadata.map(DBQueryMetadata.init) ?? DBQueryMetadata(metadata: [:]) }
             
         } catch let error {
