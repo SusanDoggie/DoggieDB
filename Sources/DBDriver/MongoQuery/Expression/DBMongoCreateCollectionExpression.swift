@@ -50,6 +50,18 @@ extension DBMongoCreateCollectionExpression {
     }
 }
 
+extension DBMongoCreateCollectionExpression: DBMongoPipelineBuilder {
+    
+    public var pipeline: [BSONDocument] {
+        get {
+            return options.pipeline ?? []
+        }
+        set {
+            options.pipeline = newValue
+        }
+    }
+}
+
 extension CreateCollectionOptions: DBMongoCollationOptions {}
 extension CreateCollectionOptions: DBMongoWriteConcernOptions {}
 extension CreateCollectionOptions: DBMongoDataCodingStrategyOptions {}

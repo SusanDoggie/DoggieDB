@@ -44,67 +44,14 @@ extension DBMongoCollectionExpression {
 extension DBMongoAggregateExpression {
     
     /// an `[Document]` containing the pipeline of aggregation operations to perform
-    public func pipeline(pipeline: [BSONDocument]) -> Self {
+    public func pipeline(_ pipeline: [BSONDocument]) -> Self {
         var result = self
         result.pipeline = pipeline
         return result
     }
-    
-    public func _appended(_ pipeline: BSONDocument) -> Self {
-        var result = self
-        result.pipeline.append(pipeline)
-        return result
-    }
 }
 
-extension DBMongoAggregateExpression {
-    
-    public func count(_ name: String) -> Self {
-        return self._appended(["$count": .string(name)])
-    }
-    
-    public func limit(_ n: Int) -> Self {
-        return self._appended(["$limit": .int64(Int64(n))])
-    }
-    
-    public func skip(_ n: Int) -> Self {
-        return self._appended(["$skip": .int64(Int64(n))])
-    }
-}
-
-extension DBMongoAggregateExpression {
-    
-    public func unwind(_ path: String, includeArrayIndex: String? = nil, preserveNullAndEmptyArrays: Bool? = nil) -> Self {
-        var options: BSONDocument = ["path": .string(path)]
-        if let includeArrayIndex = includeArrayIndex {
-            options["includeArrayIndex"] = .string(includeArrayIndex)
-        }
-        if let preserveNullAndEmptyArrays = preserveNullAndEmptyArrays {
-            options["preserveNullAndEmptyArrays"] = .bool(preserveNullAndEmptyArrays)
-        }
-        return self._appended(["$unwind": .document(options)])
-    }
-}
-
-extension DBMongoAggregateExpression {
-    
-    public func out(_ collection: String, database: String? = nil) -> Self {
-        var options: BSONDocument = ["coll": .string(collection)]
-        if let database = database {
-            options["db"] = .string(database)
-        }
-        return self._appended(["$out": .document(options)])
-    }
-}
-
-extension DBMongoAggregateExpression {
-    
-    public func execute() -> EventLoopFuture<MongoCursor<BSONDocument>> {
-        guard !pipeline.isEmpty else { fatalError() }
-        return query.collection.aggregate(pipeline, options: options, session: query.session)
-    }
-}
-
+extension DBMongoAggregateExpression: DBMongoPipelineBuilder {}
 extension AggregateOptions: DBMongoAllowDiskUseOptions {}
 extension AggregateOptions: DBMongoBatchSizeOptions {}
 extension AggregateOptions: DBMongoBypassDocumentValidationOptions {}
