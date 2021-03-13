@@ -155,11 +155,11 @@ extension DBRedisListQuery {
 
 extension DBRedisListQuery {
     
-    public func get<D: Decodable>(_ index: Int, as type: D.Type, decoder: _Decoder = BSONDecoder()) -> EventLoopFuture<D?> {
+    public func fetch<D: Decodable>(_ index: Int, as type: D.Type, decoder: _Decoder = BSONDecoder()) -> EventLoopFuture<D?> {
         return self.connection.lindex(index, from: RedisKey(key), as: Data.self).flatMapThrowing { try $0.map { try decoder.decode(D.self, from: $0) } }
     }
     
-    public func set<E: Encodable>(_ index: Int, value: E, encoder: _Encoder = BSONEncoder()) -> EventLoopFuture<Void> {
+    public func store<E: Encodable>(_ index: Int, value: E, encoder: _Encoder = BSONEncoder()) -> EventLoopFuture<Void> {
         do {
             return try self.connection.lset(index: index, to: encoder.encode(value), in: RedisKey(key))
         } catch {

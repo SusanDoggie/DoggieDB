@@ -71,11 +71,11 @@ extension DBRedisDictionaryQuery {
 
 extension DBRedisDictionaryQuery {
     
-    public func get<D: Decodable>(_ field: String, as type: D.Type, decoder: _Decoder = BSONDecoder()) -> EventLoopFuture<D?> {
+    public func fetch<D: Decodable>(_ field: String, as type: D.Type, decoder: _Decoder = BSONDecoder()) -> EventLoopFuture<D?> {
         return self.connection.hget(field, from: RedisKey(key), as: Data.self).flatMapThrowing { try $0.flatMap { try decoder.decode(D.self, from: $0) } }
     }
     
-    public func set<E: Encodable>(_ field: String, value: E, encoder: _Encoder = BSONEncoder()) -> EventLoopFuture<Bool> {
+    public func store<E: Encodable>(_ field: String, value: E, encoder: _Encoder = BSONEncoder()) -> EventLoopFuture<Bool> {
         do {
             return try self.connection.hset(field, to: encoder.encode(value), in: RedisKey(key))
         } catch {
