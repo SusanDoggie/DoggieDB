@@ -103,4 +103,29 @@ class RedisTest: XCTestCase {
         }
     }
     
+    func testPubSub() throws {
+        
+        do {
+            
+            let promise = connection.eventLoop.makePromise(of: String.self)
+            
+            try connection.redisQuery().subscribe(toChannels: ["Test"]) { publisher, message in
+                
+                promise.completeWith(message.map { $0.string ?? "" })
+                
+            }.wait()
+            
+            _ = try connection.redisQuery().publish("hello", to: "Test").wait()
+            
+            let result = try promise.futureResult.wait()
+            
+            XCTAssertEqual("hello", result)
+            
+        } catch let error {
+            
+            print(error)
+            throw error
+        }
+    }
+    
 }
