@@ -114,25 +114,6 @@ extension DBRedisQuery {
 
 extension DBRedisQuery {
     
-    public func increment(_ key: String) -> EventLoopFuture<Int> {
-        return self.connection.increment(RedisKey(key))
-    }
-    
-    public func decrement(_ key: String) -> EventLoopFuture<Int> {
-        return self.connection.decrement(RedisKey(key))
-    }
-    
-    public func increment(_ key: String, by count: Int) -> EventLoopFuture<Int> {
-        return self.connection.increment(RedisKey(key), by: count)
-    }
-    
-    public func decrement(_ key: String, by count: Int) -> EventLoopFuture<Int> {
-        return self.connection.decrement(RedisKey(key), by: count)
-    }
-}
-
-extension DBRedisQuery {
-    
     public func echo(_ message: String) -> EventLoopFuture<String> {
         return self.connection.echo(message)
     }
@@ -141,6 +122,7 @@ extension DBRedisQuery {
         return self.connection.ping(with: message)
     }
 }
+
 
 extension DBRedisQuery {
     
@@ -156,7 +138,7 @@ extension DBRedisQuery {
 extension DBRedisQuery {
     
     public func get<D: Decodable>(_ key: String, as type: D.Type, decoder: _Decoder = BSONDecoder()) -> EventLoopFuture<D?> {
-        return self.connection.get(RedisKey(key), as: Data.self).flatMapThrowing { data in try data.flatMap { try decoder.decode(D.self, from: $0) } }
+        return self.connection.get(RedisKey(key), as: Data.self).flatMapThrowing { try $0.flatMap { try decoder.decode(D.self, from: $0) } }
     }
     
     public func set<E: Encodable>(_ key: String, value: E, encoder: _Encoder = BSONEncoder()) -> EventLoopFuture<Void> {
@@ -165,5 +147,28 @@ extension DBRedisQuery {
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }
+    }
+}
+
+extension DBRedisQuery {
+    
+    public func increment(_ key: String) -> EventLoopFuture<Int> {
+        return self.connection.increment(RedisKey(key))
+    }
+    
+    public func decrement(_ key: String) -> EventLoopFuture<Int> {
+        return self.connection.decrement(RedisKey(key))
+    }
+    
+    public func increment<T: FixedWidthInteger>(_ key: String, by amount: T) -> EventLoopFuture<T> {
+        return self.connection.increment(RedisKey(key), by: Int64(amount)).map { T($0) }
+    }
+    
+    public func decrement<T: FixedWidthInteger>(_ key: String, by amount: T) -> EventLoopFuture<T> {
+        return self.connection.decrement(RedisKey(key), by: Int64(amount)).map { T($0) }
+    }
+    
+    public func increment<T: BinaryFloatingPoint>(_ key: String, by amount: T) -> EventLoopFuture<T> {
+        return self.connection.increment(RedisKey(key), by: Double(amount)).map(T.init)
     }
 }
