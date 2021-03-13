@@ -73,10 +73,6 @@ extension Database {
         
         do {
             
-            guard let hostname = url.host else {
-                return eventLoop.makeFailedFuture(Database.Error.invalidURL)
-            }
-            
             let driver: DBDriver
             
             switch url.scheme {
@@ -87,39 +83,7 @@ extension Database {
             default: return eventLoop.makeFailedFuture(Database.Error.invalidURL)
             }
             
-            let tlsConfiguration: TLSConfiguration?
-            
-            let enable_ssl = url.queryItems?.last { $0.name == "ssl" }?.value
-            let ssl_mode = url.queryItems?.last { $0.name == "sslmode" }?.value
-            
-            if enable_ssl == "true" {
-                
-                let certificateVerification: CertificateVerification
-                
-                switch ssl_mode {
-                case "none": certificateVerification = .none
-                case "require": certificateVerification = .noHostnameVerification
-                case "verify-full": certificateVerification = .fullVerification
-                default: certificateVerification = .fullVerification
-                }
-                
-                tlsConfiguration = .forClient(certificateVerification: certificateVerification)
-                
-            } else {
-                
-                tlsConfiguration = nil
-            }
-            
-            let lastPathComponent = url.lastPathComponent
-            
-            let config = try Database.Configuration(
-                hostname: hostname,
-                port: url.port ?? driver.rawValue.defaultPort,
-                username: url.user,
-                password: url.password,
-                database: lastPathComponent == "/" ? nil : lastPathComponent,
-                tlsConfiguration: tlsConfiguration
-            )
+            let config = try Database.Configuration(url: url)
             
             return self.connect(config: config, logger: logger, driver: driver, on: eventLoop)
             

@@ -78,3 +78,60 @@ extension Database {
         }
     }
 }
+
+extension Database.Configuration {
+    
+    public init(url: URL) throws {
+        guard let url = URLComponents(url: url, resolvingAgainstBaseURL: true) else { throw Database.Error.invalidURL }
+        try self.init(url: url)
+    }
+    
+    public init(url: URLComponents) throws {
+        
+        guard let hostname = url.host else { throw Database.Error.invalidURL }
+        
+        let driver: DBDriver
+        
+        switch url.scheme {
+        case "redis": driver = .redis
+        case "mysql": driver = .mySQL
+        case "postgres": driver = .postgreSQL
+        case "mongodb": driver = .mongoDB
+        default:  throw Database.Error.invalidURL
+        }
+        
+        let tlsConfiguration: TLSConfiguration?
+        
+        let enable_ssl = url.queryItems?.last { $0.name == "ssl" }?.value
+        let ssl_mode = url.queryItems?.last { $0.name == "sslmode" }?.value
+        
+        if enable_ssl == "true" {
+            
+            let certificateVerification: CertificateVerification
+            
+            switch ssl_mode {
+            case "none": certificateVerification = .none
+            case "require": certificateVerification = .noHostnameVerification
+            case "verify-full": certificateVerification = .fullVerification
+            default: certificateVerification = .fullVerification
+            }
+            
+            tlsConfiguration = .forClient(certificateVerification: certificateVerification)
+            
+        } else {
+            
+            tlsConfiguration = nil
+        }
+        
+        let lastPathComponent = url.lastPathComponent
+        
+        try self.init(
+            hostname: hostname,
+            port: url.port ?? driver.rawValue.defaultPort,
+            username: url.user,
+            password: url.password,
+            database: lastPathComponent == "/" ? nil : lastPathComponent,
+            tlsConfiguration: tlsConfiguration
+        )
+    }
+}
