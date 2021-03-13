@@ -152,6 +152,22 @@ extension DBRedisQuery {
 
 extension DBRedisQuery {
     
+    public func get<D: Decodable>(_ keys: Set<String>, as type: D.Type, decoder: _Decoder = BSONDecoder()) -> EventLoopFuture<[String: D?]> {
+        let keys = Array(keys)
+        return self.connection.mget(keys.map { RedisKey($0) }, as: Data.self).flatMapThrowing { try Dictionary(uniqueKeysWithValues: zip(keys, $0.map { try $0.map { try decoder.decode(D.self, from: $0) } })) }
+    }
+    
+    public func set<E: Encodable>(_ values: [String: E], encoder: _Encoder = BSONEncoder()) -> EventLoopFuture<Void> {
+        do {
+            return try self.connection.mset(Dictionary(uniqueKeysWithValues: values.map { try (RedisKey($0.key), encoder.encode($0.value)) }))
+        } catch {
+            return self.connection.eventLoop.makeFailedFuture(error)
+        }
+    }
+}
+
+extension DBRedisQuery {
+    
     public func increment(_ key: String) -> EventLoopFuture<Int> {
         return self.connection.increment(RedisKey(key))
     }
