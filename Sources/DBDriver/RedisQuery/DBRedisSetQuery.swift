@@ -74,11 +74,55 @@ extension DBRedisSetQuery {
 
 extension DBRedisSetQuery {
     
+    public func remove(_ value: RESPValue) -> EventLoopFuture<Int> {
+        return self.connection.srem([value], from: RedisKey(key))
+    }
+    
+    public func remove<C: Collection>(_ values: C) -> EventLoopFuture<Int> where C.Element == RESPValue {
+        return self.connection.srem(Array(values), from: RedisKey(key))
+    }
+}
+
+extension DBRedisSetQuery {
+    
     public func randomElement() -> EventLoopFuture<RESPValue?> {
         return self.connection.srandmember(from: RedisKey(key)).map { $0[0] }
     }
     
     public func randomElements(_ count: Int) -> EventLoopFuture<[RESPValue]> {
         return self.connection.srandmember(from: RedisKey(key), max: count)
+    }
+}
+
+extension DBRedisSetQuery {
+    
+    public func union(to others: DBRedisListQuery...) -> EventLoopFuture<[RESPValue]> {
+        return self.connection.sunion(of: others.map { RedisKey($0.key) })
+    }
+    
+    public func formUnion(to others: DBRedisListQuery...) -> EventLoopFuture<Int> {
+        return self.connection.sunionstore(as: RedisKey(key), sources: [RedisKey(key)] + others.map { RedisKey($0.key) })
+    }
+}
+
+extension DBRedisSetQuery {
+    
+    public func intersection(to others: DBRedisListQuery...) -> EventLoopFuture<[RESPValue]> {
+        return self.connection.sinter(of: others.map { RedisKey($0.key) })
+    }
+    
+    public func formIntersection(to others: DBRedisListQuery...) -> EventLoopFuture<Int> {
+        return self.connection.sinterstore(as: RedisKey(key), sources: [RedisKey(key)] + others.map { RedisKey($0.key) })
+    }
+}
+
+extension DBRedisSetQuery {
+    
+    public func subtracting(to others: DBRedisListQuery...) -> EventLoopFuture<[RESPValue]> {
+        return self.connection.sdiff(of: others.map { RedisKey($0.key) })
+    }
+    
+    public func subtract(to others: DBRedisListQuery...) -> EventLoopFuture<Int> {
+        return self.connection.sdiffstore(as: RedisKey(key), sources: [RedisKey(key)] + others.map { RedisKey($0.key) })
     }
 }
