@@ -1,5 +1,5 @@
 //
-//  Encoder.swift
+//  ByteBuffer.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,20 +23,9 @@
 //  THE SOFTWARE.
 //
 
-import SwiftBSON
-
-public protocol _Encoder {
+extension ByteBuffer {
     
-    func encode<T: Encodable>(_ value: T) throws -> Data
-}
-
-extension JSONEncoder: _Encoder {}
-
-extension BSONEncoder: _Encoder {
-    
-    public func encode<T>(_ value: T) throws -> Data where T : Encodable {
-        return try self.encode(value).toData()
+    var data: Data {
+        return self.getData(at: self.readerIndex, length: self.readableBytes) ?? Data()
     }
 }
-
-extension ExtendedJSONEncoder: _Encoder {}

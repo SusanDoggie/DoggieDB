@@ -1,5 +1,5 @@
 //
-//  Decoder.swift
+//  RedisEncoder.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,13 +23,12 @@
 //  THE SOFTWARE.
 //
 
+import RediStack
 import SwiftBSON
 
-public protocol _Decoder {
+struct RedisEncoder {
     
-    func decode<T: Decodable>(_ type: T.Type, from: Data) throws -> T
+    static func encode<Value: Codable>(_ value: Value) throws -> RESPValue {
+        
+    }
 }
-
-extension JSONDecoder: _Decoder {}
-extension BSONDecoder: _Decoder {}
-extension ExtendedJSONDecoder: _Decoder {}

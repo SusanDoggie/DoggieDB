@@ -26,7 +26,7 @@
 import RediStack
 import SwiftBSON
 
-public struct DBRedisDictionaryQuery {
+public struct DBRedisDictionary<Value: Codable> {
     
     public let connection: RedisConnection
     
@@ -35,30 +35,30 @@ public struct DBRedisDictionaryQuery {
 
 extension DBRedisQuery {
     
-    public func dictionary(of key: String) -> DBRedisDictionaryQuery {
-        return DBRedisDictionaryQuery(connection: connection, key: key)
+    public func dictionary<Value>(of key: String, as type: Value.Type) -> DBRedisDictionary<Value> {
+        return DBRedisDictionary(connection: connection, key: key)
     }
 }
 
-extension DBRedisDictionaryQuery {
+extension DBRedisDictionary {
     
-    public func toDictionary<D: Decodable>(as type: D.Type, decoder: _Decoder = BSONDecoder()) -> EventLoopFuture<[String: D]> {
-        return self.connection.hgetall(from: RedisKey(key), as: Data.self).flatMapThrowing { try $0.compactMapValues { try $0.map { try decoder.decode(D.self, from: $0) } } }
+    public func toDictionary() -> EventLoopFuture<[String: Value]> {
+        return self.connection.hgetall(from: RedisKey(key)).flatMapThrowing { try $0.mapValues { try RedisDecoder.decode(Value.self, from: $0) } }
     }
 }
 
-extension DBRedisDictionaryQuery {
+extension DBRedisDictionary {
     
     public func keys() -> EventLoopFuture<[String]> {
         return self.connection.hkeys(in: RedisKey(key))
     }
     
-    public func values<D: Decodable>(as type: D.Type, decoder: _Decoder = BSONDecoder()) -> EventLoopFuture<[D]> {
-        return self.connection.hvals(in: RedisKey(key), as: Data.self).flatMapThrowing { try $0.compactMap { try $0.map { try decoder.decode(D.self, from: $0) } } }
+    public func values() -> EventLoopFuture<[Value]> {
+        return self.connection.hvals(in: RedisKey(key)).flatMapThrowing { try $0.map { try RedisDecoder.decode(Value.self, from: $0) } }
     }
 }
 
-extension DBRedisDictionaryQuery {
+extension DBRedisDictionary {
     
     public func exists(_ field: String) -> EventLoopFuture<Bool> {
         return self.connection.hexists(field, in: RedisKey(key))
@@ -69,22 +69,22 @@ extension DBRedisDictionaryQuery {
     }
 }
 
-extension DBRedisDictionaryQuery {
+extension DBRedisDictionary {
     
-    public func fetch<D: Decodable>(_ field: String, as type: D.Type, decoder: _Decoder = BSONDecoder()) -> EventLoopFuture<D?> {
-        return self.connection.hget(field, from: RedisKey(key), as: Data.self).flatMapThrowing { try $0.flatMap { try decoder.decode(D.self, from: $0) } }
+    public func fetch(_ field: String) -> EventLoopFuture<Value?> {
+        return self.connection.hget(field, from: RedisKey(key)).flatMapThrowing { try RedisDecoder.decode(Optional<Value>.self, from: $0) }
     }
     
-    public func store<E: Encodable>(_ field: String, value: E, encoder: _Encoder = BSONEncoder()) -> EventLoopFuture<Bool> {
+    public func store(_ field: String, value: Value) -> EventLoopFuture<Bool> {
         do {
-            return try self.connection.hset(field, to: encoder.encode(value), in: RedisKey(key))
+            return try self.connection.hset(field, to: RedisEncoder.encode(value), in: RedisKey(key))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }
     }
 }
 
-extension DBRedisDictionaryQuery {
+extension DBRedisDictionary {
     
     public func increment<T: FixedWidthInteger>(_ field: String, by amount: T) -> EventLoopFuture<T> {
         return self.connection.hincrby(Int64(amount), field: field, in: RedisKey(key)).map { T($0) }

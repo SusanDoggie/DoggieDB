@@ -113,7 +113,7 @@ public struct DBData {
     }
     
     public init(_ binary: ByteBuffer) {
-        self.base = .binary(binary.getData(at: binary.readerIndex, length: binary.readableBytes) ?? Data())
+        self.base = .binary(binary.data)
     }
     
     public init(_ binary: ByteBufferView) {
