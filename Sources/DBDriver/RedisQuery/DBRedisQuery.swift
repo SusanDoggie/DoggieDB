@@ -24,6 +24,7 @@
 //
 
 import RediStack
+import SwiftBSON
 
 public struct DBRedisQuery {
     
@@ -154,13 +155,13 @@ extension DBRedisQuery {
 
 extension DBRedisQuery {
     
-    public func get<D: Decodable>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> {
-        return self.connection.get(RedisKey(key), as: Data.self).flatMapThrowing { data in try data.flatMap { try JSONDecoder().decode(D.self, from: $0) } }
+    public func get<D: Decodable>(_ key: String, as type: D.Type, decoder: _Decoder = BSONDecoder()) -> EventLoopFuture<D?> {
+        return self.connection.get(RedisKey(key), as: Data.self).flatMapThrowing { data in try data.flatMap { try decoder.decode(D.self, from: $0) } }
     }
     
-    public func set<E: Encodable>(_ key: String, value: E) -> EventLoopFuture<Void> {
+    public func set<E: Encodable>(_ key: String, value: E, encoder: _Encoder = BSONEncoder()) -> EventLoopFuture<Void> {
         do {
-            return try self.connection.set(RedisKey(key), to: JSONEncoder().encode(value))
+            return try self.connection.set(RedisKey(key), to: encoder.encode(value))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }
