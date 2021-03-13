@@ -134,7 +134,7 @@ jobs:
     - name: Prepare		
       run: apt-get update
     - name: Install libmongoc
-      run: apt-get install -y libmongoc-1.0-0 libbson-1.0-0 libssl-dev
+      run: apt-get install -y libmongoc-1.0-0 libssl-dev
     - name: Install sqlite3
       run: apt-get install -y libsqlite3-dev
     - name: Build
@@ -199,7 +199,7 @@ jobs:
     - name: Prepare		
       run: yum update -y
     - name: Install libmongoc
-      run: yum install -y mongo-c-driver libbson openssl-devel
+      run: yum install -y mongo-c-driver openssl-devel
     - name: Install sqlite3
       run: yum install -y sqlite-devel
     - name: Build
@@ -265,7 +265,7 @@ jobs:
     - name: Prepare		
       run: apt-get update
     - name: Install libmongoc
-      run: apt-get install -y libmongoc-1.0-0 libbson-1.0-0 libssl-dev
+      run: apt-get install -y libmongoc-1.0-0 libssl-dev
     - name: Install sqlite3
       run: apt-get install -y libsqlite3-dev
     - name: Build
@@ -331,7 +331,7 @@ jobs:
     - name: Prepare		
       run: yum update -y
     - name: Install libmongoc
-      run: yum install -y mongo-c-driver libbson openssl-devel
+      run: yum install -y mongo-c-driver openssl-devel
     - name: Install sqlite3
       run: yum install -y sqlite-devel
     - name: Build
