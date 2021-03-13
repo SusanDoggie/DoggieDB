@@ -1,18 +1,27 @@
 /* eslint no-var: 0 */
 
-var path = require('path');
-var webpack = require('webpack');
+const path = require('path');
+const webpack = require('webpack');
+const TerserPlugin = require('terser-webpack-plugin');
+
+const IS_PRODUCTION = process.env.NODE_ENV !== 'development';
 
 const babelLoaderConfiguration = {
-	test: /\.(ts|tsx|js)?$/,
+	test: /\.(ts|tsx|m?js)?$/,
 	use: {
 	  loader: 'babel-loader',
 	  options: {
 		cacheDirectory: true,
 		presets: [
-			'@babel/preset-react',
+			[
+				'@babel/preset-react',
+				{
+					development: !IS_PRODUCTION,
+				},
+			],
 		],
 		plugins: [
+			'@babel/plugin-transform-runtime',
 			'@babel/plugin-syntax-dynamic-import',
 			'@babel/plugin-proposal-class-properties',
 			'react-native-reanimated/plugin',
@@ -33,48 +42,45 @@ const imageLoaderConfiguration = {
   }
 };
 
-function createConfig(isProductionMode) {
-	var config = {
-		mode: isProductionMode ? 'production' : 'development',
-		plugins: [ 
-			new webpack.DefinePlugin({
-				'process.env': {
-					'NODE_ENV': isProductionMode ? 'production' : 'undefined'
-				}
-			})
+const webpackConfiguration = {
+	mode: IS_PRODUCTION ? 'production' : 'development',
+	devtool: IS_PRODUCTION ? 'hidden-source-map' : 'eval-cheap-module-source-map',
+	optimization: {
+		minimize: IS_PRODUCTION,
+		minimizer: [
+			new TerserPlugin({
+				parallel: true,
+				extractComments: !IS_PRODUCTION,
+				terserOptions: {
+					sourceMap: !IS_PRODUCTION,
+					compress: true,
+				},
+			}),
 		],
-		module: {
-		  rules: [
-			babelLoaderConfiguration,
-			imageLoaderConfiguration
-		  ]
-		},
-		resolve: {
-		  alias: {
-			'react-native$': 'react-native-web'
-		  },
-		  extensions: ['.web.js', '.js']
-		}
-	};
-
-	if (isProductionMode) {
-		config.plugins.push(new webpack.optimize.UglifyJsPlugin({
-			minimize: true,
-			compress: {
-				warnings: false
-			},
-			sourceMap: false
-		}));
-		config.devtool = 'hidden-source-map';
+	},
+	plugins: [ 
+		new webpack.DefinePlugin({
+			'process.env': {
+				'NODE_ENV': IS_PRODUCTION ? '"production"' : 'undefined'
+			}
+		})
+	],
+	module: {
+	  rules: [
+		babelLoaderConfiguration,
+		imageLoaderConfiguration
+	  ]
+	},
+	resolve: {
+	  alias: {
+		'react-native$': 'react-native-web'
+	  },
+	  extensions: ['.web.js', '.js']
 	}
-	else {
-		config.devtool = 'eval-cheap-module-source-map';
-	}
-	return config;
-}
+};
 
 module.exports = [
-	Object.assign({}, createConfig(process.env.NODE_ENV === 'production'), {
+	Object.assign({}, webpackConfiguration, {
 		entry: { 
 			main: './Sources/DBBrowser/js/main.js',
 		},

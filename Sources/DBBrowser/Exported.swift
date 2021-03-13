@@ -1,5 +1,5 @@
 //
-//  configure.swift
+//  Exported.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,9 +23,4 @@
 //  THE SOFTWARE.
 //
 
-public func configure(_ app: Application) throws {
-    
-    let publicDirectory = Bundle.module.resourceURL!.appendingPathComponent("Public")
-    app.middleware.use(FileMiddleware(publicDirectory: publicDirectory.path))
-    
-}
+@_exported import Vapor
