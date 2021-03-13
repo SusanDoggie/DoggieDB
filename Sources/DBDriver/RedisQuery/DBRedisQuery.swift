@@ -137,21 +137,6 @@ extension DBRedisQuery {
 
 extension DBRedisQuery {
     
-    public func fetch<Value: Codable>(_ key: String, as: Value.Type, decoder: _Decoder = RedisDecoder()) -> EventLoopFuture<Value?> {
-        return self.connection.get(RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
-    }
-    
-    public func store<Value: Codable>(_ key: String, value: Value, encoder: _Encoder = RedisEncoder()) -> EventLoopFuture<Void> {
-        do {
-            return try self.connection.set(RedisKey(key), to: encoder.encode(value))
-        } catch {
-            return self.connection.eventLoop.makeFailedFuture(error)
-        }
-    }
-}
-
-extension DBRedisQuery {
-    
     public func fetch<Value: Codable>(_ keys: Set<String>, as: Value.Type, decoder: _Decoder = RedisDecoder()) -> EventLoopFuture<[String: Value]> {
         let keys = Array(keys)
         return self.connection.mget(keys.map { RedisKey($0) }).flatMapThrowing { try Dictionary(uniqueKeysWithValues: zip(keys, $0.map { try decoder.decode(Value.self, from: $0) })) }
@@ -163,28 +148,5 @@ extension DBRedisQuery {
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }
-    }
-}
-
-extension DBRedisQuery {
-    
-    public func increment(_ key: String) -> EventLoopFuture<Int> {
-        return self.connection.increment(RedisKey(key))
-    }
-    
-    public func decrement(_ key: String) -> EventLoopFuture<Int> {
-        return self.connection.decrement(RedisKey(key))
-    }
-    
-    public func increment<T: FixedWidthInteger>(_ key: String, by amount: T) -> EventLoopFuture<T> {
-        return self.connection.increment(RedisKey(key), by: Int64(amount)).map { T($0) }
-    }
-    
-    public func decrement<T: FixedWidthInteger>(_ key: String, by amount: T) -> EventLoopFuture<T> {
-        return self.connection.decrement(RedisKey(key), by: Int64(amount)).map { T($0) }
-    }
-    
-    public func increment<T: BinaryFloatingPoint>(_ key: String, by amount: T) -> EventLoopFuture<T> {
-        return self.connection.increment(RedisKey(key), by: Double(amount)).map(T.init)
     }
 }

@@ -90,9 +90,9 @@ class RedisTest: XCTestCase {
             
             let value = Contact(name: "John", email: "john@example.com", phone: "98765432")
             
-            try connection.redisQuery().store("contact", value: value).wait()
+            try connection.redisQuery().value(of: "contact", as: Contact.self).store(value).wait()
             
-            let result = try connection.redisQuery().fetch("contact", as: Contact.self).wait()
+            let result = try connection.redisQuery().value(of: "contact", as: Contact.self).fetch().wait()
             
             XCTAssertEqual(value, result)
             
