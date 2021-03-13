@@ -56,8 +56,16 @@ extension DBData {
         case let .double(value): self.init(value)
         case let .decimal128(value):
             
-            guard let decimal = Decimal(string: value.description) else { throw Database.Error.unsupportedType }
-            self.init(decimal)
+            let str = value.description
+            
+            switch str {
+            case "Infinity": throw Database.Error.unsupportedType
+            case "-Infinity": throw Database.Error.unsupportedType
+            case "NaN": self.init(Decimal.nan)
+            default:
+                guard let decimal = Decimal(string: str) else { throw Database.Error.unsupportedType }
+                self.init(decimal)
+            }
             
         case let .string(value): self.init(value)
         case let .document(value): try self.init(Dictionary(value))
