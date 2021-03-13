@@ -41,6 +41,8 @@ public struct DBField<Model: DBModel, Value: DBDataConvertible> {
     
     public let modifier: Set<DBFieldModifier>
     
+    public internal(set) var isDirty: Bool?
+    
     public internal(set) var value: Value?
     
     public init(
@@ -63,6 +65,7 @@ public struct DBField<Model: DBModel, Value: DBDataConvertible> {
         }
         set {
             self.value = newValue
+            self.isDirty = true
         }
     }
     

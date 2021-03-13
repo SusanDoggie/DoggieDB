@@ -33,6 +33,8 @@ private protocol _DBField {
     
     var modifier: Set<DBFieldModifier> { get }
     
+    var isDirty: Bool? { get }
+    
     var isOptional: Bool { get }
     
     var onUpdate: SQLForeignKeyAction { get }
@@ -87,6 +89,10 @@ extension DBParent: _DBField {
         return $id.modifier
     }
     
+    public var isDirty: Bool? {
+        return $id.isDirty
+    }
+    
     fileprivate func _data() -> DBData? {
         return $id._data()
     }
@@ -124,6 +130,10 @@ extension DBAnyField {
         return box.modifier
     }
     
+    public var isDirty: Bool? {
+        return box.isDirty
+    }
+    
     public var isOptional: Bool {
         return box.isOptional
     }
@@ -145,5 +155,9 @@ extension DBModel {
     
     public var _$fields: [DBAnyField<Self>] {
         return Mirror(reflecting: self).children.compactMap { DBAnyField($0) }
+    }
+    
+    public var isDirty: Bool {
+        return _$fields.contains { $0.isDirty == true }
     }
 }
