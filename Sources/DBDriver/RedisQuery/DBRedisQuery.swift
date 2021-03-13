@@ -67,6 +67,11 @@ extension DBRedisQuery {
         }
     }
     
+    public func subscriberCount(forChannels channels: [String]) -> EventLoopFuture<[String: Int]> {
+        let channels = channels.map { RedisChannelName($0) }
+        return self.connection.subscriberCount(forChannels:channels).map { Dictionary(uniqueKeysWithValues: $0.map { ($0.key.rawValue, $0.value) }) }
+    }
+    
     public func subscribe(
         toChannels channels: [String],
         messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
