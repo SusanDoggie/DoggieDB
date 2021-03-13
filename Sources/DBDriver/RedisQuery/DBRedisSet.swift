@@ -31,6 +31,25 @@ public struct DBRedisSet<Value: Codable> {
     public let connection: RedisConnection
     
     public let key: String
+    
+    var encoder: _Encoder = RedisEncoder()
+    
+    var decoder: _Decoder = RedisDecoder()
+}
+
+extension DBRedisSet {
+    
+    public func withEncoder(_ encoder: _Encoder) -> DBRedisSet {
+        var builder = self
+        builder.encoder = encoder
+        return builder
+    }
+    
+    public func withDecoder(_ decoder: _Decoder) -> DBRedisSet {
+        var builder = self
+        builder.decoder = decoder
+        return builder
+    }
 }
 
 extension DBRedisQuery {
@@ -43,7 +62,7 @@ extension DBRedisQuery {
 extension DBRedisSet {
     
     public func toArray() -> EventLoopFuture<[Value]> {
-        return self.connection.smembers(of: RedisKey(key)).flatMapThrowing { try $0.map { try RedisDecoder.decode(Value.self, from: $0) } }
+        return self.connection.smembers(of: RedisKey(key)).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
     }
 }
 
@@ -58,7 +77,7 @@ extension DBRedisSet {
     
     public func contains(_ value: Value) -> EventLoopFuture<Bool> {
         do {
-            return try self.connection.sismember(RedisEncoder.encode(value), of: RedisKey(key))
+            return try self.connection.sismember(encoder.encode(value), of: RedisKey(key))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }
@@ -69,7 +88,7 @@ extension DBRedisSet {
     
     public func insert(_ value: Value) -> EventLoopFuture<Int> {
         do {
-            return try self.connection.sadd(RedisEncoder.encode(value), to: RedisKey(key))
+            return try self.connection.sadd(encoder.encode(value), to: RedisKey(key))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }
@@ -77,7 +96,7 @@ extension DBRedisSet {
     
     public func insert<C: Collection>(_ values: C) -> EventLoopFuture<Int> where C.Element == Value {
         do {
-            return try self.connection.sadd(values.map { try RedisEncoder.encode($0) }, to: RedisKey(key))
+            return try self.connection.sadd(values.map { try encoder.encode($0) }, to: RedisKey(key))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }
@@ -88,7 +107,7 @@ extension DBRedisSet {
     
     public func remove(_ value: Value) -> EventLoopFuture<Int> {
         do {
-            return try self.connection.srem(RedisEncoder.encode(value), from: RedisKey(key))
+            return try self.connection.srem(encoder.encode(value), from: RedisKey(key))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }
@@ -96,7 +115,7 @@ extension DBRedisSet {
     
     public func remove<C: Collection>(_ values: C) -> EventLoopFuture<Int> where C.Element == Value {
         do {
-            return try self.connection.srem(values.map { try RedisEncoder.encode($0) }, from: RedisKey(key))
+            return try self.connection.srem(values.map { try encoder.encode($0) }, from: RedisKey(key))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }
@@ -106,18 +125,18 @@ extension DBRedisSet {
 extension DBRedisSet {
     
     public func randomElement() -> EventLoopFuture<Value?> {
-        return self.connection.srandmember(from: RedisKey(key)).flatMapThrowing { try RedisDecoder.decode(Optional<Value>.self, from: $0[0]) }
+        return self.connection.srandmember(from: RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0[0]) }
     }
     
     public func randomElements(_ count: Int) -> EventLoopFuture<[Value]> {
-        return self.connection.srandmember(from: RedisKey(key), max: count).flatMapThrowing { try $0.map { try RedisDecoder.decode(Value.self, from: $0) } }
+        return self.connection.srandmember(from: RedisKey(key), max: count).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
     }
 }
 
 extension DBRedisSet {
     
     public func union(to others: DBRedisSet...) -> EventLoopFuture<[Value]> {
-        return self.connection.sunion(of: others.map { RedisKey($0.key) }).flatMapThrowing { try $0.map { try RedisDecoder.decode(Value.self, from: $0) } }
+        return self.connection.sunion(of: others.map { RedisKey($0.key) }).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
     }
     
     public func formUnion(to others: DBRedisSet...) -> EventLoopFuture<Int> {
@@ -128,7 +147,7 @@ extension DBRedisSet {
 extension DBRedisSet {
     
     public func intersection(to others: DBRedisSet...) -> EventLoopFuture<[Value]> {
-        return self.connection.sinter(of: others.map { RedisKey($0.key) }).flatMapThrowing { try $0.map { try RedisDecoder.decode(Value.self, from: $0) } }
+        return self.connection.sinter(of: others.map { RedisKey($0.key) }).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
     }
     
     public func formIntersection(to others: DBRedisSet...) -> EventLoopFuture<Int> {
@@ -139,7 +158,7 @@ extension DBRedisSet {
 extension DBRedisSet {
     
     public func subtracting(to others: DBRedisSet...) -> EventLoopFuture<[Value]> {
-        return self.connection.sdiff(of: others.map { RedisKey($0.key) }).flatMapThrowing { try $0.map { try RedisDecoder.decode(Value.self, from: $0) } }
+        return self.connection.sdiff(of: others.map { RedisKey($0.key) }).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
     }
     
     public func subtract(to others: DBRedisSet...) -> EventLoopFuture<Int> {

@@ -137,13 +137,13 @@ extension DBRedisQuery {
 
 extension DBRedisQuery {
     
-    public func fetch<Value: Codable>(_ key: String) -> EventLoopFuture<Value?> {
-        return self.connection.get(RedisKey(key)).flatMapThrowing { try RedisDecoder.decode(Optional<Value>.self, from: $0) }
+    public func fetch<Value: Codable>(_ key: String, as: Value.Type, decoder: _Decoder = RedisDecoder()) -> EventLoopFuture<Value?> {
+        return self.connection.get(RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
     }
     
-    public func store<Value: Codable>(_ key: String, value: Value) -> EventLoopFuture<Void> {
+    public func store<Value: Codable>(_ key: String, value: Value, encoder: _Encoder = RedisEncoder()) -> EventLoopFuture<Void> {
         do {
-            return try self.connection.set(RedisKey(key), to: RedisEncoder.encode(value))
+            return try self.connection.set(RedisKey(key), to: encoder.encode(value))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }
@@ -152,14 +152,14 @@ extension DBRedisQuery {
 
 extension DBRedisQuery {
     
-    public func fetch<Value: Codable>(_ keys: Set<String>) -> EventLoopFuture<[String: Value]> {
+    public func fetch<Value: Codable>(_ keys: Set<String>, as: Value.Type, decoder: _Decoder = RedisDecoder()) -> EventLoopFuture<[String: Value]> {
         let keys = Array(keys)
-        return self.connection.mget(keys.map { RedisKey($0) }).flatMapThrowing { try Dictionary(uniqueKeysWithValues: zip(keys, $0.map { try RedisDecoder.decode(Value.self, from: $0) })) }
+        return self.connection.mget(keys.map { RedisKey($0) }).flatMapThrowing { try Dictionary(uniqueKeysWithValues: zip(keys, $0.map { try decoder.decode(Value.self, from: $0) })) }
     }
     
-    public func store<Value: Codable>(_ values: [String: Value]) -> EventLoopFuture<Void> {
+    public func store<Value: Codable>(_ values: [String: Value], encoder: _Encoder = RedisEncoder()) -> EventLoopFuture<Void> {
         do {
-            return try self.connection.mset(Dictionary(uniqueKeysWithValues: values.map { try (RedisKey($0.key), RedisEncoder.encode($0.value)) }))
+            return try self.connection.mset(Dictionary(uniqueKeysWithValues: values.map { try (RedisKey($0.key), encoder.encode($0.value)) }))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }

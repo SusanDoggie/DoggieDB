@@ -31,6 +31,25 @@ public struct DBRedisList<Value: Codable> {
     public let connection: RedisConnection
     
     public let key: String
+    
+    var encoder: _Encoder = RedisEncoder()
+    
+    var decoder: _Decoder = RedisDecoder()
+}
+
+extension DBRedisList {
+    
+    public func withEncoder(_ encoder: _Encoder) -> DBRedisList {
+        var builder = self
+        builder.encoder = encoder
+        return builder
+    }
+    
+    public func withDecoder(_ decoder: _Decoder) -> DBRedisList {
+        var builder = self
+        builder.decoder = decoder
+        return builder
+    }
 }
 
 extension DBRedisQuery {
@@ -57,23 +76,23 @@ extension DBRedisList {
 extension DBRedisList {
     
     public func subrange(_ range: PartialRangeFrom<Int>) -> EventLoopFuture<[Value]> {
-        return self.connection.lrange(from: RedisKey(key), fromIndex: range.lowerBound).flatMapThrowing { try $0.map { try RedisDecoder.decode(Value.self, from: $0) } }
+        return self.connection.lrange(from: RedisKey(key), fromIndex: range.lowerBound).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
     }
     
     public func subrange(_ range: PartialRangeUpTo<Int>) -> EventLoopFuture<[Value]> {
-        return self.connection.lrange(from: RedisKey(key), upToIndex: range.upperBound).flatMapThrowing { try $0.map { try RedisDecoder.decode(Value.self, from: $0) } }
+        return self.connection.lrange(from: RedisKey(key), upToIndex: range.upperBound).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
     }
     
     public func subrange(_ range: PartialRangeThrough<Int>) -> EventLoopFuture<[Value]> {
-        return self.connection.lrange(from: RedisKey(key), throughIndex: range.upperBound).flatMapThrowing { try $0.map { try RedisDecoder.decode(Value.self, from: $0) } }
+        return self.connection.lrange(from: RedisKey(key), throughIndex: range.upperBound).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
     }
     
     public func subrange(_ range: Range<Int>) -> EventLoopFuture<[Value]> {
-        return self.connection.lrange(from: RedisKey(key), indices: range).flatMapThrowing { try $0.map { try RedisDecoder.decode(Value.self, from: $0) } }
+        return self.connection.lrange(from: RedisKey(key), indices: range).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
     }
     
     public func subrange(_ range: ClosedRange<Int>) -> EventLoopFuture<[Value]> {
-        return self.connection.lrange(from: RedisKey(key), indices: range).flatMapThrowing { try $0.map { try RedisDecoder.decode(Value.self, from: $0) } }
+        return self.connection.lrange(from: RedisKey(key), indices: range).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
     }
 }
 
@@ -104,7 +123,7 @@ extension DBRedisList {
     
     public func insertFirst(_ value: Value) -> EventLoopFuture<Int> {
         do {
-            return try self.connection.lpush(RedisEncoder.encode(value), into: RedisKey(key))
+            return try self.connection.lpush(encoder.encode(value), into: RedisKey(key))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }
@@ -112,7 +131,7 @@ extension DBRedisList {
     
     public func insertFirst<C: Collection>(contentsOf values: C) -> EventLoopFuture<Int> where C.Element == Value {
         do {
-            return try self.connection.lpush(values.map { try RedisEncoder.encode($0) }, into: RedisKey(key))
+            return try self.connection.lpush(values.map { try encoder.encode($0) }, into: RedisKey(key))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }
@@ -123,7 +142,7 @@ extension DBRedisList {
     
     public func append(_ value: Value) -> EventLoopFuture<Int> {
         do {
-            return try self.connection.rpush(RedisEncoder.encode(value), into: RedisKey(key))
+            return try self.connection.rpush(encoder.encode(value), into: RedisKey(key))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }
@@ -131,7 +150,7 @@ extension DBRedisList {
     
     public func append<C: Collection>(contentsOf values: C) -> EventLoopFuture<Int> where C.Element == Value {
         do {
-            return try self.connection.rpush(values.map { try RedisEncoder.encode($0) }, into: RedisKey(key))
+            return try self.connection.rpush(values.map { try encoder.encode($0) }, into: RedisKey(key))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }
@@ -141,27 +160,27 @@ extension DBRedisList {
 extension DBRedisList {
     
     public func popFirst() -> EventLoopFuture<Value?> {
-        return self.connection.lpop(from: RedisKey(key)).flatMapThrowing { try RedisDecoder.decode(Optional<Value>.self, from: $0) }
+        return self.connection.lpop(from: RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
     }
     
     public func popLast() -> EventLoopFuture<Value?> {
-        return self.connection.rpop(from: RedisKey(key)).flatMapThrowing { try RedisDecoder.decode(Optional<Value>.self, from: $0) }
+        return self.connection.rpop(from: RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
     }
     
     public func popPush(to other: DBRedisList) -> EventLoopFuture<Value?> {
-        return self.connection.rpoplpush(from: RedisKey(key), to: RedisKey(other.key)).flatMapThrowing { try RedisDecoder.decode(Optional<Value>.self, from: $0) }
+        return self.connection.rpoplpush(from: RedisKey(key), to: RedisKey(other.key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
     }
 }
 
 extension DBRedisList {
     
     public func fetch(_ index: Int) -> EventLoopFuture<Value?> {
-        return self.connection.lindex(index, from: RedisKey(key)).flatMapThrowing { try RedisDecoder.decode(Optional<Value>.self, from: $0) }
+        return self.connection.lindex(index, from: RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
     }
     
     public func store(_ index: Int, value: Value) -> EventLoopFuture<Void> {
         do {
-            return try self.connection.lset(index: index, to: RedisEncoder.encode(value), in: RedisKey(key))
+            return try self.connection.lset(index: index, to: encoder.encode(value), in: RedisKey(key))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }

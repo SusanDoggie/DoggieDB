@@ -31,6 +31,25 @@ public struct DBRedisDictionary<Value: Codable> {
     public let connection: RedisConnection
     
     public let key: String
+    
+    var encoder: _Encoder = RedisEncoder()
+    
+    var decoder: _Decoder = RedisDecoder()
+}
+
+extension DBRedisDictionary {
+    
+    public func withEncoder(_ encoder: _Encoder) -> DBRedisDictionary {
+        var builder = self
+        builder.encoder = encoder
+        return builder
+    }
+    
+    public func withDecoder(_ decoder: _Decoder) -> DBRedisDictionary {
+        var builder = self
+        builder.decoder = decoder
+        return builder
+    }
 }
 
 extension DBRedisQuery {
@@ -43,7 +62,7 @@ extension DBRedisQuery {
 extension DBRedisDictionary {
     
     public func toDictionary() -> EventLoopFuture<[String: Value]> {
-        return self.connection.hgetall(from: RedisKey(key)).flatMapThrowing { try $0.mapValues { try RedisDecoder.decode(Value.self, from: $0) } }
+        return self.connection.hgetall(from: RedisKey(key)).flatMapThrowing { try $0.mapValues { try decoder.decode(Value.self, from: $0) } }
     }
 }
 
@@ -54,7 +73,7 @@ extension DBRedisDictionary {
     }
     
     public func values() -> EventLoopFuture<[Value]> {
-        return self.connection.hvals(in: RedisKey(key)).flatMapThrowing { try $0.map { try RedisDecoder.decode(Value.self, from: $0) } }
+        return self.connection.hvals(in: RedisKey(key)).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
     }
 }
 
@@ -72,12 +91,12 @@ extension DBRedisDictionary {
 extension DBRedisDictionary {
     
     public func fetch(_ field: String) -> EventLoopFuture<Value?> {
-        return self.connection.hget(field, from: RedisKey(key)).flatMapThrowing { try RedisDecoder.decode(Optional<Value>.self, from: $0) }
+        return self.connection.hget(field, from: RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
     }
     
     public func store(_ field: String, value: Value) -> EventLoopFuture<Bool> {
         do {
-            return try self.connection.hset(field, to: RedisEncoder.encode(value), in: RedisKey(key))
+            return try self.connection.hset(field, to: encoder.encode(value), in: RedisKey(key))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }

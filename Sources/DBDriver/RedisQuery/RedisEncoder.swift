@@ -1,5 +1,5 @@
 //
-//  RedisEncoder.swift
+//  encoder.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -26,9 +26,42 @@
 import RediStack
 import SwiftBSON
 
-struct RedisEncoder {
+public protocol _Encoder {
     
-    static func encode<Value: Codable>(_ value: Value) throws -> RESPValue {
+    func encode<Value: Codable>(_ value: Value) throws -> RESPValue
+}
+
+public struct RedisEncoder: _Encoder {
+    
+    public init() { }
+    
+    public func encode<Value: Codable>(_ value: Value) throws -> RESPValue {
         
+        if let value = value as? RESPValueConvertible {
+            return value.convertedToRESPValue()
+        }
+        
+        return try BSONEncoder().encode(value).convertedToRESPValue()
+    }
+}
+
+extension BSONEncoder: _Encoder {
+    
+    public func encode<Value>(_ value: Value) throws -> RESPValue where Value : Decodable, Value : Encodable {
+        return try self.encode(value).convertedToRESPValue()
+    }
+}
+
+extension JSONEncoder: _Encoder {
+    
+    public func encode<Value>(_ value: Value) throws -> RESPValue where Value : Decodable, Value : Encodable {
+        return try self.encode(value).convertedToRESPValue()
+    }
+}
+
+extension ExtendedJSONEncoder: _Encoder {
+    
+    public func encode<Value>(_ value: Value) throws -> RESPValue where Value : Decodable, Value : Encodable {
+        return try self.encode(value).convertedToRESPValue()
     }
 }

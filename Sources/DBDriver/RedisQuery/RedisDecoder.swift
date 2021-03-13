@@ -1,5 +1,5 @@
 //
-//  RedisDecoder.swift
+//  decoder.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -26,6 +26,11 @@
 import RediStack
 import SwiftBSON
 
+public protocol _Decoder {
+    
+    func decode<Value: Decodable>(_ type: Value.Type, from value: RESPValue) throws -> Value
+}
+
 extension ExpressibleByNilLiteral {
     
     fileprivate static var null: ExpressibleByNilLiteral {
@@ -33,9 +38,11 @@ extension ExpressibleByNilLiteral {
     }
 }
 
-struct RedisDecoder {
+public struct RedisDecoder: _Decoder {
     
-    static func decode<Value: Decodable>(_ type: Value.Type, from value: RESPValue) throws -> Value {
+    public init() { }
+    
+    public func decode<Value: Decodable>(_ type: Value.Type, from value: RESPValue) throws -> Value {
         switch value {
         case .null:
             
@@ -55,3 +62,29 @@ struct RedisDecoder {
         }
     }
 }
+
+extension BSONDecoder: _Decoder {
+    
+    public func decode<Value>(_ type: Value.Type, from value: RESPValue) throws -> Value where Value : Decodable {
+        guard let bson = Data(fromRESP: value) else { throw Database.Error.unsupportedType }
+        return try self.decode(type, from: bson)
+    }
+}
+
+extension JSONDecoder: _Decoder {
+    
+    public func decode<Value>(_ type: Value.Type, from value: RESPValue) throws -> Value where Value : Decodable {
+        guard let json = Data(fromRESP: value) else { throw Database.Error.unsupportedType }
+        return try self.decode(type, from: json)
+    }
+}
+
+extension ExtendedJSONDecoder: _Decoder {
+    
+    public func decode<Value>(_ type: Value.Type, from value: RESPValue) throws -> Value where Value : Decodable {
+        guard let json = Data(fromRESP: value) else { throw Database.Error.unsupportedType }
+        return try self.decode(type, from: json)
+    }
+}
+
+
