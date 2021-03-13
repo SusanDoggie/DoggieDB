@@ -56,11 +56,22 @@ extension DBRedisQuery {
         return self.connection.activeChannels(matching: match).map { $0.map { $0.rawValue } }
     }
     
+    public func publish(
+        _ message: DBData,
+        to channel: String
+    ) -> EventLoopFuture<Int> {
+        do {
+            return try self.connection.publish(RESPValue(message), to: RedisChannelName(channel))
+        } catch {
+            return self.connection.eventLoop.makeFailedFuture(error)
+        }
+    }
+    
     public func subscribe(
         toChannels channels: [String],
         messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
-        onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
-        onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
+        onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
+        onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) -> EventLoopFuture<Void> {
         
         return self.connection.subscribe(
@@ -78,8 +89,8 @@ extension DBRedisQuery {
     public func subscribe(
         toPatterns patterns: [String],
         messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
-        onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?,
-        onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)?
+        onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
+        onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) -> EventLoopFuture<Void> {
         
         return self.connection.psubscribe(
