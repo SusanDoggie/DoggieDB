@@ -59,8 +59,8 @@ extension DBData {
             let str = value.description
             
             switch str {
-            case "Infinity": throw Database.Error.unsupportedType
-            case "-Infinity": throw Database.Error.unsupportedType
+            case "Infinity": self.init(Double.infinity)
+            case "-Infinity": self.init(-Double.infinity)
             case "NaN": self.init(Decimal.nan)
             default:
                 guard let decimal = Decimal(string: str) else { throw Database.Error.unsupportedType }
