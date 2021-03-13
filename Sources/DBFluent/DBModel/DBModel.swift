@@ -41,6 +41,8 @@ public protocol DBModel: _DBModel where Key: Hashable, Key: DBDataConvertible {
     var _$id: Field<Key> { get }
     
     var _$fields: [DBAnyField<Self>] { get }
+    
+    var isDirty: Bool { get }
 }
 
 extension DBModel {
