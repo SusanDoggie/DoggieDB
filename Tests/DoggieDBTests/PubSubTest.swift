@@ -1,5 +1,5 @@
 //
-//  RedisTest.swift
+//  PubSubTest.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -26,7 +26,7 @@
 import DoggieDB
 import XCTest
 
-class RedisTest: XCTestCase {
+class PubSubTest: XCTestCase {
     
     struct Contact: Codable, Equatable {
         
@@ -40,6 +40,7 @@ class RedisTest: XCTestCase {
     
     var eventLoopGroup: MultiThreadedEventLoopGroup!
     var connection: DBConnection!
+    var connection2: DBConnection!
     
     override func setUpWithError() throws {
         
@@ -62,6 +63,7 @@ class RedisTest: XCTestCase {
             }
             
             self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
+            self.connection2 = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             
         } catch let error {
             
@@ -75,6 +77,7 @@ class RedisTest: XCTestCase {
         do {
             
             try self.connection.close().wait()
+            try self.connection2.close().wait()
             try eventLoopGroup.syncShutdownGracefully()
             
         } catch let error {
@@ -84,17 +87,23 @@ class RedisTest: XCTestCase {
         }
     }
     
-    func testSetAndGet() throws {
+    func testPubSub() throws {
         
         do {
             
-            let value = Contact(name: "John", email: "john@example.com", phone: "98765432")
+            let promise = connection.eventLoop.makePromise(of: String.self)
             
-            try connection.redisQuery().set("contact", value: value).wait()
+            try connection.redisQuery().subscribe(toChannels: ["Test"]) { publisher, message in
+                
+                promise.completeWith(message.map { $0.string ?? "" })
+                
+            }.wait()
             
-            let result = try connection.redisQuery().get("contact", as: Contact.self).wait()
+            _ = try connection2.redisQuery().publish("hello", to: "Test").wait()
             
-            XCTAssertEqual(value, result)
+            let result = try promise.futureResult.wait()
+            
+            XCTAssertEqual("hello", result)
             
         } catch let error {
             
