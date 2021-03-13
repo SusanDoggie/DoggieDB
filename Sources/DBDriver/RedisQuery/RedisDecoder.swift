@@ -45,8 +45,8 @@ struct RedisDecoder {
         case let .simpleString(buffer),
              let .bulkString(.some(buffer)):
             
-            if type is String.Type, let value = String(fromRESP: value) {
-                return value as! Value
+            if let value = String(fromRESP: value) {
+                return try DBData(value).decode(type)
             } else {
                 return try BSONDecoder().decode(type, from: buffer.data)
             }
