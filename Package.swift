@@ -75,6 +75,7 @@ let package = Package(
         .target(
             name: "DBBrowser",
             dependencies: [
+                .target(name: "DoggieDB"),
                 .product(name: "Vapor", package: "vapor"),
             ],
             exclude: [
