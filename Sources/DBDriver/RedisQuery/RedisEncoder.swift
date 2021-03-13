@@ -37,6 +37,10 @@ public struct RedisEncoder: _Encoder {
     
     public func encode<Value: Codable>(_ value: Value) throws -> RESPValue {
         
+        if let value = value as? RESPValue {
+            return value
+        }
+        
         if let value = value as? RESPValueConvertible {
             return value.convertedToRESPValue()
         }

@@ -43,6 +43,11 @@ public struct RedisDecoder: _Decoder {
     public init() { }
     
     public func decode<Value: Decodable>(_ type: Value.Type, from value: RESPValue) throws -> Value {
+        
+        if let value = value as? Value {
+            return value
+        }
+        
         switch value {
         case .null:
             
