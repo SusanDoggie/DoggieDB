@@ -137,14 +137,14 @@ extension DBRedisQuery {
 
 extension DBRedisQuery {
     
-    public func fetch<Value: Codable>(_ keys: Set<String>, as: Value.Type, decoder: _Decoder = RedisDecoder()) -> EventLoopFuture<[String: Value]> {
+    public func fetch<Value: Codable>(_ keys: Set<String>, as: Value.Type, decoder: RedisDecoderProtocol = RedisDecoder()) -> EventLoopFuture<[String: Value]> {
         let keys = Array(keys)
         return self.connection.mget(keys.map { RedisKey($0) }).flatMapThrowing { try Dictionary(uniqueKeysWithValues: zip(keys, $0.map { try decoder.decode(Value.self, from: $0) })) }
     }
     
-    public func store<Value: Codable>(_ values: [String: Value], encoder: _Encoder = RedisEncoder()) -> EventLoopFuture<Void> {
+    public func store<Value: Codable>(_ values: [String: Value], encoder: RedisEncoderProtocol = RedisEncoder()) -> EventLoopFuture<Void> {
         do {
-            return try self.connection.mset(Dictionary(uniqueKeysWithValues: values.map { try (RedisKey($0.key), encoder.encode($0.value)) }))
+            return try self.connection.mset(Dictionary(uniqueKeysWithValues: values.map { try (RedisKey($0.key), encoder.encode($0.value, as: RESPValue.self)) }))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }

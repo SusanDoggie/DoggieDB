@@ -24,17 +24,20 @@
 //
 
 import RediStack
+import SwiftBSON
 
-public protocol _Encoder {
+public protocol RedisEncoderProtocol {
     
-    func encode<Value: Codable>(_ value: Value) throws -> RESPValue
+    func encode<Value: Encodable>(_ value: Value, as: RESPValue.Type) throws -> RESPValue
 }
 
-public struct RedisEncoder: _Encoder {
+public struct RedisEncoder: RedisEncoderProtocol {
+    
+    private static let bson_encoder = BSONEncoder()
     
     public init() { }
     
-    public func encode<Value: Codable>(_ value: Value) throws -> RESPValue {
+    public func encode<Value: Encodable>(_ value: Value, as: RESPValue.Type) throws -> RESPValue {
         
         if let value = value as? RESPValue {
             return value
@@ -44,13 +47,27 @@ public struct RedisEncoder: _Encoder {
             return value.convertedToRESPValue()
         }
         
-        return try JSONEncoder().encode(value).convertedToRESPValue()
+        return try RedisEncoder.bson_encoder.encode(value, as: RESPValue.self).convertedToRESPValue()
     }
 }
 
-extension JSONEncoder: _Encoder {
+extension BSONEncoder: RedisEncoderProtocol {
     
-    public func encode<Value>(_ value: Value) throws -> RESPValue where Value : Decodable, Value : Encodable {
+    public func encode<Value: Encodable>(_ value: Value, as: RESPValue.Type) throws -> RESPValue {
+        return try self.encode(value).toData().convertedToRESPValue()
+    }
+}
+
+extension JSONEncoder: RedisEncoderProtocol {
+    
+    public func encode<Value: Encodable>(_ value: Value, as: RESPValue.Type) throws -> RESPValue {
+        return try self.encode(value).convertedToRESPValue()
+    }
+}
+
+extension ExtendedJSONEncoder: RedisEncoderProtocol {
+    
+    public func encode<Value: Encodable>(_ value: Value, as: RESPValue.Type) throws -> RESPValue {
         return try self.encode(value).convertedToRESPValue()
     }
 }

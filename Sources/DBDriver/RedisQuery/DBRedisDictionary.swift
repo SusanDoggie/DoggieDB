@@ -32,20 +32,20 @@ public struct DBRedisDictionary<Value: Codable> {
     
     public let key: String
     
-    var encoder: _Encoder = RedisEncoder()
+    var encoder: RedisEncoderProtocol = RedisEncoder()
     
-    var decoder: _Decoder = RedisDecoder()
+    var decoder: RedisDecoderProtocol = RedisDecoder()
 }
 
 extension DBRedisDictionary {
     
-    public func withEncoder(_ encoder: _Encoder) -> DBRedisDictionary {
+    public func withEncoder(_ encoder: RedisEncoderProtocol) -> DBRedisDictionary {
         var builder = self
         builder.encoder = encoder
         return builder
     }
     
-    public func withDecoder(_ decoder: _Decoder) -> DBRedisDictionary {
+    public func withDecoder(_ decoder: RedisDecoderProtocol) -> DBRedisDictionary {
         var builder = self
         builder.decoder = decoder
         return builder
@@ -96,7 +96,7 @@ extension DBRedisDictionary {
     
     public func store(_ field: String, value: Value) -> EventLoopFuture<Bool> {
         do {
-            return try self.connection.hset(field, to: encoder.encode(value), in: RedisKey(key))
+            return try self.connection.hset(field, to: encoder.encode(value, as: RESPValue.self), in: RedisKey(key))
         } catch {
             return self.connection.eventLoop.makeFailedFuture(error)
         }

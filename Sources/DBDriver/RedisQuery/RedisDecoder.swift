@@ -24,8 +24,9 @@
 //
 
 import RediStack
+import SwiftBSON
 
-public protocol _Decoder {
+public protocol RedisDecoderProtocol {
     
     func decode<Value: Decodable>(_ type: Value.Type, from value: RESPValue) throws -> Value
 }
@@ -37,7 +38,9 @@ extension ExpressibleByNilLiteral {
     }
 }
 
-public struct RedisDecoder: _Decoder {
+public struct RedisDecoder: RedisDecoderProtocol {
+    
+    private static let bson_decoder = BSONDecoder()
     
     public init() { }
     
@@ -59,7 +62,7 @@ public struct RedisDecoder: _Decoder {
             if let value = String(fromRESP: value) {
                 return try DBData(value).decode(type)
             } else {
-                return try JSONDecoder().decode(type, from: buffer.data)
+                return try RedisDecoder.bson_decoder.decode(type, from: buffer.data)
             }
             
         default: return try DBData(value).decode(type)
@@ -67,9 +70,25 @@ public struct RedisDecoder: _Decoder {
     }
 }
 
-extension JSONDecoder: _Decoder {
+extension BSONDecoder: RedisDecoderProtocol {
     
-    public func decode<Value>(_ type: Value.Type, from value: RESPValue) throws -> Value where Value : Decodable {
+    public func decode<Value: Decodable>(_ type: Value.Type, from value: RESPValue) throws -> Value {
+        guard let bson = Data(fromRESP: value) else { throw Database.Error.unsupportedType }
+        return try self.decode(type, from: bson)
+    }
+}
+
+extension JSONDecoder: RedisDecoderProtocol {
+    
+    public func decode<Value: Decodable>(_ type: Value.Type, from value: RESPValue) throws -> Value {
+        guard let json = Data(fromRESP: value) else { throw Database.Error.unsupportedType }
+        return try self.decode(type, from: json)
+    }
+}
+
+extension ExtendedJSONDecoder: RedisDecoderProtocol {
+    
+    public func decode<Value: Decodable>(_ type: Value.Type, from value: RESPValue) throws -> Value {
         guard let json = Data(fromRESP: value) else { throw Database.Error.unsupportedType }
         return try self.decode(type, from: json)
     }
