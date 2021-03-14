@@ -217,7 +217,7 @@ extension PostgreSQLDriver.Connection {
         _ message: String,
         to channel: String
     ) -> EventLoopFuture<Void> {
-        return self.execute("NOTIFY \(literal: channel), \(message)").map { _ in return }
+        return self.execute("SELECT pg_notify(\(channel), \(message))").map { _ in return }
     }
     
     func subscribe(
