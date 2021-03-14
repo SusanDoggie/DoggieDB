@@ -25,9 +25,9 @@
 
 enum SQLRawComponent: Hashable {
     
-    case string(String)
+    case identifier(String)
     
-    case quoted(String)
+    case string(String)
     
     case null
     
@@ -155,8 +155,8 @@ extension SQLRaw: ExpressibleByStringInterpolation {
             self.components.append(.string(String(value)))
         }
         
-        public mutating func appendInterpolation<T: StringProtocol>(quoted value: T) {
-            self.components.append(.quoted(String(value)))
+        public mutating func appendInterpolation<T: StringProtocol>(identifier value: T) {
+            self.components.append(.identifier(String(value)))
         }
         
         public mutating func appendInterpolation(_ raw: SQLRaw) {

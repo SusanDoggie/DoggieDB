@@ -25,7 +25,7 @@
 
 public protocol SQLDialect {
     
-    static func quoted(_ str: String) -> String
+    static func identifier(_ str: String) -> String
     
     static var repeatablePlaceholder: Bool { get }
     
@@ -86,8 +86,8 @@ extension DBConnection {
                 switch component {
                 case .null: raw.append(dialect.literalNull)
                 case .default: raw.append(dialect.literalDefault)
+                case let .identifier(string): raw.append(dialect.identifier(string))
                 case let .string(string): raw.append(string)
-                case let .quoted(string): raw.append(dialect.quoted(string))
                 case let .boolean(bool): raw.append(dialect.literalBoolean(bool))
                 case let .signed(value): raw.append("\(value)")
                 case let .unsigned(value): raw.append("\(value)")
@@ -113,8 +113,8 @@ extension DBConnection {
                 switch component {
                 case .null: raw.append(dialect.literalNull)
                 case .default: raw.append(dialect.literalDefault)
+                case let .identifier(string): raw.append(dialect.identifier(string))
                 case let .string(string): raw.append(string)
-                case let .quoted(string): raw.append(dialect.quoted(string))
                 case let .boolean(bool): raw.append(dialect.literalBoolean(bool))
                 case let .signed(value): raw.append("\(value)")
                 case let .unsigned(value): raw.append("\(value)")

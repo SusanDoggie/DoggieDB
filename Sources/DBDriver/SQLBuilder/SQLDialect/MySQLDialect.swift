@@ -25,8 +25,8 @@
 
 struct MySQLDialect: SQLDialect {
     
-    static func quoted(_ str: String) -> String {
-        return "'\(str)'"
+    static func identifier(_ str: String) -> String {
+        return "`\(str)`"
     }
     
     static var repeatablePlaceholder: Bool {

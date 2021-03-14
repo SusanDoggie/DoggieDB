@@ -25,7 +25,7 @@
 
 struct SQLiteDialect: SQLDialect {
     
-    static func quoted(_ str: String) -> String {
+    static func identifier(_ str: String) -> String {
         return "\"\(str)\""
     }
     
