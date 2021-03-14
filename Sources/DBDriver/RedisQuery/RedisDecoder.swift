@@ -60,7 +60,7 @@ public struct RedisDecoder: _Decoder {
             if let value = String(fromRESP: value) {
                 return try DBData(value).decode(type)
             } else {
-                return try BSONDecoder().decode(type, from: buffer.data)
+                return try JSONDecoder().decode(type, from: buffer.data)
             }
             
         default: return try DBData(value).decode(type)
