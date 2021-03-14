@@ -45,7 +45,7 @@ public struct RedisEncoder: _Encoder {
             return value.convertedToRESPValue()
         }
         
-        return try BSONEncoder().encode(value).convertedToRESPValue()
+        return try JSONEncoder().encode(value).convertedToRESPValue()
     }
 }
 
