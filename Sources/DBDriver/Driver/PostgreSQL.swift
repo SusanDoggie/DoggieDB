@@ -236,7 +236,7 @@ extension PostgreSQLDriver.Connection {
     
     func unsubscribe(channel: String) -> EventLoopFuture<Void> {
         
-        return eventLoop.submit {
+        return eventLoop.flatSubmit {
             
             let subscribers = self.subscribers[channel] ?? []
             
@@ -245,6 +245,8 @@ extension PostgreSQLDriver.Connection {
             }
             
             self.subscribers[channel] = []
+            
+            return self.execute("UNLISTEN \(channel)").map { _ in return }
         }
     }
     

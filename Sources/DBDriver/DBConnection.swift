@@ -145,7 +145,7 @@ extension DBConnection {
 
 extension DBConnection {
     
-    public func postgresPubSub() -> DBRedisQuery {
+    public func postgresPubSub() -> DBPostgresPubSub {
         fatalError("unsupported operation")
     }
 }
