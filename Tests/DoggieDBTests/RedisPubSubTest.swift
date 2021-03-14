@@ -1,5 +1,5 @@
 //
-//  PubSubTest.swift
+//  RedisPubSubTest.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -26,7 +26,7 @@
 import DoggieDB
 import XCTest
 
-class PubSubTest: XCTestCase {
+class RedisPubSubTest: XCTestCase {
     
     struct Contact: Codable, Equatable {
         
