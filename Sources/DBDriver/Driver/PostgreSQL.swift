@@ -40,6 +40,8 @@ extension PostgreSQLDriver {
         
         var eventLoop: EventLoop { connection.eventLoop }
         
+        var subscribers: [String: [PostgresListenContext]] = [:]
+        
         init(_ connection: PostgresConnection) {
             self.connection = connection
         }
@@ -207,4 +209,36 @@ extension PostgresRow: DBRowConvertable {
     public func value(_ column: String) -> DBData? {
         return try? self.column(column).map(DBData.init)
     }
+}
+
+extension PostgreSQLDriver.Connection {
+    
+    func subscribe(
+        channel: String,
+        handler: @escaping (_ channel: String, _ message: String) -> Void
+    ) -> EventLoopFuture<Void> {
+        let subscriber = self.connection.addListener(channel: channel, handler: { _, response in handler(response.channel, response.payload) })
+        
+        return eventLoop.flatSubmit {
+            
+            self.subscribers[channel, default: []].append(subscriber)
+            
+            return self.execute("LISTEN \(channel)").map { _ in return }
+        }
+    }
+    
+    func unsubscribe(channel: String) -> EventLoopFuture<Void> {
+        
+        return eventLoop.submit {
+            
+            let subscribers = self.subscribers[channel] ?? []
+            
+            for subscriber in subscribers {
+                subscriber.stop()
+            }
+            
+            self.subscribers[channel] = []
+        }
+    }
+    
 }

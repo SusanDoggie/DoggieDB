@@ -75,7 +75,7 @@ extension DBRedisQuery {
     
     public func subscribe(
         toChannels channels: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
+        messageReceiver receiver: @escaping (_ channel: String, _ message: Result<DBData, Error>) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) -> EventLoopFuture<Void> {
@@ -94,7 +94,7 @@ extension DBRedisQuery {
     
     public func subscribe(
         toPatterns patterns: [String],
-        messageReceiver receiver: @escaping (_ publisher: String, _ message: Result<DBData, Error>) -> Void,
+        messageReceiver receiver: @escaping (_ channel: String, _ message: Result<DBData, Error>) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) -> EventLoopFuture<Void> {
