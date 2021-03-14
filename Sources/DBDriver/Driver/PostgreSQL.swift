@@ -231,7 +231,7 @@ extension PostgreSQLDriver.Connection {
             
             self.subscribers[channel, default: []].append(subscriber)
             
-            return self.execute("LISTEN \(literal: channel)").map { _ in return }
+            return self.execute("LISTEN \"\(literal: channel)\"").map { _ in return }
         }
     }
     
@@ -247,7 +247,7 @@ extension PostgreSQLDriver.Connection {
             
             self.subscribers[channel] = []
             
-            return self.execute("UNLISTEN \(literal: channel)").map { _ in return }
+            return self.execute("UNLISTEN \"\(literal: channel)\"").map { _ in return }
         }
     }
     
