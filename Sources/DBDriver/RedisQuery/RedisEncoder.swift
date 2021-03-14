@@ -24,7 +24,6 @@
 //
 
 import RediStack
-import SwiftBSON
 
 public protocol _Encoder {
     
@@ -49,21 +48,7 @@ public struct RedisEncoder: _Encoder {
     }
 }
 
-extension BSONEncoder: _Encoder {
-    
-    public func encode<Value>(_ value: Value) throws -> RESPValue where Value : Decodable, Value : Encodable {
-        return try self.encode(value).convertedToRESPValue()
-    }
-}
-
 extension JSONEncoder: _Encoder {
-    
-    public func encode<Value>(_ value: Value) throws -> RESPValue where Value : Decodable, Value : Encodable {
-        return try self.encode(value).convertedToRESPValue()
-    }
-}
-
-extension ExtendedJSONEncoder: _Encoder {
     
     public func encode<Value>(_ value: Value) throws -> RESPValue where Value : Decodable, Value : Encodable {
         return try self.encode(value).convertedToRESPValue()
