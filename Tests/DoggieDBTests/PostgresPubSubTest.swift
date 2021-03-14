@@ -1,5 +1,5 @@
 //
-//  RedisPubSubTest.swift
+//  PostgresPubSubTest.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -26,11 +26,10 @@
 import DoggieDB
 import XCTest
 
-class RedisPubSubTest: XCTestCase {
+class PostgresPubSubTest: XCTestCase {
     
     var eventLoopGroup: MultiThreadedEventLoopGroup!
     var connection: DBConnection!
-    var connection2: DBConnection!
     
     override func setUpWithError() throws {
         
@@ -39,13 +38,13 @@ class RedisPubSubTest: XCTestCase {
             eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
             
             var url = URLComponents()
-            url.scheme = "redis"
-            url.host = env("REDIS_HOST") ?? "localhost"
-            url.user = env("REDIS_USERNAME")
-            url.password = env("REDIS_PASSWORD")
-            url.path = "/\(env("REDIS_DATABASE") ?? "")"
+            url.scheme = "postgres"
+            url.host = env("POSTGRES_HOST") ?? "localhost"
+            url.user = env("POSTGRES_USERNAME")
+            url.password = env("POSTGRES_PASSWORD")
+            url.path = "/\(env("POSTGRES_DATABASE") ?? "")"
             
-            if let ssl_mode = env("REDIS_SSLMODE") {
+            if let ssl_mode = env("POSTGRES_SSLMODE") {
                 url.queryItems = [
                     URLQueryItem(name: "ssl", value: "true"),
                     URLQueryItem(name: "sslmode", value: ssl_mode),
@@ -53,7 +52,8 @@ class RedisPubSubTest: XCTestCase {
             }
             
             self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
-            self.connection2 = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
+            
+            print("POSTGRES:", try connection.version().wait())
             
         } catch let error {
             
@@ -67,7 +67,6 @@ class RedisPubSubTest: XCTestCase {
         do {
             
             try self.connection.close().wait()
-            try self.connection2.close().wait()
             try eventLoopGroup.syncShutdownGracefully()
             
         } catch let error {
@@ -83,13 +82,13 @@ class RedisPubSubTest: XCTestCase {
             
             let promise = connection.eventLoop.makePromise(of: String.self)
             
-            try connection.redisPubSub().subscribe(toChannels: ["Test"]) { channel, message in
+            try connection.postgresPubSub().subscribe(channel: "Test") { channel, message in
                 
-                promise.completeWith(message.map { $0.string ?? "" })
+                promise.succeed(message)
                 
             }.wait()
             
-            _ = try connection2.redisPubSub().publish("hello", to: "Test").wait()
+            _ = try connection.postgresPubSub().publish("hello", to: "Test").wait()
             
             let result = try promise.futureResult.wait()
             

@@ -224,6 +224,7 @@ extension PostgreSQLDriver.Connection {
         channel: String,
         handler: @escaping (_ channel: String, _ message: String) -> Void
     ) -> EventLoopFuture<Void> {
+        
         let subscriber = self.connection.addListener(channel: channel, handler: { _, response in handler(response.channel, response.payload) })
         
         return eventLoop.flatSubmit {
