@@ -217,7 +217,7 @@ extension PostgreSQLDriver.Connection {
         _ message: String,
         to channel: String
     ) -> EventLoopFuture<Void> {
-        return self.execute("NOTIFY \(channel), \(message)").map { _ in return }
+        return self.execute("NOTIFY \(literal: channel), \(message)").map { _ in return }
     }
     
     func subscribe(
@@ -231,7 +231,7 @@ extension PostgreSQLDriver.Connection {
             
             self.subscribers[channel, default: []].append(subscriber)
             
-            return self.execute("LISTEN \(channel)").map { _ in return }
+            return self.execute("LISTEN \(literal: channel)").map { _ in return }
         }
     }
     
@@ -247,7 +247,7 @@ extension PostgreSQLDriver.Connection {
             
             self.subscribers[channel] = []
             
-            return self.execute("UNLISTEN \(channel)").map { _ in return }
+            return self.execute("UNLISTEN \(literal: channel)").map { _ in return }
         }
     }
     
