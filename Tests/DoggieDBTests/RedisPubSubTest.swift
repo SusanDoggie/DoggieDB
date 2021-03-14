@@ -93,13 +93,13 @@ class RedisPubSubTest: XCTestCase {
             
             let promise = connection.eventLoop.makePromise(of: String.self)
             
-            try connection.redisQuery().subscribe(toChannels: ["Test"]) { publisher, message in
+            try connection.redisPubSub().subscribe(toChannels: ["Test"]) { publisher, message in
                 
                 promise.completeWith(message.map { $0.string ?? "" })
                 
             }.wait()
             
-            _ = try connection2.redisQuery().publish("hello", to: "Test").wait()
+            _ = try connection2.redisPubSub().publish("hello", to: "Test").wait()
             
             let result = try promise.futureResult.wait()
             
