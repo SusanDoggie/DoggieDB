@@ -58,7 +58,7 @@ public struct SQLCreateTableBuilder: SQLBuilderProtocol {
         if options.contains(.ifNotExists) {
             self.builder.append("IF NOT EXISTS")
         }
-        self.builder.append("\(table) (")
+        self.builder.append("\(identifier: table) (" as SQLRaw)
     }
 }
 
@@ -163,7 +163,7 @@ extension SQLCreateTableBuilder {
             builder.builder.append(",")
         }
         
-        builder.builder.append("UNIQUE (\(column))")
+        builder.builder.append("UNIQUE (\(identifier: column))" as SQLRaw)
         
         builder.flag = true
         
@@ -179,9 +179,13 @@ extension SQLCreateTableBuilder {
             builder.builder.append(",")
         }
         
-        let columns = [column, column2] + res
+        builder.builder.append("UNIQUE (\(identifier: column), \(identifier: column2)" as SQLRaw)
         
-        builder.builder.append("UNIQUE (\(columns.joined(separator: ", ")))")
+        for column in res {
+            builder.builder.append(", \(identifier: column)" as SQLRaw)
+        }
+        
+        builder.builder.append(")")
         
         builder.flag = true
         
@@ -200,7 +204,7 @@ extension SQLCreateTableBuilder {
             builder.builder.append(",")
         }
         
-        builder.builder.append("PRIMARY KEY (\(column))")
+        builder.builder.append("PRIMARY KEY (\(identifier: column))" as SQLRaw)
         
         builder.flag = true
         
@@ -216,9 +220,13 @@ extension SQLCreateTableBuilder {
             builder.builder.append(",")
         }
         
-        let columns = [column, column2] + res
+        builder.builder.append("PRIMARY KEY (\(identifier: column), \(identifier: column2)" as SQLRaw)
         
-        builder.builder.append("PRIMARY KEY (\(columns.joined(separator: ", ")))")
+        for column in res {
+            builder.builder.append(", \(identifier: column)" as SQLRaw)
+        }
+        
+        builder.builder.append(")")
         
         builder.flag = true
         
@@ -265,7 +273,7 @@ extension SQLCreateTableBuilder {
             builder.builder.append(",")
         }
         
-        builder.builder.append("FOREIGN KEY (\(column)) REFERENCES \(reference.table)(\(reference.column))")
+        builder.builder.append("FOREIGN KEY (\(identifier: column)) REFERENCES \(reference.table)(\(reference.column))" as SQLRaw)
         
         if let onDelete = onDelete {
             switch onDelete {

@@ -36,7 +36,7 @@ extension SQLReturningExpression {
         
         var builder = self
         
-        builder.builder.append("RETURNING \(column)")
+        builder.builder.append("RETURNING \(identifier: column)" as SQLRaw)
         
         return builder
     }
@@ -48,9 +48,11 @@ extension SQLReturningExpression {
         
         var builder = self
         
-        let columns = [column, column2] + res
+        builder.builder.append("RETURNING \(identifier: column), \(identifier: column2)" as SQLRaw)
         
-        builder.builder.append("RETURNING \(columns.joined(separator: ", "))")
+        for column in res {
+            builder.builder.append(", \(identifier: column)" as SQLRaw)
+        }
         
         return builder
     }

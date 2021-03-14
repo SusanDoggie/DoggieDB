@@ -29,7 +29,7 @@ public struct SQLInsertBuilder: SQLBuilderProtocol {
     
     init(builder: SQLBuilder, table: String, alias: String?) {
         self.builder = builder
-        self.builder.append("INSERT INTO \(table)")
+        self.builder.append("INSERT INTO \(identifier: table)" as SQLRaw)
         
         if let alias = alias {
             self.builder.append("AS \(alias)")
@@ -45,7 +45,7 @@ extension SQLInsertBuilder {
         
         var builder = self
         
-        builder.builder.append("(\(column))")
+        builder.builder.append("(\(identifier: column))" as SQLRaw)
         
         return builder
     }
@@ -54,9 +54,13 @@ extension SQLInsertBuilder {
         
         var builder = self
         
-        let columns = [column, column2] + res
+        builder.builder.append("(\(identifier: column), \(identifier: column2)" as SQLRaw)
         
-        builder.builder.append("(\(columns.joined(separator: ", ")))")
+        for column in res {
+            builder.builder.append(", \(identifier: column)" as SQLRaw)
+        }
+        
+        builder.builder.append(")")
         
         return builder
     }

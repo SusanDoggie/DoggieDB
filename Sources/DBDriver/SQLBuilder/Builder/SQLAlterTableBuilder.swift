@@ -77,7 +77,7 @@ extension SQLAlterTableBuilder {
         
         var builder = self.builder
         
-        builder.append("RENAME COLUMN \(column) TO \(new_name)")
+        builder.append("RENAME COLUMN \(identifier: column) TO \(identifier: new_name)" as SQLRaw)
         
         return SQLFinalizedBuilder(builder: builder)
     }

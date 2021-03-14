@@ -29,7 +29,7 @@ public struct SQLDeleteBuilder: SQLBuilderProtocol {
     
     init(builder: SQLBuilder, table: String, alias: String?) {
         self.builder = builder
-        self.builder.append("DELETE FROM \(table)")
+        self.builder.append("DELETE FROM \(identifier: table)" as SQLRaw)
         
         if let alias = alias {
             self.builder.append("AS \(alias)")
@@ -46,7 +46,7 @@ extension SQLDeleteBuilder {
         
         var builder = self
         
-        builder.builder.append("USING \(table)")
+        builder.builder.append("USING \(identifier: table)" as SQLRaw)
         
         if let alias = alias {
             builder.builder.append("AS \(alias)")

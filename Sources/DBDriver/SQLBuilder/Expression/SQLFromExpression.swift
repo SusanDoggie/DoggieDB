@@ -33,7 +33,7 @@ extension SQLFromExpression {
         
         var builder = self
         
-        builder.builder.append("FROM \(table)")
+        builder.builder.append("FROM \(identifier: table)" as SQLRaw)
         
         return builder
     }
@@ -42,9 +42,11 @@ extension SQLFromExpression {
         
         var builder = self
         
-        let tables = [table, table2] + res
+        builder.builder.append("FROM \(identifier: table), \(identifier: table2)" as SQLRaw)
         
-        builder.builder.append("FROM \(tables.joined(separator: ", "))")
+        for table in res {
+            builder.builder.append(", \(identifier: table)" as SQLRaw)
+        }
         
         return builder
     }
