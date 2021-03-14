@@ -213,7 +213,7 @@ extension PostgresRow: DBRowConvertable {
 
 extension PostgreSQLDriver.Connection {
     
-    public func publish(
+    func publish(
         _ message: String,
         to channel: String
     ) -> EventLoopFuture<Void> {
