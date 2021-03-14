@@ -102,7 +102,7 @@ extension MySQLDriver.Connection {
     }
     
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
-        return self.execute("SHOW COLUMNS FROM \(literal: table)")
+        return self.execute("SHOW COLUMNS FROM \(identifier: table)")
     }
 }
 
