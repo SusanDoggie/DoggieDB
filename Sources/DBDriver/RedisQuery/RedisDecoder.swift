@@ -74,13 +74,3 @@ extension JSONDecoder: _Decoder {
         return try self.decode(type, from: json)
     }
 }
-
-extension ExtendedJSONDecoder: _Decoder {
-    
-    public func decode<Value>(_ type: Value.Type, from value: RESPValue) throws -> Value where Value : Decodable {
-        guard let json = Data(fromRESP: value) else { throw Database.Error.unsupportedType }
-        return try self.decode(type, from: json)
-    }
-}
-
-
