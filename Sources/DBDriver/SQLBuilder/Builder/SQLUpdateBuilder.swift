@@ -32,7 +32,7 @@ public struct SQLUpdateBuilder: SQLBuilderProtocol {
         self.builder.append("UPDATE \(identifier: table)" as SQLRaw)
         
         if let alias = alias {
-            self.builder.append("AS \(alias)")
+            self.builder.append("AS \(identifier: alias)" as SQLRaw)
         }
     }
 }

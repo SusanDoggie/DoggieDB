@@ -57,7 +57,7 @@ extension SQLFromExpression {
         
         builder.builder.append("(")
         builder.builder.append(query.builder)
-        builder.builder.append(") \(alias)")
+        builder.builder.append(") \(identifier: alias)" as SQLRaw)
         
         return builder
     }

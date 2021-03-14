@@ -104,7 +104,7 @@ extension SQLCreateTableBuilder {
             builder.builder.append(",")
         }
         
-        builder.builder.append(name)
+        builder.builder.append("\(identifier: name)" as SQLRaw)
         builder.builder.append(type)
         
         if !optional {

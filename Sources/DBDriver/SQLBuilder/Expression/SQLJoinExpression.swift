@@ -89,7 +89,7 @@ extension SQLJoinExpression {
         
         builder.builder.append("(")
         builder.builder.append(query.builder)
-        builder.builder.append(") \(alias) ON")
+        builder.builder.append(") \(identifier: alias) ON" as SQLRaw)
         predicate(SQLPredicateBuilder()).serialize(into: &builder.builder)
         
         return builder
