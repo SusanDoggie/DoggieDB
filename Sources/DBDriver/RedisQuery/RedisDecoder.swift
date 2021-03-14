@@ -40,7 +40,7 @@ extension ExpressibleByNilLiteral {
 
 public struct RedisDecoder: RedisDecoderProtocol {
     
-    private static let bson_decoder = BSONDecoder()
+    private static let decoder = ExtendedJSONDecoder()
     
     public init() { }
     
@@ -59,10 +59,17 @@ public struct RedisDecoder: RedisDecoderProtocol {
         case let .simpleString(buffer),
              let .bulkString(.some(buffer)):
             
-            if let value = String(fromRESP: value) {
+            if let value = try? RedisDecoder.decoder.decode(type, from: buffer.data) {
+                
+                return value
+                
+            } else if let value = String(fromRESP: value) {
+                
                 return try DBData(value).decode(type)
+                
             } else {
-                return try RedisDecoder.bson_decoder.decode(type, from: buffer.data)
+                
+                throw Database.Error.unsupportedType
             }
             
         default: return try DBData(value).decode(type)

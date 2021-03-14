@@ -33,7 +33,7 @@ public protocol RedisEncoderProtocol {
 
 public struct RedisEncoder: RedisEncoderProtocol {
     
-    private static let bson_encoder = BSONEncoder()
+    private static let encoder = ExtendedJSONEncoder()
     
     public init() { }
     
@@ -47,7 +47,7 @@ public struct RedisEncoder: RedisEncoderProtocol {
             return value.convertedToRESPValue()
         }
         
-        return try RedisEncoder.bson_encoder.encode(value, as: RESPValue.self).convertedToRESPValue()
+        return try RedisEncoder.encoder.encode(value, as: RESPValue.self).convertedToRESPValue()
     }
 }
 
