@@ -59,11 +59,7 @@ extension RESPValue {
         case let .signed(value): self = value.convertedToRESPValue()
         case let .unsigned(value): self = value.convertedToRESPValue()
         case let .number(value): self = value.convertedToRESPValue()
-        case let .decimal(value):
-            
-            guard let _value = Double(exactly: value) else { throw Database.Error.unsupportedType }
-            self = _value.convertedToRESPValue()
-            
+        case let .decimal(value): self = "\(value)".convertedToRESPValue()
         case let .date(value):
             
             let formatter = ISO8601DateFormatter()
