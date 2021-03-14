@@ -40,7 +40,7 @@ extension DBData {
                 self.init(buffer)
             }
             
-        case .bulkString(.none): self.init(String(fromRESP: value)!)
+        case .bulkString(.none): self.init(Data())
             
         case let .integer(value): self.init(value)
         case let .array(array): try self.init(array.map(DBData.init))
