@@ -32,7 +32,7 @@ public struct DBRedisPubSub {
 
 extension RedisDriver.Connection {
     
-    public func postgresPubSub() -> DBRedisPubSub {
+    public func redisPubSub() -> DBRedisPubSub {
         return DBRedisPubSub(connection: connection)
     }
 }
