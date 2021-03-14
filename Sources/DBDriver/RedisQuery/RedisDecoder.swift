@@ -24,7 +24,6 @@
 //
 
 import RediStack
-import SwiftBSON
 
 public protocol _Decoder {
     
@@ -65,14 +64,6 @@ public struct RedisDecoder: _Decoder {
             
         default: return try DBData(value).decode(type)
         }
-    }
-}
-
-extension BSONDecoder: _Decoder {
-    
-    public func decode<Value>(_ type: Value.Type, from value: RESPValue) throws -> Value where Value : Decodable {
-        guard let bson = Data(fromRESP: value) else { throw Database.Error.unsupportedType }
-        return try self.decode(type, from: bson)
     }
 }
 
