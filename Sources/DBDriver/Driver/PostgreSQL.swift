@@ -213,6 +213,13 @@ extension PostgresRow: DBRowConvertable {
 
 extension PostgreSQLDriver.Connection {
     
+    public func publish(
+        _ message: String,
+        to channel: String
+    ) -> EventLoopFuture<Void> {
+        return self.execute("NOTIFY \(channel), \(message)").map { _ in return }
+    }
+    
     func subscribe(
         channel: String,
         handler: @escaping (_ channel: String, _ message: String) -> Void

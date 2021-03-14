@@ -37,6 +37,13 @@ extension PostgreSQLDriver.Connection {
 
 extension DBPostgresPubSub {
     
+    public func publish(
+        _ message: String,
+        to channel: String
+    ) -> EventLoopFuture<Void> {
+        return self.connection.publish(message, to: channel)
+    }
+    
     public func subscribe(
         channel: String,
         handler: @escaping (_ channel: String, _ message: String) -> Void
