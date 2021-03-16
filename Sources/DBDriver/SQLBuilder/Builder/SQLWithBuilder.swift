@@ -1,5 +1,5 @@
 //
-//  SQLWithExpression.swift
+//  SQLWithBuilder.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,41 +23,31 @@
 //  THE SOFTWARE.
 //
 
-public protocol SQLWithExpression: SQLBuilderProtocol {
+public struct SQLWithBuilder<Base>: SQLBuilderProtocol {
     
-}
-
-extension SQLWithExpression {
+    public var builder: SQLBuilder
     
-    public func with(_ queries: [String: SQLSelectBuilder]) -> SQLWithBuilder<Self> {
-        
-        var builder = self.builder
-        
-        builder.append("WITH")
-        for (i, (key, query)) in queries.enumerated() {
-            builder.append(i == 0 ? "\(key) AS (" : ", \(key) AS (")
-            builder.append(query.builder)
-            builder.append(")")
-        }
-        
-        return SQLWithBuilder(builder: builder)
-    }
-    
-    public func withRecursive(_ queries: [String: SQLSelectBuilder]) -> SQLWithBuilder<Self> {
-        
-        var builder = self.builder
-        
-        builder.append("WITH RECURSIVE")
-        for (i, (key, query)) in queries.enumerated() {
-            builder.append(i == 0 ? "\(key) AS (" : ", \(key) AS (")
-            builder.append(query.builder)
-            builder.append(")")
-        }
-        
-        return SQLWithBuilder(builder: builder)
+    init(builder: SQLBuilder) {
+        self.builder = builder
     }
 }
 
-public protocol SQLWithModifyingExpression: SQLWithExpression {
+extension SQLWithBuilder: SQLSelectExpression { }
+
+extension SQLWithBuilder where Base: SQLWithModifyingExpression {
     
+    /// Creates a new `SQLDeleteBuilder`.
+    public func delete(_ table: String, as alias: String? = nil) -> SQLDeleteBuilder {
+        return SQLDeleteBuilder(builder: self.builder, table: table, alias: alias)
+    }
+    
+    /// Creates a new `SQLUpdateBuilder`.
+    public func update(_ table: String, as alias: String? = nil) -> SQLUpdateBuilder {
+        return SQLUpdateBuilder(builder: self.builder, table: table, alias: alias)
+    }
+    
+    /// Creates a new `SQLInsertBuilder`.
+    public func insert(_ table: String, as alias: String? = nil) -> SQLInsertBuilder {
+        return SQLInsertBuilder(builder: self.builder, table: table, alias: alias)
+    }
 }
