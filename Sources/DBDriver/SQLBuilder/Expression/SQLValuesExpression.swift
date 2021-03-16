@@ -29,7 +29,7 @@ public protocol SQLValuesExpression: SQLBuilderProtocol {
 
 extension SQLValuesExpression {
     
-    public func values(_ value: SQLRaw) -> SQLValuesBuilder {
+    public func values(_ value: SQLRaw) -> SQLValuesBuilder<Self> {
         
         var builder = self
         
@@ -40,7 +40,7 @@ extension SQLValuesExpression {
         return SQLValuesBuilder(builder: builder.builder)
     }
     
-    public func values(_ value: SQLRaw, _ value2: SQLRaw, _ res: SQLRaw ...) -> SQLValuesBuilder {
+    public func values(_ value: SQLRaw, _ value2: SQLRaw, _ res: SQLRaw ...) -> SQLValuesBuilder<Self> {
         
         var builder = self
         

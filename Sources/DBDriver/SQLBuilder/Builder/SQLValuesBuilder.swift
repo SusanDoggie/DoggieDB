@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public struct SQLValuesBuilder: SQLBuilderProtocol {
+public struct SQLValuesBuilder<Base>: SQLBuilderProtocol {
     
     public var builder: SQLBuilder
     
@@ -33,4 +33,4 @@ public struct SQLValuesBuilder: SQLBuilderProtocol {
 }
 
 extension SQLValuesBuilder: SQLOrderByExpression {}
-extension SQLValuesBuilder: SQLReturningExpression {}
+extension SQLValuesBuilder: SQLReturningExpression where Base == SQLInsertBuilder {}

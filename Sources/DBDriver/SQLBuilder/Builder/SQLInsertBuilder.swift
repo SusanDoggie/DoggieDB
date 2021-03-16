@@ -65,4 +65,22 @@ extension SQLInsertBuilder {
 }
 
 extension SQLInsertBuilder: SQLValuesExpression { }
-extension SQLInsertBuilder: SQLSelectExpression { }
+
+extension SQLInsertBuilder {
+    
+    public func select() -> SQLInsertSelectBuilder {
+        return SQLInsertSelectBuilder(builder: self.builder)
+    }
+}
+
+public struct SQLInsertSelectBuilder: SQLSelectBuilderProtocol {
+    
+    public var builder: SQLBuilder
+    
+    init(builder: SQLBuilder) {
+        self.builder = builder
+        self.builder.append("SELECT")
+    }
+}
+
+extension SQLInsertSelectBuilder: SQLReturningExpression {}

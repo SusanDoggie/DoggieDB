@@ -23,7 +23,12 @@
 //  THE SOFTWARE.
 //
 
-public struct SQLSelectBuilder: SQLBuilderProtocol {
+public protocol SQLSelectBuilderProtocol: SQLFromExpression, SQLWhereExpression, SQLJoinExpression, SQLOrderByExpression, SQLGroupByExpression {
+
+    
+}
+
+public struct SQLSelectBuilder: SQLSelectBuilderProtocol {
     
     public var builder: SQLBuilder
     
@@ -33,23 +38,16 @@ public struct SQLSelectBuilder: SQLBuilderProtocol {
     }
 }
 
-extension SQLSelectBuilder {
+extension SQLSelectBuilderProtocol {
     
     public static func select() -> SQLSelectBuilder {
         return SQLSelectBuilder(builder: SQLBuilder())
     }
 }
 
-extension SQLSelectBuilder: SQLFromExpression {}
-extension SQLSelectBuilder: SQLWhereExpression {}
-extension SQLSelectBuilder: SQLJoinExpression {}
-extension SQLSelectBuilder: SQLOrderByExpression {}
-extension SQLSelectBuilder: SQLGroupByExpression {}
-extension SQLSelectBuilder: SQLReturningExpression {}
-
-extension SQLSelectBuilder {
+extension SQLSelectBuilderProtocol {
     
-    public func distinct() -> SQLSelectBuilder {
+    public func distinct() -> Self {
         
         var builder = self
         
@@ -63,9 +61,9 @@ extension SQLSelectBuilder {
     }
 }
 
-extension SQLSelectBuilder {
+extension SQLSelectBuilderProtocol {
     
-    public func columns(_ column: SQLRaw) -> SQLSelectBuilder {
+    public func columns(_ column: SQLRaw) -> Self {
         
         var builder = self
         
@@ -74,7 +72,7 @@ extension SQLSelectBuilder {
         return builder
     }
     
-    public func columns(_ column: SQLRaw, _ column2: SQLRaw, _ res: SQLRaw ...) -> SQLSelectBuilder {
+    public func columns(_ column: SQLRaw, _ column2: SQLRaw, _ res: SQLRaw ...) -> Self {
         
         var builder = self
         
@@ -86,10 +84,10 @@ extension SQLSelectBuilder {
     }
 }
 
-extension SQLSelectBuilder {
+extension SQLSelectBuilderProtocol {
     
     /// Adds a column to column comparison to this builder's `HAVING`.
-    public func having(_ predicate: (SQLPredicateBuilder) -> SQLPredicateExpression) -> SQLSelectBuilder {
+    public func having(_ predicate: (SQLPredicateBuilder) -> SQLPredicateExpression) -> Self {
         
         var builder = self
         
@@ -100,10 +98,10 @@ extension SQLSelectBuilder {
     }
 }
 
-extension SQLSelectBuilder {
+extension SQLSelectBuilderProtocol {
     
     /// Adds a `LIMIT` clause to the statement.
-    public func limit(_ limit: Int) -> SQLSelectBuilder {
+    public func limit(_ limit: Int) -> Self {
         
         var builder = self
         
@@ -113,7 +111,7 @@ extension SQLSelectBuilder {
     }
     
     /// Adds a `OFFSET` clause to the statement.
-    public func offset(_ offset: Int) -> SQLSelectBuilder {
+    public func offset(_ offset: Int) -> Self {
         
         var builder = self
         
@@ -140,10 +138,10 @@ public enum SQLLockingClause {
     }
 }
 
-extension SQLSelectBuilder {
+extension SQLSelectBuilderProtocol {
     
     /// Adds a locking expression to this statement.
-    public func locking(_ lock: SQLLockingClause) -> SQLSelectBuilder {
+    public func locking(_ lock: SQLLockingClause) -> Self {
         
         var builder = self
         
