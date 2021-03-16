@@ -45,6 +45,7 @@ extension SQLSelectBuilder: SQLWhereExpression {}
 extension SQLSelectBuilder: SQLJoinExpression {}
 extension SQLSelectBuilder: SQLOrderByExpression {}
 extension SQLSelectBuilder: SQLGroupByExpression {}
+extension SQLSelectBuilder: SQLReturningExpression {}
 
 extension SQLSelectBuilder {
     

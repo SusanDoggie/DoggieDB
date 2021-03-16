@@ -58,14 +58,3 @@ extension SQLValuesExpression {
         return SQLValuesBuilder(builder: builder.builder)
     }
 }
-
-public struct SQLValuesBuilder: SQLBuilderProtocol {
-    
-    public var builder: SQLBuilder
-    
-    init(builder: SQLBuilder) {
-        self.builder = builder
-    }
-}
-
-extension SQLValuesBuilder: SQLOrderByExpression {}

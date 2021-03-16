@@ -1,5 +1,5 @@
 //
-//  SQLInsertBuilder.swift
+//  SQLValuesBuilder.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,46 +23,14 @@
 //  THE SOFTWARE.
 //
 
-public struct SQLInsertBuilder: SQLBuilderProtocol {
+public struct SQLValuesBuilder: SQLBuilderProtocol {
     
     public var builder: SQLBuilder
     
-    init(builder: SQLBuilder, table: String, alias: String?) {
+    init(builder: SQLBuilder) {
         self.builder = builder
-        self.builder.append("INSERT INTO \(identifier: table)" as SQLRaw)
-        
-        if let alias = alias {
-            self.builder.append("AS \(identifier: alias)" as SQLRaw)
-        }
     }
 }
 
-extension SQLInsertBuilder {
-    
-    public func columns(_ column: String) -> SQLInsertBuilder {
-        
-        var builder = self
-        
-        builder.builder.append("(\(identifier: column))" as SQLRaw)
-        
-        return builder
-    }
-    
-    public func columns(_ column: String, _ column2: String, _ res: String ...) -> SQLInsertBuilder {
-        
-        var builder = self
-        
-        builder.builder.append("(\(identifier: column), \(identifier: column2)" as SQLRaw)
-        
-        for column in res {
-            builder.builder.append(", \(identifier: column)" as SQLRaw)
-        }
-        
-        builder.builder.append(")")
-        
-        return builder
-    }
-}
-
-extension SQLInsertBuilder: SQLValuesExpression { }
-extension SQLInsertBuilder: SQLSelectExpression { }
+extension SQLValuesBuilder: SQLOrderByExpression {}
+extension SQLValuesBuilder: SQLReturningExpression {}
