@@ -38,7 +38,7 @@ public struct SQLSelectBuilder: SQLSelectBuilderProtocol {
     }
 }
 
-extension SQLSelectBuilderProtocol {
+extension SQLSelectBuilder {
     
     public static func select() -> SQLSelectBuilder {
         return SQLSelectBuilder(builder: SQLBuilder())
