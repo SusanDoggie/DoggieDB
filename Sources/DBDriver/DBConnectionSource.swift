@@ -43,18 +43,7 @@ extension DBConnectionSource {
     }
     
     public init(url: URLComponents) throws {
-        
-        let driver: DBDriver
-        
-        switch url.scheme {
-        case "redis": driver = .redis
-        case "mysql": driver = .mySQL
-        case "postgres": driver = .postgreSQL
-        case "mongodb": driver = .mongoDB
-        default: throw Database.Error.invalidURL
-        }
-        
-        self.driver = driver
+        self.driver = try url.driver()
         self.configuration = try Database.Configuration(url: url)
     }
 }

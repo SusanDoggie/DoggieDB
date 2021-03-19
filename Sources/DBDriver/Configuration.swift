@@ -79,6 +79,19 @@ extension Database {
     }
 }
 
+extension URLComponents {
+    
+    func driver() throws -> DBDriver {
+        switch scheme {
+        case "redis": return .redis
+        case "mysql": return .mySQL
+        case "postgres": return .postgreSQL
+        case "mongodb": return .mongoDB
+        default: throw Database.Error.invalidURL
+        }
+    }
+}
+
 extension Database.Configuration {
     
     public init(url: URL) throws {
@@ -90,16 +103,7 @@ extension Database.Configuration {
         
         guard let hostname = url.host else { throw Database.Error.invalidURL }
         
-        let driver: DBDriver
-        
-        switch url.scheme {
-        case "redis": driver = .redis
-        case "mysql": driver = .mySQL
-        case "postgres": driver = .postgreSQL
-        case "mongodb": driver = .mongoDB
-        default:  throw Database.Error.invalidURL
-        }
-        
+        let driver = try url.driver()
         let tlsConfiguration: TLSConfiguration?
         
         let enable_ssl = url.queryItems?.last { $0.name == "ssl" }?.value

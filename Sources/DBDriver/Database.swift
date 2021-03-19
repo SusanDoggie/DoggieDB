@@ -73,16 +73,7 @@ extension Database {
         
         do {
             
-            let driver: DBDriver
-            
-            switch url.scheme {
-            case "redis": driver = .redis
-            case "mysql": driver = .mySQL
-            case "postgres": driver = .postgreSQL
-            case "mongodb": driver = .mongoDB
-            default: return eventLoop.makeFailedFuture(Database.Error.invalidURL)
-            }
-            
+            let driver = try url.driver()
             let config = try Database.Configuration(url: url)
             
             return self.connect(config: config, logger: logger, driver: driver, on: eventLoop)

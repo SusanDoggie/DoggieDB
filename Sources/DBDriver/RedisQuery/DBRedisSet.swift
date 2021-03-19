@@ -24,7 +24,6 @@
 //
 
 import RediStack
-import SwiftBSON
 
 public struct DBRedisSet<Value: Codable> {
     

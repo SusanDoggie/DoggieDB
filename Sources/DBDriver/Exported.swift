@@ -32,3 +32,5 @@
 @_exported import NIOSSL
 
 @_exported import Logging
+
+@_exported import SwiftBSON

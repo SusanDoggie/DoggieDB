@@ -24,7 +24,6 @@
 //
 
 import RediStack
-import SwiftBSON
 
 public protocol RedisEncoderProtocol {
     
