@@ -25,7 +25,7 @@
 
 public class DBConnectionPoolItem: ConnectionPoolItem {
     
-    let connection: DBConnection
+    public let connection: DBConnection
     
     init(connection: DBConnection) {
         self.connection = connection
