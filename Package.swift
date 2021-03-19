@@ -73,9 +73,17 @@ let package = Package(
             ]
         ),
         .target(
+            name: "DBVapor",
+            dependencies: [
+                .target(name: "DBDriver"),
+                .product(name: "Vapor", package: "vapor"),
+            ]
+        ),
+        .target(
             name: "DBBrowser",
             dependencies: [
                 .target(name: "DoggieDB"),
+                .target(name: "DBVapor"),
                 .product(name: "Vapor", package: "vapor"),
             ],
             exclude: [
