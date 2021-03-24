@@ -23,25 +23,22 @@
 //  THE SOFTWARE.
 //
 
-public final class MigrateCommand: Command {
+final class MigrateCommand: Command {
     
-    public struct Signature: CommandSignature {
+    struct Signature: CommandSignature {
         
         @Flag(name: "revert")
         var revert: Bool
         
-        public init() { }
     }
     
-    public let signature = Signature()
+    let signature = Signature()
     
-    public var help: String {
+    var help: String {
         return "Prepare or revert your database migrations"
     }
     
-    init() { }
-    
-    public func run(using context: CommandContext, signature: Signature) throws {
+    func run(using context: CommandContext, signature: Signature) throws {
         context.console.info("Migrate Command: \(signature.revert ? "Revert" : "Prepare")")
         try context.application.migrator.setupIfNeeded().wait()
         if signature.revert {

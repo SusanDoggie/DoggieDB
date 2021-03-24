@@ -42,13 +42,13 @@ extension Application {
     }
     
     struct Signature: CommandSignature {
+        
         @Flag(name: "auto-migrate", help: "If true, Fluent will automatically migrate your database on boot")
         var autoMigrate: Bool
         
         @Flag(name: "auto-revert", help: "If true, Fluent will automatically revert your database on boot")
         var autoRevert: Bool
         
-        init() { }
     }
     
     struct Lifecycle: LifecycleHandler {
