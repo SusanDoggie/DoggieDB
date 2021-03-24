@@ -32,6 +32,13 @@ public struct DatabaseID: Hashable, Codable {
     }
 }
 
+extension DatabaseID: ExpressibleByStringLiteral {
+    
+    public init(stringLiteral value: StringLiteralType) {
+        self.init(string: value)
+    }
+}
+
 public class Databases {
     
     public let eventLoopGroup: EventLoopGroup
