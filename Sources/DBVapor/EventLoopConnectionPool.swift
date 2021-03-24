@@ -59,7 +59,7 @@ extension EventLoopConnectionPool where Source == DBConnectionPoolSource {
         source: DBConnectionSource,
         maxConnections: Int,
         requestTimeout: TimeAmount = .seconds(10),
-        logger: Logger = .init(label: "codes.vapor.pool"),
+        logger: Logger = .init(label: "com.SusanDoggie.DBVapor"),
         on eventLoop: EventLoop
     ) {
         self.init(
@@ -78,7 +78,7 @@ extension EventLoopGroupConnectionPool where Source == DBConnectionPoolSource {
         source: DBConnectionSource,
         maxConnectionsPerEventLoop: Int = 1,
         requestTimeout: TimeAmount = .seconds(10),
-        logger: Logger = .init(label: "codes.vapor.pool"),
+        logger: Logger = .init(label: "com.SusanDoggie.DBVapor"),
         on eventLoopGroup: EventLoopGroup
     ) {
         self.init(
