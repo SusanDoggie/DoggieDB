@@ -47,6 +47,8 @@ extension HTTPClient.Body {
                         return eventLoop.makeFailedFuture(error)
                     }
                     
+                    return writer.write(.byteBuffer(buffer))
+                    
                 case .end:
                     
                     promise.succeed(())
