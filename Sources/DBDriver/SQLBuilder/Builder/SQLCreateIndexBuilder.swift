@@ -34,6 +34,8 @@ public struct SQLCreateIndexOptions: OptionSet {
     public static let unique            = SQLCreateIndexOptions(rawValue: 1 << 0)
     
     public static let ifNotExists       = SQLCreateIndexOptions(rawValue: 1 << 1)
+    
+    public static let concurrent       = SQLCreateIndexOptions(rawValue: 1 << 2)
 }
 
 public struct SQLCreateIndexBuilder: SQLBuilderProtocol {
@@ -49,6 +51,9 @@ public struct SQLCreateIndexBuilder: SQLBuilderProtocol {
             self.builder.append("UNIQUE")
         }
         self.builder.append("INDEX")
+        if options.contains(.concurrent) {
+            self.builder.append("CONCURRENTLY")
+        }
         if options.contains(.ifNotExists) {
             self.builder.append("IF NOT EXISTS")
         }
