@@ -35,7 +35,7 @@ public struct SQLCreateIndexOptions: OptionSet {
     
     public static let ifNotExists       = SQLCreateIndexOptions(rawValue: 1 << 1)
     
-    public static let concurrent       = SQLCreateIndexOptions(rawValue: 1 << 2)
+    public static let concurrent        = SQLCreateIndexOptions(rawValue: 1 << 2)
 }
 
 public struct SQLCreateIndexBuilder: SQLBuilderProtocol {
