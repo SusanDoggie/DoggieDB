@@ -61,7 +61,7 @@ public struct SQLCreateViewBuilder: SQLBuilderProtocol {
         if options.contains(.ifNotExists) {
             self.builder.append("IF NOT EXISTS")
         }
-        self.builder.append("\(view) AS")
+        self.builder.append("\(identifier: view) AS" as SQLRaw)
     }
 }
 

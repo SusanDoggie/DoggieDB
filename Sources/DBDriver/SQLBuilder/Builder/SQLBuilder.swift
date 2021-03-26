@@ -228,6 +228,17 @@ extension SQLBuilder {
         public static let ifExists = SQLDropTableOptions(rawValue: 1 << 0)
     }
     
+    public struct SQLDropIndexOptions: OptionSet {
+        
+        public var rawValue: Int
+        
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
+        
+        public static let ifExists = SQLDropIndexOptions(rawValue: 1 << 0)
+    }
+    
     public struct SQLDropViewOptions: OptionSet {
         
         public var rawValue: Int
@@ -276,7 +287,33 @@ extension SQLBuilder {
         if options.contains(.ifExists) {
             builder.append("IF EXISTS")
         }
-        builder.append(table)
+        builder.append("\(identifier: table)" as SQLRaw)
+        
+        return SQLFinalizedBuilder(builder: builder)
+    }
+}
+
+extension SQLBuilder {
+    
+    /// Creates a new `SQLCreateIndexBuilder`.
+    public func createIndex(on table: String, options: SQLCreateIndexOptions = []) -> SQLCreateIndexBuilder {
+        return SQLCreateIndexBuilder(builder: self, index: nil, table: table, options: options)
+    }
+    
+    /// Creates a new `SQLCreateIndexBuilder`.
+    public func createIndex(_ index: String, on table: String, options: SQLCreateIndexOptions = []) -> SQLCreateIndexBuilder {
+        return SQLCreateIndexBuilder(builder: self, index: index, table: table, options: options)
+    }
+    
+    public func dropIndex(_ index: String, options: SQLDropIndexOptions = []) -> SQLFinalizedBuilder {
+        
+        var builder = self
+        
+        builder.append("DROP INDEX")
+        if options.contains(.ifExists) {
+            builder.append("IF EXISTS")
+        }
+        builder.append("\(identifier: index)" as SQLRaw)
         
         return SQLFinalizedBuilder(builder: builder)
     }
@@ -297,7 +334,7 @@ extension SQLBuilder {
         if options.contains(.ifExists) {
             builder.append("IF EXISTS")
         }
-        builder.append(view)
+        builder.append("\(identifier: view)" as SQLRaw)
         
         return SQLFinalizedBuilder(builder: builder)
     }
@@ -318,7 +355,7 @@ extension SQLBuilder {
         if options.contains(.ifExists) {
             builder.append("IF EXISTS")
         }
-        builder.append(view)
+        builder.append("\(identifier: view)" as SQLRaw)
         
         return SQLFinalizedBuilder(builder: builder)
     }
@@ -331,7 +368,7 @@ extension SQLBuilder {
         if options.contains(.concurrent) {
             builder.append("CONCURRENTLY")
         }
-        builder.append(view)
+        builder.append("\(identifier: view)" as SQLRaw)
         
         return SQLFinalizedBuilder(builder: builder)
     }

@@ -49,7 +49,7 @@ extension SQLWithExpression {
         
         builder.append("WITH RECURSIVE")
         for (i, (key, query)) in queries.enumerated() {
-            builder.append(i == 0 ? "\(key) AS (" : ", \(key) AS (")
+            builder.append(i == 0 ? "\(identifier: key) AS (" as SQLRaw : ", \(identifier: key) AS (" as SQLRaw)
             builder.append(query.builder)
             builder.append(")")
         }

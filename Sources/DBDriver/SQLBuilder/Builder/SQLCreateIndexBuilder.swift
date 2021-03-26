@@ -1,5 +1,5 @@
 //
-//  SQLCreateMaterializedViewBuilder.swift
+//  SQLCreateIndexBuilder.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public struct SQLCreateMaterializedViewOptions: OptionSet {
+public struct SQLCreateIndexOptions: OptionSet {
     
     public var rawValue: Int
     
@@ -31,28 +31,57 @@ public struct SQLCreateMaterializedViewOptions: OptionSet {
         self.rawValue = rawValue
     }
     
-    /// It is usually an error to attempt to create a new table in a database that already contains a table, index or view of the
-    /// same name. However, if the "IF NOT EXISTS" clause is specified as part of the CREATE TABLE statement and a table or view
-    /// of the same name already exists, the CREATE TABLE command simply has no effect (and no error message is returned). An
-    /// error is still returned if the table cannot be created because of an existing index, even if the "IF NOT EXISTS" clause is
-    /// specified.
-    public static let ifNotExists = SQLCreateMaterializedViewOptions(rawValue: 1 << 0)
+    public static let unique            = SQLCreateIndexOptions(rawValue: 1 << 0)
+    
+    public static let ifNotExists       = SQLCreateIndexOptions(rawValue: 1 << 1)
 }
 
-public struct SQLCreateMaterializedViewBuilder: SQLBuilderProtocol {
+public struct SQLCreateIndexBuilder: SQLBuilderProtocol {
     
     public var builder: SQLBuilder
     
-    init(builder: SQLBuilder, view: String, options: SQLCreateMaterializedViewOptions) {
+    var flag = false
+    
+    init(builder: SQLBuilder, index: String?, table: String, options: SQLCreateIndexOptions) {
         self.builder = builder
-        self.builder.append("CREATE MATERIALIZED VIEW")
+        self.builder.append("CREATE")
+        if options.contains(.unique) {
+            self.builder.append("UNIQUE")
+        }
+        self.builder.append("INDEX")
         if options.contains(.ifNotExists) {
             self.builder.append("IF NOT EXISTS")
         }
-        self.builder.append("\(identifier: view) AS" as SQLRaw)
+        if let index = index {
+            self.builder.append("\(identifier: index)" as SQLRaw)
+        }
+        self.builder.append("ON \(identifier: table)" as SQLRaw)
     }
 }
 
-extension SQLCreateMaterializedViewBuilder: SQLWithExpression { }
-extension SQLCreateMaterializedViewBuilder: SQLValuesExpression { }
-extension SQLCreateMaterializedViewBuilder: SQLSelectExpression { }
+extension SQLCreateIndexBuilder {
+    
+    public func columns(_ column: SQLRaw) -> SQLCreateIndexBuilder {
+        
+        var builder = self
+        
+        builder.builder.append("(")
+        builder.builder.append(column)
+        builder.builder.append(")")
+        
+        return builder
+    }
+    
+    public func columns(_ column: SQLRaw, _ column2: SQLRaw, _ res: SQLRaw ...) -> SQLCreateIndexBuilder {
+        
+        var builder = self
+        
+        let columns = [column, column2] + res
+        
+        builder.builder.append("(")
+        builder.builder.append(columns.joined(separator: ", "))
+        builder.builder.append(")")
+        
+        return builder
+    }
+}

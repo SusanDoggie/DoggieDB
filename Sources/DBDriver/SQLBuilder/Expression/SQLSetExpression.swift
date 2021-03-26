@@ -36,7 +36,7 @@ extension SQLSetExpression {
         
         builder.builder.append("SET")
         for (i, (key, value)) in values.enumerated() {
-            builder.builder.append(i == 0 ? "\(key) =" : ", \(key) =")
+            builder.builder.append(i == 0 ? "\(identifier: key) =" as SQLRaw : ", \(identifier: key) =" as SQLRaw)
             builder.builder.append(value)
         }
         

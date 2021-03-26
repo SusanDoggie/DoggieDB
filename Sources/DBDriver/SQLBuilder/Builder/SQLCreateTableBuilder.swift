@@ -126,7 +126,7 @@ extension SQLCreateTableBuilder {
         
         if let reference = reference {
             
-            builder.builder.append("REFERENCES \(reference.table)(\(reference.column))")
+            builder.builder.append("REFERENCES \(identifier: reference.table)(\(identifier: reference.column))" as SQLRaw)
             
             if let onDelete = onDelete {
                 switch onDelete {
@@ -273,7 +273,7 @@ extension SQLCreateTableBuilder {
             builder.builder.append(",")
         }
         
-        builder.builder.append("FOREIGN KEY (\(identifier: column)) REFERENCES \(reference.table)(\(reference.column))" as SQLRaw)
+        builder.builder.append("FOREIGN KEY (\(identifier: column)) REFERENCES \(identifier: reference.table)(\(identifier: reference.column))" as SQLRaw)
         
         if let onDelete = onDelete {
             switch onDelete {
