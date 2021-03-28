@@ -126,14 +126,7 @@ extension SQLCreateTableBuilder {
         
         if let reference = reference {
             
-            builder.builder.append("REFERENCES \(table: reference.table)(" as SQLRaw)
-            for (i, column) in reference.columns.enumerated() {
-                if i != 0 {
-                    builder.builder.append(",")
-                }
-                builder.builder.append("\(identifier: column)" as SQLRaw)
-            }
-            builder.builder.append(")" as SQLRaw)
+            builder.builder.append("REFERENCES \(table: reference.table)(\(identifier: reference.column))" as SQLRaw)
             
             if let onDelete = onDelete {
                 switch onDelete {
@@ -245,16 +238,11 @@ public struct SQLForeignKey: Hashable {
     
     public var table: String
     
-    public var columns: [String]
+    public var column: String
     
     public init(table: String, column: String) {
         self.table = table
-        self.columns = [column]
-    }
-    
-    public init(table: String, column: String, _ column2: String, _ res: String ...) {
-        self.table = table
-        self.columns = [column, column2] + res
+        self.column = column
     }
 }
 
@@ -285,14 +273,7 @@ extension SQLCreateTableBuilder {
             builder.builder.append(",")
         }
         
-        builder.builder.append("FOREIGN KEY (\(identifier: column)) REFERENCES \(table: reference.table)(" as SQLRaw)
-        for (i, column) in reference.columns.enumerated() {
-            if i != 0 {
-                builder.builder.append(",")
-            }
-            builder.builder.append("\(identifier: column)" as SQLRaw)
-        }
-        builder.builder.append(")" as SQLRaw)
+        builder.builder.append("FOREIGN KEY (\(identifier: column)) REFERENCES \(table: reference.table)(\(identifier: reference.column))" as SQLRaw)
         
         if let onDelete = onDelete {
             switch onDelete {
