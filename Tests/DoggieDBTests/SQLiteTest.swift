@@ -78,7 +78,7 @@ class SQLiteTest: XCTestCase {
             
             XCTAssertTrue(try connection.tables().wait().contains("contacts"))
             
-            let tableInfo = try connection.columns("contacts").wait()
+            let tableInfo = try connection.columns(of: "contacts").wait()
             
             guard let contact_id = tableInfo.first(where: { $0["name"] == "contact_id" }) else { XCTFail(); return }
             guard let first_name = tableInfo.first(where: { $0["name"] == "first_name" }) else { XCTFail(); return }

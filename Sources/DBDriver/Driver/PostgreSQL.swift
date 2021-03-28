@@ -112,7 +112,7 @@ extension PostgreSQLDriver.Connection {
         return self.execute("SELECT matviewname FROM pg_catalog.pg_matviews WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'").map { $0.map { $0["matviewname"]!.string! } }
     }
     
-    func columns(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+    func columns(of table: String) -> EventLoopFuture<[DBQueryRow]> {
         
         var sql: SQLRaw = "SELECT * FROM information_schema.columns"
         
@@ -131,7 +131,7 @@ extension PostgreSQLDriver.Connection {
         return self.execute(sql)
     }
     
-    func indices(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+    func indices(of table: String) -> EventLoopFuture<[DBQueryRow]> {
         
         var sql: SQLRaw = """
             SELECT
@@ -173,7 +173,7 @@ extension PostgreSQLDriver.Connection {
         return self.execute(sql)
     }
     
-    func foreignKeys(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+    func foreignKeys(of table: String) -> EventLoopFuture<[DBQueryRow]> {
         
         var sql: SQLRaw = """
             SELECT kcu.table_schema AS table_schema,
