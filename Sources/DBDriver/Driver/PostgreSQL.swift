@@ -140,7 +140,7 @@ extension PostgreSQLDriver.Connection {
                 i.relname AS index_name,
                 ix.indisprimary AS is_primary,
                 ix.indisunique AS is_unique,
-                a.attname AS colum_nname,
+                a.attname AS column_name,
                 k.indseq AS seq
             FROM
                 pg_namespace n,
