@@ -100,7 +100,18 @@ extension SQLiteDriver.Connection {
     }
     
     func indexList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
-        return self.execute("pragma index_list(\(identifier: table))")
+        return self.execute("""
+            SELECT
+                il.name,
+                il."unique",
+                il.origin,
+                il.partial,
+                ii.seqno,
+                ii.cid,
+                ii.name AS column_name
+            FROM pragma_index_list(\(identifier: table)) AS il,
+                pragma_index_info(il.name) AS ii
+            """)
     }
     
     func foreignKeyList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
