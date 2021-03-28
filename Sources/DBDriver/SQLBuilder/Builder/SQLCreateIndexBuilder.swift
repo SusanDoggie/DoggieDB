@@ -60,7 +60,7 @@ public struct SQLCreateIndexBuilder: SQLBuilderProtocol {
         if let index = index {
             self.builder.append("\(identifier: index)" as SQLRaw)
         }
-        self.builder.append("ON \(identifier: table)" as SQLRaw)
+        self.builder.append("ON \(table: table)" as SQLRaw)
     }
 }
 

@@ -155,8 +155,25 @@ extension SQLRaw: ExpressibleByStringInterpolation {
             self.components.append(.string(String(value)))
         }
         
-        public mutating func appendInterpolation<T: StringProtocol>(identifier value: T) {
-            self.components.append(.identifier(String(value)))
+        public mutating func appendInterpolation<T: StringProtocol>(identifier: T) {
+            self.components.append(.identifier(String(identifier)))
+        }
+        
+        public mutating func appendInterpolation<T: StringProtocol>(table: T) {
+            
+            if let split = table.firstIndex(of: ".") {
+                
+                let schema = table.prefix(upTo: split)
+                let name = table.suffix(from: split).dropFirst()
+                
+                self.components.append(.identifier(String(schema)))
+                self.components.append(.string("."))
+                self.components.append(.identifier(String(name)))
+                
+            } else {
+                
+                self.components.append(.identifier(String(table)))
+            }
         }
         
         public mutating func appendInterpolation(_ raw: SQLRaw) {

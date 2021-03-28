@@ -98,6 +98,14 @@ extension SQLiteDriver.Connection {
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
         return self.execute("pragma table_info(\(identifier: table))")
     }
+    
+    func indexList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+        return self.execute("pragma index_list(\(identifier: table))")
+    }
+    
+    func foreignKeyList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+        return self.execute("pragma foreign_key_list(\(identifier: table))")
+    }
 }
 
 extension SQLiteDriver.Connection {

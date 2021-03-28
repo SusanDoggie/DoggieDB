@@ -283,11 +283,11 @@ extension SQLBuilder {
         
         var builder = self
         
-        builder.append("DROP VIEW")
+        builder.append("DROP TABLE")
         if options.contains(.ifExists) {
             builder.append("IF EXISTS")
         }
-        builder.append("\(identifier: table)" as SQLRaw)
+        builder.append("\(table: table)" as SQLRaw)
         
         return SQLFinalizedBuilder(builder: builder)
     }
@@ -334,7 +334,7 @@ extension SQLBuilder {
         if options.contains(.ifExists) {
             builder.append("IF EXISTS")
         }
-        builder.append("\(identifier: view)" as SQLRaw)
+        builder.append("\(table: view)" as SQLRaw)
         
         return SQLFinalizedBuilder(builder: builder)
     }
@@ -355,7 +355,7 @@ extension SQLBuilder {
         if options.contains(.ifExists) {
             builder.append("IF EXISTS")
         }
-        builder.append("\(identifier: view)" as SQLRaw)
+        builder.append("\(table: view)" as SQLRaw)
         
         return SQLFinalizedBuilder(builder: builder)
     }
@@ -368,7 +368,7 @@ extension SQLBuilder {
         if options.contains(.concurrent) {
             builder.append("CONCURRENTLY")
         }
-        builder.append("\(identifier: view)" as SQLRaw)
+        builder.append("\(table: view)" as SQLRaw)
         
         return SQLFinalizedBuilder(builder: builder)
     }

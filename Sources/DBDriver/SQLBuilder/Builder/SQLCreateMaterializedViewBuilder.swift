@@ -49,7 +49,7 @@ public struct SQLCreateMaterializedViewBuilder: SQLBuilderProtocol {
         if options.contains(.ifNotExists) {
             self.builder.append("IF NOT EXISTS")
         }
-        self.builder.append("\(identifier: view) AS" as SQLRaw)
+        self.builder.append("\(table: view) AS" as SQLRaw)
     }
 }
 

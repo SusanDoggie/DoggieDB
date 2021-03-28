@@ -45,6 +45,10 @@ public protocol DBConnection: AnyObject {
     
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]>
     
+    func indexList(_ table: String) -> EventLoopFuture<[DBQueryRow]>
+    
+    func foreignKeyList(_ table: String) -> EventLoopFuture<[DBQueryRow]>
+    
     func execute(
         _ sql: SQLRaw
     ) -> EventLoopFuture<[DBQueryRow]>
@@ -93,6 +97,14 @@ extension DBConnection {
     }
     
     public func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func indexList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func foreignKeyList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
 }

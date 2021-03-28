@@ -102,7 +102,52 @@ extension MySQLDriver.Connection {
     }
     
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
-        return self.execute("SHOW COLUMNS FROM \(identifier: table)")
+        return self.execute("SHOW COLUMNS FROM \(table: table)")
+    }
+    
+    func indexList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+        
+        var sql: SQLRaw = """
+            SELECT info.*, GROUP_CONCAT(info.COLUMN_NAME ORDER BY info.SEQ_IN_INDEX ASC) AS COLUMN_NAMES
+            FROM INFORMATION_SCHEMA.STATISTICS AS info
+            """
+        
+        if let split = table.firstIndex(of: ".") {
+            
+            let _schema = table.prefix(upTo: split)
+            let _name = table.suffix(from: split).dropFirst()
+            
+            sql.append(" WHERE TABLE_SCHEMA = \(_schema) AND TABLE_NAME = \(_name)")
+            
+        } else {
+            
+            sql.append(" WHERE TABLE_NAME = \(table)")
+        }
+        
+        sql.append(" GROUP BY INDEX_SCHEMA, INDEX_NAME")
+        
+        return self.execute(sql)
+    }
+    
+    func foreignKeyList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+        
+        var sql: SQLRaw = "SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE"
+        
+        if let split = table.firstIndex(of: ".") {
+            
+            let _schema = table.prefix(upTo: split)
+            let _name = table.suffix(from: split).dropFirst()
+            
+            sql.append(" WHERE TABLE_SCHEMA = \(_schema) AND TABLE_NAME = \(_name)")
+            
+        } else {
+            
+            sql.append(" WHERE TABLE_NAME = \(table)")
+        }
+        
+        sql.append(" AND REFERENCED_COLUMN_NAME IS NOT NULL")
+        
+        return self.execute(sql)
     }
 }
 

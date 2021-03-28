@@ -58,7 +58,7 @@ public struct SQLCreateTableBuilder: SQLBuilderProtocol {
         if options.contains(.ifNotExists) {
             self.builder.append("IF NOT EXISTS")
         }
-        self.builder.append("\(identifier: table) (" as SQLRaw)
+        self.builder.append("\(table: table) (" as SQLRaw)
     }
 }
 
@@ -126,7 +126,7 @@ extension SQLCreateTableBuilder {
         
         if let reference = reference {
             
-            builder.builder.append("REFERENCES \(identifier: reference.table)(\(identifier: reference.column))" as SQLRaw)
+            builder.builder.append("REFERENCES \(table: reference.table)(\(identifier: reference.column))" as SQLRaw)
             
             if let onDelete = onDelete {
                 switch onDelete {
@@ -273,7 +273,7 @@ extension SQLCreateTableBuilder {
             builder.builder.append(",")
         }
         
-        builder.builder.append("FOREIGN KEY (\(identifier: column)) REFERENCES \(identifier: reference.table)(\(identifier: reference.column))" as SQLRaw)
+        builder.builder.append("FOREIGN KEY (\(identifier: column)) REFERENCES \(table: reference.table)(\(identifier: reference.column))" as SQLRaw)
         
         if let onDelete = onDelete {
             switch onDelete {

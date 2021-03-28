@@ -114,16 +114,66 @@ extension PostgreSQLDriver.Connection {
     
     func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
         
+        var sql: SQLRaw = "SELECT * FROM information_schema.columns"
+        
         if let split = table.firstIndex(of: ".") {
             
             let _schema = table.prefix(upTo: split)
             let _name = table.suffix(from: split).dropFirst()
             
-            return self.execute("SELECT * FROM information_schema.columns WHERE table_schema = \(_schema) AND table_name = \(_name)")
+            sql.append(" WHERE table_schema = \(_schema) AND table_name = \(_name)")
+            
+        } else {
+            
+            sql.append(" WHERE table_name = \(table)")
         }
         
-        return self.execute("SELECT * FROM information_schema.columns WHERE table_name = \(table)")
+        return self.execute(sql)
     }
+    
+    func indexList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+        
+        var sql: SQLRaw = """
+            SELECT
+                n.nspname AS schemaname,
+                t.relname AS tablename,
+                i.relname AS indexname,
+                (array_agg(ix.indisprimary)::bool[])[1] AS isprimary,
+                (array_agg(ix.indisunique)::bool[])[1] AS isunique,
+                array_agg(a.attname ORDER BY k.indseq ASC) AS columnnames
+            FROM
+                pg_namespace n,
+                pg_class t,
+                pg_class i,
+                pg_index ix,
+                UNNEST(ix.indkey) WITH ORDINALITY k(attnum, indseq),
+                pg_attribute a
+            WHERE
+                t.oid = ix.indrelid
+                AND n.oid = t.relnamespace
+                AND i.oid = ix.indexrelid
+                AND a.attrelid = t.oid
+                AND a.attnum = k.attnum
+                AND t.relkind = 'r'
+            """
+        
+        if let split = table.firstIndex(of: ".") {
+            
+            let _schema = table.prefix(upTo: split)
+            let _name = table.suffix(from: split).dropFirst()
+            
+            sql.append(" AND n.nspname = \(_schema) AND t.relname = \(_name)")
+            
+        } else {
+            
+            sql.append(" AND t.relname = \(table)")
+        }
+        
+        sql.append(" GROUP BY n.nspname, t.relname, i.relname")
+        
+        return self.execute(sql)
+    }
+    
 }
 
 extension PostgreSQLDriver.Connection {
