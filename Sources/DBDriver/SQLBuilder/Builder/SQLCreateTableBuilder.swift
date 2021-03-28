@@ -23,6 +23,29 @@
 //  THE SOFTWARE.
 //
 
+public struct SQLForeignKey: Hashable {
+    
+    public var table: String
+    
+    public var column: String
+    
+    public init(table: String, column: String) {
+        self.table = table
+        self.column = column
+    }
+}
+
+public enum SQLForeignKeyAction {
+    
+    case restrict
+    
+    case cascade
+    
+    case setNull
+    
+    case setDefault
+}
+
 public struct SQLCreateTableOptions: OptionSet {
     
     public var rawValue: Int
@@ -234,29 +257,6 @@ extension SQLCreateTableBuilder {
     }
 }
 
-public struct SQLForeignKey: Hashable {
-    
-    public var table: String
-    
-    public var column: String
-    
-    public init(table: String, column: String) {
-        self.table = table
-        self.column = column
-    }
-}
-
-public enum SQLForeignKeyAction {
-    
-    case restrict
-    
-    case cascade
-    
-    case setNull
-    
-    case setDefault
-}
-
 extension SQLCreateTableBuilder {
     
     /// Adds a new `FOREIGN KEY` constraint to the table being built
@@ -274,6 +274,73 @@ extension SQLCreateTableBuilder {
         }
         
         builder.builder.append("FOREIGN KEY (\(identifier: column)) REFERENCES \(table: reference.table)(\(identifier: reference.column))" as SQLRaw)
+        
+        if let onDelete = onDelete {
+            switch onDelete {
+            case .restrict: builder.builder.append("ON DELETE RESTRICT")
+            case .cascade: builder.builder.append("ON DELETE CASCADE")
+            case .setNull: builder.builder.append("ON DELETE SET NULL")
+            case .setDefault: builder.builder.append("ON DELETE SET DEFAULT")
+            }
+        }
+        if let onUpdate = onUpdate {
+            switch onUpdate {
+            case .restrict: builder.builder.append("ON UPDATE RESTRICT")
+            case .cascade: builder.builder.append("ON UPDATE CASCADE")
+            case .setNull: builder.builder.append("ON UPDATE SET NULL")
+            case .setDefault: builder.builder.append("ON UPDATE SET DEFAULT")
+            }
+        }
+        
+        builder.flag = true
+        
+        return builder
+    }
+}
+
+public struct SQLCompositeForeignKey: Hashable {
+    
+    public var table: String
+    
+    public var columns: [String]
+    
+    public init(table: String, column columns: String ...) {
+        self.table = table
+        self.columns = columns
+    }
+}
+
+extension SQLCreateTableBuilder {
+    
+    /// Adds a new `FOREIGN KEY` constraint to the table being built
+    public func foreignKey(
+        _ columns: String...,
+        reference: SQLCompositeForeignKey,
+        onUpdate: SQLForeignKeyAction? = nil,
+        onDelete: SQLForeignKeyAction? = nil
+    ) -> SQLCreateTableBuilder {
+        
+        var builder = self
+        
+        if flag {
+            builder.builder.append(",")
+        }
+        
+        builder.builder.append("FOREIGN KEY (" as SQLRaw)
+        for (i, column) in columns.enumerated() {
+            if i != 0 {
+                builder.builder.append(",")
+            }
+            builder.builder.append("\(identifier: column)" as SQLRaw)
+        }
+        builder.builder.append(") REFERENCES \(table: reference.table)(" as SQLRaw)
+        for (i, column) in reference.columns.enumerated() {
+            if i != 0 {
+                builder.builder.append(",")
+            }
+            builder.builder.append("\(identifier: column)" as SQLRaw)
+        }
+        builder.builder.append(")" as SQLRaw)
         
         if let onDelete = onDelete {
             switch onDelete {
