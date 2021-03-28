@@ -203,18 +203,18 @@ extension SQLRaw {
 
 extension SQLRaw {
     
-    public mutating func append(_ other: SQLRaw) {
-        self.components.append(contentsOf: other.components)
-        self.components = self.components.simplify()
-    }
-    
-    public mutating func append<T: StringProtocol>(literal value: T) {
+    public mutating func appendLiteral<T: StringProtocol>(_ value: T) {
         if case var .string(last_string) = self.components.last {
             last_string.append(String(value))
             self.components[self.components.count - 1] = .string(last_string)
         } else {
             self.components.append(.string(String(value)))
         }
+    }
+    
+    public mutating func append(_ other: SQLRaw) {
+        self.components.append(contentsOf: other.components)
+        self.components = self.components.simplify()
     }
     
     public mutating func append(_ value: DBData) {

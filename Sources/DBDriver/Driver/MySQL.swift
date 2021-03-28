@@ -140,7 +140,7 @@ extension MySQLDriver.Connection {
             sql.append(" WHERE TABLE_NAME = \(table)")
         }
         
-        sql.append(literal: " AND REFERENCED_COLUMN_NAME IS NOT NULL")
+        sql.appendLiteral(" AND REFERENCED_COLUMN_NAME IS NOT NULL")
         
         return self.execute(sql)
     }
