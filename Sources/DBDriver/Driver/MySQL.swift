@@ -107,10 +107,7 @@ extension MySQLDriver.Connection {
     
     func indexList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
         
-        var sql: SQLRaw = """
-            SELECT info.*, GROUP_CONCAT(info.COLUMN_NAME ORDER BY info.SEQ_IN_INDEX ASC) AS COLUMN_NAMES
-            FROM INFORMATION_SCHEMA.STATISTICS AS info
-            """
+        var sql: SQLRaw = "SELECT * FROM INFORMATION_SCHEMA.STATISTICS"
         
         if let split = table.firstIndex(of: ".") {
             
@@ -123,8 +120,6 @@ extension MySQLDriver.Connection {
             
             sql.append(" WHERE TABLE_NAME = \(table)")
         }
-        
-        sql.append(" GROUP BY INDEX_SCHEMA, INDEX_NAME")
         
         return self.execute(sql)
     }

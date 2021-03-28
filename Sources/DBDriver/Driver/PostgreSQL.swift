@@ -138,9 +138,10 @@ extension PostgreSQLDriver.Connection {
                 n.nspname AS schemaname,
                 t.relname AS tablename,
                 i.relname AS indexname,
-                (array_agg(ix.indisprimary)::bool[])[1] AS isprimary,
-                (array_agg(ix.indisunique)::bool[])[1] AS isunique,
-                array_agg(a.attname ORDER BY k.indseq ASC) AS columnnames
+                ix.indisprimary AS isprimary,
+                ix.indisunique AS isunique,
+                a.attname AS columnname,
+                k.indseq AS seq
             FROM
                 pg_namespace n,
                 pg_class t,
@@ -168,8 +169,6 @@ extension PostgreSQLDriver.Connection {
             
             sql.append(" AND t.relname = \(table)")
         }
-        
-        sql.append(" GROUP BY n.nspname, t.relname, i.relname")
         
         return self.execute(sql)
     }
