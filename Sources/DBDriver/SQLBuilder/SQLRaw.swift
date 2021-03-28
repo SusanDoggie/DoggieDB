@@ -208,7 +208,7 @@ extension SQLRaw {
         self.components = self.components.simplify()
     }
     
-    public mutating func append<T: StringProtocol>(_ value: T) {
+    public mutating func append<T: StringProtocol>(literal value: T) {
         if case var .string(last_string) = self.components.last {
             last_string.append(String(value))
             self.components[self.components.count - 1] = .string(last_string)

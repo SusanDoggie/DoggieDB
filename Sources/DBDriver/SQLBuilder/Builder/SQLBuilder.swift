@@ -120,14 +120,14 @@ extension SQLBuilder: SQLBuilderProtocol {
         for component in components {
             
             if !raw.isEmpty && raw.components.last?.string?.last != " " {
-                raw.append(" ")
+                raw.append(literal: " ")
             }
             
             switch component {
             case let .raw(value): raw.append(value)
-            case let .string(value): raw.append(value)
+            case let .string(value): raw.append(literal: value)
             case let .value(value): raw.append(value)
-            case .autoIncrement: raw.append(dialect.autoIncrementClause)
+            case .autoIncrement: raw.append(literal: dialect.autoIncrementClause)
             case let .nullSafeEqual(lhs, rhs): raw.append(dialect.nullSafeEqual(lhs, rhs))
             case let .nullSafeNotEqual(lhs, rhs): raw.append(dialect.nullSafeNotEqual(lhs, rhs))
             }
