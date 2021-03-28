@@ -140,7 +140,14 @@ extension SQLAlterTableBuilder {
         
         if let reference = reference {
             
-            builder.append("REFERENCES \(reference.table)(\(reference.column))")
+            builder.builder.append("REFERENCES \(table: reference.table)(" as SQLRaw)
+            for (i, column) in reference.columns.enumerated() {
+                if i != 0 {
+                    builder.builder.append(",")
+                }
+                builder.builder.append("\(identifier: column)" as SQLRaw)
+            }
+            builder.builder.append(")" as SQLRaw)
             
             if let onDelete = onDelete {
                 switch onDelete {
