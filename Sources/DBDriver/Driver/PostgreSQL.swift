@@ -135,12 +135,12 @@ extension PostgreSQLDriver.Connection {
         
         var sql: SQLRaw = """
             SELECT
-                n.nspname AS schemaname,
-                t.relname AS tablename,
-                i.relname AS indexname,
-                ix.indisprimary AS isprimary,
-                ix.indisunique AS isunique,
-                a.attname AS columnname,
+                n.nspname AS schema_name,
+                t.relname AS table_name,
+                i.relname AS index_name,
+                ix.indisprimary AS is_primary,
+                ix.indisunique AS is_unique,
+                a.attname AS colum_nname,
                 k.indseq AS seq
             FROM
                 pg_namespace n,
@@ -176,15 +176,15 @@ extension PostgreSQLDriver.Connection {
     func foreignKeyList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
         
         var sql: SQLRaw = """
-            SELECT kcu.table_schema AS tableschema,
-                kcu.table_name AS tablename,
-                rel_kcu.table_schema AS reftableschema,
-                rel_kcu.table_name AS reftablename,
+            SELECT kcu.table_schema AS table_schema,
+                kcu.table_name AS table_name,
+                rel_kcu.table_schema AS ref_table_schema,
+                rel_kcu.table_name AS ref_table_name,
                 kcu.ordinal_position AS seq,
-                kcu.position_in_unique_constraint AS refseq,
+                kcu.position_in_unique_constraint AS ref_seq,
                 kcu.column_name AS column,
-                rel_kcu.column_name AS refcolumn,
-                kcu.constraint_name AS constraintname
+                rel_kcu.column_name AS ref_column,
+                kcu.constraint_name AS constraint_name
             FROM information_schema.table_constraints tco
             JOIN information_schema.key_column_usage kcu
                 ON tco.constraint_schema = kcu.constraint_schema
