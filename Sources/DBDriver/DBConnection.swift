@@ -43,11 +43,11 @@ public protocol DBConnection: AnyObject {
     
     func materializedViews() -> EventLoopFuture<[String]>
     
-    func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]>
+    func columns(_ table: String) -> EventLoopFuture<[DBQueryRow]>
     
-    func indexList(_ table: String) -> EventLoopFuture<[DBQueryRow]>
+    func indices(_ table: String) -> EventLoopFuture<[DBQueryRow]>
     
-    func foreignKeyList(_ table: String) -> EventLoopFuture<[DBQueryRow]>
+    func foreignKeys(_ table: String) -> EventLoopFuture<[DBQueryRow]>
     
     func execute(
         _ sql: SQLRaw
@@ -96,15 +96,15 @@ extension DBConnection {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     
-    public func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+    public func columns(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     
-    public func indexList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+    public func indices(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     
-    public func foreignKeyList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+    public func foreignKeys(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
 }

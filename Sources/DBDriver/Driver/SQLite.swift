@@ -95,11 +95,11 @@ extension SQLiteDriver.Connection {
         return self.execute("SELECT name FROM sqlite_master WHERE type = 'view'").map { $0.map { $0["name"]!.string! } }
     }
     
-    func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+    func columns(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
         return self.execute("pragma table_info(\(identifier: table))")
     }
     
-    func indexList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+    func indices(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
         return self.execute("""
             SELECT
                 il.name,
@@ -114,7 +114,7 @@ extension SQLiteDriver.Connection {
             """)
     }
     
-    func foreignKeyList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+    func foreignKeys(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
         return self.execute("pragma foreign_key_list(\(identifier: table))")
     }
 }

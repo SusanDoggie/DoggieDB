@@ -101,11 +101,11 @@ extension MySQLDriver.Connection {
         return self.execute("SHOW FULL TABLES WHERE Table_type = 'VIEW'").map { $0.map { $0[$0.keys.first { $0.hasPrefix("Tables_in_") }!]!.string! } }
     }
     
-    func tableInfo(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+    func columns(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
         return self.execute("SHOW COLUMNS FROM \(table: table)")
     }
     
-    func indexList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+    func indices(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
         
         var sql: SQLRaw = "SELECT * FROM INFORMATION_SCHEMA.STATISTICS"
         
@@ -124,7 +124,7 @@ extension MySQLDriver.Connection {
         return self.execute(sql)
     }
     
-    func foreignKeyList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+    func foreignKeys(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
         
         var sql: SQLRaw = "SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE"
         
