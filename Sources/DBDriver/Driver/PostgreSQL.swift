@@ -174,6 +174,46 @@ extension PostgreSQLDriver.Connection {
         return self.execute(sql)
     }
     
+    func foreignKeyList(_ table: String) -> EventLoopFuture<[DBQueryRow]> {
+        
+        var sql: SQLRaw = """
+            SELECT kcu.table_schema AS tableschema,
+                kcu.table_name AS tablename,
+                rel_kcu.table_schema AS reftableschema,
+                rel_kcu.table_name AS reftablename,
+                kcu.ordinal_position AS seq,
+                kcu.position_in_unique_constraint AS refseq,
+                kcu.column_name AS column,
+                rel_kcu.column_name AS refcolumn,
+                kcu.constraint_name AS constraintname
+            FROM information_schema.table_constraints tco
+            JOIN information_schema.key_column_usage kcu
+                ON tco.constraint_schema = kcu.constraint_schema
+                AND tco.constraint_name = kcu.constraint_name
+            JOIN information_schema.referential_constraints rco
+                ON tco.constraint_schema = rco.constraint_schema
+                AND tco.constraint_name = rco.constraint_name
+            JOIN information_schema.key_column_usage rel_kcu
+                ON rco.unique_constraint_schema = rel_kcu.constraint_schema
+                AND rco.unique_constraint_name = rel_kcu.constraint_name
+                AND kcu.ordinal_position = rel_kcu.ordinal_position
+            WHERE tco.constraint_type = 'FOREIGN KEY'
+            """
+        
+        if let split = table.firstIndex(of: ".") {
+            
+            let _schema = table.prefix(upTo: split)
+            let _name = table.suffix(from: split).dropFirst()
+            
+            sql.append(" AND kcu.table_schema = \(_schema) AND kcu.table_name = \(_name)")
+            
+        } else {
+            
+            sql.append(" AND kcu.table_name = \(table)")
+        }
+        
+        return self.execute(sql)
+    }
 }
 
 extension PostgreSQLDriver.Connection {
