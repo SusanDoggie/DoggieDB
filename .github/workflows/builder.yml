@@ -43,7 +43,7 @@ jobs:
       with:
         submodules: recursive
     - name: Install MySQL
-      run: brew install ${{ matrix.formula }}
+      run: brew install ${{ matrix.formula }} && brew link --force ${{ matrix.formula }}
     - name: Start MySQL
       run: brew services start ${{ matrix.formula }}
     - name: Waiting MySQL
