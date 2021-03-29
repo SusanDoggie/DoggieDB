@@ -64,6 +64,8 @@ jobs:
         pg_ctl start --wait
     - name: Install Redis
       run: brew install redis && brew services start redis
+    - name: Start MongoDB
+      run: brew services start mongodb-community
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
