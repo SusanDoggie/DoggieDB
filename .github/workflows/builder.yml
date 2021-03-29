@@ -30,6 +30,9 @@ jobs:
             enable_codecov: true
           - name: macOS(SwiftPM)
             use_xcodebuild: false
+          - username: root
+          - formula: mariadb
+            username: runner
     env:
       use_xcodebuild: ${{ matrix.use_xcodebuild }}
       sdk: ${{ matrix.sdk }}
@@ -44,11 +47,11 @@ jobs:
     - name: Start MySQL
       run: brew services start ${{ matrix.formula }}
     - name: Waiting MySQL
-      run: until echo | mysql -u$USER; do sleep 1; done
+      run: until echo | mysql -u${{ matrix.username }}; do sleep 1; done
       timeout-minutes: 1
     - name: Set up MySQL databases and privileges
       run: |
-        mysql -u$USER --batch <<-'SQL'
+        mysql -u${{ matrix.username }} --batch <<-'SQL'
           CREATE USER $MYSQL_USERNAME@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
           CREATE DATABASE $MYSQL_DATABASE;
           GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@localhost;
