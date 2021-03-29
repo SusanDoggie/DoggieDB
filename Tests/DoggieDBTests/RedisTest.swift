@@ -52,7 +52,7 @@ class RedisTest: XCTestCase {
             url.host = env("REDIS_HOST") ?? "localhost"
             url.user = env("REDIS_USERNAME")
             url.password = env("REDIS_PASSWORD")
-            url.path = "/\(env("REDIS_DATABASE") ?? "")"
+            url.path = "/\(env("REDIS_DATABASE") ?? "0")"
             
             if let ssl_mode = env("REDIS_SSLMODE") {
                 url.queryItems = [

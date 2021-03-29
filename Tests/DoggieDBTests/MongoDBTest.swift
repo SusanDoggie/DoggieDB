@@ -52,7 +52,7 @@ class MongoDBTest: XCTestCase {
             url.host = env("MONGO_HOST") ?? "localhost"
             url.user = env("MONGO_USERNAME") ?? "doggiedb"
             url.password = env("MONGO_PASSWORD") ?? "doggiedb"
-            url.path = "/\(env("MONGO_DATABASE") ?? "0")"
+            url.path = "/\(env("MONGO_DATABASE") ?? "")"
             
             if let ssl_mode = env("MONGO_SSLMODE") {
                 url.queryItems = [
