@@ -33,6 +33,8 @@ extension Database {
         public var password: String?
         public var database: String?
         
+        public var queryItems: [URLQueryItem]?
+        
         public var tlsConfiguration: TLSConfiguration?
         
         public init(
@@ -40,12 +42,14 @@ extension Database {
             username: String? = nil,
             password: String? = nil,
             database: String? = nil,
+            queryItems: [URLQueryItem]? = nil,
             tlsConfiguration: TLSConfiguration? = nil
         ) {
             self.socketAddress = socketAddress
             self.username = username
-            self.database = database
             self.password = password
+            self.database = database
+            self.queryItems = queryItems
             self.tlsConfiguration = tlsConfiguration
         }
         
@@ -53,12 +57,14 @@ extension Database {
             unixDomainSocketPath: String,
             username: String? = nil,
             password: String? = nil,
-            database: String? = nil
+            database: String? = nil,
+            queryItems: [URLQueryItem]? = nil
         ) throws {
             self.socketAddress = try .init(unixDomainSocketPath: unixDomainSocketPath)
             self.username = username
             self.password = password
             self.database = database
+            self.queryItems = queryItems
             self.tlsConfiguration = nil
         }
         
@@ -68,12 +74,14 @@ extension Database {
             username: String? = nil,
             password: String? = nil,
             database: String? = nil,
+            queryItems: [URLQueryItem]? = nil,
             tlsConfiguration: TLSConfiguration? = nil
         ) throws {
             self.socketAddress = try .makeAddressResolvingHost(hostname, port: port)
             self.username = username
-            self.database = database
             self.password = password
+            self.database = database
+            self.queryItems = queryItems
             self.tlsConfiguration = tlsConfiguration
         }
     }
@@ -135,6 +143,7 @@ extension Database.Configuration {
             username: url.user,
             password: url.password,
             database: lastPathComponent == "/" ? nil : lastPathComponent,
+            queryItems: url.queryItems,
             tlsConfiguration: tlsConfiguration
         )
     }

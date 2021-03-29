@@ -75,6 +75,7 @@ extension MongoDBDriver {
         url.port = config.socketAddress.port
         url.user = config.username
         url.password = config.password
+        url.queryItems = config.queryItems
         
         if let database = config.database {
             url.path = "/\(database)"

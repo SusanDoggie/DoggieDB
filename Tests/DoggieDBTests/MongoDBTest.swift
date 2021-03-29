@@ -50,16 +50,22 @@ class MongoDBTest: XCTestCase {
             var url = URLComponents()
             url.scheme = "mongodb"
             url.host = env("MONGO_HOST") ?? "localhost"
-            url.user = env("MONGO_USERNAME") ?? "doggiedb"
-            url.password = env("MONGO_PASSWORD") ?? "doggiedb"
+            url.user = env("MONGO_USERNAME")
+            url.password = env("MONGO_PASSWORD")
             url.path = "/\(env("MONGO_DATABASE") ?? "")"
             
-            if let ssl_mode = env("MONGO_SSLMODE") {
-                url.queryItems = [
-                    URLQueryItem(name: "ssl", value: "true"),
-                    URLQueryItem(name: "sslmode", value: ssl_mode),
-                ]
+            var queryItems: [URLQueryItem] = []
+            
+            if let authSource = env("MONGO_AUTHSOURCE") {
+                queryItems.append(URLQueryItem(name: "authSource", value: authSource))
             }
+            
+            if let ssl_mode = env("MONGO_SSLMODE") {
+                queryItems.append(URLQueryItem(name: "ssl", value: "true"))
+                queryItems.append(URLQueryItem(name: "sslmode", value: ssl_mode))
+            }
+            
+            url.queryItems = queryItems.isEmpty ? nil : queryItems
             
             self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             
