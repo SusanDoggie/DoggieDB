@@ -40,18 +40,9 @@ jobs:
       with:
         submodules: recursive
     - name: Install MySQL
-      run: |
-        brew install ${{ matrix.formula }}
-        brew link --force ${{ matrix.formula }}
+      run: brew install ${{ matrix.formula }}
     - name: Start MySQL
-      run: |
-        brew services start ${{ matrix.formula }}
-        brew services list
-        ls /usr/local/var
-        mysql.server start
-        mysql_config --socket
-        mysql --help --verbose
-        mysql --print-defaults $MYSQL_DATABASE
+      run: brew services start ${{ matrix.formula }}
     - name: Waiting MySQL
       run: until echo | mysql -u$USER; do sleep 1; done
       timeout-minutes: 1
