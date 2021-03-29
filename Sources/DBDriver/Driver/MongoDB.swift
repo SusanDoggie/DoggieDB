@@ -76,6 +76,10 @@ extension MongoDBDriver {
         url.user = config.username
         url.password = config.password
         
+        if let database = config.database {
+            url.path = "/\(database)"
+        }
+        
         guard let connectionString = url.string else {
             return eventLoop.makeFailedFuture(Database.Error.unknown)
         }
