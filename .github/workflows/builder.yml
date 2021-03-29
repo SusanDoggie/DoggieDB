@@ -11,6 +11,7 @@ env:
   MONGO_DATABASE: doggiedb
   MONGO_USERNAME: doggiedb
   MONGO_PASSWORD: doggiedb
+  MONGO_AUTHSOURCE: admin
 jobs:
   macos:
     runs-on: macOS-latest
