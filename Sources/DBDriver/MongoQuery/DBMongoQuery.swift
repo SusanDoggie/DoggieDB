@@ -71,7 +71,7 @@ extension DBMongoQuery {
         return DBMongoCreateCollectionExpression(database: database, session: session, name: name)
     }
     
-    public func collections(_ name: String) -> DBMongoListCollectionsExpression<BSONDocument> {
+    public func collections() -> DBMongoListCollectionsExpression<BSONDocument> {
         guard let database = connection.database else { fatalError("database not selected.") }
         return DBMongoListCollectionsExpression(database: database, session: session)
     }
