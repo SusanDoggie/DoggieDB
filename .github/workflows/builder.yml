@@ -60,7 +60,7 @@ jobs:
     - name: Install PostgreSQL
       run: |
         export PATH="/usr/local/opt/postgresql/bin:$PATH" PGDATA=/tmp/postgres-test
-        brew install postgresql
+        brew install postgresql && brew services start postgresql
         initdb --locale=C -U $POSTGRES_USERNAME --pwfile=<(echo $POSTGRES_PASSWORD)
         psql -v ON_ERROR_STOP=1 -U $POSTGRES_USERNAME -w -d postgres --set db="$POSTGRES_DATABASE" <<-'EOSQL'
           CREATE DATABASE :"db" ;
