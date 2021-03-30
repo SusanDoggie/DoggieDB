@@ -27,7 +27,7 @@ extension Database {
     
     public struct Configuration {
         
-        public var socketAddress: SocketAddress
+        public let socketAddress: [SocketAddress]
         
         public var username: String?
         public var password: String?
@@ -45,7 +45,25 @@ extension Database {
             queryItems: [URLQueryItem]? = nil,
             tlsConfiguration: TLSConfiguration? = nil
         ) {
-            self.socketAddress = socketAddress
+            self.socketAddress = [socketAddress]
+            self.username = username
+            self.password = password
+            self.database = database
+            self.queryItems = queryItems
+            self.tlsConfiguration = tlsConfiguration
+        }
+        
+        public init(
+            socketAddress address: SocketAddress,
+            _ address2: SocketAddress,
+            _ res: SocketAddress...,
+            username: String? = nil,
+            password: String? = nil,
+            database: String? = nil,
+            queryItems: [URLQueryItem]? = nil,
+            tlsConfiguration: TLSConfiguration? = nil
+        ) {
+            self.socketAddress = [address, address2] + res
             self.username = username
             self.password = password
             self.database = database
@@ -60,7 +78,7 @@ extension Database {
             database: String? = nil,
             queryItems: [URLQueryItem]? = nil
         ) throws {
-            self.socketAddress = try .init(unixDomainSocketPath: unixDomainSocketPath)
+            self.socketAddress = try [.init(unixDomainSocketPath: unixDomainSocketPath)]
             self.username = username
             self.password = password
             self.database = database
@@ -77,7 +95,7 @@ extension Database {
             queryItems: [URLQueryItem]? = nil,
             tlsConfiguration: TLSConfiguration? = nil
         ) throws {
-            self.socketAddress = try .makeAddressResolvingHost(hostname, port: port)
+            self.socketAddress = try [.makeAddressResolvingHost(hostname, port: port)]
             self.username = username
             self.password = password
             self.database = database

@@ -61,7 +61,7 @@ extension RedisDriver {
         do {
             
             let _config = try RedisConnection.Configuration(
-                address: config.socketAddress,
+                address: config.socketAddress[0],
                 password: config.password,
                 initialDatabase: config.database.flatMap(Int.init),
                 defaultLogger: logger

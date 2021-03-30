@@ -57,6 +57,51 @@ extension MongoDBDriver {
     }
 }
 
+extension Database.Configuration {
+    
+    func mongo_connection_string() throws -> String {
+        
+        var url = URLComponents()
+        url.user = self.username
+        url.password = self.password
+        url.queryItems = self.queryItems
+        
+        var connectionString = "mongodb://"
+        
+        if self.username != nil && self.password != nil {
+            connectionString += "\(url.percentEncodedUser ?? ""):\(url.percentEncodedPassword ?? "")@"
+        }
+        
+        for (i, socketAddress) in self.socketAddress.enumerated() {
+            
+            guard let host = socketAddress.host else {
+                throw Database.Error.invalidConfiguration(message: "unsupprted socket address")
+            }
+            
+            if i != 0 {
+                connectionString += ","
+            }
+            
+            url.host = host
+            connectionString += url.percentEncodedHost ?? ""
+            
+            if let port = url.port {
+                connectionString += ":\(port)"
+            }
+        }
+        
+        if let database = self.database {
+            connectionString += "/\(database)"
+        }
+        
+        if self.queryItems?.isEmpty == false {
+            connectionString += "?\(url.percentEncodedQuery ?? "")"
+        }
+        
+        return connectionString
+    }
+}
+
 extension MongoDBDriver {
     
     static func connect(
@@ -65,27 +110,9 @@ extension MongoDBDriver {
         on eventLoop: EventLoop
     ) -> EventLoopFuture<DBConnection> {
         
-        guard let host = config.socketAddress.host else {
-            return eventLoop.makeFailedFuture(Database.Error.invalidConfiguration(message: "unsupprted socket address"))
-        }
-        
-        var url = URLComponents()
-        url.scheme = "mongodb"
-        url.host = host
-        url.port = config.socketAddress.port
-        url.user = config.username
-        url.password = config.password
-        url.queryItems = config.queryItems
-        
-        if let database = config.database {
-            url.path = "/\(database)"
-        }
-        
-        guard let connectionString = url.string else {
-            return eventLoop.makeFailedFuture(Database.Error.unknown)
-        }
-        
         do {
+            
+            let connectionString = try config.mongo_connection_string()
             
             let client = try MongoClient(connectionString, using: eventLoop, options: nil)
             

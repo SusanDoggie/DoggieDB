@@ -63,7 +63,7 @@ extension MySQLDriver {
         }
         
         let connection = MySQLConnection.connect(
-            to: config.socketAddress,
+            to: config.socketAddress[0],
             username: username,
             database: config.database ?? username,
             password: config.password,

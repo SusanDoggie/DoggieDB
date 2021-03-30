@@ -65,7 +65,7 @@ extension PostgreSQLDriver {
         }
         
         let connection = PostgresConnection.connect(
-            to: config.socketAddress,
+            to: config.socketAddress[0],
             tlsConfiguration: config.tlsConfiguration,
             logger: logger,
             on: eventLoop
