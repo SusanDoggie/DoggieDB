@@ -25,7 +25,7 @@
 
 extension DBModel {
     
-    public typealias Parent<To: _DBModel> = DBParent<Self, To> where To.ID: Hashable, To.ID: DBDataConvertible
+    public typealias Parent<To: _DBModel> = DBParent<Self, To> where To.ID: DBDataConvertible
 }
 
 extension ExpressibleByNilLiteral {
@@ -35,7 +35,7 @@ extension ExpressibleByNilLiteral {
     }
 }
 
-extension Optional: _DBModel where Wrapped: DBModel {
+extension Optional: _DBModel, Identifiable where Wrapped: DBModel {
     
     public var id: Wrapped.ID? {
         return self?.id
@@ -43,7 +43,7 @@ extension Optional: _DBModel where Wrapped: DBModel {
 }
 
 @propertyWrapper
-public struct DBParent<From: DBModel, To: _DBModel> where To.ID: Hashable, To.ID: DBDataConvertible {
+public struct DBParent<From: DBModel, To: _DBModel> where To.ID: DBDataConvertible {
     
     public typealias ParentKey = To.ID
     

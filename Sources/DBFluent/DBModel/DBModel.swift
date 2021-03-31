@@ -23,14 +23,12 @@
 //  THE SOFTWARE.
 //
 
-public protocol _DBModel {
-    
-    associatedtype ID
+public protocol _DBModel: Identifiable {
     
     var id: ID { get }
 }
 
-public protocol DBModel: _DBModel, Identifiable where ID: DBDataConvertible {
+public protocol DBModel: _DBModel where ID: DBDataConvertible {
     
     static var schema: String { get }
     
