@@ -25,20 +25,20 @@
 
 public protocol _DBModel {
     
-    associatedtype Key
+    associatedtype ID
     
-    var id: Key { get }
+    var id: ID { get }
 }
 
-public protocol DBModel: _DBModel where Key: Hashable, Key: DBDataConvertible {
+public protocol DBModel: _DBModel, Identifiable where ID: DBDataConvertible {
     
     static var schema: String { get }
     
     init()
     
-    var id: Key { get set }
+    var id: ID { get set }
     
-    var _$id: Field<Key> { get }
+    var _$id: Field<ID> { get }
     
     var _$fields: [DBAnyField<Self>] { get }
     
@@ -47,8 +47,8 @@ public protocol DBModel: _DBModel where Key: Hashable, Key: DBDataConvertible {
 
 extension DBModel {
     
-    public var _$id: Field<Key> {
-        guard let id = Mirror(reflecting: self).descendant("_id") as? Field<Key> else { fatalError("id must be declared using @DBField") }
+    public var _$id: Field<ID> {
+        guard let id = Mirror(reflecting: self).descendant("_id") as? Field<ID> else { fatalError("id must be declared using @DBField") }
         return id
     }
 }
