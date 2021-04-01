@@ -38,8 +38,8 @@ public struct DBConnectionSource {
 extension DBConnectionSource {
     
     public init(url: URL) throws {
-        guard let url = URLComponents(url: url, resolvingAgainstBaseURL: true) else { throw Database.Error.invalidURL }
-        try self.init(url: url)
+        self.driver = try url.driver()
+        self.configuration = try Database.Configuration(url: url)
     }
     
     public init(url: URLComponents) throws {

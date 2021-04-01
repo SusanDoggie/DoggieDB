@@ -58,11 +58,17 @@ extension Database {
         on eventLoop: EventLoop
     ) -> EventLoopFuture<DBConnection> {
         
-        guard let url = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
-            return eventLoop.makeFailedFuture(Database.Error.invalidURL)
+        do {
+            
+            let driver = try url.driver()
+            let config = try Database.Configuration(url: url)
+            
+            return self.connect(config: config, logger: logger, driver: driver, on: eventLoop)
+            
+        } catch let error {
+            
+            return eventLoop.makeFailedFuture(error)
         }
-        
-        return self.connect(url: url, logger: logger, on: eventLoop)
     }
     
     public static func connect(
