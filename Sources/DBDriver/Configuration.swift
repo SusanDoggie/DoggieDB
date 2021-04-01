@@ -123,7 +123,7 @@ extension Database {
 
 extension URL {
     
-    func driver() throws -> DBDriver {
+    public func driver() throws -> DBDriver {
         switch scheme {
         case "redis": return .redis
         case "mysql": return .mySQL
@@ -136,7 +136,7 @@ extension URL {
 
 extension URLComponents {
     
-    func driver() throws -> DBDriver {
+    public func driver() throws -> DBDriver {
         switch scheme {
         case "redis": return .redis
         case "mysql": return .mySQL
