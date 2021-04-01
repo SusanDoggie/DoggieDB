@@ -45,6 +45,21 @@ extension BSONDocument {
     }
 }
 
+extension BSON {
+    
+    public init(_ document: BSONDocument) {
+        self = .document(document)
+    }
+    
+    public init(_ array: [BSONDocument]) {
+        self = .array(array.map(BSON.init))
+    }
+    
+    public init(_ array: [BSON]) {
+        self = .array(array)
+    }
+}
+
 extension DBData {
     
     init(_ value: BSON) throws {
