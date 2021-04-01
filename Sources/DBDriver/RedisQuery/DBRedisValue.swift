@@ -27,7 +27,7 @@ import RediStack
 
 public struct DBRedisValue<Value: Codable> {
     
-    public let connection: RedisConnection
+    public let client: RedisConnection
     
     public let key: String
     
@@ -54,21 +54,21 @@ extension DBRedisValue {
 extension DBRedisQuery {
     
     public func value<Value>(of key: String, as type: Value.Type) -> DBRedisValue<Value> {
-        return DBRedisValue(connection: connection, key: key)
+        return DBRedisValue(client: client, key: key)
     }
 }
 
 extension DBRedisValue {
     
     public func fetch() -> EventLoopFuture<Value?> {
-        return self.connection.get(RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
+        return self.client.get(RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
     }
     
     public func store(_ value: Value) -> EventLoopFuture<Void> {
         do {
-            return try self.connection.set(RedisKey(key), to: encoder.encode(value, as: RESPValue.self))
+            return try self.client.set(RedisKey(key), to: encoder.encode(value, as: RESPValue.self))
         } catch {
-            return self.connection.eventLoop.makeFailedFuture(error)
+            return self.client.eventLoop.makeFailedFuture(error)
         }
     }
 }
@@ -76,22 +76,22 @@ extension DBRedisValue {
 extension DBRedisValue {
     
     public func increment() -> EventLoopFuture<Int> {
-        return self.connection.increment(RedisKey(key))
+        return self.client.increment(RedisKey(key))
     }
     
     public func decrement() -> EventLoopFuture<Int> {
-        return self.connection.decrement(RedisKey(key))
+        return self.client.decrement(RedisKey(key))
     }
     
     public func increment<T: FixedWidthInteger>(by amount: T) -> EventLoopFuture<T> {
-        return self.connection.increment(RedisKey(key), by: Int64(amount)).map { T($0) }
+        return self.client.increment(RedisKey(key), by: Int64(amount)).map { T($0) }
     }
     
     public func decrement<T: FixedWidthInteger>(by amount: T) -> EventLoopFuture<T> {
-        return self.connection.decrement(RedisKey(key), by: Int64(amount)).map { T($0) }
+        return self.client.decrement(RedisKey(key), by: Int64(amount)).map { T($0) }
     }
     
     public func increment<T: BinaryFloatingPoint>(by amount: T) -> EventLoopFuture<T> {
-        return self.connection.increment(RedisKey(key), by: Double(amount)).map(T.init)
+        return self.client.increment(RedisKey(key), by: Double(amount)).map(T.init)
     }
 }

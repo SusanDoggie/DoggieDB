@@ -27,6 +27,8 @@ import MongoSwift
 
 public struct DBMongoListCollectionsExpression<T>: DBMongoExpression {
     
+    let connection: MongoDBDriver.Connection
+    
     public let database: MongoDatabase
     
     public let session: ClientSession?

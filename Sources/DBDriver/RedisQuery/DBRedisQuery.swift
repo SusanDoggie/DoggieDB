@@ -27,24 +27,26 @@ import RediStack
 
 public struct DBRedisQuery {
     
-    let connection: RedisConnection
+    let connection: RedisDriver.Connection
+    
+    let client: RedisConnection
 }
 
 extension RedisDriver.Connection {
     
     public func redisQuery() -> DBRedisQuery {
-        return DBRedisQuery(connection: connection)
+        return DBRedisQuery(connection: self, client: client)
     }
 }
 
 extension DBRedisQuery {
     
     public func exists(_ keys: [String]) -> EventLoopFuture<Int> {
-        return self.connection.exists(keys.map { RedisKey($0) })
+        return self.client.exists(keys.map { RedisKey($0) })
     }
     
     public func delete(_ keys: [String]) -> EventLoopFuture<Int> {
-        return self.connection.delete(keys.map { RedisKey($0) })
+        return self.client.delete(keys.map { RedisKey($0) })
     }
 }
 
@@ -52,14 +54,14 @@ extension DBRedisQuery {
     
     public func fetch<Value: Codable>(_ keys: Set<String>, as: Value.Type, decoder: RedisDecoderProtocol = RedisDecoder()) -> EventLoopFuture<[String: Value]> {
         let keys = Array(keys)
-        return self.connection.mget(keys.map { RedisKey($0) }).flatMapThrowing { try Dictionary(uniqueKeysWithValues: zip(keys, $0.map { try decoder.decode(Value.self, from: $0) })) }
+        return self.client.mget(keys.map { RedisKey($0) }).flatMapThrowing { try Dictionary(uniqueKeysWithValues: zip(keys, $0.map { try decoder.decode(Value.self, from: $0) })) }
     }
     
     public func store<Value: Codable>(_ values: [String: Value], encoder: RedisEncoderProtocol = RedisEncoder()) -> EventLoopFuture<Void> {
         do {
-            return try self.connection.mset(Dictionary(uniqueKeysWithValues: values.map { try (RedisKey($0.key), encoder.encode($0.value, as: RESPValue.self)) }))
+            return try self.client.mset(Dictionary(uniqueKeysWithValues: values.map { try (RedisKey($0.key), encoder.encode($0.value, as: RESPValue.self)) }))
         } catch {
-            return self.connection.eventLoop.makeFailedFuture(error)
+            return self.client.eventLoop.makeFailedFuture(error)
         }
     }
 }

@@ -33,7 +33,7 @@ public struct DBRedisPubSub {
 extension RedisDriver.Connection {
     
     public func redisPubSub() -> DBRedisPubSub {
-        return DBRedisPubSub(connection: connection)
+        return DBRedisPubSub(connection: client)
     }
 }
 

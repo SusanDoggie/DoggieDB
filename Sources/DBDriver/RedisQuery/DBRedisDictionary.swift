@@ -27,7 +27,9 @@ import RediStack
 
 public struct DBRedisDictionary<Value: Codable> {
     
-    public let connection: RedisConnection
+    let connection: RedisDriver.Connection
+    
+    public let client: RedisConnection
     
     public let key: String
     
@@ -54,50 +56,50 @@ extension DBRedisDictionary {
 extension DBRedisQuery {
     
     public func dictionary<Value>(of key: String, as type: Value.Type) -> DBRedisDictionary<Value> {
-        return DBRedisDictionary(connection: connection, key: key)
+        return DBRedisDictionary(connection: connection, client: client, key: key)
     }
 }
 
 extension DBRedisDictionary {
     
     public func toDictionary() -> EventLoopFuture<[String: Value]> {
-        return self.connection.hgetall(from: RedisKey(key)).flatMapThrowing { try $0.mapValues { try decoder.decode(Value.self, from: $0) } }
+        return self.client.hgetall(from: RedisKey(key)).flatMapThrowing { try $0.mapValues { try decoder.decode(Value.self, from: $0) } }
     }
 }
 
 extension DBRedisDictionary {
     
     public func keys() -> EventLoopFuture<[String]> {
-        return self.connection.hkeys(in: RedisKey(key))
+        return self.client.hkeys(in: RedisKey(key))
     }
     
     public func values() -> EventLoopFuture<[Value]> {
-        return self.connection.hvals(in: RedisKey(key)).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
+        return self.client.hvals(in: RedisKey(key)).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
     }
 }
 
 extension DBRedisDictionary {
     
     public func exists(_ field: String) -> EventLoopFuture<Bool> {
-        return self.connection.hexists(field, in: RedisKey(key))
+        return self.client.hexists(field, in: RedisKey(key))
     }
     
     public func delete(_ fields: [String]) -> EventLoopFuture<Int> {
-        return self.connection.hdel(fields, from: RedisKey(key))
+        return self.client.hdel(fields, from: RedisKey(key))
     }
 }
 
 extension DBRedisDictionary {
     
     public func fetch(_ field: String) -> EventLoopFuture<Value?> {
-        return self.connection.hget(field, from: RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
+        return self.client.hget(field, from: RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
     }
     
     public func store(_ field: String, value: Value) -> EventLoopFuture<Bool> {
         do {
-            return try self.connection.hset(field, to: encoder.encode(value, as: RESPValue.self), in: RedisKey(key))
+            return try self.client.hset(field, to: encoder.encode(value, as: RESPValue.self), in: RedisKey(key))
         } catch {
-            return self.connection.eventLoop.makeFailedFuture(error)
+            return self.client.eventLoop.makeFailedFuture(error)
         }
     }
 }
@@ -105,10 +107,10 @@ extension DBRedisDictionary {
 extension DBRedisDictionary {
     
     public func increment<T: FixedWidthInteger>(_ field: String, by amount: T) -> EventLoopFuture<T> {
-        return self.connection.hincrby(Int64(amount), field: field, in: RedisKey(key)).map { T($0) }
+        return self.client.hincrby(Int64(amount), field: field, in: RedisKey(key)).map { T($0) }
     }
     
     public func increment<T: BinaryFloatingPoint>(_ field: String, by amount: T) -> EventLoopFuture<T> {
-        return self.connection.hincrbyfloat(Double(amount), field: field, in: RedisKey(key)).map(T.init)
+        return self.client.hincrbyfloat(Double(amount), field: field, in: RedisKey(key)).map(T.init)
     }
 }

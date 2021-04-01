@@ -36,16 +36,16 @@ extension RedisDriver {
         
         var driver: DBDriver { return .redis }
         
-        let connection: RedisConnection
+        let client: RedisConnection
         
-        var eventLoop: EventLoop { connection.eventLoop }
+        var eventLoop: EventLoop { client.eventLoop }
         
-        init(_ connection: RedisConnection) {
-            self.connection = connection
+        init(_ client: RedisConnection) {
+            self.client = client
         }
         
         func close() -> EventLoopFuture<Void> {
-            return connection.close()
+            return client.close()
         }
     }
 }
@@ -82,7 +82,7 @@ extension RedisDriver {
 extension RedisDriver.Connection {
     
     var isClosed: Bool {
-        return !self.connection.isConnected
+        return !self.client.isConnected
     }
 }
 
@@ -93,7 +93,7 @@ extension RedisDriver.Connection {
         _ binds: [RESPValue]
     ) -> EventLoopFuture<RESPValue> {
         
-        let result = binds.isEmpty ? self.connection.send(command: string) : self.connection.send(command: string, with: binds)
+        let result = binds.isEmpty ? self.client.send(command: string) : self.client.send(command: string, with: binds)
         
         return result.flatMapResult { result in
             Result {

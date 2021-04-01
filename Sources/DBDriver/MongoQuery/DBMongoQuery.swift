@@ -63,16 +63,16 @@ extension DBMongoQuery {
     
     public func collection(_ name: String) -> DBMongoCollectionExpression<BSONDocument> {
         guard let database = connection.database else { fatalError("database not selected.") }
-        return DBMongoCollectionExpression(database: database, session: session, name: name)
+        return DBMongoCollectionExpression(connection: connection, database: database, session: session, name: name)
     }
     
     public func createCollection(_ name: String) -> DBMongoCreateCollectionExpression<BSONDocument> {
         guard let database = connection.database else { fatalError("database not selected.") }
-        return DBMongoCreateCollectionExpression(database: database, session: session, name: name)
+        return DBMongoCreateCollectionExpression(connection: connection, database: database, session: session, name: name)
     }
     
     public func collections() -> DBMongoListCollectionsExpression<BSONDocument> {
         guard let database = connection.database else { fatalError("database not selected.") }
-        return DBMongoListCollectionsExpression(database: database, session: session)
+        return DBMongoListCollectionsExpression(connection: connection, database: database, session: session)
     }
 }

@@ -27,6 +27,8 @@ import MongoSwift
 
 public struct DBMongoCreateCollectionExpression<T: Codable>: DBMongoExpression {
     
+    let connection: MongoDBDriver.Connection
+    
     public let database: MongoDatabase
     
     public let session: ClientSession?
@@ -39,7 +41,7 @@ public struct DBMongoCreateCollectionExpression<T: Codable>: DBMongoExpression {
 extension DBMongoCreateCollectionExpression {
     
     public func withType<U>(_: U.Type) -> DBMongoCreateCollectionExpression<U> {
-        return DBMongoCreateCollectionExpression<U>(database: database, session: session, name: name, options: options)
+        return DBMongoCreateCollectionExpression<U>(connection: connection, database: database, session: session, name: name, options: options)
     }
 }
 
