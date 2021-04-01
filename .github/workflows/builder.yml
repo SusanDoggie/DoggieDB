@@ -53,7 +53,7 @@ jobs:
     - name: Set up MySQL databases and privileges
       run: |
         mysql -u${{ matrix.username }} --batch <<-'SQL'
-          CREATE USER $MYSQL_USERNAME@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
+          CREATE USER $MYSQL_USERNAME@127.0.0.1 IDENTIFIED BY '$MYSQL_PASSWORD';
           CREATE DATABASE $MYSQL_DATABASE;
           GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@127.0.0.1;
         SQL
