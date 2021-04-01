@@ -29,22 +29,45 @@ public struct DBConnectionSource {
     
     public let configuration: Database.Configuration
     
-    public init(driver: DBDriver, configuration: Database.Configuration) {
+    public var maxConnectionsPerEventLoop: Int
+    
+    public var requestTimeout: TimeAmount
+    
+    public init(
+        driver: DBDriver,
+        configuration: Database.Configuration,
+        maxConnectionsPerEventLoop: Int = 1,
+        requestTimeout: TimeAmount = .seconds(10)
+    ) {
         self.driver = driver
         self.configuration = configuration
+        self.maxConnectionsPerEventLoop = maxConnectionsPerEventLoop
+        self.requestTimeout = requestTimeout
     }
 }
 
 extension DBConnectionSource {
     
-    public init(url: URL) throws {
+    public init(
+        url: URL,
+        maxConnectionsPerEventLoop: Int = 1,
+        requestTimeout: TimeAmount = .seconds(10)
+    ) throws {
         self.driver = try url.driver()
         self.configuration = try Database.Configuration(url: url)
+        self.maxConnectionsPerEventLoop = maxConnectionsPerEventLoop
+        self.requestTimeout = requestTimeout
     }
     
-    public init(url: URLComponents) throws {
+    public init(
+        url: URLComponents,
+        maxConnectionsPerEventLoop: Int = 1,
+        requestTimeout: TimeAmount = .seconds(10)
+    ) throws {
         self.driver = try url.driver()
         self.configuration = try Database.Configuration(url: url)
+        self.maxConnectionsPerEventLoop = maxConnectionsPerEventLoop
+        self.requestTimeout = requestTimeout
     }
 }
 

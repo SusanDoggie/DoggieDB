@@ -45,9 +45,9 @@ public class DatabasePool {
     
     public init(
         source: DBConnectionSource,
-        maxConnectionsPerEventLoop: Int = 1,
-        requestTimeout: TimeAmount = .seconds(10),
-        logger: Logger = .init(label: "codes.DBVapor.pool"),
+        maxConnectionsPerEventLoop: Int,
+        requestTimeout: TimeAmount,
+        logger: Logger,
         on eventLoopGroup: EventLoopGroup
     ) {
         self.pool = .init(
@@ -77,6 +77,7 @@ public class Databases {
     
     public let eventLoopGroup: EventLoopGroup
     public let threadPool: NIOThreadPool
+    public let logger: Logger
     
     private var configurations: [DatabaseID: DBConnectionSource]
     private var defaultID: DatabaseID?
@@ -85,9 +86,10 @@ public class Databases {
     
     private var lock: Lock
     
-    public init(threadPool: NIOThreadPool, on eventLoopGroup: EventLoopGroup) {
+    public init(threadPool: NIOThreadPool, logger: Logger, on eventLoopGroup: EventLoopGroup) {
         self.eventLoopGroup = eventLoopGroup
         self.threadPool = threadPool
+        self.logger = logger
         self.configurations = [:]
         self.pools = [:]
         self.lock = .init()
@@ -176,7 +178,13 @@ extension Databases {
             return existing
         }
         
-        let pool = DatabasePool(source: configuration, on: eventLoopGroup)
+        let pool = DatabasePool(
+            source: configuration,
+            maxConnectionsPerEventLoop: configuration.maxConnectionsPerEventLoop,
+            requestTimeout: configuration.requestTimeout,
+            logger: logger,
+            on: eventLoopGroup
+        )
         self.pools[id] = pool
         
         return pool

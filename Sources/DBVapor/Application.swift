@@ -30,8 +30,8 @@ extension Application {
         let databases: Databases
         let migrations: Migrations
         
-        init(threadPool: NIOThreadPool, on eventLoopGroup: EventLoopGroup) {
-            self.databases = Databases(threadPool: threadPool, on: eventLoopGroup)
+        init(threadPool: NIOThreadPool, logger: Logger, on eventLoopGroup: EventLoopGroup) {
+            self.databases = Databases(threadPool: threadPool, logger: logger, on: eventLoopGroup)
             self.migrations = Migrations()
         }
     }
@@ -85,7 +85,7 @@ extension Application {
     
     private var _storage: Storage {
         if self.storage[Key.self] == nil {
-            self.storage[Key.self] = Storage(threadPool: self.threadPool, on: self.eventLoopGroup)
+            self.storage[Key.self] = Storage(threadPool: self.threadPool, logger: self.logger, on: self.eventLoopGroup)
             self.lifecycle.use(Lifecycle())
             self.commands.use(MigrateCommand(), as: "migrate")
         }
