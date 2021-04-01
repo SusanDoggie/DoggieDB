@@ -62,13 +62,13 @@ extension Database.Configuration {
     func mongo_connection_string() throws -> String {
         
         var url = URLComponents()
-        url.user = self.username
+        url.user = self.user
         url.password = self.password
         url.queryItems = self.queryItems
         
         var connectionString = "mongodb://"
         
-        if self.username != nil && self.password != nil {
+        if self.user != nil && self.password != nil {
             connectionString += "\(url.percentEncodedUser ?? ""):\(url.percentEncodedPassword ?? "")@"
         }
         

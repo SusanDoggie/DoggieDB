@@ -60,8 +60,8 @@ extension PostgreSQLDriver {
         on eventLoop: EventLoop
     ) -> EventLoopFuture<DBConnection> {
         
-        guard let username = config.username else {
-            return eventLoop.makeFailedFuture(Database.Error.invalidConfiguration(message: "username is missing."))
+        guard let user = config.user else {
+            return eventLoop.makeFailedFuture(Database.Error.invalidConfiguration(message: "user is missing."))
         }
         
         let connection = PostgresConnection.connect(
@@ -74,7 +74,7 @@ extension PostgreSQLDriver {
         return connection.flatMap { connection in
             
             connection.authenticate(
-                username: username,
+                username: user,
                 database: config.database,
                 password: config.password,
                 logger: logger
