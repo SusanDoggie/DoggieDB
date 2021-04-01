@@ -33,6 +33,7 @@ let package = Package(
     ],
     products: [
         .library(name: "DoggieDB", targets: ["DoggieDB"]),
+        .library(name: "DBVapor", targets: ["DBVapor"]),
         .executable(name: "DBBrowser", targets: ["DBBrowser"]),
     ],
     dependencies: [
