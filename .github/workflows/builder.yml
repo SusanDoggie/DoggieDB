@@ -55,7 +55,7 @@ jobs:
         mysql -u${{ matrix.username }} --batch <<-'SQL'
           CREATE USER $MYSQL_USERNAME@localhost IDENTIFIED BY '$MYSQL_PASSWORD';
           CREATE DATABASE $MYSQL_DATABASE;
-          GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@localhost;
+          GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@127.0.0.1;
         SQL
     - name: Install PostgreSQL
       run: |
@@ -76,7 +76,7 @@ jobs:
       with:
         action: test
       env:
-        MYSQL_HOST: 127.0.0.1
+        MYSQL_HOST: localhost
         POSTGRES_HOST: localhost
         REDIS_HOST: localhost
         MONGO_HOST: localhost
