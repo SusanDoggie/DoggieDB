@@ -72,7 +72,7 @@ extension Application {
 
 extension Request {
     
-    public func database(_ id: DatabaseID? = nil) -> EventLoopFuture<DBConnection> {
+    public func database(_ id: DatabaseID? = nil) -> DatabasePool {
         return self.application.database(id)
     }
     
@@ -92,7 +92,7 @@ extension Application {
         return self.storage[Key.self]!
     }
     
-    public func database(_ id: DatabaseID? = nil) -> EventLoopFuture<DBConnection> {
+    public func database(_ id: DatabaseID? = nil) -> DatabasePool {
         return self.databases.database(id, logger: self.logger, on: self.eventLoopGroup.next())
     }
     

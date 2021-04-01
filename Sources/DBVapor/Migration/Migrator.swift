@@ -25,12 +25,12 @@
 
 public struct Migrator {
 
-    public let databaseFactory: (DatabaseID?) -> EventLoopFuture<DBConnection>
+    public let databaseFactory: (DatabaseID?) -> DatabasePool
     public let migrations: Migrations
     public let eventLoop: EventLoop
     
     public init(
-        databaseFactory: @escaping (DatabaseID?) -> EventLoopFuture<DBConnection>,
+        databaseFactory: @escaping (DatabaseID?) -> DatabasePool,
         migrations: Migrations,
         on eventLoop: EventLoop
     ) {

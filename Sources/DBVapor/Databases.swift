@@ -39,6 +39,40 @@ extension DatabaseID: ExpressibleByStringLiteral {
     }
 }
 
+public class DatabasePool {
+    
+    let pool: EventLoopGroupConnectionPool<DBConnectionPoolSource>
+    
+    public init(
+        source: DBConnectionSource,
+        maxConnectionsPerEventLoop: Int = 1,
+        requestTimeout: TimeAmount = .seconds(10),
+        logger: Logger = .init(label: "codes.DBVapor.pool"),
+        on eventLoopGroup: EventLoopGroup
+    ) {
+        self.pool = .init(
+            source: source,
+            maxConnectionsPerEventLoop: maxConnectionsPerEventLoop,
+            requestTimeout: requestTimeout,
+            logger: logger,
+            on: eventLoopGroup
+        )
+    }
+    
+    public func withConnection<Result>(
+        logger: Logger? = nil,
+        on eventLoop: EventLoop? = nil,
+        _ closure: @escaping (DBConnection) -> EventLoopFuture<Result>
+    ) -> EventLoopFuture<Result> {
+        
+        return self.pool.withConnection(logger: logger, on: eventLoop) { closure($0.connection) }
+    }
+    
+    func shutdown() {
+        pool.shutdown()
+    }
+}
+
 public class Databases {
     
     public let eventLoopGroup: EventLoopGroup
@@ -47,7 +81,7 @@ public class Databases {
     private var configurations: [DatabaseID: DBConnectionSource]
     private var defaultID: DatabaseID?
     
-    private var pools: [DatabaseID: EventLoopGroupConnectionPool<DBConnectionPoolSource>]
+    private var pools: [DatabaseID: DatabasePool]
     
     private var lock: Lock
     
@@ -113,6 +147,7 @@ extension Databases {
     public func shutdown() {
         self.lock.lock()
         defer { self.lock.unlock() }
+        print("shutdown")
         for driver in self.pools.values {
             driver.shutdown()
         }
@@ -126,7 +161,7 @@ extension Databases {
         _ id: DatabaseID? = nil,
         logger: Logger,
         on eventLoop: EventLoop
-    ) -> EventLoopFuture<DBConnection> {
+    ) -> DatabasePool {
         
         self.lock.lock()
         defer { self.lock.unlock() }
@@ -137,18 +172,13 @@ extension Databases {
         var logger = logger
         logger[metadataKey: "database-id"] = .string(id.string)
         
-        let pool: EventLoopGroupConnectionPool<DBConnectionPoolSource>
-        
         if let existing = self.pools[id] {
-            
-            pool = existing
-            
-        } else {
-            
-            pool = .init(source: configuration, on: eventLoopGroup)
-            self.pools[id] = pool
+            return existing
         }
         
-        return pool.requestConnection(logger: logger, on: eventLoop).map { $0.connection }
+        let pool = DatabasePool(source: configuration, on: eventLoopGroup)
+        self.pools[id] = pool
+        
+        return pool
     }
 }
