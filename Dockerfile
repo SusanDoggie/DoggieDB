@@ -7,7 +7,8 @@ RUN npx webpack --mode production
 
 FROM swift AS builder
 
-RUN apt-get update && apt-get install -y libmongoc-1.0-0 libbson-1.0-0 libssl-dev libsqlite3-dev \
+RUN apt-get update \
+ && apt-get install -y libmongoc-1.0-0 libbson-1.0-0 libssl-dev libsqlite3-dev libjavascriptcoregtk-4.0-dev \
  && rm -r /var/lib/apt/lists/*
 
 WORKDIR /worker
@@ -26,7 +27,8 @@ RUN swift build -c release \
 
 FROM swift:slim
 
-RUN apt-get update && apt-get install -y libmongoc-1.0-0 libbson-1.0-0 libssl-dev libsqlite3-dev \
+RUN apt-get update \
+ && apt-get install -y libmongoc-1.0-0 libbson-1.0-0 libssl-dev libsqlite3-dev libjavascriptcoregtk-4.0-dev \
  && rm -r /var/lib/apt/lists/*
 
 WORKDIR /app
