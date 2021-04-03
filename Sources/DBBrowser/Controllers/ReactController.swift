@@ -28,21 +28,30 @@ public class ReactController: RouteCollection {
     public var root: String
     public var bundle: String
     
-    public init(bundle: String, root: String = "root") {
+    let context: JSContext = JSContext()
+    
+    public init(bundle: String, serverScript: URL, root: String = "root") throws {
         self.bundle = bundle
         self.root = root
+        
+        self.context["self"] = self.context.global
+        try self.context.evaluateScript(String(contentsOf: serverScript))
+        
+        if let exception = self.context.exception {
+            throw Error(message: exception.stringValue)
+        }
     }
     
     public func boot(routes: RoutesBuilder) throws {
         
         routes.get { req -> Response in
-            let response = Response(status: .ok, body: .init(string: self.html))
+            let response = try Response(status: .ok, body: .init(string: self.html(req.url.path)))
             response.headers.contentType = .html
             return response
         }
         
         routes.get("**") { req -> Response in
-            let response = Response(status: .ok, body: .init(string: self.html))
+            let response = try Response(status: .ok, body: .init(string: self.html(req.url.path)))
             response.headers.contentType = .html
             return response
         }
@@ -51,7 +60,22 @@ public class ReactController: RouteCollection {
 
 extension ReactController {
     
-    private var html: String {
+    public struct Error: Swift.Error {
+        
+        public var message: String?
+    }
+    
+    private func html(_ path: String) throws -> String {
+        
+        let result = context.global.invokeMethod("render", withArguments: [JSObject(string: path, in: context)])
+        
+        if let exception = context.exception {
+            throw Error(message: exception.stringValue)
+        }
+        
+        let html = result["html"].stringValue ?? ""
+        let css = result["css"].stringValue ?? ""
+        
         return """
         <!doctype html>
         <html>
@@ -71,12 +95,10 @@ extension ReactController {
                         height: 100%;
                     }
                 </style>
+                \(css)
             </head>
             <body>
-                <noscript>
-                    You need to enable JavaScript to view this website.
-                </noscript>
-                <div id="\(root)"></div>
+                <div id="\(root)">\(html)</div>
                 <script src="\(bundle)"></script>
             </body>
         </html>

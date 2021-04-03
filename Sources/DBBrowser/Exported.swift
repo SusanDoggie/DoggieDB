@@ -29,3 +29,4 @@
 
 @_exported import DBVapor
 
+@_exported import SwiftJS
