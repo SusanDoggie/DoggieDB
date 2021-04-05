@@ -134,6 +134,8 @@ jobs:
       run: apt-get install -y libmongoc-1.0-0 libssl-dev
     - name: Install sqlite3
       run: apt-get install -y libsqlite3-dev
+    - name: Install JavaScriptCore
+      run: apt-get update && apt-get install -y libjavascriptcoregtk-4.0-dev
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
@@ -189,6 +191,11 @@ jobs:
           - mysql:5.7
           - mysql:8.0
           - mariadb
+        include:
+          - image: centos8
+            jsc: webkit2gtk3-jsc-devel
+          - image: amazonlinux2
+            jsc: webkitgtk4-jsc-devel
     steps:
     - uses: actions/checkout@v1
       with:
@@ -199,6 +206,8 @@ jobs:
       run: yum install -y mongo-c-driver openssl-devel
     - name: Install sqlite3
       run: yum install -y sqlite-devel
+    - name: Install JavaScriptCore
+      run: yum update -y && yum install -y ${{ matrix.jsc }}
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
@@ -265,6 +274,8 @@ jobs:
       run: apt-get install -y libmongoc-1.0-0 libssl-dev
     - name: Install sqlite3
       run: apt-get install -y libsqlite3-dev
+    - name: Install JavaScriptCore
+      run: apt-get update && apt-get install -y libjavascriptcoregtk-4.0-dev
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
@@ -321,6 +332,11 @@ jobs:
           - mysql:5.7
           - mysql:8.0
           - mariadb
+        include:
+          - image: nightly-centos8
+            jsc: webkit2gtk3-jsc-devel
+          - image: nightly-amazonlinux2
+            jsc: webkitgtk4-jsc-devel
     steps:
     - uses: actions/checkout@v1
       with:
@@ -331,6 +347,8 @@ jobs:
       run: yum install -y mongo-c-driver openssl-devel
     - name: Install sqlite3
       run: yum install -y sqlite-devel
+    - name: Install JavaScriptCore
+      run: yum update -y && yum install -y ${{ matrix.jsc }}
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
