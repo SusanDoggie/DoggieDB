@@ -68,13 +68,14 @@ jobs:
     - name: Start MongoDB
       run: |
         brew services start mongodb-community
-        read -r -d '' SCRIPT <<-EOJS
+        SCRIPT=$(cat <<-EOJS
           db.createUser({
             user: $(_js_escape "$MONGO_USERNAME"),
             pwd: $(_js_escape "$MONGO_PASSWORD"),
             roles: [ { role: 'root', db: $(_js_escape "$MONGO_AUTHSOURCE") } ]
           })
         EOJS
+        )
         mongo --host localhost --port 27017 --eval "$SCRIPT"
     - name: Build
       uses: SusanDoggie/swift-action@main
