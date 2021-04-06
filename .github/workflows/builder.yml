@@ -48,7 +48,7 @@ jobs:
     - name: Start MySQL
       run: brew services start ${{ matrix.formula }}
     - name: Waiting MySQL
-      run: until echo | mysql -u${{ matrix.username }}; do sleep 1; done
+      run: until echo | mysql -u${{ matrix.username }} &> /dev/null; do sleep 1; done
       timeout-minutes: 1
     - name: Set up MySQL databases and privileges
       run: |
