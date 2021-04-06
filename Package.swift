@@ -38,7 +38,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/SusanDoggie/Doggie.git", .branch("main")),
-        .package(url: "https://github.com/SusanDoggie/SwiftJS.git", .branch("main")),
+        .package(url: "https://github.com/SusanDoggie/SwiftJS.git", from: "1.2.1"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.0.0"),
         .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "1.0.0"),
         .package(url: "https://gitlab.com/mordil/RediStack.git", from: "1.0.0"),
