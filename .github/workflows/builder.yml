@@ -66,8 +66,12 @@ jobs:
     - name: Install Redis
       run: brew install redis && brew services start redis
     - name: Start MongoDB
+      run: brew services start mongodb-community
+    - name: Waiting MongoDB
+      run: until echo | mongo 'admin' --eval 'quit(0)' &> /dev/null; do sleep 1; done
+      timeout-minutes: 1
+    - name: Set up MongoDB databases and privileges
       run: |
-        brew services start mongodb-community
         SCRIPT=$(cat <<-EOJS
           db.createUser({
             user: "$MONGO_USERNAME",
@@ -76,7 +80,7 @@ jobs:
           })
         EOJS
         )
-        mongo --host localhost --port 27017 --eval "$SCRIPT"
+        mongo 'admin' --eval "$SCRIPT"
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
