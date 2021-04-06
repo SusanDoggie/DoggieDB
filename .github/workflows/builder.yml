@@ -48,7 +48,7 @@ jobs:
     - name: Start MySQL
       run: brew services start ${{ matrix.formula }}
     - name: Waiting MySQL
-      run: until echo | mysql -u${{ matrix.username }} &> /dev/null; do sleep 1; done
+      run: until echo | mysql -u${{ matrix.username }}; do sleep 1; done
       timeout-minutes: 1
     - name: Set up MySQL databases and privileges
       run: |
@@ -68,7 +68,7 @@ jobs:
     - name: Start MongoDB
       run: brew services start mongodb-community
     - name: Waiting MongoDB
-      run: until echo | mongo 'admin' --eval 'quit(0)' &> /dev/null; do sleep 1; done
+      run: until echo | mongo 'admin' --eval 'quit(0)'; do sleep 1; done
       timeout-minutes: 1
     - name: Set up MongoDB databases and privileges
       run: |
