@@ -70,9 +70,9 @@ jobs:
         brew services start mongodb-community
         SCRIPT=$(cat <<-EOJS
           db.createUser({
-            user: $(_js_escape "$MONGO_USERNAME"),
-            pwd: $(_js_escape "$MONGO_PASSWORD"),
-            roles: [ { role: 'root', db: $(_js_escape "$MONGO_AUTHSOURCE") } ]
+            user: "$MONGO_USERNAME",
+            pwd: "$MONGO_PASSWORD",
+            roles: [ { role: 'root', db: "$MONGO_AUTHSOURCE" } ]
           })
         EOJS
         )
