@@ -66,7 +66,15 @@ jobs:
     - name: Install Redis
       run: brew install redis && brew services start redis
     - name: Start MongoDB
-      run: brew services start mongodb-community
+      run: |
+        brew services start mongodb-community
+        mongo --host localhost --port 27017 --eval <<-EOJS
+          db.createUser({
+            user: $(_js_escape "$MONGO_USERNAME"),
+            pwd: $(_js_escape "$MONGO_PASSWORD"),
+            roles: [ { role: 'root', db: $(_js_escape "$MONGO_AUTHSOURCE") } ]
+          })
+        EOJS
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
