@@ -57,6 +57,14 @@ public enum MongoPredicateValue {
     case value(BSONConvertible)
 }
 
+public func == (lhs: MongoPredicateValue, rhs: _OptionalNilComparisonType) -> MongoPredicateExpression {
+    return .equal(lhs, .value(BSON.null))
+}
+
+public func != (lhs: MongoPredicateValue, rhs: _OptionalNilComparisonType) -> MongoPredicateExpression {
+    return .notEqual(lhs, .value(BSON.null))
+}
+
 public func == <T: BSONConvertible>(lhs: MongoPredicateValue, rhs: T) -> MongoPredicateExpression {
     return .equal(lhs, .value(rhs))
 }
@@ -79,6 +87,14 @@ public func <= <T: BSONConvertible>(lhs: MongoPredicateValue, rhs: T) -> MongoPr
 
 public func >= <T: BSONConvertible>(lhs: MongoPredicateValue, rhs: T) -> MongoPredicateExpression {
     return .greaterThanOrEqualTo(lhs, .value(rhs))
+}
+
+public func == (lhs: _OptionalNilComparisonType, rhs: MongoPredicateValue) -> MongoPredicateExpression {
+    return .equal(.value(BSON.null), rhs)
+}
+
+public func != (lhs: _OptionalNilComparisonType, rhs: MongoPredicateValue) -> MongoPredicateExpression {
+    return .notEqual(.value(BSON.null), rhs)
 }
 
 public func == <T: BSONConvertible>(lhs: T, rhs: MongoPredicateValue) -> MongoPredicateExpression {

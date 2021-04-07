@@ -199,6 +199,14 @@ public func >= (lhs: SQLPredicateValue, rhs: SQLPredicateValue) -> SQLPredicateE
     return .greaterThanOrEqualTo(lhs, rhs)
 }
 
+public func == (lhs: SQLPredicateValue, rhs: _OptionalNilComparisonType) -> SQLPredicateExpression {
+    return .equal(lhs, .value(nil))
+}
+
+public func != (lhs: SQLPredicateValue, rhs: _OptionalNilComparisonType) -> SQLPredicateExpression {
+    return .notEqual(lhs, .value(nil))
+}
+
 public func == <T: DBDataConvertible>(lhs: SQLPredicateValue, rhs: T) -> SQLPredicateExpression {
     return .equal(lhs, .value(rhs.toDBData()))
 }
@@ -221,6 +229,14 @@ public func <= <T: DBDataConvertible>(lhs: SQLPredicateValue, rhs: T) -> SQLPred
 
 public func >= <T: DBDataConvertible>(lhs: SQLPredicateValue, rhs: T) -> SQLPredicateExpression {
     return .greaterThanOrEqualTo(lhs, .value(rhs.toDBData()))
+}
+
+public func == (lhs: _OptionalNilComparisonType, rhs: SQLPredicateValue) -> SQLPredicateExpression {
+    return .equal(.value(nil), rhs)
+}
+
+public func != (lhs: _OptionalNilComparisonType, rhs: SQLPredicateValue) -> SQLPredicateExpression {
+    return .notEqual(.value(nil), rhs)
 }
 
 public func == <T: DBDataConvertible>(lhs: T, rhs: SQLPredicateValue) -> SQLPredicateExpression {
