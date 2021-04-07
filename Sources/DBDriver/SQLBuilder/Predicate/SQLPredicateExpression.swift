@@ -95,8 +95,8 @@ extension SQLPredicateExpression {
             x.serialize(into: &builder)
             builder.append(")")
             
-        case let .equal(lhs, rhs): builder.builder.append(.nullSafeEqual(lhs, rhs))
-        case let .notEqual(lhs, rhs): builder.builder.append(.nullSafeNotEqual(lhs, rhs))
+        case let .equal(lhs, rhs): builder.append(.nullSafeEqual(lhs, rhs))
+        case let .notEqual(lhs, rhs): builder.append(.nullSafeNotEqual(lhs, rhs))
         case let .lessThan(lhs, rhs): builder.append("\(lhs) < \(rhs)" as SQLRaw)
         case let .greaterThan(lhs, rhs): builder.append("\(lhs) > \(rhs)" as SQLRaw)
         case let .lessThanOrEqualTo(lhs, rhs): builder.append("\(lhs) <= \(rhs)" as SQLRaw)
@@ -108,9 +108,9 @@ extension SQLPredicateExpression {
             builder.append("\(x) IN (" as SQLRaw)
             for (i, item) in list.enumerated() {
                 if i != 0 {
-                    builder.builder.append(",")
+                    builder.append(",")
                 }
-                builder.builder.append(item)
+                builder.append(item)
             }
             builder.append(")")
             
