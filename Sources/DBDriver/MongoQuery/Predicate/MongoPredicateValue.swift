@@ -102,6 +102,14 @@ public func >= <T: BSONConvertible>(lhs: T, rhs: MongoPredicateValue) -> MongoPr
     return .greaterThanOrEqualTo(.value(lhs), rhs)
 }
 
+public func ~= (lhs: NSRegularExpression, rhs: MongoPredicateValue) -> MongoPredicateExpression {
+    return .matching(rhs, Regex(lhs))
+}
+
+public func ~= (lhs: Regex, rhs: MongoPredicateValue) -> MongoPredicateExpression {
+    return .matching(rhs, lhs)
+}
+
 public func ~= <C: Collection>(lhs: C, rhs: MongoPredicateValue) -> MongoPredicateExpression where C.Element: BSONConvertible {
     return .containsIn(.value(Array(lhs)), rhs)
 }
@@ -124,6 +132,14 @@ public func ~= <T: BSONConvertible>(lhs: PartialRangeUpTo<T>, rhs: MongoPredicat
 
 public func ~= <T: BSONConvertible>(lhs: PartialRangeThrough<T>, rhs: MongoPredicateValue) -> MongoPredicateExpression {
     return lhs.upperBound <= rhs
+}
+
+public func =~ (lhs: MongoPredicateValue, rhs: NSRegularExpression) -> MongoPredicateExpression {
+    return .matching(lhs, Regex(rhs))
+}
+
+public func =~ (lhs: MongoPredicateValue, rhs: Regex) -> MongoPredicateExpression {
+    return .matching(lhs, rhs)
 }
 
 public func =~ <C: Collection>(lhs: MongoPredicateValue, rhs: C) -> MongoPredicateExpression where C.Element: BSONConvertible {

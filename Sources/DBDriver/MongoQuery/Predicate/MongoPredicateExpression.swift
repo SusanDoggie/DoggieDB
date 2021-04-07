@@ -43,6 +43,8 @@ public indirect enum MongoPredicateExpression {
     
     case notContainsIn(MongoPredicateValue, MongoPredicateValue)
     
+    case matching(MongoPredicateValue, Regex)
+    
     case and(MongoPredicateExpression, MongoPredicateExpression)
     
     case or(MongoPredicateExpression, MongoPredicateExpression)
