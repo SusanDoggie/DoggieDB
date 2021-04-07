@@ -30,6 +30,17 @@ public protocol SQLWhereExpression: SQLBuilderProtocol {
 extension SQLWhereExpression {
     
     /// Builds  `WHERE` clauses.
+    public func `where`(_ predicate: SQLRaw) -> Self {
+        
+        var builder = self
+        
+        builder.builder.append("WHERE")
+        builder.builder.append(predicate)
+        
+        return builder
+    }
+    
+    /// Builds  `WHERE` clauses.
     public func `where`(_ predicate: (SQLPredicateBuilder) -> SQLPredicateExpression) -> Self {
         
         var builder = self
