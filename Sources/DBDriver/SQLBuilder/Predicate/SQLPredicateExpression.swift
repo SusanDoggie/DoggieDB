@@ -65,7 +65,7 @@ extension SQLRaw.StringInterpolation {
     
     mutating func appendInterpolation(_ value: SQLPredicateValue) {
         switch value {
-        case let .name(name): self.appendLiteral(name)
+        case let .name(name): self.appendInterpolation(identifier: name)
         case let .value(value): self.appendInterpolation(value)
         }
     }
