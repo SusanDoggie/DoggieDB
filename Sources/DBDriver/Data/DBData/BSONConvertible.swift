@@ -35,6 +35,13 @@ extension BSON: BSONConvertible {
     }
 }
 
+extension BSONDocument: BSONConvertible {
+    
+    public func toBSON() throws -> BSON {
+        return BSON(self)
+    }
+}
+
 extension Optional: BSONConvertible where Wrapped: BSONConvertible {
     
     public func toBSON() throws -> BSON {
