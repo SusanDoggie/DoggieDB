@@ -82,7 +82,12 @@ extension SQLPredicateExpression {
     
     func serialize(into builder: inout SQLBuilder) {
         switch self {
-        case let .not(x): builder.append("NOT (\(x))")
+        case let .not(x):
+            
+            builder.append("NOT (")
+            x.serialize(into: &builder)
+            builder.append(")")
+            
         case let .equal(lhs, rhs): builder.builder.append(.nullSafeEqual(lhs, rhs))
         case let .notEqual(lhs, rhs): builder.builder.append(.nullSafeNotEqual(lhs, rhs))
         case let .lessThan(lhs, rhs): builder.append("\(lhs) < \(rhs)" as SQLRaw)
