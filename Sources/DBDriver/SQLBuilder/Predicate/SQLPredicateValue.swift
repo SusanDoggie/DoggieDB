@@ -32,79 +32,6 @@ public enum SQLPredicateValue {
     case raw(SQLRaw)
 }
 
-extension SQLPredicateValue: ExpressibleByNilLiteral {
-    
-    public init(nilLiteral value: Void) {
-        self = .value(nil)
-    }
-}
-
-extension SQLPredicateValue: ExpressibleByBooleanLiteral {
-    
-    public init(booleanLiteral value: BooleanLiteralType) {
-        self = .value(DBData(value))
-    }
-}
-
-extension SQLPredicateValue: ExpressibleByIntegerLiteral {
-    
-    public init(integerLiteral value: IntegerLiteralType) {
-        self = .value(DBData(value))
-    }
-}
-
-extension SQLPredicateValue: ExpressibleByFloatLiteral {
-    
-    public init(floatLiteral value: FloatLiteralType) {
-        self = .value(DBData(value))
-    }
-}
-
-extension SQLPredicateValue: ExpressibleByStringLiteral {
-    
-    public init(stringLiteral value: StringLiteralType) {
-        self = .value(DBData(value))
-    }
-}
-
-extension SQLPredicateValue: ExpressibleByArrayLiteral {
-    
-    public init(arrayLiteral elements: DBData ...) {
-        self = .value(DBData(elements))
-    }
-}
-
-extension SQLPredicateValue: ExpressibleByDictionaryLiteral {
-    
-    public init(dictionaryLiteral elements: (String, DBData) ...) {
-        self = .value(DBData(Dictionary(uniqueKeysWithValues: elements)))
-    }
-}
-
-extension SQLPredicateValue: ExpressibleByStringInterpolation {
-    
-    public init(stringInterpolation: SQLRaw.StringInterpolation) {
-        self = .raw(SQLRaw(stringInterpolation: stringInterpolation))
-    }
-}
-
-extension SQLPredicateValue {
-    
-    var isNil: Bool {
-        switch self {
-        case let .value(value): return value.isNil
-        default: return false
-        }
-    }
-    
-    var isBool: Bool {
-        switch self {
-        case let .value(value): return value.isBool
-        default: return false
-        }
-    }
-}
-
 extension SQLPredicateValue {
     
     public func between(from: SQLPredicateValue, to: SQLPredicateValue) -> SQLPredicateExpression {
@@ -159,50 +86,50 @@ public func >= (lhs: SQLPredicateValue, rhs: SQLPredicateValue) -> SQLPredicateE
     return .greaterThanOrEqualTo(lhs, rhs)
 }
 
-public func == (lhs: SQLPredicateValue, rhs: DBData) -> SQLPredicateExpression {
-    return .equal(lhs, .value(rhs))
+public func == <T: DBDataConvertible>(lhs: SQLPredicateValue, rhs: T) -> SQLPredicateExpression {
+    return .equal(lhs, .value(rhs.toDBData()))
 }
 
-public func != (lhs: SQLPredicateValue, rhs: DBData) -> SQLPredicateExpression {
-    return .notEqual(lhs, .value(rhs))
+public func != <T: DBDataConvertible>(lhs: SQLPredicateValue, rhs: T) -> SQLPredicateExpression {
+    return .notEqual(lhs, .value(rhs.toDBData()))
 }
 
-public func < (lhs: SQLPredicateValue, rhs: DBData) -> SQLPredicateExpression {
-    return .lessThan(lhs, .value(rhs))
+public func < <T: DBDataConvertible>(lhs: SQLPredicateValue, rhs: T) -> SQLPredicateExpression {
+    return .lessThan(lhs, .value(rhs.toDBData()))
 }
 
-public func > (lhs: SQLPredicateValue, rhs: DBData) -> SQLPredicateExpression {
-    return .greaterThan(lhs, .value(rhs))
+public func > <T: DBDataConvertible>(lhs: SQLPredicateValue, rhs: T) -> SQLPredicateExpression {
+    return .greaterThan(lhs, .value(rhs.toDBData()))
 }
 
-public func <= (lhs: SQLPredicateValue, rhs: DBData) -> SQLPredicateExpression {
-    return .lessThanOrEqualTo(lhs, .value(rhs))
+public func <= <T: DBDataConvertible>(lhs: SQLPredicateValue, rhs: T) -> SQLPredicateExpression {
+    return .lessThanOrEqualTo(lhs, .value(rhs.toDBData()))
 }
 
-public func >= (lhs: SQLPredicateValue, rhs: DBData) -> SQLPredicateExpression {
-    return .greaterThanOrEqualTo(lhs, .value(rhs))
+public func >= <T: DBDataConvertible>(lhs: SQLPredicateValue, rhs: T) -> SQLPredicateExpression {
+    return .greaterThanOrEqualTo(lhs, .value(rhs.toDBData()))
 }
 
-public func == (lhs: DBData, rhs: SQLPredicateValue) -> SQLPredicateExpression {
-    return .equal(.value(lhs), rhs)
+public func == <T: DBDataConvertible>(lhs: T, rhs: SQLPredicateValue) -> SQLPredicateExpression {
+    return .equal(.value(lhs.toDBData()), rhs)
 }
 
-public func != (lhs: DBData, rhs: SQLPredicateValue) -> SQLPredicateExpression {
-    return .notEqual(.value(lhs), rhs)
+public func != <T: DBDataConvertible>(lhs: T, rhs: SQLPredicateValue) -> SQLPredicateExpression {
+    return .notEqual(.value(lhs.toDBData()), rhs)
 }
 
-public func < (lhs: DBData, rhs: SQLPredicateValue) -> SQLPredicateExpression {
-    return .lessThan(.value(lhs), rhs)
+public func < <T: DBDataConvertible>(lhs: T, rhs: SQLPredicateValue) -> SQLPredicateExpression {
+    return .lessThan(.value(lhs.toDBData()), rhs)
 }
 
-public func > (lhs: DBData, rhs: SQLPredicateValue) -> SQLPredicateExpression {
-    return .greaterThan(.value(lhs), rhs)
+public func > <T: DBDataConvertible>(lhs: T, rhs: SQLPredicateValue) -> SQLPredicateExpression {
+    return .greaterThan(.value(lhs.toDBData()), rhs)
 }
 
-public func <= (lhs: DBData, rhs: SQLPredicateValue) -> SQLPredicateExpression {
-    return .lessThanOrEqualTo(.value(lhs), rhs)
+public func <= <T: DBDataConvertible>(lhs: T, rhs: SQLPredicateValue) -> SQLPredicateExpression {
+    return .lessThanOrEqualTo(.value(lhs.toDBData()), rhs)
 }
 
-public func >= (lhs: DBData, rhs: SQLPredicateValue) -> SQLPredicateExpression {
-    return .greaterThanOrEqualTo(.value(lhs), rhs)
+public func >= <T: DBDataConvertible>(lhs: T, rhs: SQLPredicateValue) -> SQLPredicateExpression {
+    return .greaterThanOrEqualTo(.value(lhs.toDBData()), rhs)
 }
