@@ -43,6 +43,8 @@ public indirect enum SQLPredicateExpression {
     
     case notBetween(SQLPredicateValue, SQLPredicateValue, SQLPredicateValue)
     
+    case containsIn(SQLPredicateValue, [DBData])
+    
     case like(SQLPredicateValue, String)
     
     case notLike(SQLPredicateValue, String)
@@ -50,6 +52,16 @@ public indirect enum SQLPredicateExpression {
     case and(SQLPredicateExpression, SQLPredicateExpression)
     
     case or(SQLPredicateExpression, SQLPredicateExpression)
+}
+
+extension SQLRaw.StringInterpolation {
+    
+    mutating func appendInterpolation(_ value: SQLPredicateValue) {
+        switch value {
+        case let .name(name): self.appendLiteral(name)
+        case let .value(value): self.appendInterpolation(value)
+        }
+    }
 }
 
 extension SQLPredicateExpression {
@@ -73,27 +85,50 @@ extension SQLPredicateExpression {
         case let .not(x): builder.append("NOT (\(x))")
         case let .equal(lhs, rhs): builder.builder.append(.nullSafeEqual(lhs, rhs))
         case let .notEqual(lhs, rhs): builder.builder.append(.nullSafeNotEqual(lhs, rhs))
-        case let .lessThan(lhs, rhs): builder.append("\(lhs) < \(rhs)")
-        case let .greaterThan(lhs, rhs): builder.append("\(lhs) > \(rhs)")
-        case let .lessThanOrEqualTo(lhs, rhs): builder.append("\(lhs) <= \(rhs)")
-        case let .greaterThanOrEqualTo(lhs, rhs): builder.append("\(lhs) >= \(rhs)")
-        case let .between(x, from, to): builder.append("\(x) BETWEEN \(from) AND \(to)")
-        case let .notBetween(x, from, to): builder.append("\(x) NOT BETWEEN \(from) AND \(to)")
-        case let .like(x, pattern): builder.append("\(x) LIKE \(pattern)")
-        case let .notLike(x, pattern): builder.append("\(x) NOT LIKE \(pattern)")
+        case let .lessThan(lhs, rhs): builder.append("\(lhs) < \(rhs)" as SQLRaw)
+        case let .greaterThan(lhs, rhs): builder.append("\(lhs) > \(rhs)" as SQLRaw)
+        case let .lessThanOrEqualTo(lhs, rhs): builder.append("\(lhs) <= \(rhs)" as SQLRaw)
+        case let .greaterThanOrEqualTo(lhs, rhs): builder.append("\(lhs) >= \(rhs)" as SQLRaw)
+        case let .between(x, from, to): builder.append("\(x) BETWEEN \(from) AND \(to)" as SQLRaw)
+        case let .notBetween(x, from, to): builder.append("\(x) NOT BETWEEN \(from) AND \(to)" as SQLRaw)
+        case let .containsIn(x, list):
+            
+            builder.append("\(x) IN (" as SQLRaw)
+            for (i, item) in list.enumerated() {
+                if i != 0 {
+                    builder.builder.append(",")
+                }
+                builder.builder.append(item)
+            }
+            builder.append(")")
+            
+        case let .like(x, pattern): builder.append("\(x) LIKE \(pattern)" as SQLRaw)
+        case let .notLike(x, pattern): builder.append("\(x) NOT LIKE \(pattern)" as SQLRaw)
         case let .and(lhs, rhs):
             
             if lhs.isOrOperator {
                 if rhs.isOrOperator {
-                    builder.append("(\(lhs)) AND (\(rhs))")
+                    builder.append("(")
+                    lhs.serialize(into: &builder)
+                    builder.append(") AND (")
+                    rhs.serialize(into: &builder)
+                    builder.append(")")
                 } else {
-                    builder.append("(\(lhs)) AND \(rhs)")
+                    builder.append("(")
+                    lhs.serialize(into: &builder)
+                    builder.append(") AND ")
+                    rhs.serialize(into: &builder)
                 }
             } else {
                 if rhs.isOrOperator {
-                    builder.append("\(lhs) AND (\(rhs))")
+                    lhs.serialize(into: &builder)
+                    builder.append(" AND (")
+                    rhs.serialize(into: &builder)
+                    builder.append(")")
                 } else {
-                    builder.append("\(lhs) AND \(rhs)")
+                    lhs.serialize(into: &builder)
+                    builder.append(" AND ")
+                    rhs.serialize(into: &builder)
                 }
             }
             
@@ -101,15 +136,27 @@ extension SQLPredicateExpression {
             
             if lhs.isAndOperator {
                 if rhs.isAndOperator {
-                    builder.append("(\(lhs)) OR (\(rhs))")
+                    builder.append("(")
+                    lhs.serialize(into: &builder)
+                    builder.append(") OR (")
+                    rhs.serialize(into: &builder)
+                    builder.append(")")
                 } else {
-                    builder.append("(\(lhs)) OR \(rhs)")
+                    builder.append("(")
+                    lhs.serialize(into: &builder)
+                    builder.append(") OR ")
+                    rhs.serialize(into: &builder)
                 }
             } else {
                 if rhs.isAndOperator {
-                    builder.append("\(lhs) OR (\(rhs))")
+                    lhs.serialize(into: &builder)
+                    builder.append(" OR (")
+                    rhs.serialize(into: &builder)
+                    builder.append(")")
                 } else {
-                    builder.append("\(lhs) OR \(rhs)")
+                    lhs.serialize(into: &builder)
+                    builder.append(" OR ")
+                    rhs.serialize(into: &builder)
                 }
             }
         }

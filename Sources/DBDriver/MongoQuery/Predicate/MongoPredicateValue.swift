@@ -126,8 +126,6 @@ public func ~= <T: BSONConvertible>(lhs: PartialRangeThrough<T>, rhs: MongoPredi
     return lhs.upperBound <= rhs
 }
 
-infix operator =~: ComparisonPrecedence
-
 public func =~ <C: Collection>(lhs: MongoPredicateValue, rhs: C) -> MongoPredicateExpression where C.Element: BSONConvertible {
     return .containsIn(lhs, .value(Array(rhs)))
 }
