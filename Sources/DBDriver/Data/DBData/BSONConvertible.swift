@@ -164,6 +164,20 @@ extension UUID: BSONConvertible {
     }
 }
 
+extension NSRegularExpression: BSONConvertible {
+    
+    public func toBSON() throws -> BSON {
+        return .regex(BSONRegularExpression(from: self))
+    }
+}
+
+extension Regex: BSONConvertible {
+    
+    public func toBSON() throws -> BSON {
+        return .regex(BSONRegularExpression(from: self.nsRegex))
+    }
+}
+
 extension Array: BSONConvertible where Element: BSONConvertible {
     
     public func toBSON() throws -> BSON {
