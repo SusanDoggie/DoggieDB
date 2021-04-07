@@ -37,11 +37,15 @@ extension Dictionary where Key == String, Value == DBData {
 
 extension BSONDocument {
     
-    init(_ dictionary: [String: DBData]) throws {
+    public init(_ dictionary: [String: BSON]) {
         self.init()
         for (key, value) in dictionary {
-            self[key] = try BSON(value)
+            self[key] = value
         }
+    }
+    
+    public init(_ dictionary: [String: DBData]) throws {
+        try self.init(dictionary.mapValues(BSON.init))
     }
 }
 
