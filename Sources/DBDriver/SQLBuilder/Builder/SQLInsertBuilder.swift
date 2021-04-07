@@ -29,7 +29,7 @@ public struct SQLInsertBuilder: SQLBuilderProtocol {
     
     init(builder: SQLBuilder, table: String, alias: String?) {
         self.builder = builder
-        self.builder.append("INSERT INTO \(table: table)" as SQLRaw)
+        self.builder.append("INSERT INTO \(identifier: table)" as SQLRaw)
         
         if let alias = alias {
             self.builder.append("AS \(identifier: alias)" as SQLRaw)

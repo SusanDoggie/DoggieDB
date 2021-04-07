@@ -37,7 +37,7 @@ public struct SQLCreateTableAsBuilder: SQLBuilderProtocol {
         if options.contains(.ifNotExists) {
             self.builder.append("IF NOT EXISTS")
         }
-        self.builder.append("\(table: table) AS" as SQLRaw)
+        self.builder.append("\(identifier: table) AS" as SQLRaw)
     }
 }
 
