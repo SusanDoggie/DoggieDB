@@ -291,8 +291,6 @@ public func ~= <T: DBDataConvertible>(lhs: PartialRangeThrough<T>, rhs: SQLPredi
     return lhs.upperBound <= rhs
 }
 
-infix operator =~: ComparisonPrecedence
-
 public func =~ (lhs: SQLPredicateValue, rhs: String) -> SQLPredicateExpression {
     return .like(lhs, rhs)
 }
