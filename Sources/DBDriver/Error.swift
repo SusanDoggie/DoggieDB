@@ -39,6 +39,8 @@ extension Database {
         
         case invalidDateFormat
         
+        case invalidExpression
+        
         case unknown
         
     }

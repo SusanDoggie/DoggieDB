@@ -40,4 +40,9 @@ extension DBMongoFilterOptions {
         return result
     }
     
+    public func filter(_ predicate: (MongoPredicateBuilder) -> MongoPredicateExpression) throws -> Self {
+        var result = self
+        result.filter = try predicate(MongoPredicateBuilder()).toBSONDocument()
+        return result
+    }
 }

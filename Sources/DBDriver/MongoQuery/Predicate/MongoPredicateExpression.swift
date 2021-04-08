@@ -57,6 +57,96 @@ public enum MongoPredicateValue {
     case value(BSONConvertible)
 }
 
+extension MongoPredicateExpression {
+    
+    var _andList: [MongoPredicateExpression]? {
+        switch self {
+        case let .and(lhs, rhs):
+            let _lhs = lhs._andList ?? [lhs]
+            let _rhs = rhs._andList ?? [rhs]
+            return _lhs + _rhs
+        default: return nil
+        }
+    }
+    
+    var _orList: [MongoPredicateExpression]? {
+        switch self {
+        case let .or(lhs, rhs):
+            let _lhs = lhs._orList ?? [lhs]
+            let _rhs = rhs._orList ?? [rhs]
+            return _lhs + _rhs
+        default: return nil
+        }
+    }
+    
+    func toBSONDocument() throws -> BSONDocument {
+        
+        switch self {
+        case let .not(x):
+            
+            return try ["$not": BSON(x.toBSONDocument())]
+            
+        case let .equal(.key(key), .value(value)),
+             let .equal(.value(value), .key(key)):
+            
+            return try [key: ["$eq": value.toBSON()]]
+            
+        case let .notEqual(.key(key), .value(value)),
+             let .notEqual(.value(value), .key(key)):
+            
+            return try [key: ["$ne": value.toBSON()]]
+            
+        case let .lessThan(.key(key), .value(value)),
+             let .lessThan(.value(value), .key(key)):
+            
+            return try [key: ["$lt": value.toBSON()]]
+            
+        case let .greaterThan(.key(key), .value(value)),
+             let .greaterThan(.value(value), .key(key)):
+            
+            return try [key: ["$gt": value.toBSON()]]
+            
+        case let .lessThanOrEqualTo(.key(key), .value(value)),
+             let .lessThanOrEqualTo(.value(value), .key(key)):
+            
+            return try [key: ["$lte": value.toBSON()]]
+            
+        case let .greaterThanOrEqualTo(.key(key), .value(value)),
+             let .greaterThanOrEqualTo(.value(value), .key(key)):
+            
+            return try [key: ["$gte": value.toBSON()]]
+            
+        case let .containsIn(.key(key), .value(value)):
+            
+            return try [key: ["$in": value.toBSON()]]
+            
+        case let .notContainsIn(.key(key), .value(value)):
+            
+            return try [key: ["$nin": value.toBSON()]]
+            
+        case let .matching(.key(key), regex):
+        
+            return try [key: ["$regex": regex.toBSON()]]
+            
+        case let .and(lhs, rhs):
+            
+            let _lhs = lhs._andList ?? [lhs]
+            let _rhs = rhs._andList ?? [rhs]
+            let list = _lhs + _rhs
+            return try ["$and": BSON(list.map { try $0.toBSONDocument() })]
+            
+        case let .or(lhs, rhs):
+            
+            let _lhs = lhs._orList ?? [lhs]
+            let _rhs = rhs._orList ?? [rhs]
+            let list = _lhs + _rhs
+            return try ["$or": BSON(list.map { try $0.toBSONDocument() })]
+            
+        default: throw Database.Error.invalidExpression
+        }
+    }
+}
+
 public func == (lhs: MongoPredicateValue, rhs: _OptionalNilComparisonType) -> MongoPredicateExpression {
     return .equal(lhs, .value(BSON.null))
 }
