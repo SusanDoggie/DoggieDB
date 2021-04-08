@@ -59,6 +59,17 @@ extension DBMongoPipelineBuilder {
 
 extension DBMongoPipelineBuilder {
     
+    public func match(_ filter: BSONDocument) -> Self {
+        return self._appended(["$match": .document(filter)])
+    }
+    
+    public func match(_ predicate: (MongoPredicateBuilder) -> MongoPredicateExpression) throws -> Self {
+        return try self._appended(["$match": .document(predicate(MongoPredicateBuilder()).toBSONDocument())])
+    }
+}
+
+extension DBMongoPipelineBuilder {
+    
     public func unwind(_ path: String, includeArrayIndex: String? = nil, preserveNullAndEmptyArrays: Bool? = nil) -> Self {
         var options: BSONDocument = ["path": .string(path)]
         if let includeArrayIndex = includeArrayIndex {
