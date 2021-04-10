@@ -80,7 +80,7 @@ class MySQLTest: XCTestCase {
         
         do {
             
-            _ = try connection.sql().createTable("contacts")
+            _ = try connection.sqlQuery().createTable("contacts")
                 .column(name: "contact_id", type: "INTEGER", optional: false, primaryKey: true)
                 .column(name: "first_name", type: "VARCHAR(255)", optional: false)
                 .column(name: "last_name", type: "VARCHAR(255)")
@@ -286,11 +286,11 @@ class MySQLTest: XCTestCase {
         
         do {
             
-            _ = try connection.sql().beginTransaction().execute().wait()
+            _ = try connection.sqlQuery().beginTransaction().execute().wait()
             
             let result = try connection.execute("SELECT \(1) as value").wait()
             
-            _ = try connection.sql().commit().execute().wait()
+            _ = try connection.sqlQuery().commit().execute().wait()
             
             XCTAssertEqual(result[0]["value"]?.intValue, 1)
             

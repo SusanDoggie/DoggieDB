@@ -63,7 +63,7 @@ public protocol DBConnection: AnyObject {
         onRow: @escaping (DBQueryRow) throws -> Void
     ) -> EventLoopFuture<DBQueryMetadata>
     
-    func sql() -> SQLBuilder
+    func sqlQuery() -> SQLBuilder
     
     func mongoQuery() -> DBMongoQuery
     
@@ -138,7 +138,7 @@ public protocol DBSQLConnection: DBConnection {
 
 extension DBConnection {
     
-    public func sql() -> SQLBuilder {
+    public func sqlQuery() -> SQLBuilder {
         fatalError("unsupported operation")
     }
 }

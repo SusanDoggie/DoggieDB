@@ -68,7 +68,7 @@ class SQLiteTest: XCTestCase {
         
         do {
             
-            _ = try connection.sql().createTable("contacts")
+            _ = try connection.sqlQuery().createTable("contacts")
                 .column(name: "contact_id", type: "INTEGER", optional: false, primaryKey: true)
                 .column(name: "first_name", type: "TEXT", optional: false)
                 .column(name: "last_name", type: "TEXT")
@@ -212,7 +212,7 @@ class SQLiteTest: XCTestCase {
         
         do {
             
-            let result = try connection.sql()
+            let result = try connection.sqlQuery()
                 .withRecursive([
                     "test": SQLSelectBuilder.select().columns("1 AS n").union().select().columns("n+1 AS n").from("test")
                 ])
@@ -235,11 +235,11 @@ class SQLiteTest: XCTestCase {
         
         do {
             
-            _ = try connection.sql().beginTransaction().execute().wait()
+            _ = try connection.sqlQuery().beginTransaction().execute().wait()
             
             let result = try connection.execute("SELECT \(1) as value").wait()
             
-            _ = try connection.sql().commit().execute().wait()
+            _ = try connection.sqlQuery().commit().execute().wait()
             
             XCTAssertEqual(result[0]["value"]?.intValue, 1)
             
