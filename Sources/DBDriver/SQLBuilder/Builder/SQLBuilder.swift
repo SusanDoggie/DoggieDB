@@ -126,7 +126,7 @@ extension SQLBuilder: SQLBuilderProtocol {
             switch component {
             case let .raw(value): raw.append(value)
             case let .string(value): raw.appendLiteral(value)
-            case let .value(value): raw.append(value)
+            case let .value(value): raw.append("\(value)")
             case .autoIncrement: raw.appendLiteral(dialect.autoIncrementClause)
             case let .nullSafeEqual(lhs, rhs): raw.append(dialect.nullSafeEqual(lhs, rhs))
             case let .nullSafeNotEqual(lhs, rhs): raw.append(dialect.nullSafeNotEqual(lhs, rhs))

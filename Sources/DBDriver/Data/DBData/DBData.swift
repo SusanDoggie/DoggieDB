@@ -165,10 +165,14 @@ extension DBData: ExpressibleByFloatLiteral {
     }
 }
 
-extension DBData: ExpressibleByStringLiteral {
+extension DBData: ExpressibleByStringInterpolation {
     
     public init(stringLiteral value: StringLiteralType) {
         self.init(value)
+    }
+    
+    public init(stringInterpolation: String.StringInterpolation) {
+        self.init(String(stringInterpolation: stringInterpolation))
     }
 }
 

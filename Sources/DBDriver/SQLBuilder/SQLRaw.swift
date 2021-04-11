@@ -130,14 +130,11 @@ extension SQLRaw {
     }
 }
 
-extension SQLRaw: ExpressibleByStringLiteral {
+extension SQLRaw: ExpressibleByStringInterpolation {
     
     public init(stringLiteral value: String) {
         self.init(value)
     }
-}
-
-extension SQLRaw: ExpressibleByStringInterpolation {
     
     public struct StringInterpolation: StringInterpolationProtocol {
         
@@ -211,14 +208,6 @@ extension SQLRaw {
     public mutating func append(_ other: SQLRaw) {
         self.components.append(contentsOf: other.components)
         self.components = self.components.simplify()
-    }
-    
-    public mutating func append(_ value: DBData) {
-        self.components.append(SQLRawComponent(value))
-    }
-    
-    public mutating func append(bind value: DBData) {
-        self.components.append(.bind(value))
     }
 }
 
