@@ -50,9 +50,9 @@ jobs:
         brew services start ${{ matrix.formula }}
         until echo | mysql -u${{ matrix.username }}; do sleep 1; done
         mysql -u${{ matrix.username }} --batch <<-SQL
-          CREATE USER $MYSQL_USERNAME@'%' IDENTIFIED BY '$MYSQL_PASSWORD';
+          CREATE USER $MYSQL_USERNAME@'localhost' IDENTIFIED BY '$MYSQL_PASSWORD';
           CREATE DATABASE $MYSQL_DATABASE;
-          GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@'%';
+          GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@'localhost';
           FLUSH PRIVILEGES;
         SQL
         echo ::endgroup::
