@@ -183,6 +183,30 @@ extension MongoPredicateExpression {
     }
 }
 
+public func == (lhs: MongoPredicateValue, rhs: MongoPredicateValue) -> MongoPredicateExpression {
+    return .equal(lhs, rhs)
+}
+
+public func != (lhs: MongoPredicateValue, rhs: MongoPredicateValue) -> MongoPredicateExpression {
+    return .notEqual(lhs, rhs)
+}
+
+public func < (lhs: MongoPredicateValue, rhs: MongoPredicateValue) -> MongoPredicateExpression {
+    return .lessThan(lhs, rhs)
+}
+
+public func > (lhs: MongoPredicateValue, rhs: MongoPredicateValue) -> MongoPredicateExpression {
+    return .greaterThan(lhs, rhs)
+}
+
+public func <= (lhs: MongoPredicateValue, rhs: MongoPredicateValue) -> MongoPredicateExpression {
+    return .lessThanOrEqualTo(lhs, rhs)
+}
+
+public func >= (lhs: MongoPredicateValue, rhs: MongoPredicateValue) -> MongoPredicateExpression {
+    return .greaterThanOrEqualTo(lhs, rhs)
+}
+
 public func == (lhs: MongoPredicateValue, rhs: _OptionalNilComparisonType) -> MongoPredicateExpression {
     return .equal(lhs, .value(BSON.null))
 }
