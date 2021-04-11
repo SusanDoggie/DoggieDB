@@ -43,7 +43,7 @@ public indirect enum MongoPredicateExpression {
     
     case notContainsIn(MongoPredicateValue, MongoPredicateValue)
     
-    case matching(MongoPredicateValue, Regex)
+    case matching(MongoPredicateValue, MongoPredicateValue)
     
     case and(MongoPredicateExpression, MongoPredicateExpression)
     
@@ -156,9 +156,9 @@ extension MongoPredicateExpression {
             
             return [key: ["$nin": value.toBSON()]]
             
-        case let .matching(.key(key), regex):
+        case let .matching(.key(key), .value(value)):
         
-            return [key: ["$regex": regex.toBSON()]]
+            return [key: ["$regex": value.toBSON()]]
             
         case let .and(lhs, rhs):
             
@@ -244,11 +244,11 @@ public func >= <T: BSONConvertible>(lhs: T, rhs: MongoPredicateValue) -> MongoPr
 }
 
 public func ~= (lhs: NSRegularExpression, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .matching(rhs, Regex(lhs))
+    return .matching(rhs, .value(lhs))
 }
 
 public func ~= (lhs: Regex, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .matching(rhs, lhs)
+    return .matching(rhs, .value(lhs))
 }
 
 public func ~= <C: Collection>(lhs: C, rhs: MongoPredicateValue) -> MongoPredicateExpression where C.Element: BSONConvertible {
@@ -276,11 +276,11 @@ public func ~= <T: BSONConvertible>(lhs: PartialRangeThrough<T>, rhs: MongoPredi
 }
 
 public func =~ (lhs: MongoPredicateValue, rhs: NSRegularExpression) -> MongoPredicateExpression {
-    return .matching(lhs, Regex(rhs))
+    return .matching(lhs, .value(rhs))
 }
 
 public func =~ (lhs: MongoPredicateValue, rhs: Regex) -> MongoPredicateExpression {
-    return .matching(lhs, rhs)
+    return .matching(lhs, .value(rhs))
 }
 
 public func =~ <C: Collection>(lhs: MongoPredicateValue, rhs: C) -> MongoPredicateExpression where C.Element: BSONConvertible {
