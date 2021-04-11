@@ -72,73 +72,8 @@ public protocol DBConnection: AnyObject {
     func postgresPubSub() -> DBPostgresPubSub
 }
 
-extension DBConnection {
-    
-    public func version() -> EventLoopFuture<String> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func databases() -> EventLoopFuture<[String]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func tables() -> EventLoopFuture<[String]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func views() -> EventLoopFuture<[String]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func materializedViews() -> EventLoopFuture<[String]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func columns(of table: String) -> EventLoopFuture<[DBQueryRow]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func indices(of table: String) -> EventLoopFuture<[DBQueryRow]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func foreignKeys(of table: String) -> EventLoopFuture<[DBQueryRow]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-}
-
-extension DBConnection {
-    
-    public func execute(
-        _ sql: SQLRaw
-    ) -> EventLoopFuture<[DBQueryRow]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func execute(
-        _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) -> Void
-    ) -> EventLoopFuture<DBQueryMetadata> {
-        return self.execute(sql, onRow: onRow)
-    }
-    
-    public func execute(
-        _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) throws -> Void
-    ) -> EventLoopFuture<DBQueryMetadata> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-}
-
 public protocol DBSQLConnection: DBConnection {
     
-}
-
-extension DBConnection {
-    
-    public func sqlQuery() -> SQLBuilder {
-        fatalError("unsupported operation")
-    }
 }
 
 extension DBConnection {

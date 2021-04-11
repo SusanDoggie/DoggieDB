@@ -87,6 +87,10 @@ extension SQLiteDriver.Connection {
         return self.execute("SELECT sqlite_version()").map { $0[0]["sqlite_version()"]!.string! }
     }
     
+    func databases() -> EventLoopFuture<[String]> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
     func tables() -> EventLoopFuture<[String]> {
         return self.execute("SELECT name FROM sqlite_master WHERE type = 'table'").map { $0.map { $0["name"]!.string! } }
     }
@@ -95,6 +99,9 @@ extension SQLiteDriver.Connection {
         return self.execute("SELECT name FROM sqlite_master WHERE type = 'view'").map { $0.map { $0["name"]!.string! } }
     }
     
+    func materializedViews() -> EventLoopFuture<[String]> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
     func columns(of table: String) -> EventLoopFuture<[DBQueryRow]> {
         return self.execute("pragma table_info(\(identifier: table))")
     }
@@ -164,6 +171,13 @@ extension SQLiteDriver.Connection {
             
             return eventLoop.makeFailedFuture(error)
         }
+    }
+    
+    func execute(
+        _ sql: SQLRaw,
+        onRow: @escaping (DBQueryRow) throws -> Void
+    ) -> EventLoopFuture<DBQueryMetadata> {
+        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
 }
 

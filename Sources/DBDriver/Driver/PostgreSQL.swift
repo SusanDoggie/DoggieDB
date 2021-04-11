@@ -248,6 +248,13 @@ extension PostgreSQLDriver.Connection {
     
     func execute(
         _ sql: SQLRaw,
+        onRow: @escaping (DBQueryRow) -> Void
+    ) -> EventLoopFuture<DBQueryMetadata> {
+        return self.execute(sql, onRow: onRow)
+    }
+    
+    func execute(
+        _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) throws -> Void
     ) -> EventLoopFuture<DBQueryMetadata> {
         
