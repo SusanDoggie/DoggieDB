@@ -27,6 +27,10 @@
 
 @_exported import DoggieDB
 
+@_exported import DBMongo
+
+@_exported import DBSQLite
+
 @_exported import DBVapor
 
 @_exported import SwiftJS
