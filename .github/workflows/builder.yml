@@ -53,6 +53,7 @@ jobs:
           CREATE USER $MYSQL_USERNAME@'%' IDENTIFIED BY '$MYSQL_PASSWORD';
           CREATE DATABASE $MYSQL_DATABASE;
           GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO $MYSQL_USERNAME@'%';
+          FLUSH PRIVILEGES;
         SQL
         echo ::endgroup::
         echo ::group::Starting PostgreSQL service
