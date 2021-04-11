@@ -20,8 +20,8 @@ jobs:
       matrix:
         name: [macOS, macOS(SwiftPM)]
         formula: 
-          - mysql@8.0
           - mysql@5.7
+          - mysql@8.0
           - mariadb
         include:
           - name: macOS
