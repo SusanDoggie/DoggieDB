@@ -79,11 +79,10 @@ public struct SQLBuilder {
     }
 }
 
-extension DBConnection {
+extension DBConnection where Self: DBSQLConnection {
     
     public func sqlQuery() -> SQLBuilder {
-        guard let connection = self as? DBSQLConnection else { fatalError("unsupported operation") }
-        return SQLBuilder(connection: connection)
+        return SQLBuilder(connection: self)
     }
 }
 

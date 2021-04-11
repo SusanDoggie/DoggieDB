@@ -105,10 +105,6 @@ extension MySQLDriver.Connection {
         return self.execute("SHOW FULL TABLES WHERE Table_type = 'VIEW'").map { $0.map { $0[$0.keys.first { $0.hasPrefix("Tables_in_") }!]!.string! } }
     }
     
-    func materializedViews() -> EventLoopFuture<[String]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
     func columns(of table: String) -> EventLoopFuture<[DBQueryRow]> {
         return self.execute("SHOW COLUMNS FROM \(identifier: table)")
     }
@@ -179,13 +175,6 @@ extension MySQLDriver.Connection {
             
             return eventLoop.makeFailedFuture(error)
         }
-    }
-    
-    func execute(
-        _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) -> Void
-    ) -> EventLoopFuture<DBQueryMetadata> {
-        return self.execute(sql, onRow: onRow)
     }
     
     func execute(
