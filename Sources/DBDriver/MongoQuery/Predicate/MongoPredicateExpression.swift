@@ -140,9 +140,17 @@ extension MongoPredicateExpression {
             
             return [key: ["$gte": value.toBSON()]]
             
+        case let .containsIn(.key(lhs), .key(rhs)):
+            
+            return ["$expr": ["$in": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]
+            
         case let .containsIn(.key(key), .value(value)):
             
             return [key: ["$in": value.toBSON()]]
+            
+        case let .notContainsIn(.key(lhs), .key(rhs)):
+            
+            return ["$expr": ["$not": [["$in": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]]]
             
         case let .notContainsIn(.key(key), .value(value)):
             
