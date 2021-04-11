@@ -29,19 +29,6 @@ public enum Database {
 
 extension Database {
     
-    public static func createSQLite(
-        path: String? = nil,
-        logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
-        threadPool: NIOThreadPool,
-        on eventLoop: EventLoop
-    ) -> EventLoopFuture<DBConnection> {
-        
-        return SQLiteDriver.create(storage: path.map { .file(path: $0) } ?? .memory, logger: logger, threadPool: threadPool, on: eventLoop)
-    }
-}
-
-extension Database {
-    
     public static func connect(
         config: Database.Configuration,
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),

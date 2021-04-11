@@ -48,32 +48,20 @@ public protocol SQLDialect {
 
 extension SQLDialect {
     
-    static var literalNull: String {
+    public static var literalNull: String {
         return "NULL"
     }
     
-    static var literalDefault: String {
+    public static var literalDefault: String {
         return "DEFAULT"
     }
 }
 
 extension DBConnection {
     
-    var dialect: SQLDialect.Type? {
-        switch driver {
-        case .mySQL: return MySQLDialect.self
-        case .postgreSQL: return PostgreSQLDialect.self
-        case .sqlite: return SQLiteDialect.self
-        default: return nil
-        }
-    }
-}
-
-extension DBConnection {
-    
-    func serialize(_ sql: SQLRaw) -> (String, [DBData])? {
+    public func serialize(_ sql: SQLRaw) -> (String, [DBData])? {
         
-        guard let dialect = self.dialect else { return nil }
+        guard let dialect = self.driver.sqlDialect else { return nil }
         
         var raw = ""
         var binds: [DBData] = []

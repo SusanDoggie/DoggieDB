@@ -1,5 +1,5 @@
 //
-//  QueryMetadata.swift
+//  Database.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,26 +23,15 @@
 //  THE SOFTWARE.
 //
 
-public struct DBQueryMetadata {
+extension Database {
     
-    let metadata: [String: DBData]
-    
-    public init(_ metadata: [String: DBData] = [:]) {
-        self.metadata = metadata
-    }
-}
-
-extension DBQueryMetadata {
-    
-    public var count: Int {
-        return self.metadata.count
-    }
-    
-    public var keys: Dictionary<String, DBData>.Keys {
-        return self.metadata.keys
-    }
-    
-    public subscript(_ key: String) -> DBData? {
-        return self.metadata[key]
+    public static func createSQLite(
+        path: String? = nil,
+        logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
+        threadPool: NIOThreadPool,
+        on eventLoop: EventLoop
+    ) -> EventLoopFuture<DBConnection> {
+        
+        return SQLiteDriver.create(storage: path.map { .file(path: $0) } ?? .memory, logger: logger, threadPool: threadPool, on: eventLoop)
     }
 }

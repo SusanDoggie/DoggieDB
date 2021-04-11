@@ -28,6 +28,10 @@ import PostgresNIO
 struct PostgreSQLDriver: DBDriverProtocol {
     
     static var defaultPort: Int { 5432 }
+    
+    static var sqlDialect: SQLDialect.Type? {
+        return PostgreSQLDialect.self
+    }
 }
 
 extension PostgreSQLDriver {
@@ -261,7 +265,7 @@ extension PostgreSQLDriver.Connection {
                 _binds,
                 onMetadata: { metadata = $0 },
                 onRow: { try onRow(DBQueryRow($0)) }
-            ).map { metadata.map(DBQueryMetadata.init) ?? DBQueryMetadata(metadata: [:]) }
+            ).map { metadata.map(DBQueryMetadata.init) ?? DBQueryMetadata() }
             
         } catch let error {
             
@@ -273,7 +277,7 @@ extension PostgreSQLDriver.Connection {
 extension DBQueryMetadata {
     
     init(_ metadata: PostgresQueryMetadata) {
-        self.init(metadata: [
+        self.init([
             "command": DBData(metadata.command),
             "oid": metadata.oid.map(DBData.init) ?? nil,
             "rows": metadata.rows.map(DBData.init) ?? nil,

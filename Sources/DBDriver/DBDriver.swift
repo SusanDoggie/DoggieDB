@@ -23,9 +23,11 @@
 //  THE SOFTWARE.
 //
 
-protocol DBDriverProtocol {
+public protocol DBDriverProtocol {
     
     static var defaultPort: Int { get }
+    
+    static var sqlDialect: SQLDialect.Type? { get }
     
     static func connect(
         config: Database.Configuration,
@@ -34,11 +36,18 @@ protocol DBDriverProtocol {
     ) -> EventLoopFuture<DBConnection>
 }
 
+extension DBDriverProtocol {
+    
+    public static var sqlDialect: SQLDialect.Type? {
+        return nil
+    }
+}
+
 public struct DBDriver: Hashable {
     
-    var rawValue: DBDriverProtocol.Type
+    public var rawValue: DBDriverProtocol.Type
     
-    init(rawValue: DBDriverProtocol.Type) {
+    public init(rawValue: DBDriverProtocol.Type) {
         self.rawValue = rawValue
     }
 }
@@ -47,6 +56,10 @@ extension DBDriver {
     
     public var defaultPort: Int {
         return rawValue.defaultPort
+    }
+    
+    public var sqlDialect: SQLDialect.Type? {
+        return rawValue.sqlDialect
     }
 }
 
@@ -67,13 +80,9 @@ extension DBDriver {
 
 extension DBDriver {
     
-    public static let mongoDB = DBDriver(rawValue: MongoDBDriver.self)
-    
     public static let mySQL = DBDriver(rawValue: MySQLDriver.self)
     
     public static let postgreSQL = DBDriver(rawValue: PostgreSQLDriver.self)
     
     public static let redis = DBDriver(rawValue: RedisDriver.self)
-    
-    public static let sqlite = DBDriver(rawValue: SQLiteDriver.self)
 }

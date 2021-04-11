@@ -23,8 +23,6 @@
 //  THE SOFTWARE.
 //
 
-import MongoSwift
-
 extension Dictionary where Key == String, Value == DBData {
     
     init(_ document: BSONDocument) throws {

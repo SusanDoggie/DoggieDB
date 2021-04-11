@@ -68,18 +68,14 @@ public struct SQLBuilder {
     
     let connection: DBConnection?
     
-    let dialect: SQLDialect.Type?
-    
     var components: [SQLBuilderComponent] = []
     
     init() {
         self.connection = nil
-        self.dialect = nil
     }
     
     init(connection: DBConnection) {
         self.connection = connection
-        self.dialect = connection.dialect
     }
 }
 
@@ -113,7 +109,7 @@ extension SQLBuilder: SQLBuilderProtocol {
     
     var raw: SQLRaw? {
         
-        guard let dialect = self.dialect else { return nil }
+        guard let dialect = self.connection?.driver.sqlDialect else { return nil }
         
         var raw = SQLRaw()
         

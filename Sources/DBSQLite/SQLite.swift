@@ -158,7 +158,7 @@ extension SQLiteDriver.Connection {
             
             let _binds = try binds.map(SQLiteData.init)
             
-            return self.connection.query(raw, _binds, { onRow(DBQueryRow($0)) }).map { DBQueryMetadata(metadata: [:]) }
+            return self.connection.query(raw, _binds, { onRow(DBQueryRow($0)) }).map { DBQueryMetadata() }
             
         } catch let error {
             

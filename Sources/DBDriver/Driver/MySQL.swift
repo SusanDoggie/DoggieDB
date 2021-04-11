@@ -28,6 +28,10 @@ import MySQLNIO
 struct MySQLDriver: DBDriverProtocol {
     
     static var defaultPort: Int { 3306 }
+    
+    static var sqlDialect: SQLDialect.Type? {
+        return MySQLDialect.self
+    }
 }
 
 extension MySQLDriver {
@@ -192,7 +196,7 @@ extension MySQLDriver.Connection {
                 _binds,
                 onRow: { try onRow(DBQueryRow($0)) },
                 onMetadata: { metadata = $0 }
-            ).map { metadata.map(DBQueryMetadata.init) ?? DBQueryMetadata(metadata: [:]) }
+            ).map { metadata.map(DBQueryMetadata.init) ?? DBQueryMetadata() }
             
         } catch let error {
             
@@ -204,7 +208,7 @@ extension MySQLDriver.Connection {
 extension DBQueryMetadata {
     
     init(_ metadata: MySQLQueryMetadata) {
-        self.init(metadata: [
+        self.init([
             "affectedRows": DBData(metadata.affectedRows),
             "lastInsertID": metadata.lastInsertID.map(DBData.init) ?? nil,
         ])

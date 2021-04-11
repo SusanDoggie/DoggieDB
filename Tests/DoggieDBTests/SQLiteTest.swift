@@ -24,6 +24,7 @@
 //
 
 import DoggieDB
+import DBSQLite
 import XCTest
 
 class SQLiteTest: XCTestCase {

@@ -42,7 +42,7 @@ public enum DBDataType: Hashable {
 
 public struct DBData {
     
-    indirect enum Base {
+    public indirect enum Base {
         case null
         case boolean(Bool)
         case string(String)
@@ -58,7 +58,7 @@ public struct DBData {
         case dictionary([String: DBData])
     }
     
-    let base: Base
+    public let base: Base
     
     public init(_ value: Bool) {
         self.base = .boolean(value)

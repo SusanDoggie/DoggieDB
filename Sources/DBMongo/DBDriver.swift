@@ -1,5 +1,5 @@
 //
-//  QueryMetadata.swift
+//  DatabaseDriver.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,26 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public struct DBQueryMetadata {
+extension DBDriver {
     
-    let metadata: [String: DBData]
-    
-    public init(_ metadata: [String: DBData] = [:]) {
-        self.metadata = metadata
-    }
-}
-
-extension DBQueryMetadata {
-    
-    public var count: Int {
-        return self.metadata.count
-    }
-    
-    public var keys: Dictionary<String, DBData>.Keys {
-        return self.metadata.keys
-    }
-    
-    public subscript(_ key: String) -> DBData? {
-        return self.metadata[key]
-    }
+    public static let mongoDB = DBDriver(rawValue: MongoDBDriver.self)
 }

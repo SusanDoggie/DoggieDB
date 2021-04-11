@@ -40,6 +40,7 @@ let package = Package(
         .package(url: "https://github.com/SusanDoggie/Doggie.git", .branch("main")),
         .package(url: "https://github.com/SusanDoggie/SwiftJS.git", from: "1.2.1"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.0.0"),
+        .package(url: "https://github.com/mongodb/swift-bson", from: "3.0.0"),
         .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "1.0.0"),
         .package(url: "https://gitlab.com/mordil/RediStack.git", from: "1.0.0"),
         .package(url: "https://github.com/vapor/sqlite-nio.git", from: "1.0.0"),
@@ -51,14 +52,27 @@ let package = Package(
         .target(
             name: "DBDriver",
             dependencies: [
-                .product(name: "DoggieCore", package: "Doggie"),
                 .product(name: "NIO", package: "swift-nio"),
                 .product(name: "NIOFoundationCompat", package: "swift-nio"),
-                .product(name: "MongoSwift", package: "mongo-swift-driver"),
+                .product(name: "DoggieCore", package: "Doggie"),
+                .product(name: "SwiftBSON", package: "swift-bson"),
                 .product(name: "RediStack", package: "RediStack"),
-                .product(name: "SQLiteNIO", package: "sqlite-nio"),
                 .product(name: "MySQLNIO", package: "mysql-nio"),
                 .product(name: "PostgresNIO", package: "postgres-nio"),
+            ]
+        ),
+        .target(
+            name: "DBMongo",
+            dependencies: [
+                .target(name: "DBDriver"),
+                .product(name: "MongoSwift", package: "mongo-swift-driver"),
+            ]
+        ),
+        .target(
+            name: "DBSQLite",
+            dependencies: [
+                .target(name: "DBDriver"),
+                .product(name: "SQLiteNIO", package: "sqlite-nio"),
             ]
         ),
         .target(
@@ -85,6 +99,8 @@ let package = Package(
             name: "DBBrowser",
             dependencies: [
                 .target(name: "DoggieDB"),
+                .target(name: "DBMongo"),
+                .target(name: "DBSQLite"),
                 .target(name: "DBVapor"),
                 .product(name: "Vapor", package: "vapor"),
                 .product(name: "SwiftJS", package: "SwiftJS"),
@@ -103,7 +119,9 @@ let package = Package(
         .testTarget(
             name: "DoggieDBTests",
             dependencies: [
-                "DoggieDB",
+                .target(name: "DoggieDB"),
+                .target(name: "DBMongo"),
+                .target(name: "DBSQLite"),
             ]
         ),
     ]
