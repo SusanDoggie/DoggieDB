@@ -86,30 +86,54 @@ extension MongoPredicateExpression {
             
             return try ["$not": BSON(x.toBSONDocument())]
             
+        case let .equal(.key(lhs), .key(rhs)):
+            
+            return ["$expr": ["$eq": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]
+            
         case let .equal(.key(key), .value(value)),
              let .equal(.value(value), .key(key)):
             
             return [key: ["$eq": value.toBSON()]]
+            
+        case let .notEqual(.key(lhs), .key(rhs)):
+            
+            return ["$expr": ["$ne": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]
             
         case let .notEqual(.key(key), .value(value)),
              let .notEqual(.value(value), .key(key)):
             
             return [key: ["$ne": value.toBSON()]]
             
+        case let .lessThan(.key(lhs), .key(rhs)):
+            
+            return ["$expr": ["$lt": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]
+            
         case let .lessThan(.key(key), .value(value)),
              let .lessThan(.value(value), .key(key)):
             
             return [key: ["$lt": value.toBSON()]]
+            
+        case let .greaterThan(.key(lhs), .key(rhs)):
+            
+            return ["$expr": ["$gt": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]
             
         case let .greaterThan(.key(key), .value(value)),
              let .greaterThan(.value(value), .key(key)):
             
             return [key: ["$gt": value.toBSON()]]
             
+        case let .lessThanOrEqualTo(.key(lhs), .key(rhs)):
+            
+            return ["$expr": ["$lte": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]
+            
         case let .lessThanOrEqualTo(.key(key), .value(value)),
              let .lessThanOrEqualTo(.value(value), .key(key)):
             
             return [key: ["$lte": value.toBSON()]]
+            
+        case let .greaterThanOrEqualTo(.key(lhs), .key(rhs)):
+            
+            return ["$expr": ["$gte": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]
             
         case let .greaterThanOrEqualTo(.key(key), .value(value)),
              let .greaterThanOrEqualTo(.value(value), .key(key)):
