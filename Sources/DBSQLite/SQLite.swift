@@ -28,6 +28,10 @@ import SQLiteNIO
 struct SQLiteDriver: DBDriverProtocol {
     
     static var defaultPort: Int { 0 }
+    
+    static var sqlDialect: SQLDialect.Type? {
+        return SQLiteDialect.self
+    }
 }
 
 extension SQLiteDriver {
