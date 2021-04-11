@@ -29,6 +29,10 @@ public struct MongoPredicateBuilder {
 
 extension MongoPredicateBuilder {
     
+    public var id: MongoPredicateValue {
+        return .key("_id")
+    }
+    
     public subscript(_ key: String) -> MongoPredicateValue {
         return .key(key)
     }

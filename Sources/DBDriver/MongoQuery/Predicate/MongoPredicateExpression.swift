@@ -89,44 +89,44 @@ extension MongoPredicateExpression {
         case let .equal(.key(key), .value(value)),
              let .equal(.value(value), .key(key)):
             
-            return try [key: ["$eq": value.toBSON()]]
+            return [key: ["$eq": value.toBSON()]]
             
         case let .notEqual(.key(key), .value(value)),
              let .notEqual(.value(value), .key(key)):
             
-            return try [key: ["$ne": value.toBSON()]]
+            return [key: ["$ne": value.toBSON()]]
             
         case let .lessThan(.key(key), .value(value)),
              let .lessThan(.value(value), .key(key)):
             
-            return try [key: ["$lt": value.toBSON()]]
+            return [key: ["$lt": value.toBSON()]]
             
         case let .greaterThan(.key(key), .value(value)),
              let .greaterThan(.value(value), .key(key)):
             
-            return try [key: ["$gt": value.toBSON()]]
+            return [key: ["$gt": value.toBSON()]]
             
         case let .lessThanOrEqualTo(.key(key), .value(value)),
              let .lessThanOrEqualTo(.value(value), .key(key)):
             
-            return try [key: ["$lte": value.toBSON()]]
+            return [key: ["$lte": value.toBSON()]]
             
         case let .greaterThanOrEqualTo(.key(key), .value(value)),
              let .greaterThanOrEqualTo(.value(value), .key(key)):
             
-            return try [key: ["$gte": value.toBSON()]]
+            return [key: ["$gte": value.toBSON()]]
             
         case let .containsIn(.key(key), .value(value)):
             
-            return try [key: ["$in": value.toBSON()]]
+            return [key: ["$in": value.toBSON()]]
             
         case let .notContainsIn(.key(key), .value(value)):
             
-            return try [key: ["$nin": value.toBSON()]]
+            return [key: ["$nin": value.toBSON()]]
             
         case let .matching(.key(key), regex):
         
-            return try [key: ["$regex": regex.toBSON()]]
+            return [key: ["$regex": regex.toBSON()]]
             
         case let .and(lhs, rhs):
             
