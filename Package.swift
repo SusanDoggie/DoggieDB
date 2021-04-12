@@ -33,6 +33,8 @@ let package = Package(
     ],
     products: [
         .library(name: "DoggieDB", targets: ["DoggieDB"]),
+        .library(name: "DBMongo", targets: ["DBMongo"]),
+        .library(name: "DBSQLite", targets: ["DBSQLite"]),
         .library(name: "DBVapor", targets: ["DBVapor"]),
         .executable(name: "DBBrowser", targets: ["DBBrowser"]),
     ],
