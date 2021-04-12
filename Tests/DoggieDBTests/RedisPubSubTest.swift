@@ -55,7 +55,7 @@ class RedisPubSubTest: XCTestCase {
             self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             self.connection2 = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -70,7 +70,7 @@ class RedisPubSubTest: XCTestCase {
             try self.connection2.close().wait()
             try eventLoopGroup.syncShutdownGracefully()
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -95,7 +95,7 @@ class RedisPubSubTest: XCTestCase {
             
             XCTAssertEqual("hello", result)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error

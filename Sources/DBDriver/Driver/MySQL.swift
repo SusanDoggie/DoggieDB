@@ -171,7 +171,7 @@ extension MySQLDriver.Connection {
             
             return self.connection.query(raw, _binds).map { $0.map(DBQueryRow.init) }
             
-        } catch let error {
+        } catch {
             
             return eventLoop.makeFailedFuture(error)
         }
@@ -198,7 +198,7 @@ extension MySQLDriver.Connection {
                 onMetadata: { metadata = $0 }
             ).map { metadata.map(DBQueryMetadata.init) ?? DBQueryMetadata() }
             
-        } catch let error {
+        } catch {
             
             return eventLoop.makeFailedFuture(error)
         }

@@ -118,7 +118,7 @@ extension MongoDBDriver {
             
             return eventLoop.makeSucceededFuture(Connection(client: client, database: config.database.map { client.db($0, options: nil) }, eventLoop: eventLoop))
             
-        } catch let error {
+        } catch {
             
             return eventLoop.makeFailedFuture(error)
         }

@@ -52,7 +52,7 @@ extension Database {
             
             return self.connect(config: config, logger: logger, driver: driver, on: eventLoop)
             
-        } catch let error {
+        } catch {
             
             return eventLoop.makeFailedFuture(error)
         }
@@ -71,7 +71,7 @@ extension Database {
             
             return self.connect(config: config, logger: logger, driver: driver, on: eventLoop)
             
-        } catch let error {
+        } catch {
             
             return eventLoop.makeFailedFuture(error)
         }

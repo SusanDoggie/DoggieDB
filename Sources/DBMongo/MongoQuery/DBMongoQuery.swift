@@ -45,17 +45,53 @@ extension DBMongoQuery {
         return connection.client.startSession(options: options)
     }
     
-    public func withSession<T>(
-        options: ClientSessionOptions? = nil,
-        _ sessionBody: (ClientSession) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
-        return connection.client.withSession(options: options, sessionBody)
-    }
-    
     public func session(_ session: ClientSession) -> Self {
         var result = self
         result.session = session
         return result
+    }
+    
+    public func withSession<T>(
+        options: ClientSessionOptions? = nil,
+        _ sessionBody: (DBMongoQuery) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        return connection.client.withSession(options: options) { try sessionBody(self.session($0)) }
+    }
+    
+    public func withTransaction<T>(
+        options: ClientSessionOptions? = nil,
+        _ transactionBody: @escaping (DBMongoQuery) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        
+        return connection.client.withSession(options: options) { session in
+            
+            let transaction = session.startTransaction(options: options?.defaultTransactionOptions)
+            let promise = transaction.eventLoop.makePromise(of: T.self)
+            
+            return transaction.flatMap {
+                
+                do {
+                    
+                    let bodyFuture = try transactionBody(self.session(session))
+                    
+                    bodyFuture.flatMap { _ in
+                        session.commitTransaction()
+                    }.flatMapError { _ in
+                        session.abortTransaction()
+                    }.whenComplete { _ in
+                        promise.completeWith(bodyFuture)
+                    }
+                    
+                } catch {
+                    
+                    session.abortTransaction().whenComplete { _ in
+                        promise.fail(error)
+                    }
+                }
+                
+                return promise.futureResult
+            }
+        }
     }
 }
 

@@ -43,7 +43,7 @@ class SQLiteTest: XCTestCase {
             self.connection = try Database.createSQLite(threadPool: threadPool, on: eventLoopGroup.next()).wait()
             print("SQLITE:", try connection.version().wait())
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -58,7 +58,7 @@ class SQLiteTest: XCTestCase {
             try eventLoopGroup.syncShutdownGracefully()
             try threadPool.syncShutdownGracefully()
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -105,7 +105,7 @@ class SQLiteTest: XCTestCase {
             XCTAssertEqual(email["notnull"], 1)
             XCTAssertEqual(phone["notnull"], 1)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -123,7 +123,7 @@ class SQLiteTest: XCTestCase {
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["value"]?.intValue, int)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -141,7 +141,7 @@ class SQLiteTest: XCTestCase {
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["value"]?.intValue, int)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -159,7 +159,7 @@ class SQLiteTest: XCTestCase {
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["uuid"]?.uuid, uuid)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -177,7 +177,7 @@ class SQLiteTest: XCTestCase {
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["str"]?.string, str)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -202,7 +202,7 @@ class SQLiteTest: XCTestCase {
             XCTAssertEqual(result[0]["str"]?.string, str)
             XCTAssertEqual(result[0]["str2"]?.string, str)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -225,7 +225,7 @@ class SQLiteTest: XCTestCase {
                 XCTAssertEqual(row["n"]?.intValue, i + 1)
             }
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -244,7 +244,7 @@ class SQLiteTest: XCTestCase {
             
             XCTAssertEqual(result[0]["value"]?.intValue, 1)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error

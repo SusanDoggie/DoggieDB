@@ -143,7 +143,7 @@ extension SQLiteDriver.Connection {
             
             return self.connection.query(raw, _binds).map { $0.map(DBQueryRow.init) }
             
-        } catch let error {
+        } catch {
             
             return eventLoop.makeFailedFuture(error)
         }
@@ -164,7 +164,7 @@ extension SQLiteDriver.Connection {
             
             return self.connection.query(raw, _binds, { onRow(DBQueryRow($0)) }).map { DBQueryMetadata() }
             
-        } catch let error {
+        } catch {
             
             return eventLoop.makeFailedFuture(error)
         }

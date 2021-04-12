@@ -240,7 +240,7 @@ extension PostgreSQLDriver.Connection {
             
             return self.connection.query(raw, _binds).map { $0.rows.map(DBQueryRow.init) }
             
-        } catch let error {
+        } catch {
             
             return eventLoop.makeFailedFuture(error)
         }
@@ -267,7 +267,7 @@ extension PostgreSQLDriver.Connection {
                 onRow: { try onRow(DBQueryRow($0)) }
             ).map { metadata.map(DBQueryMetadata.init) ?? DBQueryMetadata() }
             
-        } catch let error {
+        } catch {
             
             return eventLoop.makeFailedFuture(error)
         }

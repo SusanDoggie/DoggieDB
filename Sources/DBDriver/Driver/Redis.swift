@@ -72,7 +72,7 @@ extension RedisDriver {
                 boundEventLoop: eventLoop
             ).map(Connection.init)
             
-        } catch let error {
+        } catch {
             
             return eventLoop.makeFailedFuture(error)
         }

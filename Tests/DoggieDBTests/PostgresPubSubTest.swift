@@ -55,7 +55,7 @@ class PostgresPubSubTest: XCTestCase {
             
             print("POSTGRES:", try connection.version().wait())
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -69,7 +69,7 @@ class PostgresPubSubTest: XCTestCase {
             try self.connection.close().wait()
             try eventLoopGroup.syncShutdownGracefully()
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -94,7 +94,7 @@ class PostgresPubSubTest: XCTestCase {
             
             XCTAssertEqual("hello", result)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error

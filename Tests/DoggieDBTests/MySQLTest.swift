@@ -55,7 +55,7 @@ class MySQLTest: XCTestCase {
             
             print("MYSQL:", try connection.version().wait())
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -69,7 +69,7 @@ class MySQLTest: XCTestCase {
             try self.connection.close().wait()
             try eventLoopGroup.syncShutdownGracefully()
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -116,7 +116,7 @@ class MySQLTest: XCTestCase {
             XCTAssertEqual(email["Null"]?.string, "NO")
             XCTAssertEqual(phone["Null"]?.string, "NO")
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -134,7 +134,7 @@ class MySQLTest: XCTestCase {
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["value"]?.intValue, int)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -152,7 +152,7 @@ class MySQLTest: XCTestCase {
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["value"]?.intValue, int)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -170,7 +170,7 @@ class MySQLTest: XCTestCase {
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["uuid"]?.uuid, uuid)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -188,7 +188,7 @@ class MySQLTest: XCTestCase {
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["str"]?.string, str)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -204,7 +204,7 @@ class MySQLTest: XCTestCase {
             
             XCTAssertEqual(result[0]["now"]?.date, timestamp)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -224,7 +224,7 @@ class MySQLTest: XCTestCase {
             XCTAssertEqual(result[0]["date"]?.dateComponents?.month, date.month)
             XCTAssertEqual(result[0]["date"]?.dateComponents?.day, date.day)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -243,7 +243,7 @@ class MySQLTest: XCTestCase {
             XCTAssertEqual(result[0]["time"]?.dateComponents?.minute, time.minute)
             XCTAssertEqual(result[0]["time"]?.dateComponents?.second, time.second)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -275,7 +275,7 @@ class MySQLTest: XCTestCase {
             XCTAssertEqual(result[0]["str"]?.string, str)
             XCTAssertEqual(result[0]["str2"]?.string, str)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
@@ -294,7 +294,7 @@ class MySQLTest: XCTestCase {
             
             XCTAssertEqual(result[0]["value"]?.intValue, 1)
             
-        } catch let error {
+        } catch {
             
             print(error)
             throw error
