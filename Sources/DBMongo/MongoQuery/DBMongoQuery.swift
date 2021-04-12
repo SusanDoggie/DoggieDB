@@ -65,7 +65,7 @@ extension DBMongoQuery {
         
         return connection.client.withSession(options: options) { session in
             
-            let transaction = session.startTransaction(options: options?.defaultTransactionOptions)
+            let transaction = session.startTransaction()
             let promise = transaction.eventLoop.makePromise(of: T.self)
             
             return transaction.flatMap {
