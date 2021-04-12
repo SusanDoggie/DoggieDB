@@ -57,6 +57,13 @@ public enum MongoPredicateValue {
     case value(BSONConvertible)
 }
 
+extension MongoPredicateValue {
+    
+    static func key(_ key: MongoPredicateKey) -> MongoPredicateValue {
+        return .key(key.key)
+    }
+}
+
 extension MongoPredicateExpression {
     
     var _andList: [MongoPredicateExpression]? {
@@ -183,155 +190,155 @@ extension MongoPredicateExpression {
     }
 }
 
-public func == (lhs: MongoPredicateValue, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .equal(lhs, rhs)
+public func == (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .equal(.key(lhs), .key(rhs))
 }
 
-public func != (lhs: MongoPredicateValue, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .notEqual(lhs, rhs)
+public func != (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .notEqual(.key(lhs), .key(rhs))
 }
 
-public func < (lhs: MongoPredicateValue, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .lessThan(lhs, rhs)
+public func < (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .lessThan(.key(lhs), .key(rhs))
 }
 
-public func > (lhs: MongoPredicateValue, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .greaterThan(lhs, rhs)
+public func > (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .greaterThan(.key(lhs), .key(rhs))
 }
 
-public func <= (lhs: MongoPredicateValue, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .lessThanOrEqualTo(lhs, rhs)
+public func <= (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .lessThanOrEqualTo(.key(lhs), .key(rhs))
 }
 
-public func >= (lhs: MongoPredicateValue, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .greaterThanOrEqualTo(lhs, rhs)
+public func >= (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .greaterThanOrEqualTo(.key(lhs), .key(rhs))
 }
 
-public func == (lhs: MongoPredicateValue, rhs: _OptionalNilComparisonType) -> MongoPredicateExpression {
-    return .equal(lhs, .value(BSON.null))
+public func == (lhs: MongoPredicateKey, rhs: _OptionalNilComparisonType) -> MongoPredicateExpression {
+    return .equal(.key(lhs), .value(BSON.null))
 }
 
-public func != (lhs: MongoPredicateValue, rhs: _OptionalNilComparisonType) -> MongoPredicateExpression {
-    return .notEqual(lhs, .value(BSON.null))
+public func != (lhs: MongoPredicateKey, rhs: _OptionalNilComparisonType) -> MongoPredicateExpression {
+    return .notEqual(.key(lhs), .value(BSON.null))
 }
 
-public func == <T: BSONConvertible>(lhs: MongoPredicateValue, rhs: T) -> MongoPredicateExpression {
-    return .equal(lhs, .value(rhs))
+public func == <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: T) -> MongoPredicateExpression {
+    return .equal(.key(lhs), .value(rhs))
 }
 
-public func != <T: BSONConvertible>(lhs: MongoPredicateValue, rhs: T) -> MongoPredicateExpression {
-    return .notEqual(lhs, .value(rhs))
+public func != <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: T) -> MongoPredicateExpression {
+    return .notEqual(.key(lhs), .value(rhs))
 }
 
-public func < <T: BSONConvertible>(lhs: MongoPredicateValue, rhs: T) -> MongoPredicateExpression {
-    return .lessThan(lhs, .value(rhs))
+public func < <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: T) -> MongoPredicateExpression {
+    return .lessThan(.key(lhs), .value(rhs))
 }
 
-public func > <T: BSONConvertible>(lhs: MongoPredicateValue, rhs: T) -> MongoPredicateExpression {
-    return .greaterThan(lhs, .value(rhs))
+public func > <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: T) -> MongoPredicateExpression {
+    return .greaterThan(.key(lhs), .value(rhs))
 }
 
-public func <= <T: BSONConvertible>(lhs: MongoPredicateValue, rhs: T) -> MongoPredicateExpression {
-    return .lessThanOrEqualTo(lhs, .value(rhs))
+public func <= <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: T) -> MongoPredicateExpression {
+    return .lessThanOrEqualTo(.key(lhs), .value(rhs))
 }
 
-public func >= <T: BSONConvertible>(lhs: MongoPredicateValue, rhs: T) -> MongoPredicateExpression {
-    return .greaterThanOrEqualTo(lhs, .value(rhs))
+public func >= <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: T) -> MongoPredicateExpression {
+    return .greaterThanOrEqualTo(.key(lhs), .value(rhs))
 }
 
-public func == (lhs: _OptionalNilComparisonType, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .equal(.value(BSON.null), rhs)
+public func == (lhs: _OptionalNilComparisonType, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .equal(.value(BSON.null), .key(rhs))
 }
 
-public func != (lhs: _OptionalNilComparisonType, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .notEqual(.value(BSON.null), rhs)
+public func != (lhs: _OptionalNilComparisonType, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .notEqual(.value(BSON.null), .key(rhs))
 }
 
-public func == <T: BSONConvertible>(lhs: T, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .equal(.value(lhs), rhs)
+public func == <T: BSONConvertible>(lhs: T, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .equal(.value(lhs), .key(rhs))
 }
 
-public func != <T: BSONConvertible>(lhs: T, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .notEqual(.value(lhs), rhs)
+public func != <T: BSONConvertible>(lhs: T, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .notEqual(.value(lhs), .key(rhs))
 }
 
-public func < <T: BSONConvertible>(lhs: T, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .lessThan(.value(lhs), rhs)
+public func < <T: BSONConvertible>(lhs: T, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .lessThan(.value(lhs), .key(rhs))
 }
 
-public func > <T: BSONConvertible>(lhs: T, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .greaterThan(.value(lhs), rhs)
+public func > <T: BSONConvertible>(lhs: T, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .greaterThan(.value(lhs), .key(rhs))
 }
 
-public func <= <T: BSONConvertible>(lhs: T, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .lessThanOrEqualTo(.value(lhs), rhs)
+public func <= <T: BSONConvertible>(lhs: T, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .lessThanOrEqualTo(.value(lhs), .key(rhs))
 }
 
-public func >= <T: BSONConvertible>(lhs: T, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .greaterThanOrEqualTo(.value(lhs), rhs)
+public func >= <T: BSONConvertible>(lhs: T, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .greaterThanOrEqualTo(.value(lhs), .key(rhs))
 }
 
-public func ~= (lhs: NSRegularExpression, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .matching(rhs, .value(lhs))
+public func ~= (lhs: NSRegularExpression, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .matching(.key(rhs), .value(lhs))
 }
 
-public func ~= (lhs: Regex, rhs: MongoPredicateValue) -> MongoPredicateExpression {
-    return .matching(rhs, .value(lhs))
+public func ~= (lhs: Regex, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .matching(.key(rhs), .value(lhs))
 }
 
-public func ~= <C: Collection>(lhs: C, rhs: MongoPredicateValue) -> MongoPredicateExpression where C.Element: BSONConvertible {
-    return .containsIn(.value(Array(lhs)), rhs)
+public func ~= <C: Collection>(lhs: C, rhs: MongoPredicateKey) -> MongoPredicateExpression where C.Element: BSONConvertible {
+    return .containsIn(.value(Array(lhs)), .key(rhs))
 }
 
-public func ~= <T: BSONConvertible>(lhs: Range<T>, rhs: MongoPredicateValue) -> MongoPredicateExpression {
+public func ~= <T: BSONConvertible>(lhs: Range<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return rhs <= lhs.lowerBound && lhs.upperBound < rhs
 }
 
-public func ~= <T: BSONConvertible>(lhs: ClosedRange<T>, rhs: MongoPredicateValue) -> MongoPredicateExpression {
+public func ~= <T: BSONConvertible>(lhs: ClosedRange<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return rhs <= lhs.lowerBound && lhs.upperBound <= rhs
 }
 
-public func ~= <T: BSONConvertible>(lhs: PartialRangeFrom<T>, rhs: MongoPredicateValue) -> MongoPredicateExpression {
+public func ~= <T: BSONConvertible>(lhs: PartialRangeFrom<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return rhs <= lhs.lowerBound
 }
 
-public func ~= <T: BSONConvertible>(lhs: PartialRangeUpTo<T>, rhs: MongoPredicateValue) -> MongoPredicateExpression {
+public func ~= <T: BSONConvertible>(lhs: PartialRangeUpTo<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return lhs.upperBound < rhs
 }
 
-public func ~= <T: BSONConvertible>(lhs: PartialRangeThrough<T>, rhs: MongoPredicateValue) -> MongoPredicateExpression {
+public func ~= <T: BSONConvertible>(lhs: PartialRangeThrough<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return lhs.upperBound <= rhs
 }
 
-public func =~ (lhs: MongoPredicateValue, rhs: NSRegularExpression) -> MongoPredicateExpression {
-    return .matching(lhs, .value(rhs))
+public func =~ (lhs: MongoPredicateKey, rhs: NSRegularExpression) -> MongoPredicateExpression {
+    return .matching(.key(lhs), .value(rhs))
 }
 
-public func =~ (lhs: MongoPredicateValue, rhs: Regex) -> MongoPredicateExpression {
-    return .matching(lhs, .value(rhs))
+public func =~ (lhs: MongoPredicateKey, rhs: Regex) -> MongoPredicateExpression {
+    return .matching(.key(lhs), .value(rhs))
 }
 
-public func =~ <C: Collection>(lhs: MongoPredicateValue, rhs: C) -> MongoPredicateExpression where C.Element: BSONConvertible {
-    return .containsIn(lhs, .value(Array(rhs)))
+public func =~ <C: Collection>(lhs: MongoPredicateKey, rhs: C) -> MongoPredicateExpression where C.Element: BSONConvertible {
+    return .containsIn(.key(lhs), .value(Array(rhs)))
 }
 
-public func =~ <T: BSONConvertible>(lhs: MongoPredicateValue, rhs: Range<T>) -> MongoPredicateExpression {
+public func =~ <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: Range<T>) -> MongoPredicateExpression {
     return lhs <= rhs.lowerBound && rhs.upperBound < lhs
 }
 
-public func =~ <T: BSONConvertible>(lhs: MongoPredicateValue, rhs: ClosedRange<T>) -> MongoPredicateExpression {
+public func =~ <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: ClosedRange<T>) -> MongoPredicateExpression {
     return lhs <= rhs.lowerBound && rhs.upperBound <= lhs
 }
 
-public func =~ <T: BSONConvertible>(lhs: MongoPredicateValue, rhs: PartialRangeFrom<T>) -> MongoPredicateExpression {
+public func =~ <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: PartialRangeFrom<T>) -> MongoPredicateExpression {
     return lhs <= rhs.lowerBound
 }
 
-public func =~ <T: BSONConvertible>(lhs: MongoPredicateValue, rhs: PartialRangeUpTo<T>) -> MongoPredicateExpression {
+public func =~ <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: PartialRangeUpTo<T>) -> MongoPredicateExpression {
     return rhs.upperBound < lhs
 }
 
-public func =~ <T: BSONConvertible>(lhs: MongoPredicateValue, rhs: PartialRangeThrough<T>) -> MongoPredicateExpression {
+public func =~ <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: PartialRangeThrough<T>) -> MongoPredicateExpression {
     return rhs.upperBound <= lhs
 }
 

@@ -27,9 +27,18 @@ public struct SQLPredicateBuilder {
     
 }
 
+public struct SQLPredicateKey {
+    
+    public var key: String
+    
+    public init(key: String) {
+        self.key = key
+    }
+}
+
 extension SQLPredicateBuilder {
     
-    public subscript(_ name: String) -> SQLPredicateValue {
-        return .name(name)
+    public subscript(_ key: String) -> SQLPredicateKey {
+        return SQLPredicateKey(key: key)
     }
 }

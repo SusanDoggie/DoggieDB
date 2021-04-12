@@ -27,13 +27,22 @@ public struct MongoPredicateBuilder {
     
 }
 
+public struct MongoPredicateKey {
+    
+    public var key: String
+    
+    public init(key: String) {
+        self.key = key
+    }
+}
+
 extension MongoPredicateBuilder {
     
-    public var id: MongoPredicateValue {
-        return .key("_id")
+    public var id: MongoPredicateKey {
+        return MongoPredicateKey(key: "_id")
     }
     
-    public subscript(_ key: String) -> MongoPredicateValue {
-        return .key(key)
+    public subscript(_ key: String) -> MongoPredicateKey {
+        return MongoPredicateKey(key: key)
     }
 }
