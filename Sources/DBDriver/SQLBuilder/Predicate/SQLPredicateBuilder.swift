@@ -25,6 +25,9 @@
 
 public struct SQLPredicateBuilder {
     
+    public init() {
+        
+    }
 }
 
 public struct SQLPredicateKey {

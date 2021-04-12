@@ -25,6 +25,9 @@
 
 public struct MongoPredicateBuilder {
     
+    public init() {
+        
+    }
 }
 
 public struct MongoPredicateKey {

@@ -94,7 +94,7 @@ extension SQLPredicateExpression {
         }
     }
     
-    func serialize(into builder: inout SQLBuilder) {
+    public func serialize(into builder: inout SQLBuilder) {
         switch self {
         case let .not(x):
             

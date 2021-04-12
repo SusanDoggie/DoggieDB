@@ -86,7 +86,7 @@ extension MongoPredicateExpression {
         }
     }
     
-    func toBSONDocument() throws -> BSONDocument {
+    public func toBSONDocument() throws -> BSONDocument {
         
         switch self {
         case let .not(x):
