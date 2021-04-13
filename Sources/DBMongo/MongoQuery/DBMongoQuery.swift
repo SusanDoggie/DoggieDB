@@ -39,6 +39,42 @@ extension MongoDBDriver.Connection {
     }
 }
 
+extension ClientSession {
+    
+    public func withTransaction<T>(
+        options: ClientSessionOptions? = nil,
+        _ transactionBody: @escaping () throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        
+        let transaction = self.startTransaction()
+        let promise = transaction.eventLoop.makePromise(of: T.self)
+        
+        return transaction.flatMap {
+            
+            do {
+                
+                let bodyFuture = try transactionBody()
+                
+                bodyFuture.flatMap { _ in
+                    self.commitTransaction()
+                }.flatMapError { _ in
+                    self.abortTransaction()
+                }.whenComplete { _ in
+                    promise.completeWith(bodyFuture)
+                }
+                
+            } catch {
+                
+                self.abortTransaction().whenComplete { _ in
+                    promise.fail(error)
+                }
+            }
+            
+            return promise.futureResult
+        }
+    }
+}
+
 extension DBMongoQuery {
     
     public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
@@ -65,32 +101,7 @@ extension DBMongoQuery {
         
         return connection.client.withSession(options: options) { session in
             
-            let transaction = session.startTransaction()
-            let promise = transaction.eventLoop.makePromise(of: T.self)
-            
-            return transaction.flatMap {
-                
-                do {
-                    
-                    let bodyFuture = try transactionBody(self.session(session))
-                    
-                    bodyFuture.flatMap { _ in
-                        session.commitTransaction()
-                    }.flatMapError { _ in
-                        session.abortTransaction()
-                    }.whenComplete { _ in
-                        promise.completeWith(bodyFuture)
-                    }
-                    
-                } catch {
-                    
-                    session.abortTransaction().whenComplete { _ in
-                        promise.fail(error)
-                    }
-                }
-                
-                return promise.futureResult
-            }
+            session.withTransaction { try transactionBody(self.session(session)) }
         }
     }
 }
