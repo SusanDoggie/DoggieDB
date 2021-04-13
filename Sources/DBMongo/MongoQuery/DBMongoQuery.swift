@@ -89,19 +89,18 @@ extension DBMongoQuery {
     
     public func withSession<T>(
         options: ClientSessionOptions? = nil,
-        _ sessionBody: (DBMongoQuery) throws -> EventLoopFuture<T>
+        _ sessionBody: (ClientSession) throws -> EventLoopFuture<T>
     ) -> EventLoopFuture<T> {
-        return connection.client.withSession(options: options) { try sessionBody(self.session($0)) }
+        return connection.client.withSession(options: options, sessionBody)
     }
     
     public func withTransaction<T>(
         options: ClientSessionOptions? = nil,
-        _ transactionBody: @escaping (DBMongoQuery) throws -> EventLoopFuture<T>
+        _ transactionBody: @escaping (ClientSession) throws -> EventLoopFuture<T>
     ) -> EventLoopFuture<T> {
         
         return connection.client.withSession(options: options) { session in
-            
-            session.withTransaction { try transactionBody(self.session(session)) }
+            session.withTransaction { try transactionBody(session) }
         }
     }
 }
