@@ -31,12 +31,40 @@ public protocol DBMongoSortOptions {
     
 }
 
+public enum DBMongoSortOrder {
+    
+    case ascending
+    
+    case descending
+}
+
+extension OrderedDictionary where Key == String, Value == DBMongoSortOrder {
+    
+    func toBSONDocument() -> BSONDocument {
+        var document: BSONDocument = [:]
+        for (key, value) in self {
+            switch value {
+            case .ascending: document[key] = 1
+            case .descending: document[key] = -1
+            }
+        }
+        return document
+    }
+}
+
 extension DBMongoExpression where Options: DBMongoSortOptions {
     
     /// The order in which to return matching documents.
     public func sort(_ sort: BSONDocument) -> Self {
         var result = self
         result.options.sort = sort
+        return result
+    }
+    
+    /// The order in which to return matching documents.
+    public func sort(_ sort: OrderedDictionary<String, DBMongoSortOrder>) -> Self {
+        var result = self
+        result.options.sort = sort.toBSONDocument()
         return result
     }
     

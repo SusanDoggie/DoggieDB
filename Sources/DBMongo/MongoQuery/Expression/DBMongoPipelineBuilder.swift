@@ -73,6 +73,10 @@ extension DBMongoPipelineBuilder {
     public func sort(_ sort: BSONDocument) -> Self {
         return self._appended(["$sort": .document(sort)])
     }
+    
+    public func sort(_ sort: OrderedDictionary<String, DBMongoSortOrder>) -> Self {
+        return self._appended(["$sort": .document(sort.toBSONDocument())])
+    }
 }
 
 extension DBMongoPipelineBuilder {
