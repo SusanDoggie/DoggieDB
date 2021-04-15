@@ -77,6 +77,14 @@ extension ClientSession {
 
 extension DBMongoQuery {
     
+    public func runCommand(_ command: BSONDocument, options: RunCommandOptions? = nil) -> EventLoopFuture<BSONDocument> {
+        guard let database = connection.database else { fatalError("database not selected.") }
+        return database.runCommand(command, options: options, session: session)
+    }
+}
+
+extension DBMongoQuery {
+    
     public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
         return connection.client.startSession(options: options)
     }
