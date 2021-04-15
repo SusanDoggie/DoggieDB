@@ -191,3 +191,10 @@ extension Dictionary: BSONConvertible where Key == String, Value: BSONConvertibl
         return .document(BSONDocument(self.mapValues { $0.toBSON() }))
     }
 }
+
+extension OrderedDictionary: BSONConvertible where Key == String, Value: BSONConvertible {
+    
+    public func toBSON() -> BSON {
+        return .document(BSONDocument(self.mapValues { $0.toBSON() }))
+    }
+}

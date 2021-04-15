@@ -184,3 +184,10 @@ extension Dictionary: DBDataConvertible where Key == String, Value: DBDataConver
         return DBData(self)
     }
 }
+
+extension OrderedDictionary: DBDataConvertible where Key == String, Value: DBDataConvertible {
+    
+    public func toDBData() -> DBData {
+        return DBData(self)
+    }
+}

@@ -33,16 +33,37 @@ extension Dictionary where Key == String, Value == DBData {
     }
 }
 
+extension OrderedDictionary where Key == String, Value == DBData {
+    
+    init(_ document: BSONDocument) throws {
+        self.init()
+        for (key, value) in document {
+            self[key] = try DBData(value)
+        }
+    }
+}
+
 extension BSONDocument {
     
-    public init(_ dictionary: [String: BSON]) {
+    public init<Value: BSONConvertible>(_ dictionary: [String: Value]) {
         self.init()
         for (key, value) in dictionary {
-            self[key] = value
+            self[key] = value.toBSON()
+        }
+    }
+    
+    public init<Value: BSONConvertible>(_ dictionary: OrderedDictionary<String, Value>) {
+        self.init()
+        for (key, value) in dictionary {
+            self[key] = value.toBSON()
         }
     }
     
     public init(_ dictionary: [String: DBData]) throws {
+        try self.init(dictionary.mapValues(BSON.init))
+    }
+    
+    public init(_ dictionary: OrderedDictionary<String, DBData>) throws {
         try self.init(dictionary.mapValues(BSON.init))
     }
 }
@@ -53,12 +74,8 @@ extension BSON {
         self = .document(document)
     }
     
-    public init(_ array: [BSONDocument]) {
-        self = .array(array.map(BSON.init))
-    }
-    
-    public init(_ array: [BSON]) {
-        self = .array(array)
+    public init<S: Sequence>(_ elements: S) where S.Element: BSONConvertible {
+        self = .array(elements.map { $0.toBSON() })
     }
 }
 

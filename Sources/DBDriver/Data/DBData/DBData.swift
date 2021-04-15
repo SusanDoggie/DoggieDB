@@ -135,6 +135,10 @@ public struct DBData {
     public init<Value: DBDataConvertible>(_ elements: [String: Value]) {
         self.base = .dictionary(elements.mapValues { $0.toDBData() })
     }
+    
+    public init<Value: DBDataConvertible>(_ elements: OrderedDictionary<String, Value>) {
+        self.base = .dictionary(Dictionary(uniqueKeysWithValues: elements.mapValues { $0.toDBData() }.map { ($0.key, $0.value) }))
+    }
 }
 
 extension DBData: ExpressibleByNilLiteral {

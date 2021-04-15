@@ -70,6 +70,13 @@ extension DBMongoPipelineBuilder {
 
 extension DBMongoPipelineBuilder {
     
+    public func sort(_ sort: BSONDocument) -> Self {
+        return self._appended(["$sort": .document(sort)])
+    }
+}
+
+extension DBMongoPipelineBuilder {
+    
     public func unwind(_ path: String, includeArrayIndex: String? = nil, preserveNullAndEmptyArrays: Bool? = nil) -> Self {
         var options: BSONDocument = ["path": .string(path)]
         if let includeArrayIndex = includeArrayIndex {
