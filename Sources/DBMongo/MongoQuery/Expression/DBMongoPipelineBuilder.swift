@@ -35,7 +35,7 @@ public protocol DBMongoPipelineBuilder {
 
 extension DBMongoPipelineBuilder {
     
-    public func _appended(_ pipeline: BSONDocument) -> Self {
+    public func appendStage(_ pipeline: BSONDocument) -> Self {
         var result = self
         result.pipeline.append(pipeline)
         return result
@@ -45,37 +45,37 @@ extension DBMongoPipelineBuilder {
 extension DBMongoPipelineBuilder {
     
     public func count(_ name: String) -> Self {
-        return self._appended(["$count": .string(name)])
+        return self.appendStage(["$count": .string(name)])
     }
     
     public func limit(_ n: Int) -> Self {
-        return self._appended(["$limit": .int64(Int64(n))])
+        return self.appendStage(["$limit": .int64(Int64(n))])
     }
     
     public func skip(_ n: Int) -> Self {
-        return self._appended(["$skip": .int64(Int64(n))])
+        return self.appendStage(["$skip": .int64(Int64(n))])
     }
 }
 
 extension DBMongoPipelineBuilder {
     
     public func match(_ filter: BSONDocument) -> Self {
-        return self._appended(["$match": .document(filter)])
+        return self.appendStage(["$match": .document(filter)])
     }
     
     public func match(_ predicate: (MongoPredicateBuilder) -> MongoPredicateExpression) throws -> Self {
-        return try self._appended(["$match": .document(predicate(MongoPredicateBuilder()).toBSONDocument())])
+        return try self.appendStage(["$match": .document(predicate(MongoPredicateBuilder()).toBSONDocument())])
     }
 }
 
 extension DBMongoPipelineBuilder {
     
     public func sort(_ sort: BSONDocument) -> Self {
-        return self._appended(["$sort": .document(sort)])
+        return self.appendStage(["$sort": .document(sort)])
     }
     
     public func sort(_ sort: OrderedDictionary<String, DBMongoSortOrder>) -> Self {
-        return self._appended(["$sort": .document(sort.toBSONDocument())])
+        return self.appendStage(["$sort": .document(sort.toBSONDocument())])
     }
 }
 
@@ -89,7 +89,7 @@ extension DBMongoPipelineBuilder {
         if let preserveNullAndEmptyArrays = preserveNullAndEmptyArrays {
             options["preserveNullAndEmptyArrays"] = .bool(preserveNullAndEmptyArrays)
         }
-        return self._appended(["$unwind": .document(options)])
+        return self.appendStage(["$unwind": .document(options)])
     }
 }
 
@@ -100,6 +100,6 @@ extension DBMongoPipelineBuilder {
         if let database = database {
             options["db"] = .string(database)
         }
-        return self._appended(["$out": .document(options)])
+        return self.appendStage(["$out": .document(options)])
     }
 }
