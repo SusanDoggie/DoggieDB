@@ -58,7 +58,7 @@ extension DBMongoAggregateExpression {
         return query.collection.aggregate(pipeline, options: options, session: query.session)
     }
     
-    public func execute<OutputType: Codable>(withOutputType outputType: OutputType.Type) -> EventLoopFuture<MongoCursor<OutputType>> {
+    public func execute<OutputType: Codable>(as outputType: OutputType.Type) -> EventLoopFuture<MongoCursor<OutputType>> {
         guard !pipeline.isEmpty else { fatalError() }
         return query.collection.aggregate(pipeline, options: options, session: query.session, withOutputType: outputType)
     }
