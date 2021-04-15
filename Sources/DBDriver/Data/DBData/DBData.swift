@@ -137,7 +137,7 @@ public struct DBData {
     }
     
     public init<Value: DBDataConvertible>(_ elements: OrderedDictionary<String, Value>) {
-        self.base = .dictionary(Dictionary(uniqueKeysWithValues: elements.mapValues { $0.toDBData() }.map { ($0.key, $0.value) }))
+        self.base = .dictionary(Dictionary(uniqueKeysWithValues: elements.lazy.map { ($0.key, $0.value.toDBData()) }))
     }
 }
 
