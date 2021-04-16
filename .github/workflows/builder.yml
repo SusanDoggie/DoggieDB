@@ -36,6 +36,7 @@ jobs:
             username: runner
     env:
       use_xcodebuild: ${{ matrix.use_xcodebuild }}
+      schemes: DoggieDB
       sdk: ${{ matrix.sdk }}
       destination: ${{ matrix.destination }}
       enable_codecov: ${{ matrix.enable_codecov }}
