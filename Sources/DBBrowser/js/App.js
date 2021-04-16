@@ -1,30 +1,28 @@
 import _ from 'lodash';
 import React from 'react';
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, Redirect } from 'react-router-dom';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // const Home = loadable(() => import('./pages/Home'));
 // const About = loadable(() => import('./pages/About'));
+// const NotFound = loadable(() => import('./pages/NotFound'));
 
 import Home from './pages/Home';
 import About from './pages/About';
+import NotFound from './pages/NotFound';
 
-class Page extends React.Component {
-
-  render() {
-    const { children, author, description, keywords, meta, ...props } = this.props;
-    return (
-      <Route render={({ staticContext }) => {
-        if (staticContext) {
-          for (const [key, value] of Object.entries(props)) {
-            staticContext[key] = value;
-          }
-          staticContext.meta = { author, description, keywords, ...meta };
+function Page({ children, author, description, keywords, meta, ...props }) {
+  return (
+    <Route render={({ staticContext }) => {
+      if (staticContext) {
+        for (const [key, value] of Object.entries(props)) {
+          staticContext[key] = value;
         }
-        return children;
-      }} {...props} />
-    );
-  }
+        staticContext.meta = { author, description, keywords, ...meta };
+      }
+      return children;
+    }} {...props} />
+  );
 }
 
 export default class App extends React.Component {
@@ -38,6 +36,8 @@ export default class App extends React.Component {
         <Switch>
         <Page exact path='/' title='Home'><Home /></Page>
         <Page path='/about' title='About'><About /></Page>
+        <Page path='/redirect'><Redirect to='/about' /></Page>
+        <Page path='*' title='404 Not Found' statusCode={404}><NotFound /></Page>
         </Switch>
       </SafeAreaProvider>
     );
