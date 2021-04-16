@@ -83,12 +83,12 @@ const webpackConfiguration = {
 
 module.exports = [
 	Object.assign({}, webpackConfiguration, {
-		entry: { 
-			main: './Sources/Server/js/main.js',
-			server: './Sources/Server/js/server.js',
+		entry: {
+			main: './Sources/DBBrowser/js/main.js',
+			server: './Sources/DBBrowser/js/server.js',
 		},
 		output: {
-			path: path.join(__dirname, 'Sources/Server/Public'),
+			path: path.join(__dirname, 'Sources/DBBrowser/Public'),
 			publicPath: '/',
 			filename: 'js/[name].js'
 		}
