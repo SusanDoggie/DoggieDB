@@ -83,9 +83,16 @@ const webpackConfiguration = {
 
 module.exports = [
 	Object.assign({}, webpackConfiguration, {
-		entry: {
+		entry: { 
 			main: './Sources/DBBrowser/js/main.js',
-			server: './Sources/DBBrowser/js/server.js',
+			server: {
+				import: './Sources/DBBrowser/js/server.js',
+				library: {
+					name: 'render',
+					type: 'global',
+					export: 'default'
+				}
+			},
 		},
 		output: {
 			path: path.join(__dirname, 'Sources/DBBrowser/Public'),
