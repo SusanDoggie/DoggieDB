@@ -32,6 +32,13 @@ public struct DBRedisQuery {
     let client: RedisConnection
 }
 
+extension DBRedisQuery {
+    
+    public var eventLoop: EventLoop {
+        return connection.eventLoop
+    }
+}
+
 extension RedisDriver.Connection {
     
     public func redisQuery() -> DBRedisQuery {

@@ -30,6 +30,13 @@ public struct DBRedisPubSub {
     let connection: RedisConnection
 }
 
+extension DBRedisPubSub {
+    
+    public var eventLoop: EventLoop {
+        return connection.eventLoop
+    }
+}
+
 extension RedisDriver.Connection {
     
     public func redisPubSub() -> DBRedisPubSub {

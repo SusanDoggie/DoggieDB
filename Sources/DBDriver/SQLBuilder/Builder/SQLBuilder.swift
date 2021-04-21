@@ -79,6 +79,13 @@ public struct SQLBuilder {
     }
 }
 
+extension SQLBuilder {
+    
+    public var eventLoop: EventLoop? {
+        return connection?.eventLoop
+    }
+}
+
 extension DBConnection where Self: DBSQLConnection {
     
     public func sqlQuery() -> SQLBuilder {

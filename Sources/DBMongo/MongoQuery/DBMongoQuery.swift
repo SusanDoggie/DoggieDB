@@ -32,6 +32,13 @@ public struct DBMongoQuery {
     var session: ClientSession?
 }
 
+extension DBMongoQuery {
+    
+    public var eventLoop: EventLoop {
+        return connection.eventLoop
+    }
+}
+
 extension MongoDBDriver.Connection {
     
     public func mongoQuery() -> DBMongoQuery {

@@ -28,6 +28,13 @@ public struct DBPostgresPubSub {
     let connection: PostgreSQLDriver.Connection
 }
 
+extension DBPostgresPubSub {
+    
+    public var eventLoop: EventLoop {
+        return connection.eventLoop
+    }
+}
+
 extension PostgreSQLDriver.Connection {
     
     public func postgresPubSub() -> DBPostgresPubSub {
