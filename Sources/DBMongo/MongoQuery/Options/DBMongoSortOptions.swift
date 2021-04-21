@@ -40,7 +40,7 @@ public enum DBMongoSortOrder {
 
 extension OrderedDictionary where Key == String, Value == DBMongoSortOrder {
     
-    func toBSONDocument() -> BSONDocument {
+    public func toBSONDocument() -> BSONDocument {
         var document: BSONDocument = [:]
         for (key, value) in self {
             switch value {
