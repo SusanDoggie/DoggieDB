@@ -23,6 +23,8 @@
 //  THE SOFTWARE.
 //
 
+import Utils
+
 extension DBData {
     
     /// The strategy to use for decoding `Date` values.
@@ -294,6 +296,10 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         switch value.base {
         case .null: throw Database.Error.valueNotFound
             
+        case let .timestamp(date):
+            
+            return date
+            
         case let .date(date):
             
             guard let value = date.date else { throw Database.Error.unsupportedType }
@@ -365,6 +371,7 @@ extension DBData._Decoder: SingleValueDecodingContainer {
     func _decode(_ type: DateComponents.Type) throws -> DateComponents {
         switch value.base {
         case .null: throw Database.Error.valueNotFound
+        case let .timestamp(date): return Calendar.iso8601.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: date)
         case let .date(date): return date
         default: return try options.calendar.dateComponents(in: options.timeZone, from: self._decode(Date.self))
         }

@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 //
 
+import Utils
 import PostgresNIO
 
 private let psqlDateStart = Date(timeIntervalSince1970: 946_684_800)
@@ -35,7 +36,7 @@ extension PostgresData {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withFullDate]
         
-        return formatter.date(from: string).map { DBData.calendar.dateComponents(Calendar.componentsOfDate, from: $0) }
+        return formatter.date(from: string).map { Calendar.iso8601.dateComponents(Calendar.componentsOfDate, from: $0) }
     }
     
     static func _decodeTimeString(_ string: String, withTimeZone: Bool) -> DateComponents? {
@@ -48,15 +49,15 @@ extension PostgresData {
         }
         
         if let timestamp = formatter.date(from: withTimeZone ? string : "\(string)Z") {
-            return DBData.calendar.dateComponents(Calendar.componentsOfTime, from: timestamp)
+            return Calendar.iso8601.dateComponents(Calendar.componentsOfTime, from: timestamp)
         }
         
         formatter.formatOptions.formUnion(.withFractionalSeconds)
         
-        return formatter.date(from: withTimeZone ? string : "\(string)Z").map { DBData.calendar.dateComponents(Calendar.componentsOfTime, from: $0) }
+        return formatter.date(from: withTimeZone ? string : "\(string)Z").map { Calendar.iso8601.dateComponents(Calendar.componentsOfTime, from: $0) }
     }
     
-    static func _decodeTimestampString(_ string: String, withTimeZone: Bool) -> DateComponents? {
+    static func _decodeTimestampString(_ string: String, withTimeZone: Bool) -> Date? {
         
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withSpaceBetweenDateAndTime]
@@ -66,12 +67,12 @@ extension PostgresData {
         }
         
         if let timestamp = formatter.date(from: withTimeZone ? string : "\(string)Z") {
-            return DBData.calendar.dateComponents(Calendar.componentsOfTimestamp, from: timestamp)
+            return timestamp
         }
         
         formatter.formatOptions.formUnion(.withFractionalSeconds)
         
-        return formatter.date(from: withTimeZone ? string : "\(string)Z").map { DBData.calendar.dateComponents(Calendar.componentsOfTimestamp, from: $0) }
+        return formatter.date(from: withTimeZone ? string : "\(string)Z")
     }
 }
 
@@ -166,7 +167,7 @@ extension DBData {
                 let microseconds = value.readInteger(as: Int64.self)!
                 
                 let dateComponents = DateComponents(
-                    calendar: DBData.calendar,
+                    calendar: Calendar.iso8601,
                     timeZone: TimeZone(secondsFromGMT: 0),
                     hour: Int(microseconds / 3_600_000_000) % 60,
                     minute: Int(microseconds / 60_000_000) % 60,
@@ -195,7 +196,7 @@ extension DBData {
                 
                 let timeZone = TimeZone(secondsFromGMT: Int(-zone))!
                 
-                var calendar = DBData.calendar
+                var calendar = Calendar.iso8601
                 calendar.timeZone = timeZone
                 
                 let dateComponents = DateComponents(
@@ -215,9 +216,9 @@ extension DBData {
             case .text:
                 
                 guard let string = value.string else { throw Database.Error.unsupportedType }
-                guard let dateComponents = PostgresData._decodeTimestampString(string, withTimeZone: false) else { throw Database.Error.unsupportedType }
+                guard let date = PostgresData._decodeTimestampString(string, withTimeZone: false) else { throw Database.Error.unsupportedType }
                 
-                self = DBData(dateComponents)
+                self = DBData(date)
                 
             case .binary:
                 self = value.date.map { DBData($0) } ?? nil
@@ -229,9 +230,9 @@ extension DBData {
             case .text:
                 
                 guard let string = value.string else { throw Database.Error.unsupportedType }
-                guard let dateComponents = PostgresData._decodeTimestampString(string, withTimeZone: true) else { throw Database.Error.unsupportedType }
+                guard let date = PostgresData._decodeTimestampString(string, withTimeZone: true) else { throw Database.Error.unsupportedType }
                 
-                self = DBData(dateComponents)
+                self = DBData(date)
                 
             case .binary:
                 self = value.date.map { DBData($0) } ?? nil
@@ -300,9 +301,10 @@ extension PostgresData {
             
         case let .number(value): self.init(double: value)
         case let .decimal(value): self.init(decimal: value)
+        case let .timestamp(value): self.init(date: value)
         case let .date(value):
             
-            let calendar = value.calendar ?? DBData.calendar
+            let calendar = value.calendar ?? Calendar.iso8601
             
             if !value.containsDate() && value.containsTime() {
                 

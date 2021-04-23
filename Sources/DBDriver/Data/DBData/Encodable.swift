@@ -80,6 +80,11 @@ extension DBData: Encodable {
             var container = encoder.singleValueContainer()
             try container.encode(value)
             
+        case let .timestamp(value):
+            
+            var container = encoder.singleValueContainer()
+            try container.encode(value)
+            
         case let .date(value):
             
             var container = encoder.singleValueContainer()

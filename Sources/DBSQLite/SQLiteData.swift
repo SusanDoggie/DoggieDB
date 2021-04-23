@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 //
 
+import Utils
 import SQLiteNIO
 
 extension DBData {
@@ -59,8 +60,30 @@ extension SQLiteData {
         case let .number(value): self = .float(value)
         case let .decimal(value):
             
-            guard let _value = Double(exactly: value) else { throw Database.Error.unsupportedType }
-            self = .float(_value)
+            if let _value = Int(exactly: value) {
+                self = .integer(_value)
+            } else if let _value = Double(exactly: value) {
+                self = .float(_value)
+            } else {
+                throw Database.Error.unsupportedType
+            }
+            
+        case let .timestamp(value):
+            
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = .withInternetDateTime
+            
+            self = .text(formatter.string(from: value))
+            
+        case let .date(value):
+            
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = .withInternetDateTime
+            
+            let calendar = value.calendar ?? Calendar.iso8601
+            guard let date = calendar.date(from: value) else { throw Database.Error.unsupportedType }
+            
+            self = .text(formatter.string(from: date))
             
         case let .uuid(value): self = .text(value.uuidString)
         case let .binary(value): self = .blob(ByteBuffer(data: value))

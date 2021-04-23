@@ -25,11 +25,11 @@
 
 extension DateComponents {
     
-    func containsDate() -> Bool {
+    public func containsDate() -> Bool {
         return year != nil && month != nil && day != nil
     }
     
-    func containsTime() -> Bool {
+    public func containsTime() -> Bool {
         return hour != nil && minute != nil && second != nil
     }
 }

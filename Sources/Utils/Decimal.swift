@@ -46,3 +46,11 @@ extension Int64 {
         guard Decimal(self) == value else { return nil }
     }
 }
+
+extension Int {
+    
+    public init?(exactly value: Decimal) {
+        self = NSDecimalNumber(decimal: value).intValue
+        guard Decimal(self) == value else { return nil }
+    }
+}

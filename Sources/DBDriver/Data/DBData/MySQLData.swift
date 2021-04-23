@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 //
 
+import Utils
 import MySQLNIO
 
 extension DBData {
@@ -169,9 +170,10 @@ extension MySQLData {
             
         case let .number(value): self.init(double: value)
         case let .decimal(value): self.init(decimal: value)
+        case let .timestamp(value): self.init(date: value)
         case let .date(value):
             
-            let calendar = value.calendar ?? DBData.calendar
+            let calendar = value.calendar ?? Calendar.iso8601
             
             if !value.containsDate() && value.containsTime() {
                 
@@ -183,7 +185,7 @@ extension MySQLData {
                 
                 guard let date = calendar.date(from: value) else { throw Database.Error.unsupportedType }
                 
-                let utc_time = DBData.calendar.dateComponents([.hour, .minute, .second, .nanosecond], from: date)
+                let utc_time = Calendar.iso8601.dateComponents([.hour, .minute, .second, .nanosecond], from: date)
                 
                 self.init(time: MySQLTime(
                     hour: utc_time.hour.map(UInt16.init),
@@ -199,7 +201,7 @@ extension MySQLData {
                 
                 guard let date = calendar.date(from: value) else { throw Database.Error.unsupportedType }
                 
-                let utc_time = DBData.calendar.dateComponents([.year, .month, .day], from: date)
+                let utc_time = Calendar.iso8601.dateComponents([.year, .month, .day], from: date)
                 
                 self.init(time: MySQLTime(
                     year: utc_time.year.map(UInt16.init),

@@ -23,6 +23,8 @@
 //  THE SOFTWARE.
 //
 
+import Utils
+
 public enum DBDataType: Hashable {
     
     case null
@@ -33,6 +35,7 @@ public enum DBDataType: Hashable {
     case unsigned
     case number
     case decimal
+    case timestamp
     case date
     case binary
     case uuid
@@ -51,6 +54,7 @@ public struct DBData {
         case unsigned(UInt64)
         case number(Double)
         case decimal(Decimal)
+        case timestamp(Date)
         case date(DateComponents)
         case binary(Data)
         case uuid(UUID)
@@ -96,12 +100,8 @@ public struct DBData {
         self.base = .decimal(value)
     }
     
-    public init(
-        _ value: Date,
-        calendar: Calendar = Calendar(identifier: .iso8601),
-        timeZone: TimeZone? = nil
-    ) {
-        self.base = .date(calendar.dateComponents(in: timeZone ?? calendar.timeZone, from: value))
+    public init(_ value: Date) {
+        self.base = .timestamp(value)
     }
     
     public init(_ value: DateComponents) {
@@ -206,8 +206,9 @@ extension DBData: CustomStringConvertible {
         case let .unsigned(value): return "\(value)"
         case let .number(value): return "\(value)"
         case let .decimal(value): return "\(value)"
+        case let .timestamp(value): return "\(value)"
         case let .date(value):
-            let calendar = value.calendar ?? DBData.calendar
+            let calendar = value.calendar ?? Calendar.iso8601
             return calendar.date(from: value).map { "\($0)" } ?? "\(value)"
         case let .binary(value): return "\(value)"
         case let .uuid(value): return "\(value)"
@@ -229,6 +230,7 @@ extension DBData: Hashable {
         case let (.unsigned(lhs), .unsigned(rhs)): return lhs == rhs
         case let (.number(lhs), .number(rhs)): return lhs == rhs
         case let (.decimal(lhs), .decimal(rhs)): return lhs == rhs
+        case let (.timestamp(lhs), .timestamp(rhs)): return lhs == rhs
         case let (.date(lhs), .date(rhs)): return lhs == rhs
         case let (.binary(lhs), .binary(rhs)): return lhs == rhs
         case let (.uuid(lhs), .uuid(rhs)): return lhs == rhs
@@ -248,6 +250,7 @@ extension DBData: Hashable {
         case let .unsigned(value): hasher.combine(value)
         case let .number(value): hasher.combine(value)
         case let .decimal(value): hasher.combine(value)
+        case let .timestamp(value): hasher.combine(value)
         case let .date(value): hasher.combine(value)
         case let .binary(value): hasher.combine(value)
         case let .uuid(value): hasher.combine(value)
@@ -270,6 +273,7 @@ extension DBData {
         case .unsigned: return .unsigned
         case .number: return .number
         case .decimal: return .decimal
+        case .timestamp: return .timestamp
         case .date: return .date
         case .binary: return .binary
         case .uuid: return .uuid
@@ -357,8 +361,16 @@ extension DBData {
         }
     }
     
+    public var isTimestamp: Bool {
+        switch self.base {
+        case .timestamp: return true
+        default: return false
+        }
+    }
+    
     public var isDate: Bool {
         switch self.base {
+        case .timestamp: return true
         case .date: return true
         default: return false
         }
@@ -548,9 +560,10 @@ extension DBData {
     
     public var date: Date? {
         switch self.base {
+        case let .timestamp(value): return value
         case let .date(value):
             
-            let calendar = value.calendar ?? DBData.calendar
+            let calendar = value.calendar ?? Calendar.iso8601
             return calendar.date(from: value)
             
         case let .string(value):
@@ -565,12 +578,14 @@ extension DBData {
     
     public var dateComponents: DateComponents? {
         switch self.base {
+        case let .timestamp(value): return Calendar.iso8601.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: value)
         case let .date(value): return value
+            
         case let .string(value):
             
             let formatter = ISO8601DateFormatter()
             formatter.formatOptions = .withInternetDateTime
-            return formatter.date(from: value).map { DBData.calendar.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: $0) }
+            return formatter.date(from: value).map { Calendar.iso8601.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: $0) }
             
         default: return nil
         }

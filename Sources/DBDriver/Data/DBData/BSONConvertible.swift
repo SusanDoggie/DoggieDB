@@ -23,6 +23,8 @@
 //  THE SOFTWARE.
 //
 
+import Utils
+
 public protocol BSONConvertible {
     
     func toBSON() -> BSON
@@ -153,7 +155,7 @@ extension ByteBufferView: BSONConvertible {
 extension DateComponents: BSONConvertible {
     
     public func toBSON() -> BSON {
-        return .datetime(DBData.calendar.date(from: self)!)
+        return .datetime(Calendar.iso8601.date(from: self)!)
     }
 }
 

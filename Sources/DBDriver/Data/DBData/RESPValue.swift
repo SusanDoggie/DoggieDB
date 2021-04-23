@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 //
 
+import Utils
 import RediStack
 
 extension DBData {
@@ -60,12 +61,19 @@ extension RESPValue {
         case let .unsigned(value): self = value.convertedToRESPValue()
         case let .number(value): self = value.convertedToRESPValue()
         case let .decimal(value): self = "\(value)".convertedToRESPValue()
+        case let .timestamp(value):
+            
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = .withInternetDateTime
+            
+            self = formatter.string(from: value).convertedToRESPValue()
+            
         case let .date(value):
             
             let formatter = ISO8601DateFormatter()
             formatter.formatOptions = .withInternetDateTime
             
-            let calendar = value.calendar ?? DBData.calendar
+            let calendar = value.calendar ?? Calendar.iso8601
             guard let date = calendar.date(from: value) else { throw Database.Error.unsupportedType }
             
             self = formatter.string(from: date).convertedToRESPValue()

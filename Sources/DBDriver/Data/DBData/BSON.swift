@@ -23,6 +23,8 @@
 //  THE SOFTWARE.
 //
 
+import Utils
+
 extension Dictionary where Key == String, Value == DBData {
     
     init(_ document: BSONDocument) throws {
@@ -149,9 +151,10 @@ extension BSON {
             guard let decimal = try? BSONDecimal128("\(value)") else { throw Database.Error.unsupportedType }
             self = .decimal128(decimal)
             
+        case let .timestamp(value): self = .datetime(value)
         case let .date(value):
             
-            guard let date = DBData.calendar.date(from: value) else { throw Database.Error.unsupportedType }
+            guard let date = Calendar.iso8601.date(from: value) else { throw Database.Error.unsupportedType }
             self = .datetime(date)
             
         case let .binary(value): self = try .binary(BSONBinary(data: value, subtype: .generic))

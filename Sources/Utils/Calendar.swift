@@ -23,19 +23,18 @@
 //  THE SOFTWARE.
 //
 
-extension DBData {
+extension Calendar {
     
-    static let calendar: Calendar = {
+    public static let iso8601: Calendar = {
         var calendar = Calendar(identifier: .iso8601)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         return calendar
     }()
-    
 }
 
 extension Calendar {
     
-    static var componentsOfDate: Set<Calendar.Component> {
+    public static var componentsOfDate: Set<Calendar.Component> {
         return [
             .era,
             .year,
@@ -50,7 +49,7 @@ extension Calendar {
         ]
     }
     
-    static var componentsOfTime: Set<Calendar.Component> {
+    public static var componentsOfTime: Set<Calendar.Component> {
         return [
             .hour,
             .minute,
@@ -60,7 +59,7 @@ extension Calendar {
         ]
     }
     
-    static var componentsOfTimestamp: Set<Calendar.Component> {
+    public static var componentsOfTimestamp: Set<Calendar.Component> {
         return [
             .era,
             .year,
