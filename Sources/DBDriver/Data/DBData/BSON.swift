@@ -164,3 +164,63 @@ extension BSON {
         }
     }
 }
+
+extension BSON {
+    
+    public var count: Int {
+        switch self {
+        case let .array(value): return value.count
+        case let .document(value): return value.count
+        default: fatalError("Not an array or document.")
+        }
+    }
+    
+    public subscript(index: Int) -> BSON {
+        get {
+            guard 0..<count ~= index else { return .undefined }
+            switch self {
+            case let .array(value): return value[index]
+            default: return .undefined
+            }
+        }
+        set {
+            switch self {
+            case var .array(value):
+                
+                if index >= value.count {
+                    value.append(contentsOf: repeatElement(.undefined, count: index - value.count + 1))
+                }
+                value[index] = newValue
+                self = BSON(value)
+                
+            default: fatalError("Not an array.")
+            }
+        }
+    }
+    
+    public var keys: [String] {
+        switch self {
+        case let .document(value): return value.keys
+        default: return []
+        }
+    }
+    
+    public subscript(key: String) -> BSON {
+        get {
+            switch self {
+            case let .document(value): return value[key] ?? .undefined
+            default: return .undefined
+            }
+        }
+        set {
+            switch self {
+            case var .document(value):
+                
+                value[key] = newValue == .undefined ? nil : newValue
+                self = BSON(value)
+                
+            default: fatalError("Not a document.")
+            }
+        }
+    }
+}
