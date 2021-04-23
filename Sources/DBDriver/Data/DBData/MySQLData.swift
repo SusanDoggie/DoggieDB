@@ -122,7 +122,11 @@ extension DBData {
                 nanosecond: time.microsecond.map { Int($0) * 1000 }
             )
             
-            self.init(dateComponents)
+            if dateComponents.containsDate() && dateComponents.containsTime(), let date = Calendar.iso8601.date(from: dateComponents) {
+                self.init(date)
+            } else {
+                self.init(dateComponents)
+            }
             
         case .tinyBlob,
              .mediumBlob,
