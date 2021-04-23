@@ -177,10 +177,10 @@ extension BSON {
     
     public subscript(index: Int) -> BSON {
         get {
-            guard 0..<count ~= index else { return .undefined }
+            guard 0..<count ~= index else { return .null }
             switch self {
             case let .array(value): return value[index]
-            default: return .undefined
+            default: return .null
             }
         }
         set {
@@ -188,7 +188,7 @@ extension BSON {
             case var .array(value):
                 
                 if index >= value.count {
-                    value.append(contentsOf: repeatElement(.undefined, count: index - value.count + 1))
+                    value.append(contentsOf: repeatElement(.null, count: index - value.count + 1))
                 }
                 value[index] = newValue
                 self = BSON(value)
@@ -208,15 +208,15 @@ extension BSON {
     public subscript(key: String) -> BSON {
         get {
             switch self {
-            case let .document(value): return value[key] ?? .undefined
-            default: return .undefined
+            case let .document(value): return value[key] ?? .null
+            default: return .null
             }
         }
         set {
             switch self {
             case var .document(value):
                 
-                value[key] = newValue == .undefined ? nil : newValue
+                value[key] = newValue == .undefined || newValue == .null ? nil : newValue
                 self = BSON(value)
                 
             default: fatalError("Not a document.")
