@@ -156,12 +156,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [centos8, amazonlinux2]
+        image: [centos8]
         include:
           - image: centos8
             jsc: webkit2gtk3-jsc-devel
-          - image: amazonlinux2
-            jsc: webkitgtk4-jsc-devel
     steps:
     - uses: actions/checkout@v1
       with:
@@ -269,12 +267,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [nightly-centos8, nightly-amazonlinux2]
+        image: [nightly-centos8]
         include:
           - image: nightly-centos8
             jsc: webkit2gtk3-jsc-devel
-          - image: nightly-amazonlinux2
-            jsc: webkitgtk4-jsc-devel
     steps:
     - uses: actions/checkout@v1
       with:
