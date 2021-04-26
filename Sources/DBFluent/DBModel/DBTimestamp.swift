@@ -60,7 +60,7 @@ extension Optional: DBTimestamp where Wrapped: DBTimestamp {
 extension DBField where Value: DBTimestamp {
     
     public init(
-        name: String,
+        name: String? = nil,
         type: String? = nil,
         isUnique: Bool = false,
         withTimeZone: Bool = false,

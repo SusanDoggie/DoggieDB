@@ -38,13 +38,13 @@ class ModelTest: XCTestCase {
         @Field(name: "nick_name")
         var name: String
         
-        @Field(default: .now)
+        @Field(on: .create)
         var createdAt: Date
         
-        @Field(default: .now)
+        @Field(on: .update)
         var updatedAt: Date
         
-        @Field
+        @Field(on: .delete)
         var deletedAt: Date?
         
         init() {}
