@@ -33,6 +33,8 @@ private protocol _DBField {
     
     var modifier: Set<DBFieldModifier> { get }
     
+    var trigger: DBTimestampTrigger { get }
+    
     var isDirty: Bool? { get }
     
     var isOptional: Bool { get }
@@ -87,6 +89,10 @@ extension DBParent: _DBField {
     
     public var modifier: Set<DBFieldModifier> {
         return $id.modifier
+    }
+    
+    public var trigger: DBTimestampTrigger {
+        return $id.trigger
     }
     
     public var isDirty: Bool? {

@@ -41,6 +41,8 @@ public struct DBField<Model: DBModel, Value: DBValueConvertible> {
     
     public let modifier: Set<DBFieldModifier>
     
+    public let trigger: DBTimestampTrigger
+    
     public internal(set) var isDirty: Bool?
     
     public internal(set) var value: Value?
@@ -56,6 +58,7 @@ public struct DBField<Model: DBModel, Value: DBValueConvertible> {
         self.isUnique = isUnique
         self.default = `default`
         self.modifier = []
+        self.trigger = .none
     }
     
     public var wrappedValue: Value {

@@ -1,5 +1,5 @@
 //
-//  DBFieldModifier.swift
+//  DBTimestamp.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,7 +23,59 @@
 //  THE SOFTWARE.
 //
 
-public enum DBFieldModifier: Hashable {
+public enum DBTimestampTrigger {
     
-    case withTimeZone
+    case create
+    case update
+    case delete
+    case none
+}
+
+public protocol DBTimestamp {
+    
+    init(_ date: Date)
+}
+
+extension Date: DBTimestamp {
+    
+    public init(_ date: Date) {
+        self = date
+    }
+}
+
+extension DateComponents: DBTimestamp {
+    
+    public init(_ date: Date) {
+        self = Calendar.iso8601.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: date)
+    }
+}
+
+extension Optional: DBTimestamp where Wrapped: DBTimestamp {
+    
+    public init(_ date: Date) {
+        self = .some(Wrapped(date))
+    }
+}
+
+extension DBField where Value: DBTimestamp {
+    
+    public init(
+        name: String,
+        type: String? = nil,
+        isUnique: Bool = false,
+        withTimeZone: Bool = false,
+        on trigger: DBTimestampTrigger = .none,
+        default: Default? = nil
+    ) {
+        self.name = name
+        self.type = type
+        self.isUnique = isUnique
+        self.default = `default`
+        self.modifier = withTimeZone ? [.withTimeZone] : []
+        self.trigger = trigger
+    }
+    
+    public var withTimeZone: Bool {
+        return self.modifier.contains(.withTimeZone)
+    }
 }
