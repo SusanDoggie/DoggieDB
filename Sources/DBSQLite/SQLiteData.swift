@@ -26,7 +26,7 @@
 import Utils
 import SQLiteNIO
 
-extension DBData {
+extension DBValue {
     
     init(_ value: SQLiteData) {
         switch value {
@@ -41,7 +41,7 @@ extension DBData {
 
 extension SQLiteData {
     
-    init(_ value: DBData) throws {
+    init(_ value: DBValue) throws {
         switch value.base {
         case .null: self = .null
         case let .boolean(value): self = .integer(value ? 1 : 0)
@@ -86,6 +86,7 @@ extension SQLiteData {
             self = .text(formatter.string(from: date))
             
         case let .uuid(value): self = .text(value.uuidString)
+        case let .objectID(value): self = .text(value.hex)
         case let .binary(value): self = .blob(ByteBuffer(data: value))
         default: throw Database.Error.unsupportedType
         }

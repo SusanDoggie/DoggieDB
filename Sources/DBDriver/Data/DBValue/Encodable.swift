@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-extension DBData: Encodable {
+extension DBValue: Encodable {
     
     struct CodingKey: Swift.CodingKey {
         

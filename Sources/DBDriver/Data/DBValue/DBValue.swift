@@ -1,5 +1,5 @@
 //
-//  QueryData.swift
+//  DBValue.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,7 +25,7 @@
 
 import Utils
 
-public enum DBDataType: Hashable {
+public enum DBValueType: Hashable {
     
     case null
     case boolean
@@ -39,11 +39,12 @@ public enum DBDataType: Hashable {
     case date
     case binary
     case uuid
+    case objectID
     case array
     case dictionary
 }
 
-public struct DBData {
+public struct DBValue {
     
     public indirect enum Base {
         case null
@@ -58,8 +59,9 @@ public struct DBData {
         case date(DateComponents)
         case binary(Data)
         case uuid(UUID)
-        case array([DBData])
-        case dictionary([String: DBData])
+        case objectID(BSONObjectID)
+        case array([DBValue])
+        case dictionary([String: DBValue])
     }
     
     public let base: Base
@@ -124,52 +126,56 @@ public struct DBData {
         self.base = .uuid(uuid)
     }
     
-    public init<Wrapped: DBDataConvertible>(_ value: Wrapped?) {
-        self = value.toDBData()
+    public init(_ objectID: BSONObjectID) {
+        self.base = .objectID(objectID)
     }
     
-    public init<S: Sequence>(_ elements: S) where S.Element: DBDataConvertible {
-        self.base = .array(elements.map { $0.toDBData() })
+    public init<Wrapped: DBValueConvertible>(_ value: Wrapped?) {
+        self = value.toDBValue()
     }
     
-    public init<Value: DBDataConvertible>(_ elements: [String: Value]) {
-        self.base = .dictionary(elements.mapValues { $0.toDBData() })
+    public init<S: Sequence>(_ elements: S) where S.Element: DBValueConvertible {
+        self.base = .array(elements.map { $0.toDBValue() })
     }
     
-    public init<Value: DBDataConvertible>(_ elements: OrderedDictionary<String, Value>) {
-        self.base = .dictionary(Dictionary(uniqueKeysWithValues: elements.lazy.map { ($0.key, $0.value.toDBData()) }))
+    public init<Value: DBValueConvertible>(_ elements: [String: Value]) {
+        self.base = .dictionary(elements.mapValues { $0.toDBValue() })
+    }
+    
+    public init<Value: DBValueConvertible>(_ elements: OrderedDictionary<String, Value>) {
+        self.base = .dictionary(Dictionary(uniqueKeysWithValues: elements.lazy.map { ($0.key, $0.value.toDBValue()) }))
     }
 }
 
-extension DBData: ExpressibleByNilLiteral {
+extension DBValue: ExpressibleByNilLiteral {
     
     public init(nilLiteral value: Void) {
         self.base = .null
     }
 }
 
-extension DBData: ExpressibleByBooleanLiteral {
+extension DBValue: ExpressibleByBooleanLiteral {
     
     public init(booleanLiteral value: BooleanLiteralType) {
         self.init(value)
     }
 }
 
-extension DBData: ExpressibleByIntegerLiteral {
+extension DBValue: ExpressibleByIntegerLiteral {
     
     public init(integerLiteral value: IntegerLiteralType) {
         self.init(value)
     }
 }
 
-extension DBData: ExpressibleByFloatLiteral {
+extension DBValue: ExpressibleByFloatLiteral {
     
     public init(floatLiteral value: FloatLiteralType) {
         self.init(value)
     }
 }
 
-extension DBData: ExpressibleByStringInterpolation {
+extension DBValue: ExpressibleByStringInterpolation {
     
     public init(stringLiteral value: StringLiteralType) {
         self.init(value)
@@ -180,21 +186,21 @@ extension DBData: ExpressibleByStringInterpolation {
     }
 }
 
-extension DBData: ExpressibleByArrayLiteral {
+extension DBValue: ExpressibleByArrayLiteral {
     
-    public init(arrayLiteral elements: DBData ...) {
+    public init(arrayLiteral elements: DBValue ...) {
         self.init(elements)
     }
 }
 
-extension DBData: ExpressibleByDictionaryLiteral {
+extension DBValue: ExpressibleByDictionaryLiteral {
     
-    public init(dictionaryLiteral elements: (String, DBData) ...) {
+    public init(dictionaryLiteral elements: (String, DBValue) ...) {
         self.init(Dictionary(uniqueKeysWithValues: elements))
     }
 }
 
-extension DBData: CustomStringConvertible {
+extension DBValue: CustomStringConvertible {
     
     public var description: String {
         switch self.base {
@@ -212,15 +218,16 @@ extension DBData: CustomStringConvertible {
             return calendar.date(from: value).map { "\($0)" } ?? "\(value)"
         case let .binary(value): return "\(value)"
         case let .uuid(value): return "\(value)"
+        case let .objectID(value): return "\(value)"
         case let .array(value): return "\(value)"
         case let .dictionary(value): return "\(value)"
         }
     }
 }
 
-extension DBData: Hashable {
+extension DBValue: Hashable {
     
-    public static func == (lhs: DBData, rhs: DBData) -> Bool {
+    public static func == (lhs: DBValue, rhs: DBValue) -> Bool {
         switch (lhs.base, rhs.base) {
         case (.null, .null): return true
         case let (.boolean(lhs), .boolean(rhs)): return lhs == rhs
@@ -234,6 +241,7 @@ extension DBData: Hashable {
         case let (.date(lhs), .date(rhs)): return lhs == rhs
         case let (.binary(lhs), .binary(rhs)): return lhs == rhs
         case let (.uuid(lhs), .uuid(rhs)): return lhs == rhs
+        case let (.objectID(lhs), .objectID(rhs)): return lhs == rhs
         case let (.array(lhs), .array(rhs)): return lhs == rhs
         case let (.dictionary(lhs), .dictionary(rhs)): return lhs == rhs
         default: return false
@@ -254,6 +262,7 @@ extension DBData: Hashable {
         case let .date(value): hasher.combine(value)
         case let .binary(value): hasher.combine(value)
         case let .uuid(value): hasher.combine(value)
+        case let .objectID(value): hasher.combine(value)
         case let .array(value): hasher.combine(value)
         case let .dictionary(value): hasher.combine(value)
         default: break
@@ -261,9 +270,9 @@ extension DBData: Hashable {
     }
 }
 
-extension DBData {
+extension DBValue {
     
-    public var type: DBDataType {
+    public var type: DBValueType {
         switch self.base {
         case .null: return .null
         case .boolean: return .boolean
@@ -277,6 +286,7 @@ extension DBData {
         case .date: return .date
         case .binary: return .binary
         case .uuid: return .uuid
+        case .objectID: return .objectID
         case .array: return .array
         case .dictionary: return .dictionary
         }
@@ -389,9 +399,16 @@ extension DBData {
         default: return false
         }
     }
+    
+    public var isObjectID: Bool {
+        switch self.base {
+        case .objectID: return true
+        default: return false
+        }
+    }
 }
 
-extension DBData {
+extension DBValue {
     
     public var boolValue: Bool? {
         switch self.base {
@@ -609,14 +626,22 @@ extension DBData {
         }
     }
     
-    public var array: [DBData]? {
+    public var objectID: BSONObjectID? {
+        switch self.base {
+        case let .objectID(value): return value
+        case let .string(string): return try? BSONObjectID(string)
+        default: return nil
+        }
+    }
+    
+    public var array: [DBValue]? {
         switch self.base {
         case let .array(value): return value
         default: return nil
         }
     }
     
-    public var dictionary: [String: DBData]? {
+    public var dictionary: [String: DBValue]? {
         switch self.base {
         case let .dictionary(value): return value
         default: return nil
@@ -624,7 +649,7 @@ extension DBData {
     }
 }
 
-extension DBData {
+extension DBValue {
     
     public var count: Int {
         switch self.base {
@@ -634,7 +659,7 @@ extension DBData {
         }
     }
     
-    public subscript(index: Int) -> DBData {
+    public subscript(index: Int) -> DBValue {
         get {
             guard 0..<count ~= index else { return nil }
             switch self.base {
@@ -650,21 +675,21 @@ extension DBData {
                     value.append(contentsOf: repeatElement(nil, count: index - value.count + 1))
                 }
                 value[index] = newValue
-                self = DBData(value)
+                self = DBValue(value)
                 
             default: fatalError("Not an array.")
             }
         }
     }
     
-    public var keys: Dictionary<String, DBData>.Keys {
+    public var keys: Dictionary<String, DBValue>.Keys {
         switch self.base {
         case let .dictionary(value): return value.keys
         default: return [:].keys
         }
     }
     
-    public subscript(key: String) -> DBData {
+    public subscript(key: String) -> DBValue {
         get {
             switch self.base {
             case let .dictionary(value): return value[key] ?? nil
@@ -676,7 +701,7 @@ extension DBData {
             case var .dictionary(value):
                 
                 value[key] = newValue.isNil ? nil : newValue
-                self = DBData(value)
+                self = DBValue(value)
                 
             default: fatalError("Not an object.")
             }

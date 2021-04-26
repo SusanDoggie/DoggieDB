@@ -26,7 +26,7 @@
 import Utils
 import RediStack
 
-extension DBData {
+extension DBValue {
     
     init(_ value: RESPValue) throws {
         switch value {
@@ -44,7 +44,7 @@ extension DBData {
         case .bulkString(.none): self.init(Data())
             
         case let .integer(value): self.init(value)
-        case let .array(array): try self.init(array.map(DBData.init))
+        case let .array(array): try self.init(array.map(DBValue.init))
         case let .error(error): throw error
         }
     }
@@ -52,7 +52,7 @@ extension DBData {
 
 extension RESPValue {
     
-    init(_ value: DBData) throws {
+    init(_ value: DBValue) throws {
         switch value.base {
         case .null: self = .null
         case let .boolean(value): self = .integer(value ? 1 : 0)
@@ -80,6 +80,7 @@ extension RESPValue {
             
         case let .binary(value): self = value.convertedToRESPValue()
         case let .uuid(value): self = value.uuidString.convertedToRESPValue()
+        case let .objectID(value): self = value.hex.convertedToRESPValue()
         case let .array(value): self = try value.map(RESPValue.init).convertedToRESPValue()
         default: throw Database.Error.unsupportedType
         }

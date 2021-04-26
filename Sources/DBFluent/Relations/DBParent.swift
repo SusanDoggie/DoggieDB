@@ -25,7 +25,7 @@
 
 extension DBModel {
     
-    public typealias Parent<To: _DBModel> = DBParent<Self, To> where To.ID: DBDataConvertible
+    public typealias Parent<To: _DBModel> = DBParent<Self, To> where To.ID: DBValueConvertible
 }
 
 extension ExpressibleByNilLiteral {
@@ -43,7 +43,7 @@ extension Optional: _DBModel, Identifiable where Wrapped: DBModel {
 }
 
 @propertyWrapper
-public struct DBParent<From: DBModel, To: _DBModel> where To.ID: DBDataConvertible {
+public struct DBParent<From: DBModel, To: _DBModel> where To.ID: DBValueConvertible {
     
     public typealias ParentKey = To.ID
     

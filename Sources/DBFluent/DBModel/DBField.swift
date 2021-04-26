@@ -25,11 +25,11 @@
 
 extension DBModel {
     
-    public typealias Field<Value: DBDataConvertible> = DBField<Self, Value>
+    public typealias Field<Value: DBValueConvertible> = DBField<Self, Value>
 }
 
 @propertyWrapper
-public struct DBField<Model: DBModel, Value: DBDataConvertible> {
+public struct DBField<Model: DBModel, Value: DBValueConvertible> {
     
     public let name: String?
     

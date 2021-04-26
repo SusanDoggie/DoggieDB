@@ -25,22 +25,22 @@
 
 import Utils
 
-extension Dictionary where Key == String, Value == DBData {
+extension Dictionary where Key == String, Value == DBValue {
     
     init(_ document: BSONDocument) throws {
         self.init()
         for (key, value) in document {
-            self[key] = try DBData(value)
+            self[key] = try DBValue(value)
         }
     }
 }
 
-extension OrderedDictionary where Key == String, Value == DBData {
+extension OrderedDictionary where Key == String, Value == DBValue {
     
     init(_ document: BSONDocument) throws {
         self.init()
         for (key, value) in document {
-            self[key] = try DBData(value)
+            self[key] = try DBValue(value)
         }
     }
 }
@@ -61,11 +61,11 @@ extension BSONDocument {
         }
     }
     
-    public init(_ dictionary: [String: DBData]) throws {
+    public init(_ dictionary: [String: DBValue]) throws {
         try self.init(dictionary.mapValues(BSON.init))
     }
     
-    public init(_ dictionary: OrderedDictionary<String, DBData>) throws {
+    public init(_ dictionary: OrderedDictionary<String, DBValue>) throws {
         try self.init(dictionary.mapValues(BSON.init))
     }
 }
@@ -81,7 +81,7 @@ extension BSON {
     }
 }
 
-extension DBData {
+extension DBValue {
     
     init(_ value: BSON) throws {
         switch value {
@@ -105,7 +105,7 @@ extension DBData {
             
         case let .string(value): self.init(value)
         case let .document(value): try self.init(Dictionary(value))
-        case let .array(value): try self.init(value.map(DBData.init))
+        case let .array(value): try self.init(value.map(DBValue.init))
         case let .binary(value):
             switch value.subtype {
             case .generic, .binaryDeprecated: self.init(value.data)
@@ -117,7 +117,7 @@ extension DBData {
             default: throw Database.Error.unsupportedType
             }
         case let .bool(value): self.init(value)
-        case let .objectID(value): self.init(value.hex)
+        case let .objectID(value): self.init(value)
         case let .regex(value):
             
             guard let regex = try? value.toNSRegularExpression() else { throw Database.Error.unsupportedType }
@@ -132,7 +132,7 @@ extension DBData {
 
 extension BSON {
     
-    init(_ value: DBData) throws {
+    init(_ value: DBValue) throws {
         switch value.base {
         case .null: self = .null
         case let .boolean(value): self = .bool(value)
@@ -159,6 +159,7 @@ extension BSON {
             
         case let .binary(value): self = try .binary(BSONBinary(data: value, subtype: .generic))
         case let .uuid(value): self = try .binary(BSONBinary(from: value))
+        case let .objectID(value): self = .objectID(value)
         case let .array(value): self = try .array(value.map(BSON.init))
         case let .dictionary(value): self = try .document(BSONDocument(value))
         }

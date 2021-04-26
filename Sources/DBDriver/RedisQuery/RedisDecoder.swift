@@ -64,14 +64,14 @@ public struct RedisDecoder: RedisDecoderProtocol {
                 
             } else if let value = String(fromRESP: value) {
                 
-                return try DBData(value).decode(type)
+                return try DBValue(value).decode(type)
                 
             } else {
                 
                 throw Database.Error.unsupportedType
             }
             
-        default: return try DBData(value).decode(type)
+        default: return try DBValue(value).decode(type)
         }
     }
 }

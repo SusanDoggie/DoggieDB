@@ -185,7 +185,7 @@ extension SQLiteRow: DBRowConvertable {
         return self.columns.contains { $0.name == column }
     }
     
-    public func value(_ column: String) -> DBData? {
-        return self.column(column).map(DBData.init)
+    public func value(_ column: String) -> DBValue? {
+        return self.column(column).map(DBValue.init)
     }
 }

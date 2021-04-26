@@ -28,7 +28,7 @@ public protocol _DBModel: Identifiable {
     var id: ID { get }
 }
 
-public protocol DBModel: _DBModel where ID: DBDataConvertible {
+public protocol DBModel: _DBModel where ID: DBValueConvertible {
     
     static var schema: String { get }
     

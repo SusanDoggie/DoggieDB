@@ -41,7 +41,7 @@ private protocol _DBField {
     
     var onDelete: SQLForeignKeyAction { get }
     
-    func _data() -> DBData?
+    func _data() -> DBValue?
 }
 
 private protocol _Optional { }
@@ -53,8 +53,8 @@ extension DBField: _DBField {
         return Value.self is _Optional.Type
     }
     
-    fileprivate func _data() -> DBData? {
-        return self.value?.toDBData()
+    fileprivate func _data() -> DBValue? {
+        return self.value?.toDBValue()
     }
     
     fileprivate var onUpdate: SQLForeignKeyAction {
@@ -93,7 +93,7 @@ extension DBParent: _DBField {
         return $id.isDirty
     }
     
-    fileprivate func _data() -> DBData? {
+    fileprivate func _data() -> DBValue? {
         return $id._data()
     }
 }
@@ -146,7 +146,7 @@ extension DBAnyField {
         return box.onDelete
     }
     
-    public var value: DBData? {
+    public var value: DBValue? {
         return box._data()
     }
 }

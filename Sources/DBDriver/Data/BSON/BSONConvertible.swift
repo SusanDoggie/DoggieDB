@@ -166,6 +166,13 @@ extension UUID: BSONConvertible {
     }
 }
 
+extension BSONObjectID: BSONConvertible {
+    
+    public func toBSON() -> BSON {
+        return .objectID(self)
+    }
+}
+
 extension NSRegularExpression: BSONConvertible {
     
     public func toBSON() -> BSON {

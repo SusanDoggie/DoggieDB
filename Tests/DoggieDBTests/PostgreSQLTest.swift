@@ -193,7 +193,7 @@ class PostgreSQLTest: XCTestCase {
         
         do {
             
-            let array: [DBData] = [1, 2, 3]
+            let array: [DBValue] = [1, 2, 3]
             
             let result = try connection.execute("SELECT \(array) as array").wait()
             
@@ -211,7 +211,7 @@ class PostgreSQLTest: XCTestCase {
         
         do {
             
-            let array: [DBData] = [1.0, 2.0, "foo", nil]
+            let array: [DBValue] = [1.0, 2.0, "foo", nil]
             
             let result = try connection.execute("SELECT \(array) as array").wait()
             

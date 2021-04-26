@@ -26,7 +26,7 @@
 import Utils
 import MySQLNIO
 
-extension DBData {
+extension DBValue {
     
     init(_ value: MySQLData) throws {
         switch value.type {
@@ -37,64 +37,64 @@ extension DBData {
             
             if value.isUnsigned {
                 guard let value = value.uint8 else { throw Database.Error.unsupportedType }
-                self = DBData(value)
+                self = DBValue(value)
             } else {
                 guard let value = value.int8 else { throw Database.Error.unsupportedType }
-                self = DBData(value)
+                self = DBValue(value)
             }
             
         case .short:
             
             if value.isUnsigned {
                 guard let value = value.uint16 else { throw Database.Error.unsupportedType }
-                self = DBData(value)
+                self = DBValue(value)
             } else {
                 guard let value = value.int16 else { throw Database.Error.unsupportedType }
-                self = DBData(value)
+                self = DBValue(value)
             }
             
         case .int24, .long:
             
             if value.isUnsigned {
                 guard let value = value.uint32 else { throw Database.Error.unsupportedType }
-                self = DBData(value)
+                self = DBValue(value)
             } else {
                 guard let value = value.int32 else { throw Database.Error.unsupportedType }
-                self = DBData(value)
+                self = DBValue(value)
             }
             
         case .longlong:
             
             if value.isUnsigned {
                 guard let value = value.uint64 else { throw Database.Error.unsupportedType }
-                self = DBData(value)
+                self = DBValue(value)
             } else {
                 guard let value = value.int64 else { throw Database.Error.unsupportedType }
-                self = DBData(value)
+                self = DBValue(value)
             }
             
         case .float:
             
             guard let float = value.float else { throw Database.Error.unsupportedType }
-            self = DBData(float)
+            self = DBValue(float)
             
         case .double:
             
             guard let double = value.double else { throw Database.Error.unsupportedType }
-            self = DBData(double)
+            self = DBValue(double)
             
         case .decimal,
              .newdecimal:
             
             guard let decimal = value.decimal else { throw Database.Error.unsupportedType }
-            self = DBData(decimal)
+            self = DBValue(decimal)
             
         case .varchar,
              .varString,
              .string:
             
             guard let string = value.string else { throw Database.Error.unsupportedType }
-            self = DBData(string)
+            self = DBValue(string)
             
         case .timestamp,
              .datetime,
@@ -134,12 +134,12 @@ extension DBData {
              .blob:
             
             guard let buffer = value.buffer else { throw Database.Error.unsupportedType }
-            self = DBData(buffer)
+            self = DBValue(buffer)
             
         case .json:
             
             guard let json = try? value.json(as: Json.self) else { throw Database.Error.unsupportedType }
-            self = DBData(json)
+            self = DBValue(json)
             
         default:
             
@@ -147,7 +147,7 @@ extension DBData {
             case .text:
                 
                 guard let string = value.string else { throw Database.Error.unsupportedType }
-                self = DBData(string)
+                self = DBValue(string)
                 
             case .binary: throw Database.Error.unsupportedType
             }
@@ -157,7 +157,7 @@ extension DBData {
 
 extension MySQLData {
     
-    init(_ value: DBData) throws {
+    init(_ value: DBValue) throws {
         switch value.base {
         case .null: self = .null
         case let .boolean(value): self.init(bool: value)
@@ -221,6 +221,7 @@ extension MySQLData {
             
         case let .binary(value): self.init(type: .blob, buffer: ByteBuffer(data: value))
         case let .uuid(value): self.init(uuid: value)
+        case let .objectID(value): self.init(string: value.hex)
         case let .array(value):
             
             guard let json = try? MySQLData(json: value) else { throw Database.Error.unsupportedType }

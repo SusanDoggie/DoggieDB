@@ -126,8 +126,8 @@ class ModelTest: XCTestCase {
         
         XCTAssertEqual(fields.count, 5)
         
-        XCTAssertEqual(fields.first { $0.name == "id" }?.value, DBData(contact.id))
-        XCTAssertEqual(fields.first { $0.name == "nick_name" }?.value, DBData(contact.name))
+        XCTAssertEqual(fields.first { $0.name == "id" }?.value, DBValue(contact.id))
+        XCTAssertEqual(fields.first { $0.name == "nick_name" }?.value, DBValue(contact.name))
         
         XCTAssertEqual(fields.first { $0.name == "id" }?.isOptional, false)
         XCTAssertEqual(fields.first { $0.name == "nick_name" }?.isOptional, false)

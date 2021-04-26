@@ -25,23 +25,23 @@
 
 import Utils
 
-extension DBData {
+extension DBValue {
     
     public init(_ json: Json) {
         switch json.type {
         case .null: self = nil
-        case .boolean: self = json.boolValue.map { DBData($0) } ?? nil
-        case .string: self = json.stringValue.map { DBData($0) } ?? nil
-        case .number: self = json.doubleValue.map { DBData($0) } ?? nil
-        case .array: self = json.array.map { DBData($0.map { DBData($0) }) } ?? nil
-        case .dictionary: self = json.dictionary.map { DBData($0.mapValues { DBData($0) }) } ?? nil
+        case .boolean: self = json.boolValue.map { DBValue($0) } ?? nil
+        case .string: self = json.stringValue.map { DBValue($0) } ?? nil
+        case .number: self = json.doubleValue.map { DBValue($0) } ?? nil
+        case .array: self = json.array.map { DBValue($0.map { DBValue($0) }) } ?? nil
+        case .dictionary: self = json.dictionary.map { DBValue($0.mapValues { DBValue($0) }) } ?? nil
         }
     }
 }
 
 extension Json {
     
-    public init?(_ value: DBData) {
+    public init?(_ value: DBValue) {
         switch value.base {
         case .null: self = nil
         case let .boolean(value): self.init(value)

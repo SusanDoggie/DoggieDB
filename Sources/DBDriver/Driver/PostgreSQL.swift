@@ -278,9 +278,9 @@ extension DBQueryMetadata {
     
     init(_ metadata: PostgresQueryMetadata) {
         self.init([
-            "command": DBData(metadata.command),
-            "oid": metadata.oid.map(DBData.init) ?? nil,
-            "rows": metadata.rows.map(DBData.init) ?? nil,
+            "command": DBValue(metadata.command),
+            "oid": metadata.oid.map(DBValue.init) ?? nil,
+            "rows": metadata.rows.map(DBValue.init) ?? nil,
         ])
     }
 }
@@ -299,8 +299,8 @@ extension PostgresRow: DBRowConvertable {
         return self.rowDescription.fields.contains { $0.name == column }
     }
     
-    public func value(_ column: String) -> DBData? {
-        return try? self.column(column).map(DBData.init)
+    public func value(_ column: String) -> DBValue? {
+        return try? self.column(column).map(DBValue.init)
     }
 }
 
