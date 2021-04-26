@@ -292,6 +292,15 @@ extension DBValue._Decoder: SingleValueDecodingContainer {
         }
     }
     
+    func _decode(_ type: BSONObjectID.Type) throws -> BSONObjectID {
+        switch value.base {
+        case .null: throw Database.Error.valueNotFound
+        case let .objectID(objectID): return objectID
+        case let .string(string): return try BSONObjectID(string)
+        default: throw Database.Error.unsupportedType
+        }
+    }
+    
     func _decode(_ type: Date.Type) throws -> Date {
         switch value.base {
         case .null: throw Database.Error.valueNotFound
@@ -419,6 +428,7 @@ extension DBValue._Decoder: SingleValueDecodingContainer {
         case is Decimal.Type: return try self._decode(Decimal.self) as! T
         case is String.Type: return try self._decode(String.self) as! T
         case is UUID.Type: return try self._decode(UUID.self) as! T
+        case is BSONObjectID.Type: return try self._decode(BSONObjectID.self) as! T
         case is Date.Type: return try self._decode(Date.self) as! T
         case is DateComponents.Type: return try self._decode(DateComponents.self) as! T
         case is Data.Type: return try self._decode(Data.self) as! T

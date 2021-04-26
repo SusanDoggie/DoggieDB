@@ -100,6 +100,11 @@ extension DBValue: Encodable {
             var container = encoder.singleValueContainer()
             try container.encode(value)
             
+        case let .objectID(value):
+            
+            var container = encoder.singleValueContainer()
+            try container.encode(value)
+            
         case let .array(value):
             
             var container = encoder.unkeyedContainer()
