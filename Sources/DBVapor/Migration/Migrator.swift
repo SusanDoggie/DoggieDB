@@ -56,38 +56,132 @@ public struct Migrator {
 extension Migrator {
     
     public func setupIfNeeded() -> EventLoopFuture<Void> {
-        fatalError()
+        return self.migrators() { $0.setupIfNeeded() }.transform(to: ())
     }
     
     public func prepareBatch() -> EventLoopFuture<Void> {
-        fatalError()
+        return self.migrators() { $0.prepareBatch() }.transform(to: ())
     }
     
     public func revertLastBatch() -> EventLoopFuture<Void> {
-        fatalError()
+        return self.migrators() { $0.revertLastBatch() }.transform(to: ())
     }
     
     public func revertBatch(number: Int) -> EventLoopFuture<Void> {
-        fatalError()
+        return self.migrators() { $0.revertBatch(number: number) }.transform(to: ())
     }
     
     public func revertAllBatches() -> EventLoopFuture<Void> {
-        fatalError()
+        return self.migrators() { $0.revertAllBatches() }.transform(to: ())
     }
     
     public func previewPrepareBatch() -> EventLoopFuture<[(Migration, DatabaseID?)]> {
-        fatalError()
+        return self.migrators() { migrator in
+            return migrator.previewPrepareBatch().and(value: migrator.id)
+        }.map { items in
+            return items.reduce(into: []) { result, batch in
+                let pairs = batch.0.map { ($0, batch.1) }
+                result.append(contentsOf: pairs)
+            }
+        }
     }
     
     public func previewRevertLastBatch() -> EventLoopFuture<[(Migration, DatabaseID?)]> {
-        fatalError()
+        return self.migrators() { migrator in
+            return migrator.previewRevertLastBatch().and(value: migrator.id)
+        }.map { items in
+            return items.reduce(into: []) { result, batch in
+                let pairs = batch.0.map { ($0, batch.1) }
+                result.append(contentsOf: pairs)
+            }
+        }
     }
     
     public func previewRevertBatch() -> EventLoopFuture<[(Migration, DatabaseID?)]> {
-        fatalError()
+        return self.migrators() { migrator in
+            return migrator.previewPrepareBatch().and(value: migrator.id)
+        }.map { items in
+            return items.reduce(into: []) { result, batch in
+                let pairs = batch.0.map { ($0, batch.1) }
+                result.append(contentsOf: pairs)
+            }
+        }
     }
     
     public func previewRevertAllBatches() -> EventLoopFuture<[(Migration, DatabaseID?)]> {
+        return self.migrators() { migrator in
+            return migrator.previewRevertAllBatches().and(value: migrator.id)
+        }.map { items in
+            return items.reduce(into: []) { result, batch in
+                let pairs = batch.0.map { ($0, batch.1) }
+                result.append(contentsOf: pairs)
+            }
+        }
+    }
+    
+    private func migrators<Result>(
+        _ handler: (DatabaseMigrator) -> EventLoopFuture<Result>
+    ) -> EventLoopFuture<[Result]> {
+        return self.migrations.databases.map { id in
+            let migrations = self.migrations.storage.compactMap { item -> Migration? in
+                guard item.id == id else { return nil }
+                return item.migration
+            }
+            
+            let migrator = DatabaseMigrator(id: id, database: self.databaseFactory(id), migrations: migrations)
+            return handler(migrator)
+        }.flatten(on: self.eventLoop)
+    }
+}
+
+private struct DatabaseMigrator {
+    
+    let id: DatabaseID?
+    let database: DatabasePool
+    let migrations: [Migration]
+    
+    init(id: DatabaseID?, database: DatabasePool, migrations: [Migration]) {
+        self.id = id
+        self.database = database
+        self.migrations = migrations
+    }
+}
+
+extension DatabaseMigrator {
+    
+    func setupIfNeeded() -> EventLoopFuture<Void> {
+        fatalError()
+    }
+    
+    func prepareBatch() -> EventLoopFuture<Void> {
+        fatalError()
+    }
+    
+    func revertLastBatch() -> EventLoopFuture<Void> {
+        fatalError()
+    }
+    
+    func revertBatch(number: Int) -> EventLoopFuture<Void> {
+        fatalError()
+    }
+    
+    func revertAllBatches() -> EventLoopFuture<Void> {
+        fatalError()
+    }
+    
+    func previewPrepareBatch() -> EventLoopFuture<[Migration]> {
+        fatalError()
+    }
+    
+    func previewRevertLastBatch() -> EventLoopFuture<[Migration]> {
+        fatalError()
+    }
+    
+    func previewRevertBatch() -> EventLoopFuture<[Migration]> {
+        fatalError()
+    }
+    
+    func previewRevertAllBatches() -> EventLoopFuture<[Migration]> {
         fatalError()
     }
 }
