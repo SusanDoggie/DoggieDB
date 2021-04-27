@@ -10,6 +10,7 @@ env:
   MONGO_AUTHSOURCE: admin
 jobs:
   macos:
+    name: ${{ matrix.name }}
     runs-on: macOS-latest
     strategy:
       fail-fast: false
@@ -76,6 +77,7 @@ jobs:
     - uses: codecov/codecov-action@v1
       if: ${{ matrix.enable_codecov }}
   ubuntu_swift_latest:
+    name: latest-${{ matrix.image }}
     container: 
       image: docker://swift:${{ matrix.image }}
     runs-on: ubuntu-latest
@@ -129,6 +131,7 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   linux_swift_latest:
+    name: latest-${{ matrix.image }}
     container:
       image: docker://swift:${{ matrix.image }}
     runs-on: ubuntu-latest
@@ -185,6 +188,7 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   ubuntu_swift_5_3:
+    name: ${{ matrix.image }}
     container: 
       image: docker://swift:${{ matrix.image }}
     runs-on: ubuntu-latest
@@ -238,6 +242,7 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   linux_swift_5_3:
+    name: ${{ matrix.image }}
     container:
       image: docker://swift:${{ matrix.image }}
     runs-on: ubuntu-latest
@@ -294,6 +299,7 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   ubuntu_swift_nightly:
+    name: ${{ matrix.image }}
     container:
       image: docker://swiftlang/swift:${{ matrix.image }}
     runs-on: ubuntu-latest
@@ -348,6 +354,7 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   linux_swift_nightly:
+    name: ${{ matrix.image }}
     container:
       image: docker://swiftlang/swift:${{ matrix.image }}
     runs-on: ubuntu-latest
