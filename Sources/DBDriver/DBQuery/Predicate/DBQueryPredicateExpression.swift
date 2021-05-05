@@ -160,6 +160,10 @@ public func >= <T: DBValueConvertible>(lhs: T, rhs: DBQueryPredicateKey) -> DBQu
     return .greaterThanOrEqualTo(.value(lhs), .key(rhs))
 }
 
+public func ~= (lhs: String, rhs: DBQueryPredicateKey) -> DBQueryPredicateExpression {
+    return .like(.key(rhs), lhs)
+}
+
 public func ~= (lhs: NSRegularExpression, rhs: DBQueryPredicateKey) -> DBQueryPredicateExpression {
     return .matching(.key(rhs), .value(lhs))
 }
@@ -198,6 +202,10 @@ public func ~= <T: DBValueConvertible>(lhs: PartialRangeUpTo<T>, rhs: DBQueryPre
 
 public func ~= <T: DBValueConvertible>(lhs: PartialRangeThrough<T>, rhs: DBQueryPredicateKey) -> DBQueryPredicateExpression {
     return lhs.upperBound <= rhs
+}
+
+public func =~ (lhs: DBQueryPredicateKey, rhs: String) -> DBQueryPredicateExpression {
+    return .like(.key(lhs), rhs)
 }
 
 public func =~ (lhs: DBQueryPredicateKey, rhs: NSRegularExpression) -> DBQueryPredicateExpression {
