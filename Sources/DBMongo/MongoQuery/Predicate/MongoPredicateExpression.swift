@@ -151,6 +151,10 @@ extension MongoPredicateExpression {
             
             return ["$expr": ["$in": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]
             
+        case let .containsIn(.value(value), .key(key)):
+            
+            return ["$expr": ["$in": [value.toBSON(), "$\(key)".toBSON()]]]
+            
         case let .containsIn(.key(key), .value(value)):
             
             return [key: ["$in": value.toBSON()]]
@@ -158,6 +162,10 @@ extension MongoPredicateExpression {
         case let .notContainsIn(.key(lhs), .key(rhs)):
             
             return ["$expr": ["$not": [["$in": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]]]
+            
+        case let .notContainsIn(.value(value), .key(key)):
+            
+            return ["$expr": ["$not": [["$in": [value.toBSON(), "$\(key)".toBSON()]]]]]
             
         case let .notContainsIn(.key(key), .value(value)):
             
@@ -286,8 +294,16 @@ public func ~= (lhs: Regex, rhs: MongoPredicateKey) -> MongoPredicateExpression 
     return .matching(.key(rhs), .value(lhs))
 }
 
+public func ~= (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .containsIn(.key(rhs), .key(lhs))
+}
+
+public func ~= <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: T) -> MongoPredicateExpression {
+    return .containsIn(.value(rhs), .key(lhs))
+}
+
 public func ~= <C: Collection>(lhs: C, rhs: MongoPredicateKey) -> MongoPredicateExpression where C.Element: BSONConvertible {
-    return .containsIn(.value(Array(lhs)), .key(rhs))
+    return .containsIn(.key(rhs), .value(Array(lhs)))
 }
 
 public func ~= <T: BSONConvertible>(lhs: Range<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
@@ -316,6 +332,14 @@ public func =~ (lhs: MongoPredicateKey, rhs: NSRegularExpression) -> MongoPredic
 
 public func =~ (lhs: MongoPredicateKey, rhs: Regex) -> MongoPredicateExpression {
     return .matching(.key(lhs), .value(rhs))
+}
+
+public func =~ (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .containsIn(.key(lhs), .key(rhs))
+}
+
+public func =~ <T: BSONConvertible>(lhs: T, rhs: MongoPredicateKey) -> MongoPredicateExpression {
+    return .containsIn(.value(lhs), .key(rhs))
 }
 
 public func =~ <C: Collection>(lhs: MongoPredicateKey, rhs: C) -> MongoPredicateExpression where C.Element: BSONConvertible {
