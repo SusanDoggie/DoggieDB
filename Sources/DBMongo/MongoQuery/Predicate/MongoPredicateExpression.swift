@@ -175,6 +175,10 @@ extension MongoPredicateExpression {
             
             return ["$expr": ["$regexMatch": ["input": "$\(lhs)".toBSON(), "regex": "$\(rhs)".toBSON()]]]
             
+        case let .matching(.value(value), .key(key)):
+            
+            return ["$expr": ["$regexMatch": ["input": value.toBSON(), "regex": "$\(key)".toBSON()]]]
+            
         case let .matching(.key(key), .value(value)):
         
             return [key: ["$regex": value.toBSON()]]
