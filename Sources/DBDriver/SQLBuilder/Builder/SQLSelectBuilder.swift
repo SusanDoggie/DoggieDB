@@ -87,6 +87,17 @@ extension SQLSelectBuilderProtocol {
 extension SQLSelectBuilderProtocol {
     
     /// Adds a column to column comparison to this builder's `HAVING`.
+    public func having(_ predicate: SQLRaw) -> Self {
+        
+        var builder = self
+        
+        builder.builder.append("HAVING")
+        builder.builder.append(predicate)
+        
+        return builder
+    }
+    
+    /// Adds a column to column comparison to this builder's `HAVING`.
     public func having(_ predicate: (SQLPredicateBuilder) -> SQLPredicateExpression) -> Self {
         
         var builder = self
