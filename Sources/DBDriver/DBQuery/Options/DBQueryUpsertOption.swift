@@ -1,5 +1,5 @@
 //
-//  DBQueryLimitOption.swift
+//  DBQueryUpsertOption.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,17 +23,18 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBQueryLimitOption {
+public protocol DBQueryUpsertOption {
     
-    var limit: Int? { get set }
+    var upsert: Bool { get set }
     
 }
 
-extension DBQueryLimitOption {
+extension DBQueryUpsertOption {
     
-    public func limit(_ limit: Int) -> Self {
+    public func upsert(_ upsert: Bool) -> Self {
         var result = self
-        result.limit = limit
+        result.upsert = upsert
         return result
     }
+    
 }

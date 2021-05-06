@@ -29,7 +29,7 @@ public protocol DBQuerySkipOptions {
     
 }
 
-extension DBQueryProtocol where Self: DBQuerySkipOptions {
+extension DBQuerySkipOptions {
     
     public func skip(_ skip: Int) -> Self {
         var result = self

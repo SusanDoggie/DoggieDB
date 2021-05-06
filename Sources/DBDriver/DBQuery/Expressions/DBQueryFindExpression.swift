@@ -29,11 +29,13 @@ public struct DBQueryFindExpression: DBQueryProtocol {
     
     public let table: String
     
+    public var filters: [DBQueryPredicateExpression] = []
+    
     public var skip: Int?
     
     public var limit: Int?
     
-    public var filters: [DBQueryPredicateExpression] = []
+    public var upsert: Bool = false
     
     init(connection: DBConnection, table: String) {
         self.connection = connection
@@ -48,7 +50,7 @@ extension DBQuery {
     }
 }
 
+extension DBQueryFindExpression: DBQueryFilterOption { }
 extension DBQueryFindExpression: DBQuerySkipOptions { }
 extension DBQueryFindExpression: DBQueryLimitOption { }
-extension DBQueryFindExpression: DBQueryFilterOption { }
-
+extension DBQueryFindExpression: DBQueryUpsertOption { }
