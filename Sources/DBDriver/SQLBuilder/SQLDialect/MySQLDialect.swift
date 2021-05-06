@@ -53,7 +53,4 @@ struct MySQLDialect: SQLDialect {
         return "AUTO_INCREMENT"
     }
     
-    static var supportsReturning: Bool {
-        return false
-    }
 }

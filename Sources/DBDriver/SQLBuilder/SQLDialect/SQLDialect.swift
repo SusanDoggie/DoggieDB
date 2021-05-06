@@ -43,7 +43,6 @@ public protocol SQLDialect {
     
     static var autoIncrementClause: String { get }
     
-    static var supportsReturning: Bool { get }
 }
 
 extension SQLDialect {

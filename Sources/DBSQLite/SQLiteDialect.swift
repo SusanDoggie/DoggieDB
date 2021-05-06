@@ -53,7 +53,4 @@ struct SQLiteDialect: SQLDialect {
         return "AUTOINCREMENT"
     }
     
-    static var supportsReturning: Bool {
-        return false
-    }
 }
