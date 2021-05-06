@@ -1,5 +1,5 @@
 //
-//  DBQueryFindExpression.swift
+//  DBQuerySkipOptions.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,32 +23,17 @@
 //  THE SOFTWARE.
 //
 
-public struct DBQueryFindExpression: DBQueryProtocol {
+public protocol DBQuerySkipOptions {
     
-    public let connection: DBConnection
+    var skip: Int? { get set }
     
-    public let table: String
-    
-    public var skip: Int?
-    
-    public var limit: Int?
-    
-    public var filters: [DBQueryPredicateExpression] = []
-    
-    init(connection: DBConnection, table: String) {
-        self.connection = connection
-        self.table = table
-    }
 }
 
-extension DBQuery {
+extension DBQueryProtocol where Self: DBQuerySkipOptions {
     
-    public func find(_ table: String) -> DBQueryFindExpression {
-        return DBQueryFindExpression(connection: connection, table: table)
+    public func skip(_ skip: Int) -> Self {
+        var result = self
+        result.skip = skip
+        return result
     }
 }
-
-extension DBQueryFindExpression: DBQuerySkipOptions { }
-extension DBQueryFindExpression: DBQueryLimitOption { }
-extension DBQueryFindExpression: DBQueryFilterOption { }
-
