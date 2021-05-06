@@ -25,7 +25,7 @@
 
 public protocol DBQuerySkipOptions {
     
-    var skip: Int? { get set }
+    var skip: Int { get set }
     
 }
 

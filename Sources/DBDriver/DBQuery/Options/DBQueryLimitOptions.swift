@@ -25,7 +25,7 @@
 
 public protocol DBQueryLimitOption {
     
-    var limit: Int? { get set }
+    var limit: Int { get set }
     
 }
 

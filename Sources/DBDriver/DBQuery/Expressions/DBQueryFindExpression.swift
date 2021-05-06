@@ -31,9 +31,9 @@ public struct DBQueryFindExpression: DBQueryProtocol {
     
     public var filters: [DBQueryPredicateExpression] = []
     
-    public var skip: Int?
+    public var skip: Int = 0
     
-    public var limit: Int?
+    public var limit: Int = .max
     
     public var upsert: Bool = false
     
