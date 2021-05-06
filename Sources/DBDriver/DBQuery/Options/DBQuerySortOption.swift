@@ -1,5 +1,5 @@
 //
-//  DBQueryFindExpression.swift
+//  DBQuerySortOption.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,37 +23,24 @@
 //  THE SOFTWARE.
 //
 
-public struct DBQueryFindExpression: DBQueryProtocol {
+public protocol DBQuerySortOption {
     
-    public let connection: DBConnection
+    var sort: OrderedDictionary<String, DBQuerySortOrder> { get set }
     
-    public let table: String
-    
-    public var filters: [DBQueryPredicateExpression] = []
-    
-    public var skip: Int = 0
-    
-    public var limit: Int = .max
-    
-    public var upsert: Bool = false
-    
-    public var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
-    
-    init(connection: DBConnection, table: String) {
-        self.connection = connection
-        self.table = table
-    }
 }
 
-extension DBQuery {
+public enum DBQuerySortOrder {
     
-    public func find(_ table: String) -> DBQueryFindExpression {
-        return DBQueryFindExpression(connection: connection, table: table)
-    }
+    case ascending
+    
+    case descending
 }
 
-extension DBQueryFindExpression: DBQueryFilterOption { }
-extension DBQueryFindExpression: DBQuerySkipOptions { }
-extension DBQueryFindExpression: DBQueryLimitOption { }
-extension DBQueryFindExpression: DBQueryUpsertOption { }
-extension DBQueryFindExpression: DBQuerySortOption { }
+extension DBQuerySortOption {
+    
+    public func sort(_ sort: OrderedDictionary<String, DBQuerySortOrder>) -> Self {
+        var result = self
+        result.sort = sort
+        return result
+    }
+}
