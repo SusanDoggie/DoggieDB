@@ -29,7 +29,7 @@ public struct DBMongoFindExpression<T: Codable>: DBMongoExpression {
     
     let query: DBMongoCollection<T>
     
-    public var filter: BSONDocument
+    public var filters: [BSONDocument]
     
     public var options: FindOptions = FindOptions()
 }
@@ -40,14 +40,14 @@ extension DBMongoFindExpression: DBMongoFilterOption {}
 extension DBMongoCollectionExpression {
     
     public func find() -> DBMongoFindExpression<T> {
-        return DBMongoFindExpression(query: query(), filter: filter)
+        return DBMongoFindExpression(query: query(), filters: filters)
     }
 }
 
 extension DBMongoFindExpression {
     
     public func execute() -> EventLoopFuture<MongoCursor<T>> {
-        return query.collection.find(filter, options: options, session: query.session)
+        return query.collection.find(_filter, options: options, session: query.session)
     }
 }
 

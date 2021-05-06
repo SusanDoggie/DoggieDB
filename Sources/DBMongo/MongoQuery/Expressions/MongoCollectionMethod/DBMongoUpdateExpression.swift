@@ -31,7 +31,7 @@ public struct DBMongoUpdateExpression<T: Codable>: DBMongoExpression {
     
     public let type: OperationType
     
-    public var filter: BSONDocument
+    public var filters: [BSONDocument]
     
     public var update: BSONDocument?
     
@@ -55,11 +55,11 @@ extension DBMongoUpdateExpression {
 extension DBMongoCollectionExpression {
     
     public func updateOne() -> DBMongoUpdateExpression<T> {
-        return DBMongoUpdateExpression(query: query(), type: .updateOne, filter: filter)
+        return DBMongoUpdateExpression(query: query(), type: .updateOne, filters: filters)
     }
     
     public func updateMany() -> DBMongoUpdateExpression<T> {
-        return DBMongoUpdateExpression(query: query(), type: .updateMany, filter: filter)
+        return DBMongoUpdateExpression(query: query(), type: .updateMany, filters: filters)
     }
 }
 
@@ -77,8 +77,8 @@ extension DBMongoUpdateExpression {
     public func execute() -> EventLoopFuture<UpdateResult?> {
         guard let update = self.update else { fatalError() }
         switch type {
-        case .updateOne: return query.collection.updateOne(filter: filter, update: update, options: options, session: query.session)
-        case .updateMany: return query.collection.updateMany(filter: filter, update: update, options: options, session: query.session)
+        case .updateOne: return query.collection.updateOne(filter: _filter, update: update, options: options, session: query.session)
+        case .updateMany: return query.collection.updateMany(filter: _filter, update: update, options: options, session: query.session)
         }
     }
 }

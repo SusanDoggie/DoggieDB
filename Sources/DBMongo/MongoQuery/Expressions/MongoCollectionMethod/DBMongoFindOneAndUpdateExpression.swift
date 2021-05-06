@@ -29,7 +29,7 @@ public struct DBMongoFindOneAndUpdateExpression<T: Codable>: DBMongoExpression {
     
     let query: DBMongoCollection<T>
     
-    public var filter: BSONDocument
+    public var filters: [BSONDocument]
     
     public var update: BSONDocument?
     
@@ -41,7 +41,7 @@ extension DBMongoFindOneAndUpdateExpression: DBMongoFilterOption {}
 extension DBMongoCollectionExpression {
     
     public func findOneAndUpdate() -> DBMongoFindOneAndUpdateExpression<T> {
-        return DBMongoFindOneAndUpdateExpression(query: query(), filter: filter)
+        return DBMongoFindOneAndUpdateExpression(query: query(), filters: filters)
     }
 }
 
@@ -58,7 +58,7 @@ extension DBMongoFindOneAndUpdateExpression {
     
     public func execute() -> EventLoopFuture<T?> {
         guard let update = self.update else { fatalError() }
-        return query.collection.findOneAndUpdate(filter: filter, update: update, options: options, session: query.session)
+        return query.collection.findOneAndUpdate(filter: _filter, update: update, options: options, session: query.session)
     }
 }
 

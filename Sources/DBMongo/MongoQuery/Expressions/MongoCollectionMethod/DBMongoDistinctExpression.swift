@@ -31,7 +31,7 @@ public struct DBMongoDistinctExpression<T: Codable>: DBMongoExpression {
     
     public var fieldName: String?
     
-    public var filter: BSONDocument
+    public var filters: [BSONDocument]
     
     public var options: DistinctOptions = DistinctOptions()
 }
@@ -42,7 +42,7 @@ extension DBMongoDistinctExpression: DBMongoFilterOption {}
 extension DBMongoCollectionExpression {
     
     public func distinct() -> DBMongoDistinctExpression<T> {
-        return DBMongoDistinctExpression(query: query(), filter: filter)
+        return DBMongoDistinctExpression(query: query(), filters: filters)
     }
 }
 
@@ -59,7 +59,7 @@ extension DBMongoDistinctExpression {
     
     public func execute() -> EventLoopFuture<[BSON]> {
         guard let fieldName = self.fieldName else { fatalError() }
-        return query.collection.distinct(fieldName: fieldName, filter: filter, options: options, session: query.session)
+        return query.collection.distinct(fieldName: fieldName, filter: _filter, options: options, session: query.session)
     }
 }
 

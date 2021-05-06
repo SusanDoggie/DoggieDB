@@ -1,5 +1,5 @@
 //
-//  DBQueryFindExpression.swift
+//  DBQueryFilterOption.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,28 +23,17 @@
 //  THE SOFTWARE.
 //
 
-public struct DBQueryFindExpression: DBQueryProtocol {
+public protocol DBQueryFilterOption {
     
-    public let connection: DBConnection
+    var filters: [DBQueryPredicateExpression] { get set }
     
-    public let table: String
-    
-    public var limit: Int?
-    
-    public var filters: [DBQueryPredicateExpression] = []
-    
-    init(connection: DBConnection, table: String) {
-        self.connection = connection
-        self.table = table
-    }
 }
 
-extension DBQuery {
+extension DBQueryFilterOption {
     
-    public func find(_ table: String) -> DBQueryFindExpression {
-        return DBQueryFindExpression(connection: connection, table: table)
+    public func filter(_ predicate: (DBQueryPredicateBuilder) -> DBQueryPredicateExpression) throws -> Self {
+        var result = self
+        result.filters.append(predicate(DBQueryPredicateBuilder()))
+        return result
     }
 }
-
-extension DBQueryFindExpression: DBQueryLimitOption { }
-extension DBQueryFindExpression: DBQueryFilterOption { }

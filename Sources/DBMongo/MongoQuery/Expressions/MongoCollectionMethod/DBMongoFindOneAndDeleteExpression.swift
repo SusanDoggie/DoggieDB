@@ -29,7 +29,7 @@ public struct DBMongoFindOneAndDeleteExpression<T: Codable>: DBMongoExpression {
     
     let query: DBMongoCollection<T>
     
-    public var filter: BSONDocument
+    public var filters: [BSONDocument]
     
     public var options: FindOneAndDeleteOptions = FindOneAndDeleteOptions()
 }
@@ -39,14 +39,14 @@ extension DBMongoFindOneAndDeleteExpression: DBMongoFilterOption {}
 extension DBMongoCollectionExpression {
     
     public func findOneAndDelete() -> DBMongoFindOneAndDeleteExpression<T> {
-        return DBMongoFindOneAndDeleteExpression(query: query(), filter: filter)
+        return DBMongoFindOneAndDeleteExpression(query: query(), filters: filters)
     }
 }
 
 extension DBMongoFindOneAndDeleteExpression {
     
     public func execute() -> EventLoopFuture<T?> {
-        return query.collection.findOneAndDelete(filter, options: options, session: query.session)
+        return query.collection.findOneAndDelete(_filter, options: options, session: query.session)
     }
 }
 

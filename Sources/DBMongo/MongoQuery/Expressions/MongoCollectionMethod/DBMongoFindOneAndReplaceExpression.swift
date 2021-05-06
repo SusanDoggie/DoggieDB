@@ -29,7 +29,7 @@ public struct DBMongoFindOneAndReplaceExpression<T: Codable>: DBMongoExpression 
     
     let query: DBMongoCollection<T>
     
-    public var filter: BSONDocument
+    public var filters: [BSONDocument]
     
     public var replacement: T?
     
@@ -41,7 +41,7 @@ extension DBMongoFindOneAndReplaceExpression: DBMongoFilterOption {}
 extension DBMongoCollectionExpression {
     
     public func findOneAndReplace() -> DBMongoFindOneAndReplaceExpression<T> {
-        return DBMongoFindOneAndReplaceExpression(query: query(), filter: filter)
+        return DBMongoFindOneAndReplaceExpression(query: query(), filters: filters)
     }
 }
 
@@ -58,7 +58,7 @@ extension DBMongoFindOneAndReplaceExpression {
     
     public func execute() -> EventLoopFuture<T?> {
         guard let replacement = self.replacement else { fatalError() }
-        return query.collection.findOneAndReplace(filter: filter, replacement: replacement, options: options, session: query.session)
+        return query.collection.findOneAndReplace(filter: _filter, replacement: replacement, options: options, session: query.session)
     }
 }
 

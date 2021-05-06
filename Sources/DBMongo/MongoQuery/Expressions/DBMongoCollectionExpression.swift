@@ -35,7 +35,7 @@ public struct DBMongoCollectionExpression<T: Codable>: DBMongoExpression {
     
     public let name: String
     
-    public var filter: BSONDocument = [:]
+    public var filters: [BSONDocument] = []
     
     public var options = MongoCollectionOptions()
 }

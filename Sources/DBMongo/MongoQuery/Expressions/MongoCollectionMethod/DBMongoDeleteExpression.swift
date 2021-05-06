@@ -31,7 +31,7 @@ public struct DBMongoDeleteExpression<T: Codable>: DBMongoExpression {
     
     public let type: OperationType
     
-    public var filter: BSONDocument
+    public var filters: [BSONDocument]
     
     public var options: DeleteOptions = DeleteOptions()
 }
@@ -53,11 +53,11 @@ extension DBMongoDeleteExpression {
 extension DBMongoCollectionExpression {
     
     public func deleteOne() -> DBMongoDeleteExpression<T> {
-        return DBMongoDeleteExpression(query: query(), type: .deleteOne, filter: filter)
+        return DBMongoDeleteExpression(query: query(), type: .deleteOne, filters: filters)
     }
     
     public func deleteMany() -> DBMongoDeleteExpression<T> {
-        return DBMongoDeleteExpression(query: query(), type: .deleteMany, filter: filter)
+        return DBMongoDeleteExpression(query: query(), type: .deleteMany, filters: filters)
     }
 }
 
@@ -65,8 +65,8 @@ extension DBMongoDeleteExpression {
     
     public func execute() -> EventLoopFuture<DeleteResult?> {
         switch type {
-        case .deleteOne: return query.collection.deleteOne(filter, options: options, session: query.session)
-        case .deleteMany: return query.collection.deleteMany(filter, options: options, session: query.session)
+        case .deleteOne: return query.collection.deleteOne(_filter, options: options, session: query.session)
+        case .deleteMany: return query.collection.deleteMany(_filter, options: options, session: query.session)
         }
     }
 }

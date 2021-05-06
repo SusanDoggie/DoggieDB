@@ -27,7 +27,7 @@ import MongoSwift
 
 public protocol DBMongoFilterOption {
     
-    var filter: BSONDocument { get set }
+    var filters: [BSONDocument] { get set }
     
 }
 
@@ -36,13 +36,24 @@ extension DBMongoFilterOption {
     /// a `BSONDocument`, the filter that documents must match
     public func filter(_ filter: BSONDocument) -> Self {
         var result = self
-        result.filter = filter
+        result.filters.append(filter)
         return result
     }
     
     public func filter(_ predicate: (MongoPredicateBuilder) -> MongoPredicateExpression) throws -> Self {
         var result = self
-        result.filter = try predicate(MongoPredicateBuilder()).toBSONDocument()
+        try result.filters.append(predicate(MongoPredicateBuilder()).toBSONDocument())
         return result
+    }
+}
+
+extension DBMongoFilterOption {
+    
+    var _filter: BSONDocument {
+        switch filters.count {
+        case 0: return [:]
+        case 1: return filters[0]
+        default: return ["$and": BSON(filters)]
+        }
     }
 }
