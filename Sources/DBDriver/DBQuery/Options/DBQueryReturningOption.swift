@@ -1,5 +1,5 @@
 //
-//  DBQueryFindExpression.swift
+//  DBQueryReturningOption.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,37 +23,25 @@
 //  THE SOFTWARE.
 //
 
-public struct DBQueryFindExpression: DBQueryProtocol {
+public enum DBQueryReturning {
     
-    public let connection: DBConnection
+    case before
     
-    public let table: String
-    
-    public var filters: [DBQueryPredicateExpression] = []
-    
-    public var skip: Int = 0
-    
-    public var limit: Int = .max
-    
-    public var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
-    
-    public var returning: DBQueryReturning = .after
-    
-    init(connection: DBConnection, table: String) {
-        self.connection = connection
-        self.table = table
-    }
+    case after
 }
 
-extension DBQuery {
+public protocol DBQueryReturningOption {
     
-    public func find(_ table: String) -> DBQueryFindExpression {
-        return DBQueryFindExpression(connection: connection, table: table)
-    }
+    var returning: DBQueryReturning { get set }
+    
 }
 
-extension DBQueryFindExpression: DBQueryFilterOption { }
-extension DBQueryFindExpression: DBQuerySkipOptions { }
-extension DBQueryFindExpression: DBQueryLimitOption { }
-extension DBQueryFindExpression: DBQuerySortOption { }
-extension DBQueryFindExpression: DBQueryReturningOption { }
+extension DBQueryReturningOption {
+    
+    public func returning(_ returning: DBQueryReturning) -> Self {
+        var result = self
+        result.returning = returning
+        return result
+    }
+    
+}
