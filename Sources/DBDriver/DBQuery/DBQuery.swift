@@ -23,24 +23,29 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBQueryProtocol {
-    
-    var connection: DBConnection { get }
-}
-
-extension DBQueryProtocol {
-    
-    public var eventLoop: EventLoop {
-        return connection.eventLoop
-    }
-}
-
 public struct DBQuery {
     
     public let connection: DBConnection
     
+    public var filters: [DBQueryPredicateExpression] = []
+    
+    public var skip: Int = 0
+    
+    public var limit: Int = .max
+    
+    public var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
+    
+    public var returning: DBQueryReturning = .after
+    
     init(connection: DBConnection) {
         self.connection = connection
+    }
+}
+
+extension DBQuery {
+    
+    public var eventLoop: EventLoop {
+        return connection.eventLoop
     }
 }
 
@@ -48,5 +53,47 @@ extension DBConnection where Self: DBSQLConnection {
     
     public func query() -> DBQuery {
         return DBQuery(connection: self)
+    }
+}
+
+extension DBQuery {
+    
+    public func filter(_ predicate: (DBQueryPredicateBuilder) -> DBQueryPredicateExpression) throws -> Self {
+        var result = self
+        result.options.filters.append(predicate(DBQueryPredicateBuilder()))
+        return result
+    }
+}
+
+extension DBQuery {
+    
+    public func limit(_ limit: Int) -> Self {
+        var result = self
+        result.options.limit = limit
+        return result
+    }
+    
+    public func skip(_ skip: Int) -> Self {
+        var result = self
+        result.options.skip = skip
+        return result
+    }
+}
+
+extension DBQuery {
+    
+    public func sort(_ sort: OrderedDictionary<String, DBQuerySortOrder>) -> Self {
+        var result = self
+        result.options.sort = sort
+        return result
+    }
+}
+
+extension DBQuery {
+    
+    public func returning(_ returning: DBQueryReturning) -> Self {
+        var result = self
+        result.options.returning = returning
+        return result
     }
 }
