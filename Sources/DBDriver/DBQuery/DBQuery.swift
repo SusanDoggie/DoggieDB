@@ -88,7 +88,7 @@ extension DBQuery {
         
         case descending
     }
-
+    
     public func sort(_ sort: OrderedDictionary<String, SortOrder>) -> Self {
         var result = self
         result.sort = sort
@@ -104,7 +104,7 @@ extension DBQuery {
         
         case after
     }
-
+    
     public func returning(_ returning: Returning) -> Self {
         var result = self
         result.returning = returning
