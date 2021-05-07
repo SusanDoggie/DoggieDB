@@ -35,8 +35,6 @@ public struct DBQueryFindExpression: DBQueryProtocol {
     
     public var limit: Int = .max
     
-    public var upsert: Bool = false
-    
     public var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
     
     init(connection: DBConnection, table: String) {
