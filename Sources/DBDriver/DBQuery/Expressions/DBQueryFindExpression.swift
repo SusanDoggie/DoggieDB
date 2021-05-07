@@ -37,6 +37,8 @@ public struct DBQueryFindExpression: DBQueryProtocol {
     
     public var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
     
+    public var returning: DBQueryReturning = .after
+    
     init(connection: DBConnection, table: String) {
         self.connection = connection
         self.table = table
@@ -54,3 +56,4 @@ extension DBQueryFindExpression: DBQueryFilterOption { }
 extension DBQueryFindExpression: DBQuerySkipOptions { }
 extension DBQueryFindExpression: DBQueryLimitOption { }
 extension DBQueryFindExpression: DBQuerySortOption { }
+extension DBQueryFindExpression: DBQueryReturningOption { }
