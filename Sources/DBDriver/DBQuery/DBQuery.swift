@@ -33,9 +33,9 @@ public struct DBQuery {
     
     public var limit: Int = .max
     
-    public var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
+    public var sort: OrderedDictionary<String, SortOrder> = [:]
     
-    public var returning: DBQueryReturning = .after
+    public var returning: Returning = .after
     
     init(connection: DBConnection) {
         self.connection = connection
@@ -60,7 +60,7 @@ extension DBQuery {
     
     public func filter(_ predicate: (DBQueryPredicateBuilder) -> DBQueryPredicateExpression) throws -> Self {
         var result = self
-        result.options.filters.append(predicate(DBQueryPredicateBuilder()))
+        result.filters.append(predicate(DBQueryPredicateBuilder()))
         return result
     }
 }
@@ -69,31 +69,45 @@ extension DBQuery {
     
     public func limit(_ limit: Int) -> Self {
         var result = self
-        result.options.limit = limit
+        result.limit = limit
         return result
     }
     
     public func skip(_ skip: Int) -> Self {
         var result = self
-        result.options.skip = skip
+        result.skip = skip
         return result
     }
 }
 
 extension DBQuery {
     
-    public func sort(_ sort: OrderedDictionary<String, DBQuerySortOrder>) -> Self {
+    public enum SortOrder {
+        
+        case ascending
+        
+        case descending
+    }
+
+    public func sort(_ sort: OrderedDictionary<String, SortOrder>) -> Self {
         var result = self
-        result.options.sort = sort
+        result.sort = sort
         return result
     }
 }
 
 extension DBQuery {
     
-    public func returning(_ returning: DBQueryReturning) -> Self {
+    public enum Returning {
+        
+        case before
+        
+        case after
+    }
+
+    public func returning(_ returning: Returning) -> Self {
         var result = self
-        result.options.returning = returning
+        result.returning = returning
         return result
     }
 }
