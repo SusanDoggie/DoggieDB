@@ -1,5 +1,5 @@
 //
-//  DBQuery.swift
+//  DBQuerySkipOptions.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,30 +23,17 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBQueryProtocol {
+public protocol DBQuerySkipOptions {
     
-    var connection: DBConnection { get }
+    var skip: Int { get set }
+    
 }
 
-extension DBQueryProtocol {
+extension DBQuerySkipOptions {
     
-    public var eventLoop: EventLoop {
-        return connection.eventLoop
-    }
-}
-
-public struct DBQuery {
-    
-    public let connection: DBConnection
-    
-    init(connection: DBConnection) {
-        self.connection = connection
-    }
-}
-
-extension DBConnection where Self: DBSQLConnection {
-    
-    public func query() -> DBQuery {
-        return DBQuery(connection: self)
+    public func skip(_ skip: Int) -> Self {
+        var result = self
+        result.skip = skip
+        return result
     }
 }

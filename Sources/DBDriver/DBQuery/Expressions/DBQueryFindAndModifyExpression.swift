@@ -1,5 +1,5 @@
 //
-//  DBQuery.swift
+//  DBQueryFindAndModifyExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,30 +23,37 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBQueryProtocol {
-    
-    var connection: DBConnection { get }
-}
-
-extension DBQueryProtocol {
-    
-    public var eventLoop: EventLoop {
-        return connection.eventLoop
-    }
-}
-
-public struct DBQuery {
+public struct DBQueryFindAndModifyExpression: DBQueryProtocol {
     
     public let connection: DBConnection
     
-    init(connection: DBConnection) {
+    public let table: String
+    
+    public var filters: [DBQueryPredicateExpression] = []
+    
+    public var skip: Int = 0
+    
+    public var limit: Int = .max
+    
+    public var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
+    
+    public var returning: DBQueryReturning = .after
+    
+    init(connection: DBConnection, table: String) {
         self.connection = connection
+        self.table = table
     }
 }
 
-extension DBConnection where Self: DBSQLConnection {
+extension DBQuery {
     
-    public func query() -> DBQuery {
-        return DBQuery(connection: self)
+    public func find(_ table: String) -> DBQueryFindAndModifyExpression {
+        return DBQueryFindAndModifyExpression(connection: connection, table: table)
     }
 }
+
+extension DBQueryFindAndModifyExpression: DBQueryFilterOption { }
+extension DBQueryFindAndModifyExpression: DBQuerySkipOptions { }
+extension DBQueryFindAndModifyExpression: DBQueryLimitOption { }
+extension DBQueryFindAndModifyExpression: DBQuerySortOption { }
+extension DBQueryFindAndModifyExpression: DBQueryReturningOption { }

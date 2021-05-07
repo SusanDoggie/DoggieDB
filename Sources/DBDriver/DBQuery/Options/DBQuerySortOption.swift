@@ -1,5 +1,5 @@
 //
-//  DBQuery.swift
+//  DBQuerySortOption.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,30 +23,24 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBQueryProtocol {
+public protocol DBQuerySortOption {
     
-    var connection: DBConnection { get }
+    var sort: OrderedDictionary<String, DBQuerySortOrder> { get set }
+    
 }
 
-extension DBQueryProtocol {
+public enum DBQuerySortOrder {
     
-    public var eventLoop: EventLoop {
-        return connection.eventLoop
-    }
+    case ascending
+    
+    case descending
 }
 
-public struct DBQuery {
+extension DBQuerySortOption {
     
-    public let connection: DBConnection
-    
-    init(connection: DBConnection) {
-        self.connection = connection
-    }
-}
-
-extension DBConnection where Self: DBSQLConnection {
-    
-    public func query() -> DBQuery {
-        return DBQuery(connection: self)
+    public func sort(_ sort: OrderedDictionary<String, DBQuerySortOrder>) -> Self {
+        var result = self
+        result.sort = sort
+        return result
     }
 }

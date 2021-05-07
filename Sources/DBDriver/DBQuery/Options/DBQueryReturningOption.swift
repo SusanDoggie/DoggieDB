@@ -1,5 +1,5 @@
 //
-//  DBQuery.swift
+//  DBQueryReturningOption.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,30 +23,25 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBQueryProtocol {
+public enum DBQueryReturning {
     
-    var connection: DBConnection { get }
+    case before
+    
+    case after
 }
 
-extension DBQueryProtocol {
+public protocol DBQueryReturningOption {
     
-    public var eventLoop: EventLoop {
-        return connection.eventLoop
-    }
+    var returning: DBQueryReturning { get set }
+    
 }
 
-public struct DBQuery {
+extension DBQueryReturningOption {
     
-    public let connection: DBConnection
-    
-    init(connection: DBConnection) {
-        self.connection = connection
+    public func returning(_ returning: DBQueryReturning) -> Self {
+        var result = self
+        result.returning = returning
+        return result
     }
-}
-
-extension DBConnection where Self: DBSQLConnection {
     
-    public func query() -> DBQuery {
-        return DBQuery(connection: self)
-    }
 }

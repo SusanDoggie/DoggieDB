@@ -1,5 +1,5 @@
 //
-//  DBQuery.swift
+//  DBQueryFilterOption.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,30 +23,17 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBQueryProtocol {
+public protocol DBQueryFilterOption {
     
-    var connection: DBConnection { get }
+    var filters: [DBQueryPredicateExpression] { get set }
+    
 }
 
-extension DBQueryProtocol {
+extension DBQueryFilterOption {
     
-    public var eventLoop: EventLoop {
-        return connection.eventLoop
-    }
-}
-
-public struct DBQuery {
-    
-    public let connection: DBConnection
-    
-    init(connection: DBConnection) {
-        self.connection = connection
-    }
-}
-
-extension DBConnection where Self: DBSQLConnection {
-    
-    public func query() -> DBQuery {
-        return DBQuery(connection: self)
+    public func filter(_ predicate: (DBQueryPredicateBuilder) -> DBQueryPredicateExpression) throws -> Self {
+        var result = self
+        result.filters.append(predicate(DBQueryPredicateBuilder()))
+        return result
     }
 }

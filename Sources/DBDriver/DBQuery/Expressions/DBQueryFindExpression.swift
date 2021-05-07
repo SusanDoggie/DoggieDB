@@ -1,5 +1,5 @@
 //
-//  DBQuery.swift
+//  DBQueryFindExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,30 +23,34 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBQueryProtocol {
-    
-    var connection: DBConnection { get }
-}
-
-extension DBQueryProtocol {
-    
-    public var eventLoop: EventLoop {
-        return connection.eventLoop
-    }
-}
-
-public struct DBQuery {
+public struct DBQueryFindExpression: DBQueryProtocol {
     
     public let connection: DBConnection
     
-    init(connection: DBConnection) {
+    public let table: String
+    
+    public var filters: [DBQueryPredicateExpression] = []
+    
+    public var skip: Int = 0
+    
+    public var limit: Int = .max
+    
+    public var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
+    
+    init(connection: DBConnection, table: String) {
         self.connection = connection
+        self.table = table
     }
 }
 
-extension DBConnection where Self: DBSQLConnection {
+extension DBQuery {
     
-    public func query() -> DBQuery {
-        return DBQuery(connection: self)
+    public func find(_ table: String) -> DBQueryFindExpression {
+        return DBQueryFindExpression(connection: connection, table: table)
     }
 }
+
+extension DBQueryFindExpression: DBQueryFilterOption { }
+extension DBQueryFindExpression: DBQuerySkipOptions { }
+extension DBQueryFindExpression: DBQueryLimitOption { }
+extension DBQueryFindExpression: DBQuerySortOption { }
