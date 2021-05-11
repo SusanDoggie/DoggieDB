@@ -44,7 +44,7 @@ public struct DBQuery {
     }
 }
 
-extension DBConnection where Self: DBSQLConnection {
+extension DBConnection {
     
     public func query() -> DBQuery {
         return DBQuery(connection: self)
