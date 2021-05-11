@@ -587,6 +587,13 @@ extension DBValue {
             
             let formatter = ISO8601DateFormatter()
             formatter.formatOptions = .withInternetDateTime
+            
+            if let date = formatter.date(from: value) {
+                return date
+            }
+            
+            formatter.formatOptions.formUnion(.withFractionalSeconds)
+            
             return formatter.date(from: value)
             
         default: return nil
@@ -602,6 +609,13 @@ extension DBValue {
             
             let formatter = ISO8601DateFormatter()
             formatter.formatOptions = .withInternetDateTime
+            
+            if let date = formatter.date(from: value) {
+                return Calendar.iso8601.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: date)
+            }
+            
+            formatter.formatOptions.formUnion(.withFractionalSeconds)
+            
             return formatter.date(from: value).map { Calendar.iso8601.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: $0) }
             
         default: return nil

@@ -360,6 +360,12 @@ extension DBValue._Decoder: SingleValueDecodingContainer {
                 formatter.formatOptions = .withInternetDateTime
                 formatter.timeZone = options.timeZone
                 
+                if let value = formatter.date(from: string) {
+                    return value
+                }
+                
+                formatter.formatOptions.formUnion(.withFractionalSeconds)
+                
                 guard let value = formatter.date(from: string) else { throw Database.Error.invalidDateFormat }
                 return value
                 
