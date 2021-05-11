@@ -119,7 +119,7 @@ extension DBConnection {
         _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) -> Void
     ) -> EventLoopFuture<DBQueryMetadata> {
-        return self.execute(sql, onRow: onRow)
+        return self.execute(sql, onRow: onRow as (DBQueryRow) throws -> Void)
     }
     
     public func execute(
