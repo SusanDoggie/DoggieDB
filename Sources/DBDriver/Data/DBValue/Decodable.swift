@@ -356,17 +356,7 @@ extension DBValue._Decoder: SingleValueDecodingContainer {
             
             case .iso8601:
                 
-                let formatter = ISO8601DateFormatter()
-                formatter.formatOptions = .withInternetDateTime
-                formatter.timeZone = options.timeZone
-                
-                if let value = formatter.date(from: string) {
-                    return value
-                }
-                
-                formatter.formatOptions.formUnion(.withFractionalSeconds)
-                
-                guard let value = formatter.date(from: string) else { throw Database.Error.invalidDateFormat }
+                guard let value = string.iso8601 else { throw Database.Error.invalidDateFormat }
                 return value
                 
             case let .formatted(formatter):

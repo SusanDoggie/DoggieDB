@@ -583,19 +583,7 @@ extension DBValue {
             let calendar = value.calendar ?? Calendar.iso8601
             return calendar.date(from: value)
             
-        case let .string(value):
-            
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = .withInternetDateTime
-            
-            if let date = formatter.date(from: value) {
-                return date
-            }
-            
-            formatter.formatOptions.formUnion(.withFractionalSeconds)
-            
-            return formatter.date(from: value)
-            
+        case let .string(value): return value.iso8601
         default: return nil
         }
     }
@@ -604,20 +592,7 @@ extension DBValue {
         switch self.base {
         case let .timestamp(value): return Calendar.iso8601.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: value)
         case let .date(value): return value
-            
-        case let .string(value):
-            
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = .withInternetDateTime
-            
-            if let date = formatter.date(from: value) {
-                return Calendar.iso8601.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: date)
-            }
-            
-            formatter.formatOptions.formUnion(.withFractionalSeconds)
-            
-            return formatter.date(from: value).map { Calendar.iso8601.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: $0) }
-            
+        case let .string(value): return value.iso8601.map { Calendar.iso8601.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: $0) }
         default: return nil
         }
     }
