@@ -190,9 +190,9 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   ubuntu_swift_nightly:
-    name: ${{ matrix.image }}
+    name: nightly-${{ matrix.distro }}
     container:
-      image: docker://swiftlang/swift:${{ matrix.image }}
+      image: docker://swiftlang/swift:nightly-${{ matrix.distro }}
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -219,7 +219,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [nightly-xenial, nightly-bionic, nightly-focal]
+        distro: [xenial, bionic, focal]
     steps:
     - uses: actions/checkout@v1
       with:
@@ -245,9 +245,9 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   linux_swift_nightly:
-    name: ${{ matrix.image }}
+    name: nightly-${{ matrix.distro }}
     container:
-      image: docker://swiftlang/swift:${{ matrix.image }}
+      image: docker://swiftlang/swift:nightly-${{ matrix.distro }}
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -274,9 +274,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [nightly-centos8]
+        distro: [centos8]
         include:
-          - image: nightly-centos8
+          - distro: centos8
             jsc: webkit2gtk3-jsc-devel
     steps:
     - uses: actions/checkout@v1
