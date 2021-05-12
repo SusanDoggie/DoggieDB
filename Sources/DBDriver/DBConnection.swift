@@ -50,20 +50,6 @@ public protocol DBConnection: AnyObject {
     func foreignKeys(of table: String) -> EventLoopFuture<[DBQueryRow]>
     
     func execute(
-        _ query: DBQueryProtocol
-    ) -> EventLoopFuture<[DBQueryRow]>
-    
-    func execute(
-        _ query: DBQueryProtocol,
-        onRow: @escaping (DBQueryRow) -> Void
-    ) -> EventLoopFuture<DBQueryMetadata>
-    
-    func execute(
-        _ query: DBQueryProtocol,
-        onRow: @escaping (DBQueryRow) throws -> Void
-    ) -> EventLoopFuture<DBQueryMetadata>
-    
-    func execute(
         _ sql: SQLRaw
     ) -> EventLoopFuture<[DBQueryRow]>
     
@@ -76,8 +62,6 @@ public protocol DBConnection: AnyObject {
         _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) throws -> Void
     ) -> EventLoopFuture<DBQueryMetadata>
-    
-    func query() -> DBQuery
     
     func sqlQuery() -> SQLBuilder
     
@@ -119,29 +103,6 @@ extension DBConnection {
     }
     
     public func foreignKeys(of table: String) -> EventLoopFuture<[DBQueryRow]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-}
-
-extension DBConnection {
-    
-    public func execute(
-        _ query: DBQueryProtocol
-    ) -> EventLoopFuture<[DBQueryRow]> {
-        return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func execute(
-        _ query: DBQueryProtocol,
-        onRow: @escaping (DBQueryRow) -> Void
-    ) -> EventLoopFuture<DBQueryMetadata> {
-        return self.execute(query, onRow: onRow as (DBQueryRow) throws -> Void)
-    }
-    
-    public func execute(
-        _ query: DBQueryProtocol,
-        onRow: @escaping (DBQueryRow) throws -> Void
-    ) -> EventLoopFuture<DBQueryMetadata> {
         return eventLoop.makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
 }
