@@ -77,9 +77,9 @@ jobs:
     - uses: codecov/codecov-action@v1
       if: ${{ matrix.enable_codecov }}
   ubuntu_swift:
-    name: ${{ matrix.image }}
+    name: ${{ matrix.swift_version }}-${{ matrix.distro }}
     container: 
-      image: docker://swift:${{ matrix.image }}
+      image: docker://swift:${{ matrix.swift_version }}-${{ matrix.distro }}
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -107,8 +107,6 @@ jobs:
       matrix:
         swift_version: [5.3, 5.4]
         distro: [xenial, bionic, focal]
-        include:
-          - image: ${{ swift_version }}-${{ distro }}
     steps:
     - uses: actions/checkout@v1
       with:
@@ -134,9 +132,9 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   linux_swift:
-    name: ${{ matrix.image }}
+    name: ${{ matrix.swift_version }}-${{ matrix.distro }}
     container:
-      image: docker://swift:${{ matrix.image }}
+      image: docker://swift:${{ matrix.swift_version }}-${{ matrix.distro }}
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -165,7 +163,6 @@ jobs:
         swift_version: [5.3, 5.4]
         distro: [centos8]
         include:
-          - image: ${{ swift_version }}-${{ distro }}
           - distro: centos8
             jsc: webkit2gtk3-jsc-devel
     steps:
