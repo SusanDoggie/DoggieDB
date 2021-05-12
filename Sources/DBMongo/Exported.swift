@@ -25,4 +25,4 @@
 
 @_exported import DoggieCore
 
-@_exported import DBDriver
+@_exported import DoggieDB

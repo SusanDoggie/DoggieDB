@@ -58,7 +58,7 @@ let package = Package(
             ]
         ),
         .target(
-            name: "DBDriver",
+            name: "DoggieDB",
             dependencies: [
                 .target(name: "Utils"),
                 .product(name: "NIO", package: "swift-nio"),
@@ -73,7 +73,7 @@ let package = Package(
         .target(
             name: "DBMongo",
             dependencies: [
-                .target(name: "DBDriver"),
+                .target(name: "DoggieDB"),
                 .product(name: "MongoSwift", package: "mongo-swift-driver"),
             ]
         ),
@@ -81,27 +81,14 @@ let package = Package(
             name: "DBSQLite",
             dependencies: [
                 .target(name: "Utils"),
-                .target(name: "DBDriver"),
+                .target(name: "DoggieDB"),
                 .product(name: "SQLiteNIO", package: "sqlite-nio"),
-            ]
-        ),
-        .target(
-            name: "DBFluent",
-            dependencies: [
-                .target(name: "DBDriver"),
-            ]
-        ),
-        .target(
-            name: "DoggieDB",
-            dependencies: [
-                .target(name: "DBDriver"),
-                .target(name: "DBFluent"),
             ]
         ),
         .target(
             name: "DBVapor",
             dependencies: [
-                .target(name: "DBDriver"),
+                .target(name: "DoggieDB"),
                 .product(name: "Vapor", package: "vapor"),
             ]
         ),

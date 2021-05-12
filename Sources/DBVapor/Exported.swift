@@ -23,6 +23,6 @@
 //  THE SOFTWARE.
 //
 
-@_exported import DBDriver
+@_exported import DoggieDB
 
 @_exported import Vapor
