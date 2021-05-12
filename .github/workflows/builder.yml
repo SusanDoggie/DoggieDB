@@ -108,7 +108,7 @@ jobs:
         swift_version: [5.3, 5.4]
         distro: [xenial, bionic, focal]
         include:
-          - image: ${{ matrix.swift_version }}-${{ matrix.distro }}
+          - image: ${{ swift_version }}-${{ distro }}
     steps:
     - uses: actions/checkout@v1
       with:
@@ -165,7 +165,7 @@ jobs:
         swift_version: [5.3, 5.4]
         distro: [centos8]
         include:
-          - image: ${{ matrix.swift_version }}-${{ matrix.distro }}
+          - image: ${{ swift_version }}-${{ distro }}
           - distro: centos8
             jsc: webkit2gtk3-jsc-devel
     steps:
