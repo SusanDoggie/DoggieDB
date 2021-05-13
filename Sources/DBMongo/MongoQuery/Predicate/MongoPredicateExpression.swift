@@ -86,101 +86,172 @@ extension MongoPredicateExpression {
         }
     }
     
-    public func toBSONDocument() throws -> BSONDocument {
+    private func _expression() throws -> BSONDocument {
         
         switch self {
         case let .not(x):
             
-            return try ["$not": BSON(x.toBSONDocument())]
+            return try ["$not": BSON(x._expression())]
             
         case let .equal(.key(lhs), .key(rhs)):
             
-            return ["$expr": ["$eq": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]
+            return ["$eq": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]
+            
+        case let .equal(.key(key), .value(value)),
+             let .equal(.value(value), .key(key)):
+            
+            return ["$eq": ["$\(key)".toBSON(), value.toBSON()]]
+            
+        case let .notEqual(.key(lhs), .key(rhs)):
+            
+            return ["$ne": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]
+            
+        case let .notEqual(.key(key), .value(value)),
+             let .notEqual(.value(value), .key(key)):
+            
+            return ["$ne": ["$\(key)".toBSON(), value.toBSON()]]
+            
+        case let .lessThan(.key(lhs), .key(rhs)):
+            
+            return ["$lt": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]
+            
+        case let .lessThan(.key(key), .value(value)),
+             let .greaterThan(.value(value), .key(key)):
+            
+            return ["$lt": ["$\(key)".toBSON(), value.toBSON()]]
+            
+        case let .greaterThan(.key(lhs), .key(rhs)):
+            
+            return ["$gt": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]
+            
+        case let .greaterThan(.key(key), .value(value)),
+             let .lessThan(.value(value), .key(key)):
+            
+            return ["$gt": ["$\(key)".toBSON(), value.toBSON()]]
+            
+        case let .lessThanOrEqualTo(.key(lhs), .key(rhs)):
+            
+            return ["$lte": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]
+            
+        case let .lessThanOrEqualTo(.key(key), .value(value)),
+             let .greaterThanOrEqualTo(.value(value), .key(key)):
+            
+            return ["$lte": ["$\(key)".toBSON(), value.toBSON()]]
+            
+        case let .greaterThanOrEqualTo(.key(lhs), .key(rhs)):
+            
+            return ["$gte": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]
+            
+        case let .greaterThanOrEqualTo(.key(key), .value(value)),
+             let .lessThanOrEqualTo(.value(value), .key(key)):
+            
+            return ["$gte": ["$\(key)".toBSON(), value.toBSON()]]
+            
+        case let .containsIn(.key(lhs), .key(rhs)):
+            
+            return ["$in": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]
+            
+        case let .containsIn(.value(value), .key(key)):
+            
+            return ["$in": [value.toBSON(), "$\(key)".toBSON()]]
+            
+        case let .containsIn(.key(key), .value(value)):
+            
+            return ["$in": ["$\(key)".toBSON(), value.toBSON()]]
+            
+        case let .notContainsIn(.key(lhs), .key(rhs)):
+            
+            return ["$not": [["$in": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]]
+            
+        case let .notContainsIn(.value(value), .key(key)):
+            
+            return ["$not": [["$in": [value.toBSON(), "$\(key)".toBSON()]]]]
+            
+        case let .notContainsIn(.key(key), .value(value)):
+            
+            return ["$not": [["$in": ["$\(key)".toBSON(), value.toBSON()]]]]
+            
+        case let .matching(.key(lhs), .key(rhs)):
+            
+            return ["$regexMatch": ["input": "$\(lhs)".toBSON(), "regex": "$\(rhs)".toBSON()]]
+            
+        case let .matching(.value(value), .key(key)):
+            
+            return ["$regexMatch": ["input": value.toBSON(), "regex": "$\(key)".toBSON()]]
+            
+        case let .matching(.key(key), .value(value)):
+            
+            return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": value.toBSON()]]
+            
+        case let .and(lhs, rhs):
+            
+            let _lhs = lhs._andList ?? [lhs]
+            let _rhs = rhs._andList ?? [rhs]
+            let list = _lhs + _rhs
+            return try ["$and": BSON(list.map { try $0._expression() })]
+            
+        case let .or(lhs, rhs):
+            
+            let _lhs = lhs._orList ?? [lhs]
+            let _rhs = rhs._orList ?? [rhs]
+            let list = _lhs + _rhs
+            return try ["$or": BSON(list.map { try $0._expression() })]
+            
+        default: throw Database.Error.invalidExpression
+        }
+    }
+    
+    public func toBSONDocument(useExpr: Bool) throws -> BSONDocument {
+        
+        if useExpr {
+            return try ["$expr": BSON(_expression())]
+        }
+        
+        switch self {
+        case let .not(x):
+            
+            return try ["$not": BSON(x.toBSONDocument(useExpr: true))]
             
         case let .equal(.key(key), .value(value)),
              let .equal(.value(value), .key(key)):
             
             return [key: ["$eq": value.toBSON()]]
             
-        case let .notEqual(.key(lhs), .key(rhs)):
-            
-            return ["$expr": ["$ne": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]
-            
         case let .notEqual(.key(key), .value(value)),
              let .notEqual(.value(value), .key(key)):
             
             return [key: ["$ne": value.toBSON()]]
             
-        case let .lessThan(.key(lhs), .key(rhs)):
-            
-            return ["$expr": ["$lt": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]
-            
         case let .lessThan(.key(key), .value(value)),
-             let .lessThan(.value(value), .key(key)):
+             let .greaterThan(.value(value), .key(key)):
             
             return [key: ["$lt": value.toBSON()]]
             
-        case let .greaterThan(.key(lhs), .key(rhs)):
-            
-            return ["$expr": ["$gt": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]
-            
         case let .greaterThan(.key(key), .value(value)),
-             let .greaterThan(.value(value), .key(key)):
+             let .lessThan(.value(value), .key(key)):
             
             return [key: ["$gt": value.toBSON()]]
             
-        case let .lessThanOrEqualTo(.key(lhs), .key(rhs)):
-            
-            return ["$expr": ["$lte": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]
-            
         case let .lessThanOrEqualTo(.key(key), .value(value)),
-             let .lessThanOrEqualTo(.value(value), .key(key)):
+             let .greaterThanOrEqualTo(.value(value), .key(key)):
             
             return [key: ["$lte": value.toBSON()]]
             
-        case let .greaterThanOrEqualTo(.key(lhs), .key(rhs)):
-            
-            return ["$expr": ["$gte": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]
-            
         case let .greaterThanOrEqualTo(.key(key), .value(value)),
-             let .greaterThanOrEqualTo(.value(value), .key(key)):
+             let .lessThanOrEqualTo(.value(value), .key(key)):
             
             return [key: ["$gte": value.toBSON()]]
-            
-        case let .containsIn(.key(lhs), .key(rhs)):
-            
-            return ["$expr": ["$in": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]
-            
-        case let .containsIn(.value(value), .key(key)):
-            
-            return ["$expr": ["$in": [value.toBSON(), "$\(key)".toBSON()]]]
             
         case let .containsIn(.key(key), .value(value)):
             
             return [key: ["$in": value.toBSON()]]
             
-        case let .notContainsIn(.key(lhs), .key(rhs)):
-            
-            return ["$expr": ["$not": [["$in": ["$\(lhs)".toBSON(), "$\(rhs)".toBSON()]]]]]
-            
-        case let .notContainsIn(.value(value), .key(key)):
-            
-            return ["$expr": ["$not": [["$in": [value.toBSON(), "$\(key)".toBSON()]]]]]
-            
         case let .notContainsIn(.key(key), .value(value)):
             
             return [key: ["$nin": value.toBSON()]]
             
-        case let .matching(.key(lhs), .key(rhs)):
-            
-            return ["$expr": ["$regexMatch": ["input": "$\(lhs)".toBSON(), "regex": "$\(rhs)".toBSON()]]]
-            
-        case let .matching(.value(value), .key(key)):
-            
-            return ["$expr": ["$regexMatch": ["input": value.toBSON(), "regex": "$\(key)".toBSON()]]]
-            
         case let .matching(.key(key), .value(value)):
-        
+            
             return [key: ["$regex": value.toBSON()]]
             
         case let .and(lhs, rhs):
@@ -188,16 +259,16 @@ extension MongoPredicateExpression {
             let _lhs = lhs._andList ?? [lhs]
             let _rhs = rhs._andList ?? [rhs]
             let list = _lhs + _rhs
-            return try ["$and": BSON(list.map { try $0.toBSONDocument() })]
+            return try ["$and": BSON(list.map { try $0.toBSONDocument(useExpr: useExpr) })]
             
         case let .or(lhs, rhs):
             
             let _lhs = lhs._orList ?? [lhs]
             let _rhs = rhs._orList ?? [rhs]
             let list = _lhs + _rhs
-            return try ["$or": BSON(list.map { try $0.toBSONDocument() })]
+            return try ["$or": BSON(list.map { try $0.toBSONDocument(useExpr: useExpr) })]
             
-        default: throw Database.Error.invalidExpression
+        default: return try ["$expr": BSON(_expression())]
         }
     }
 }
