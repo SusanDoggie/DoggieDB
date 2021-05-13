@@ -42,7 +42,7 @@ extension DBMongoFilterOption {
     
     public func filter(_ predicate: (MongoPredicateBuilder) -> MongoPredicateExpression) throws -> Self {
         var result = self
-        try result.filters.append(predicate(MongoPredicateBuilder()).toBSONDocument(useExpr: false))
+        try result.filters.append(predicate(MongoPredicateBuilder()).toBSONDocument())
         return result
     }
 }

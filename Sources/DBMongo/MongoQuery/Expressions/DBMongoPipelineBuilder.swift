@@ -64,7 +64,7 @@ extension DBMongoPipelineBuilder {
     }
     
     public func match(_ predicate: (MongoPredicateBuilder) -> MongoPredicateExpression) throws -> Self {
-        return try self.appendStage(["$match": .document(predicate(MongoPredicateBuilder()).toBSONDocument(useExpr: true))])
+        return try self.appendStage(["$match": .document(predicate(MongoPredicateBuilder()).toBSONDocument())])
     }
 }
 

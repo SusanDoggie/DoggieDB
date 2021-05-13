@@ -201,16 +201,12 @@ extension MongoPredicateExpression {
         }
     }
     
-    public func toBSONDocument(useExpr: Bool) throws -> BSONDocument {
-        
-        if useExpr {
-            return try ["$expr": BSON(_expression())]
-        }
+    public func toBSONDocument() throws -> BSONDocument {
         
         switch self {
         case let .not(x):
             
-            return try ["$not": BSON(x.toBSONDocument(useExpr: true))]
+            return try ["$not": BSON(["$expr": BSON(x._expression())])]
             
         case let .equal(.key(key), .value(value)),
              let .equal(.value(value), .key(key)):
@@ -259,14 +255,14 @@ extension MongoPredicateExpression {
             let _lhs = lhs._andList ?? [lhs]
             let _rhs = rhs._andList ?? [rhs]
             let list = _lhs + _rhs
-            return try ["$and": BSON(list.map { try $0.toBSONDocument(useExpr: useExpr) })]
+            return try ["$and": BSON(list.map { try $0.toBSONDocument() })]
             
         case let .or(lhs, rhs):
             
             let _lhs = lhs._orList ?? [lhs]
             let _rhs = rhs._orList ?? [rhs]
             let list = _lhs + _rhs
-            return try ["$or": BSON(list.map { try $0.toBSONDocument(useExpr: useExpr) })]
+            return try ["$or": BSON(list.map { try $0.toBSONDocument() })]
             
         default: return try ["$expr": BSON(_expression())]
         }
