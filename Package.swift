@@ -39,7 +39,7 @@ let package = Package(
         .executable(name: "DBBrowser", targets: ["DBBrowser"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/SusanDoggie/Doggie.git", from: "6.3.0"),
+        .package(url: "https://github.com/SusanDoggie/Doggie.git", from: "6.4.0"),
         .package(url: "https://github.com/SusanDoggie/SwiftJS.git", from: "1.2.2"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.27.0"),
         .package(url: "https://github.com/mongodb/swift-bson.git", from: "3.0.0"),
