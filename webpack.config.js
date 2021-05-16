@@ -53,10 +53,10 @@ module.exports = (env, argv) => {
 			minimizer: [
 				new TerserPlugin({
 					parallel: true,
-					extractComments: !IS_PRODUCTION,
+					extractComments: false,
 					terserOptions: {
-						sourceMap: !IS_PRODUCTION,
-						compress: IS_PRODUCTION,
+						sourceMap: false,
+						compress: true,
 					},
 				}),
 			],
