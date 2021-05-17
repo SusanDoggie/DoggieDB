@@ -63,3 +63,186 @@ extension DBMongoCreateIndexExpression {
         return query.collection.createIndex(model, options: options, session: query.session)
     }
 }
+
+extension DBMongoCreateIndexExpression {
+    
+    public func background(_ background: Bool) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.background = background
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func bits(_ bits: Int) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.bits = bits
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func bucketSize(_ bucketSize: Int) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.bucketSize = bucketSize
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func collation(_ collation: BSONDocument) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.collation = collation
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func defaultLanguage(_ defaultLanguage: String) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.defaultLanguage = defaultLanguage
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func expireAfterSeconds(_ expireAfterSeconds: Int) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.expireAfterSeconds = expireAfterSeconds
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func hidden(_ hidden: Bool) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.hidden = hidden
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func languageOverride(_ languageOverride: String) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.languageOverride = languageOverride
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func max(_ max: Double) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.max = max
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func min(_ min: Double) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.min = min
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func name(_ name: String) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.name = name
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func partialFilterExpression(_ partialFilterExpression: BSONDocument) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.partialFilterExpression = partialFilterExpression
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func sparse(_ sparse: Bool) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.sparse = sparse
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func sphereIndexVersion(_ sphereIndexVersion: Int) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.sphereIndexVersion = sphereIndexVersion
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func storageEngine(_ storageEngine: BSONDocument) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.storageEngine = storageEngine
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func textIndexVersion(_ textIndexVersion: Int) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.textIndexVersion = textIndexVersion
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func unique(_ unique: Bool) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.unique = unique
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func version(_ version: Int) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.version = version
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func weights(_ weights: BSONDocument) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.weights = weights
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+    
+    public func wildcardProjection(_ wildcardProjection: BSONDocument) -> Self {
+        var result = self
+        if let model = result.model, var options = model.options {
+            options.wildcardProjection = wildcardProjection
+            result.model = IndexModel(keys: model.keys, options: options)
+        }
+        return result
+    }
+}
