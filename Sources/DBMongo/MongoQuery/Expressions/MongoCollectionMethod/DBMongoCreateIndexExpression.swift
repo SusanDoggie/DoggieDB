@@ -43,9 +43,9 @@ extension DBMongoCollectionExpression {
 
 extension DBMongoCreateIndexExpression {
     
-    public func index(_ keys: BSONDocument, indexOptions: IndexOptions? = nil) -> Self {
+    public func index(_ keys: BSONDocument, options: IndexOptions? = nil) -> Self {
         var result = self
-        result.model = IndexModel(keys: keys, options: indexOptions)
+        result.model = IndexModel(keys: keys, options: options)
         return result
     }
     
@@ -68,7 +68,8 @@ extension DBMongoCreateIndexExpression {
     
     public func background(_ background: Bool) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.background = background
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -77,7 +78,8 @@ extension DBMongoCreateIndexExpression {
     
     public func bits(_ bits: Int) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.bits = bits
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -86,7 +88,8 @@ extension DBMongoCreateIndexExpression {
     
     public func bucketSize(_ bucketSize: Int) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.bucketSize = bucketSize
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -95,7 +98,8 @@ extension DBMongoCreateIndexExpression {
     
     public func collation(_ collation: BSONDocument) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.collation = collation
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -104,7 +108,8 @@ extension DBMongoCreateIndexExpression {
     
     public func defaultLanguage(_ defaultLanguage: String) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.defaultLanguage = defaultLanguage
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -113,7 +118,8 @@ extension DBMongoCreateIndexExpression {
     
     public func expireAfterSeconds(_ expireAfterSeconds: Int) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.expireAfterSeconds = expireAfterSeconds
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -122,7 +128,8 @@ extension DBMongoCreateIndexExpression {
     
     public func hidden(_ hidden: Bool) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.hidden = hidden
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -131,7 +138,8 @@ extension DBMongoCreateIndexExpression {
     
     public func languageOverride(_ languageOverride: String) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.languageOverride = languageOverride
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -140,7 +148,8 @@ extension DBMongoCreateIndexExpression {
     
     public func max(_ max: Double) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.max = max
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -149,7 +158,8 @@ extension DBMongoCreateIndexExpression {
     
     public func min(_ min: Double) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.min = min
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -158,7 +168,8 @@ extension DBMongoCreateIndexExpression {
     
     public func name(_ name: String) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.name = name
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -167,7 +178,8 @@ extension DBMongoCreateIndexExpression {
     
     public func partialFilterExpression(_ partialFilterExpression: BSONDocument) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.partialFilterExpression = partialFilterExpression
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -176,7 +188,8 @@ extension DBMongoCreateIndexExpression {
     
     public func sparse(_ sparse: Bool) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.sparse = sparse
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -185,7 +198,8 @@ extension DBMongoCreateIndexExpression {
     
     public func sphereIndexVersion(_ sphereIndexVersion: Int) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.sphereIndexVersion = sphereIndexVersion
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -194,7 +208,8 @@ extension DBMongoCreateIndexExpression {
     
     public func storageEngine(_ storageEngine: BSONDocument) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.storageEngine = storageEngine
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -203,7 +218,8 @@ extension DBMongoCreateIndexExpression {
     
     public func textIndexVersion(_ textIndexVersion: Int) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.textIndexVersion = textIndexVersion
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -212,7 +228,8 @@ extension DBMongoCreateIndexExpression {
     
     public func unique(_ unique: Bool) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.unique = unique
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -221,7 +238,8 @@ extension DBMongoCreateIndexExpression {
     
     public func version(_ version: Int) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.version = version
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -230,7 +248,8 @@ extension DBMongoCreateIndexExpression {
     
     public func weights(_ weights: BSONDocument) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.weights = weights
             result.model = IndexModel(keys: model.keys, options: options)
         }
@@ -239,7 +258,8 @@ extension DBMongoCreateIndexExpression {
     
     public func wildcardProjection(_ wildcardProjection: BSONDocument) -> Self {
         var result = self
-        if let model = result.model, var options = model.options {
+        if let model = result.model {
+            var options = model.options ?? IndexOptions()
             options.wildcardProjection = wildcardProjection
             result.model = IndexModel(keys: model.keys, options: options)
         }
