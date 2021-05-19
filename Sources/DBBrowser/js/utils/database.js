@@ -1,13 +1,19 @@
+import _ from 'lodash';
 import React from 'react';
 
+function createSocket() {
+	if (_.isNil(global.WebSocket) || _.isNil(global.location)) return;
+	return location.protocol == 'http:' ? new WebSocket(`ws://${location.host}/ws`) : new WebSocket(`wss://${location.host}/ws`);
+}
+
 function createDatabase() {
-	
-	const data = {};
+
+	const socket = createSocket();
 	
 	class Database {
-	
+
 		connect() {
-	
+			
 		}
 	}
 	

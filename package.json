@@ -30,6 +30,7 @@
     "@babel/plugin-transform-runtime": "^7.13.10",
     "@loadable/component": "^5.14.1",
     "@ungap/url-search-params": "^0.2.2",
+    "bson": "^4.4.0",
     "lodash": "^4.17.21",
     "react": "^17.0.1",
     "react-datasheet": "^1.4.9",

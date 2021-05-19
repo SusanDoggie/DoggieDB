@@ -36,7 +36,7 @@ public class WebSocketController: RouteCollection {
     
     public func boot(routes: RoutesBuilder) throws {
         
-        routes.webSocket { req, ws in
+        routes.webSocket("ws") { req, ws in
             
             let session = Session()
             
