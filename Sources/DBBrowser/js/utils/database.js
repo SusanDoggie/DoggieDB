@@ -40,7 +40,7 @@ function createDatabase() {
 			return socket_run({ action: 'connect', url });
 		}
 		
-		sqlQuery(sql) {
+		runSQLCommand(sql) {
 			return socket_run({ action: 'runCommand', type: 'sql', command: sql });
 		}
 		
