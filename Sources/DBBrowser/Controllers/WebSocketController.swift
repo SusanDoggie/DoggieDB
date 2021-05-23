@@ -76,12 +76,15 @@ extension WebSocketController {
 
 extension WebSocketController {
     
-    private func send(_ ws: WebSocket, _ message: BSON) {
+    private func send(_ ws: WebSocket, _ message: BSONDocument) {
+        var message = message
+        message["success"] = true
         try? ws.send(raw: encoder.encode(message), opcode: .text)
     }
     
-    private func sendError(_ ws: WebSocket, _ errorCode: Int64, _ message: String) {
-        self.send(ws, ["error": true, "errorCode": .int64(errorCode), "message": .string(message)])
+    private func sendError(_ ws: WebSocket, _ errorCode: Int64, _ message: String, _ token: BSON) {
+        let message: BSONDocument = ["success": false, "errorCode": .int64(errorCode), "message": .string(message), "token": token]
+        try? ws.send(raw: encoder.encode(message), opcode: .text)
     }
 }
 
@@ -90,9 +93,65 @@ extension WebSocketController {
     private func onMessage(_ ws: WebSocket, _ session: Session, _ message: BSON) {
         
         switch message["action"].stringValue {
+        case "connect":
+            
+            guard let url = message["url"].stringValue.flatMap(URL.init(string:)) else {
+                self.sendError(ws, 400, "invalid url", message["token"])
+                return
+            }
+            
+            Database.connect(url: url, on: ws.eventLoop).whenComplete {
+                switch $0 {
+                case let .success(connection):
+                    
+                    session.connection = connection
+                    self.send(ws, ["token": message["token"]])
+                    
+                case let .failure(error): self.sendError(ws, 500, "\(error)", message["token"])
+                }
+            }
+            
+        case "runCommand":
+            
+            guard let connection = session.connection else {
+                self.sendError(ws, 400, "database not connected", message["token"])
+                return
+            }
+            
+            if let sql = message["sql"].stringValue {
+                
+                connection.execute(SQLRaw(sql)).whenComplete {
+                    switch $0 {
+                    case let .success(rows):
+                        
+                        do {
+                            
+                            let result = try rows.map { try BSONDocument($0) }
+                            
+                            self.send(ws, ["token": message["token"], "result": result.toBSON()])
+                            
+                        } catch {
+                            self.sendError(ws, 500, "\(error)", message["token"])
+                        }
+                        
+                    case let .failure(error): self.sendError(ws, 500, "\(error)", message["token"])
+                    }
+                }
+                
+            } else if let command = message["mongoCommand"].documentValue {
+                
+                connection.mongoQuery().runCommand(command).whenComplete {
+                    switch $0 {
+                    case let .success(result): self.send(ws, ["token": message["token"], "result": .document(result)])
+                    case let .failure(error): self.sendError(ws, 500, "\(error)", message["token"])
+                    }
+                }
+                
+            } else {
+                self.sendError(ws, 400, "invalid action", message["token"])
+            }
         
-        
-        default: self.sendError(ws, 400, "unknown action")
+        default: self.sendError(ws, 400, "unknown action", message["token"])
         }
     }
     

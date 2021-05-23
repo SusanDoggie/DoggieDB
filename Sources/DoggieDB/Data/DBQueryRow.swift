@@ -76,3 +76,26 @@ extension DBQueryRow {
         return try self.row.value(key)?.decode(type)
     }
 }
+
+extension BSONDocument {
+    
+    public init(_ row: DBQueryRow) throws {
+        self.init()
+        for key in row.keys {
+            guard let value = row[key] else { continue }
+            self[key] = try BSON(value)
+        }
+    }
+}
+
+extension DBValue {
+    
+    public init(_ row: DBQueryRow) {
+        var dict: [String: DBValue] = [:]
+        for key in row.keys {
+            guard let value = row[key] else { continue }
+            dict[key] = value
+        }
+        self.init(dict)
+    }
+}

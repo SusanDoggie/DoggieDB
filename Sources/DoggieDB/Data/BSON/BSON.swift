@@ -83,7 +83,7 @@ extension BSON {
 
 extension DBValue {
     
-    init(_ value: BSON) throws {
+    public init(_ value: BSON) throws {
         switch value {
         case .null: self = nil
         case .undefined: self = nil
@@ -132,7 +132,7 @@ extension DBValue {
 
 extension BSON {
     
-    init(_ value: DBValue) throws {
+    public init(_ value: DBValue) throws {
         switch value.base {
         case .null: self = .null
         case let .boolean(value): self = .bool(value)
@@ -203,6 +203,13 @@ extension BSON {
         switch self {
         case let .document(value): return value.keys
         default: return []
+        }
+    }
+    
+    public func hasKey(_ key: String) -> Bool {
+        switch self {
+        case let .document(value): return value.hasKey(key)
+        default: return false
         }
     }
     
