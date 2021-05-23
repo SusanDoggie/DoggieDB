@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import React from 'react';
-import { View, TouchableWithoutFeedback, Text, Pressable } from 'react-native';
+import { Text, Pressable } from 'react-native';
 
 export default class RoundButton extends React.PureComponent {
 
