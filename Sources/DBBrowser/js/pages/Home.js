@@ -4,6 +4,8 @@ import { Button, View, TextInput, Text, ScrollView, StyleSheet } from 'react-nat
 import { withRouter } from "react-router";
 import { EJSON } from 'bson';
 
+import RoundButton from '../components/RoundButton';
+
 import { withDatabase } from '../utils/database';
 
 class Home extends React.Component {
@@ -77,8 +79,18 @@ class Home extends React.Component {
   renderLoginPanel() {
 
     return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <View style={{  }}>
-      <Text>Connection String</Text>
+      <View style={{ 
+        width: 256,
+        padding: 16,
+			  borderRadius: 16,
+			  overflow: 'hidden',
+			  alignItems: 'stretch',
+			  justifyContent: 'center',
+        backgroundColor: 'white',
+      }}>
+      <Text style={{
+        fontSize: 12,
+      }}>Connection String</Text>
       <TextInput
         style={{ 
           borderBottomWidth: StyleSheet.hairlineWidth, 
@@ -87,9 +99,10 @@ class Home extends React.Component {
         }}
         onChangeText={(connectionStr) => this.setState({ connectionStr })}
         value={this.state.connectionStr} />
-      <Button
+      <RoundButton
         style={{
-          marginTop: 8,
+          marginTop: 16,
+          alignSelf: 'center',
         }}
         title='Connect'
         onPress={() => this.connect()} />
@@ -109,6 +122,7 @@ class Home extends React.Component {
       flex: 1, 
       flexDirection: 'row', 
       alignItems: 'stretch',
+      background: 'GhostWhite',
     }}>
       <View style={{ width: 240, background: 'DarkSlateBlue' }}>{this.renderSideMenu()}</View>
       <View style={{ flex: 1 }}>{this.state.isConnected ? this.renderDashboard() : this.renderLoginPanel()}</View>
