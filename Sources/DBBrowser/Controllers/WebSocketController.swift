@@ -127,7 +127,7 @@ extension WebSocketController {
                             
                             let result = try rows.map { try BSONDocument($0) }
                             
-                            self.send(ws, ["success": true, "token": message["token"], "result": result.toBSON()])
+                            self.send(ws, ["success": true, "token": message["token"], "data": result.toBSON()])
                             
                         } catch {
                             self.send(ws, ["success": false, "token": message["token"], "error": .string("\(error)")])
@@ -145,7 +145,7 @@ extension WebSocketController {
                 }
                 connection.mongoQuery().runCommand(command).whenComplete {
                     switch $0 {
-                    case let .success(result): self.send(ws, ["success": true, "token": message["token"], "result": .document(result)])
+                    case let .success(result): self.send(ws, ["success": true, "token": message["token"], "data": .document(result)])
                     case let .failure(error): self.send(ws, ["success": false, "token": message["token"], "error": .string("\(error)")])
                     }
                 }
