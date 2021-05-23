@@ -1,5 +1,7 @@
 import _ from 'lodash';
 import React from 'react';
+import uuid from 'uuid';
+import { EJSON } from 'bson';
 
 function createSocket() {
 	if (_.isNil(global.WebSocket) || _.isNil(global.location)) return;
@@ -9,11 +11,41 @@ function createSocket() {
 function createDatabase() {
 
 	const socket = createSocket();
+	const callbacks = {};
+
+	let isopen = false;
+
+	socket.onopen = () => isopen = true;
+	socket.onclose = () => isopen = false;
+	socket.onmessage = ({data}) => {
+		const result = EJSON.parse(data);
+		if (result['success']) {
+			callbacks[result.token]?.resolve(result['result']);
+		} else {
+			callbacks[result.token]?.reject(new Error(result['error']));
+		}
+		delete callbacks[result.token];
+	}
+
+	function socket_run(data) {
+		if (!isopen) throw new Error('socket not connected');
+		data.token = uuid.v4();
+		socket.send(EJSON.stringify(data));
+		return new Promise((resolve, reject) => callbacks[data.token] = { resolve, reject });
+	}
 	
 	class Database {
 
-		connect() {
-			
+		connect(url) {
+			return socket_run({ action: 'connect', url });
+		}
+		
+		sqlQuery(sql) {
+			return socket_run({ action: 'runCommand', type: 'sql', command: sql });
+		}
+		
+		runMongoCommand(command) {
+			return socket_run({ action: 'runCommand', type: 'mongo', command: command });
 		}
 	}
 	

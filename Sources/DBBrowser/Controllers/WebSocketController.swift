@@ -111,9 +111,15 @@ extension WebSocketController {
                 return
             }
             
-            if let sql = message["sql"].stringValue {
+            switch message["type"].stringValue {
+            case "sql":
                 
-                connection.execute(SQLRaw(sql)).whenComplete {
+                guard let command = message["command"].stringValue else {
+                    self.send(ws, ["success": false, "token": message["token"], "error": .string("invalid command")])
+                    return
+                }
+                
+                connection.execute(SQLRaw(command)).whenComplete {
                     switch $0 {
                     case let .success(rows):
                         
@@ -131,8 +137,12 @@ extension WebSocketController {
                     }
                 }
                 
-            } else if let command = message["mongoCommand"].documentValue {
+            case "mongo":
                 
+                guard let command = message["command"].documentValue else {
+                    self.send(ws, ["success": false, "token": message["token"], "error": .string("invalid command")])
+                    return
+                }
                 connection.mongoQuery().runCommand(command).whenComplete {
                     switch $0 {
                     case let .success(result): self.send(ws, ["success": true, "token": message["token"], "result": .document(result)])
@@ -140,10 +150,9 @@ extension WebSocketController {
                     }
                 }
                 
-            } else {
-                self.send(ws, ["success": false, "token": message["token"], "error": .string("invalid action")])
+            default: self.send(ws, ["success": false, "token": message["token"], "error": .string("invalid command type")])
             }
-        
+            
         default: self.send(ws, ["success": false, "token": message["token"], "error": .string("unknown action")])
         }
     }
