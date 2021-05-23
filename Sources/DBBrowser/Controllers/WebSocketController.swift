@@ -131,7 +131,7 @@ extension WebSocketController {
                             self.send(ws, ["token": message["token"], "result": result.toBSON()])
                             
                         } catch {
-                            self.sendError(ws, 500, "\(error)", message["token"])
+                            self.sendError(ws, 400, "\(error)", message["token"])
                         }
                         
                     case let .failure(error): self.sendError(ws, 500, "\(error)", message["token"])
