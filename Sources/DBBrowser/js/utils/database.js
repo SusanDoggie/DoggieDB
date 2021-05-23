@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import React from 'react';
-import uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import { EJSON } from 'bson';
 
 function createSocket() {
@@ -11,6 +11,8 @@ function createSocket() {
 function createDatabase() {
 
 	const socket = createSocket();
+	if (!socket) return;
+	
 	const callbacks = {};
 	
 	let isopen = false;
@@ -29,7 +31,7 @@ function createDatabase() {
 
 	function socket_run(data) {
 		if (!isopen) throw new Error('socket not connected');
-		data.token = uuid.v4();
+		data.token = uuidv4();
 		socket.send(EJSON.stringify(data));
 		return new Promise((resolve, reject) => callbacks[data.token] = { resolve, reject });
 	}
