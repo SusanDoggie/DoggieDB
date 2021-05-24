@@ -122,9 +122,9 @@ class Home extends React.Component {
       flex: 1, 
       flexDirection: 'row', 
       alignItems: 'stretch',
-      background: 'GhostWhite',
+      background: 'Snow',
     }}>
-      <View style={{ width: 240, background: 'DarkSlateBlue' }}>{this.renderSideMenu()}</View>
+      <View style={{ width: 240, background: 'DarkSlateGray' }}>{this.renderSideMenu()}</View>
       <View style={{ flex: 1 }}>{this.state.isConnected ? this.renderDashboard() : this.renderLoginPanel()}</View>
     </View>;
   }
