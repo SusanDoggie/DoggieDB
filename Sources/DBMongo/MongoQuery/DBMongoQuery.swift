@@ -36,8 +36,8 @@ extension DBMongoQuery {
         return connection.session
     }
     
-    public var eventLoop: EventLoop {
-        return connection.eventLoop
+    public var eventLoopGroup: EventLoopGroup {
+        return connection.eventLoopGroup
     }
 }
 

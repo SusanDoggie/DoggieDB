@@ -42,7 +42,7 @@ extension MySQLDriver {
         
         let connection: MySQLConnection
         
-        var eventLoop: EventLoop { connection.eventLoop }
+        var eventLoopGroup: EventLoopGroup { connection.eventLoop }
         
         init(_ connection: MySQLConnection) {
             self.connection = connection
@@ -59,11 +59,11 @@ extension MySQLDriver {
     static func connect(
         config: Database.Configuration,
         logger: Logger,
-        on eventLoop: EventLoop
+        on eventLoopGroup: EventLoopGroup
     ) -> EventLoopFuture<DBConnection> {
         
         guard let user = config.user else {
-            return eventLoop.makeFailedFuture(Database.Error.invalidConfiguration(message: "user is missing."))
+            return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidConfiguration(message: "user is missing."))
         }
         
         let connection = MySQLConnection.connect(
@@ -73,7 +73,7 @@ extension MySQLDriver {
             password: config.password,
             tlsConfiguration: config.tlsConfiguration,
             logger: logger,
-            on: eventLoop
+            on: eventLoopGroup.next()
         )
         
         return connection.map(Connection.init)
@@ -173,7 +173,7 @@ extension MySQLDriver.Connection {
             
         } catch {
             
-            return eventLoop.makeFailedFuture(error)
+            return eventLoopGroup.next().makeFailedFuture(error)
         }
     }
     
@@ -200,7 +200,7 @@ extension MySQLDriver.Connection {
             
         } catch {
             
-            return eventLoop.makeFailedFuture(error)
+            return eventLoopGroup.next().makeFailedFuture(error)
         }
     }
 }

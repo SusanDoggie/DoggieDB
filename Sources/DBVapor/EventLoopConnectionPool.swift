@@ -32,7 +32,7 @@ public class DBConnectionPoolItem: ConnectionPoolItem {
     }
     
     public var eventLoop: EventLoop {
-        return connection.eventLoop
+        return connection.eventLoopGroup.next()
     }
     
     public var isClosed: Bool {
@@ -114,7 +114,7 @@ extension EventLoopGroupConnectionPool where Source == DBConnectionPoolSource {
                 config: source.configuration,
                 logger: logger,
                 driver: source.driver,
-                on: eventLoopGroup.next())
+                on: eventLoopGroup)
             
             self.init(
                 source: DBConnectionPoolSource(generator: { _, _ in connection.map { $0.withSession() } }),

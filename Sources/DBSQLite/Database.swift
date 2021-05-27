@@ -29,9 +29,9 @@ extension Database {
         path: String? = nil,
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
         threadPool: NIOThreadPool,
-        on eventLoop: EventLoop
+        on eventLoopGroup: EventLoopGroup
     ) -> EventLoopFuture<DBConnection> {
         
-        return SQLiteDriver.create(storage: path.map { .file(path: $0) } ?? .memory, logger: logger, threadPool: threadPool, on: eventLoop)
+        return SQLiteDriver.create(storage: path.map { .file(path: $0) } ?? .memory, logger: logger, threadPool: threadPool, on: eventLoopGroup)
     }
 }

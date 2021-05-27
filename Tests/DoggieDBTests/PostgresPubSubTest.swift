@@ -80,7 +80,7 @@ class PostgresPubSubTest: XCTestCase {
         
         do {
             
-            let promise = connection.eventLoop.makePromise(of: String.self)
+            let promise = connection.eventLoopGroup.next().makePromise(of: String.self)
             
             try connection.postgresPubSub().subscribe(channel: "Test") { channel, message in
                 

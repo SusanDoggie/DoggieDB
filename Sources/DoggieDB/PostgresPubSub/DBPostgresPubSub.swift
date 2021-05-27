@@ -30,8 +30,8 @@ public struct DBPostgresPubSub {
 
 extension DBPostgresPubSub {
     
-    public var eventLoop: EventLoop {
-        return connection.eventLoop
+    public var eventLoopGroup: EventLoopGroup {
+        return connection.eventLoopGroup
     }
 }
 

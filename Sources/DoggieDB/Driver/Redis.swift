@@ -38,7 +38,7 @@ extension RedisDriver {
         
         let client: RedisConnection
         
-        var eventLoop: EventLoop { client.eventLoop }
+        var eventLoopGroup: EventLoopGroup { client.eventLoop }
         
         init(_ client: RedisConnection) {
             self.client = client
@@ -55,7 +55,7 @@ extension RedisDriver {
     static func connect(
         config: Database.Configuration,
         logger: Logger,
-        on eventLoop: EventLoop
+        on eventLoopGroup: EventLoopGroup
     ) -> EventLoopFuture<DBConnection> {
         
         do {
@@ -69,12 +69,12 @@ extension RedisDriver {
             
             return RedisConnection.make(
                 configuration: _config,
-                boundEventLoop: eventLoop
+                boundEventLoop: eventLoopGroup.next()
             ).map(Connection.init)
             
         } catch {
             
-            return eventLoop.makeFailedFuture(error)
+            return eventLoopGroup.next().makeFailedFuture(error)
         }
     }
 }

@@ -34,7 +34,7 @@ public protocol DBDriverProtocol {
     static func connect(
         config: Database.Configuration,
         logger: Logger,
-        on eventLoop: EventLoop
+        on eventLoopGroup: EventLoopGroup
     ) -> EventLoopFuture<DBConnection>
 }
 

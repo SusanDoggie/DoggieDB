@@ -39,8 +39,8 @@ extension DBMongoConnection {
         return connection.driver
     }
     
-    var eventLoop: EventLoop {
-        return connection.eventLoop
+    var eventLoopGroup: EventLoopGroup {
+        return connection.eventLoopGroup
     }
     
     var client: MongoClient {
@@ -70,12 +70,12 @@ extension MongoDBDriver {
         let client: MongoClient
         let database: MongoDatabase?
         
-        let eventLoop: EventLoop
+        let eventLoopGroup: EventLoopGroup
         
-        init(client: MongoClient, database: MongoDatabase?, eventLoop: EventLoop) {
+        init(client: MongoClient, database: MongoDatabase?, eventLoopGroup: EventLoopGroup) {
             self.client = client
             self.database = database
-            self.eventLoop = eventLoop
+            self.eventLoopGroup = eventLoopGroup
         }
         
         func close() -> EventLoopFuture<Void> {
@@ -136,20 +136,26 @@ extension MongoDBDriver {
     static func connect(
         config: Database.Configuration,
         logger: Logger,
-        on eventLoop: EventLoop
+        on eventLoopGroup: EventLoopGroup
     ) -> EventLoopFuture<DBConnection> {
         
         do {
             
             let connectionString = try config.mongo_connection_string()
             
-            let client = try MongoClient(connectionString, using: eventLoop, options: nil)
+            let client = try MongoClient(connectionString, using: eventLoopGroup, options: nil)
             
-            return eventLoop.makeSucceededFuture(Connection(client: client, database: config.database.map { client.db($0, options: nil) }, eventLoop: eventLoop))
+            return eventLoopGroup.next().makeSucceededFuture(
+                Connection(
+                    client: client,
+                    database: config.database.map { client.db($0, options: nil) },
+                    eventLoopGroup: eventLoopGroup
+                )
+            )
             
         } catch {
             
-            return eventLoop.makeFailedFuture(error)
+            return eventLoopGroup.next().makeFailedFuture(error)
         }
     }
 }

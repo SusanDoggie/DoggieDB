@@ -33,16 +33,16 @@ extension Database {
         config: Database.Configuration,
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
         driver: DBDriver,
-        on eventLoop: EventLoop
+        on eventLoopGroup: EventLoopGroup
     ) -> EventLoopFuture<DBConnection> {
         
-        return driver.rawValue.connect(config: config, logger: logger, on: eventLoop)
+        return driver.rawValue.connect(config: config, logger: logger, on: eventLoopGroup)
     }
     
     public static func connect(
         url: URL,
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
-        on eventLoop: EventLoop
+        on eventLoopGroup: EventLoopGroup
     ) -> EventLoopFuture<DBConnection> {
         
         do {
@@ -50,18 +50,18 @@ extension Database {
             let driver = try url.driver()
             let config = try Database.Configuration(url: url)
             
-            return self.connect(config: config, logger: logger, driver: driver, on: eventLoop)
+            return self.connect(config: config, logger: logger, driver: driver, on: eventLoopGroup)
             
         } catch {
             
-            return eventLoop.makeFailedFuture(error)
+            return eventLoopGroup.next().makeFailedFuture(error)
         }
     }
     
     public static func connect(
         url: URLComponents,
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
-        on eventLoop: EventLoop
+        on eventLoopGroup: EventLoopGroup
     ) -> EventLoopFuture<DBConnection> {
         
         do {
@@ -69,11 +69,11 @@ extension Database {
             let driver = try url.driver()
             let config = try Database.Configuration(url: url)
             
-            return self.connect(config: config, logger: logger, driver: driver, on: eventLoop)
+            return self.connect(config: config, logger: logger, driver: driver, on: eventLoopGroup)
             
         } catch {
             
-            return eventLoop.makeFailedFuture(error)
+            return eventLoopGroup.next().makeFailedFuture(error)
         }
     }
 }

@@ -42,7 +42,7 @@ extension SQLiteDriver {
         
         let connection: SQLiteConnection
         
-        var eventLoop: EventLoop { connection.eventLoop }
+        var eventLoopGroup: EventLoopGroup { connection.eventLoop }
         
         init(_ connection: SQLiteConnection) {
             self.connection = connection
@@ -56,7 +56,7 @@ extension SQLiteDriver {
 
 extension SQLiteDriver {
     
-    static func connect(config: Database.Configuration, logger: Logger, on eventLoop: EventLoop) -> EventLoopFuture<DBConnection> {
+    static func connect(config: Database.Configuration, logger: Logger, on eventLoopGroup: EventLoopGroup) -> EventLoopFuture<DBConnection> {
         fatalError()
     }
     
@@ -64,14 +64,14 @@ extension SQLiteDriver {
         storage: SQLiteConnection.Storage,
         logger: Logger,
         threadPool: NIOThreadPool,
-        on eventLoop: EventLoop
+        on eventLoopGroup: EventLoopGroup
     ) -> EventLoopFuture<DBConnection> {
         
         let connection = SQLiteConnection.open(
             storage: storage,
             threadPool: threadPool,
             logger: logger,
-            on: eventLoop
+            on: eventLoopGroup.next()
         )
         
         return connection.map(Connection.init)
@@ -145,7 +145,7 @@ extension SQLiteDriver.Connection {
             
         } catch {
             
-            return eventLoop.makeFailedFuture(error)
+            return eventLoopGroup.next().makeFailedFuture(error)
         }
     }
     
@@ -166,7 +166,7 @@ extension SQLiteDriver.Connection {
             
         } catch {
             
-            return eventLoop.makeFailedFuture(error)
+            return eventLoopGroup.next().makeFailedFuture(error)
         }
     }
 }

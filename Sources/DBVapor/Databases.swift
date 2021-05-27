@@ -60,12 +60,9 @@ public class DatabasePool {
     }
     
     public func withConnection<Result>(
-        logger: Logger? = nil,
-        on eventLoop: EventLoop? = nil,
         _ closure: @escaping (DBConnection) -> EventLoopFuture<Result>
     ) -> EventLoopFuture<Result> {
-        
-        return self.pool.withConnection(logger: logger, on: eventLoop) { closure($0.connection) }
+        return self.pool.withConnection { closure($0.connection) }
     }
     
     func shutdown() {
@@ -162,7 +159,7 @@ extension Databases {
     public func database(
         _ id: DatabaseID? = nil,
         logger: Logger,
-        on eventLoop: EventLoop
+        on eventLoopGroup: EventLoopGroup
     ) -> DatabasePool {
         
         self.lock.lock()

@@ -42,7 +42,7 @@ extension PostgreSQLDriver {
         
         let connection: PostgresConnection
         
-        var eventLoop: EventLoop { connection.eventLoop }
+        var eventLoopGroup: EventLoopGroup { connection.eventLoop }
         
         var subscribers: [String: [PostgresListenContext]] = [:]
         
@@ -61,18 +61,18 @@ extension PostgreSQLDriver {
     static func connect(
         config: Database.Configuration,
         logger: Logger,
-        on eventLoop: EventLoop
+        on eventLoopGroup: EventLoopGroup
     ) -> EventLoopFuture<DBConnection> {
         
         guard let user = config.user else {
-            return eventLoop.makeFailedFuture(Database.Error.invalidConfiguration(message: "user is missing."))
+            return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidConfiguration(message: "user is missing."))
         }
         
         let connection = PostgresConnection.connect(
             to: config.socketAddress[0],
             tlsConfiguration: config.tlsConfiguration,
             logger: logger,
-            on: eventLoop
+            on: eventLoopGroup.next()
         )
         
         return connection.flatMap { connection in
@@ -242,7 +242,7 @@ extension PostgreSQLDriver.Connection {
             
         } catch {
             
-            return eventLoop.makeFailedFuture(error)
+            return eventLoopGroup.next().makeFailedFuture(error)
         }
     }
     
@@ -269,7 +269,7 @@ extension PostgreSQLDriver.Connection {
             
         } catch {
             
-            return eventLoop.makeFailedFuture(error)
+            return eventLoopGroup.next().makeFailedFuture(error)
         }
     }
 }
@@ -320,7 +320,7 @@ extension PostgreSQLDriver.Connection {
         
         let subscriber = self.connection.addListener(channel: channel, handler: { _, response in handler(response.channel, response.payload) })
         
-        return eventLoop.flatSubmit {
+        return eventLoopGroup.next().flatSubmit {
             
             self.subscribers[channel, default: []].append(subscriber)
             
@@ -330,7 +330,7 @@ extension PostgreSQLDriver.Connection {
     
     func unsubscribe(channel: String) -> EventLoopFuture<Void> {
         
-        return eventLoop.flatSubmit {
+        return eventLoopGroup.next().flatSubmit {
             
             let subscribers = self.subscribers[channel] ?? []
             
