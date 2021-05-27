@@ -31,6 +31,8 @@ public protocol DBConnection: AnyObject {
     
     var isClosed: Bool { get }
     
+    func withSession() -> DBConnection
+    
     func close() -> EventLoopFuture<Void>
     
     func version() -> EventLoopFuture<String>
@@ -70,6 +72,13 @@ public protocol DBConnection: AnyObject {
     func redisPubSub() -> DBRedisPubSub
     
     func postgresPubSub() -> DBPostgresPubSub
+}
+
+extension DBConnection {
+    
+    public func withSession() -> DBConnection {
+        fatalError("unsupported operation")
+    }
 }
 
 extension DBConnection {

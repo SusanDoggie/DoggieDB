@@ -25,14 +25,43 @@
 
 import MongoSwift
 
+protocol DBMongoConnection: DBConnection {
+    
+    var connection: MongoDBDriver.Connection { get }
+    
+    var session: ClientSession? { get }
+    
+}
+
+extension DBMongoConnection {
+    
+    var driver: DBDriver {
+        return connection.driver
+    }
+    
+    var eventLoop: EventLoop {
+        return connection.eventLoop
+    }
+    
+    var client: MongoClient {
+        return connection.client
+    }
+    
+    var database: MongoDatabase? {
+        return connection.database
+    }
+}
+
 struct MongoDBDriver: DBDriverProtocol {
+    
+    static var isSessionSupported: Bool { true }
     
     static var defaultPort: Int { 27017 }
 }
 
 extension MongoDBDriver {
     
-    class Connection: DBConnection {
+    class Connection: DBMongoConnection {
         
         var driver: DBDriver { return .mongoDB }
         
@@ -122,6 +151,22 @@ extension MongoDBDriver {
             
             return eventLoop.makeFailedFuture(error)
         }
+    }
+}
+
+extension MongoDBDriver.Connection {
+    
+    var connection: MongoDBDriver.Connection {
+        return self
+    }
+    
+    var session: ClientSession? {
+        return nil
+    }
+    
+    func withSession() -> DBConnection {
+        let session = self.client.startSession()
+        return DBMongoSessionConnection(connection: self, session: session)
     }
 }
 

@@ -70,13 +70,3 @@ extension DBConnectionSource {
         self.requestTimeout = requestTimeout
     }
 }
-
-extension DBConnectionSource {
-    
-    public func makeConnection(
-        logger: Logger,
-        on eventLoop: EventLoop
-    ) -> EventLoopFuture<DBConnection> {
-        return Database.connect(config: configuration, logger: logger, driver: driver, on: eventLoop)
-    }
-}

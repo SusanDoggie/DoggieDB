@@ -27,6 +27,8 @@ public protocol DBDriverProtocol {
     
     static var defaultPort: Int { get }
     
+    static var isSessionSupported: Bool { get }
+    
     static var sqlDialect: SQLDialect.Type? { get }
     
     static func connect(
@@ -37,6 +39,10 @@ public protocol DBDriverProtocol {
 }
 
 extension DBDriverProtocol {
+    
+    public static var isSessionSupported: Bool {
+        return false
+    }
     
     public static var sqlDialect: SQLDialect.Type? {
         return nil
@@ -53,6 +59,10 @@ public struct DBDriver: Hashable {
 }
 
 extension DBDriver {
+    
+    public var isSessionSupported: Bool {
+        return rawValue.isSessionSupported
+    }
     
     public var defaultPort: Int {
         return rawValue.defaultPort

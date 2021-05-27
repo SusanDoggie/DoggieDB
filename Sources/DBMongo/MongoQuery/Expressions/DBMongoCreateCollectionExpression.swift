@@ -27,7 +27,7 @@ import MongoSwift
 
 public struct DBMongoCreateCollectionExpression<T: Codable>: DBMongoExpression {
     
-    let connection: MongoDBDriver.Connection
+    let connection: DBMongoConnection
     
     public let database: MongoDatabase
     

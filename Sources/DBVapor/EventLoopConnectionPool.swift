@@ -46,10 +46,10 @@ public class DBConnectionPoolItem: ConnectionPoolItem {
 
 public struct DBConnectionPoolSource: ConnectionPoolSource {
     
-    let source: DBConnectionSource
+    let generator: (Logger, EventLoop) -> EventLoopFuture<DBConnection>
     
     public func makeConnection(logger: Logger, on eventLoop: EventLoop) -> EventLoopFuture<DBConnectionPoolItem> {
-        return source.makeConnection(logger: logger, on: eventLoop).map { DBConnectionPoolItem(connection: $0) }
+        return generator(logger, eventLoop).map { DBConnectionPoolItem(connection: $0) }
     }
 }
 
@@ -62,13 +62,39 @@ extension EventLoopConnectionPool where Source == DBConnectionPoolSource {
         logger: Logger = .init(label: "com.SusanDoggie.DBVapor"),
         on eventLoop: EventLoop
     ) {
-        self.init(
-            source: DBConnectionPoolSource(source: source),
-            maxConnections: maxConnections,
-            requestTimeout: requestTimeout,
-            logger: logger,
-            on: eventLoop
-        )
+        
+        if source.driver.isSessionSupported {
+            
+            let connection = Database.connect(
+                config: source.configuration,
+                logger: logger,
+                driver: source.driver,
+                on: eventLoop)
+            
+            self.init(
+                source: DBConnectionPoolSource(generator: { _, _ in connection.map { $0.withSession() } }),
+                maxConnections: maxConnections,
+                requestTimeout: requestTimeout,
+                logger: logger,
+                on: eventLoop
+            )
+            
+        } else {
+            
+            self.init(
+                source: DBConnectionPoolSource(generator: { logger, eventLoop in
+                    Database.connect(
+                        config: source.configuration,
+                        logger: logger,
+                        driver: source.driver,
+                        on: eventLoop)
+                }),
+                maxConnections: maxConnections,
+                requestTimeout: requestTimeout,
+                logger: logger,
+                on: eventLoop
+            )
+        }
     }
 }
 
@@ -81,12 +107,38 @@ extension EventLoopGroupConnectionPool where Source == DBConnectionPoolSource {
         logger: Logger = .init(label: "com.SusanDoggie.DBVapor"),
         on eventLoopGroup: EventLoopGroup
     ) {
-        self.init(
-            source: DBConnectionPoolSource(source: source),
-            maxConnectionsPerEventLoop: maxConnectionsPerEventLoop,
-            requestTimeout: requestTimeout,
-            logger: logger,
-            on: eventLoopGroup
-        )
+        
+        if source.driver.isSessionSupported {
+            
+            let connection = Database.connect(
+                config: source.configuration,
+                logger: logger,
+                driver: source.driver,
+                on: eventLoopGroup.next())
+            
+            self.init(
+                source: DBConnectionPoolSource(generator: { _, _ in connection.map { $0.withSession() } }),
+                maxConnectionsPerEventLoop: maxConnectionsPerEventLoop,
+                requestTimeout: requestTimeout,
+                logger: logger,
+                on: eventLoopGroup
+            )
+            
+        } else {
+            
+            self.init(
+                source: DBConnectionPoolSource(generator: { logger, eventLoop in
+                    Database.connect(
+                        config: source.configuration,
+                        logger: logger,
+                        driver: source.driver,
+                        on: eventLoop)
+                }),
+                maxConnectionsPerEventLoop: maxConnectionsPerEventLoop,
+                requestTimeout: requestTimeout,
+                logger: logger,
+                on: eventLoopGroup
+            )
+        }
     }
 }

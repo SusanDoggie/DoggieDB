@@ -1,5 +1,5 @@
 //
-//  DBMongoListCollectionsExpression.swift
+//  Session.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,35 +25,39 @@
 
 import MongoSwift
 
-public struct DBMongoListCollectionsExpression<T>: DBMongoExpression {
+class DBMongoSessionConnection: DBMongoConnection {
     
-    let connection: DBMongoConnection
+    let connection: MongoDBDriver.Connection
     
-    public let database: MongoDatabase
+    let _session: ClientSession
     
-    public let session: ClientSession?
+    private(set) var isClosed: Bool = false
     
-    public var filter: BSONDocument?
-    
-    public var options = ListCollectionsOptions()
-}
-
-extension DBMongoListCollectionsExpression {
-    
-    public func execute() -> EventLoopFuture<MongoCursor<CollectionSpecification>> {
-        return database.listCollections(filter, options: options, session: session)
+    init(connection: MongoDBDriver.Connection, session: ClientSession) {
+        self.connection = connection
+        self._session = session
     }
 }
 
-extension ListCollectionsOptions: DBMongoBatchSizeOption {}
-
-extension DBMongoListCollectionsExpression {
+extension DBMongoSessionConnection {
     
-    /// a `BSONDocument`, the filter that documents must match
-    public func filter(_ filter: BSONDocument) -> Self {
-        var result = self
-        result.filter = filter
-        return result
+    var session: ClientSession? {
+        return _session
     }
+}
+
+extension DBMongoSessionConnection {
     
+    func close() -> EventLoopFuture<Void> {
+        let closeResult = _session.end()
+        closeResult.whenComplete { _ in self.isClosed = true }
+        return closeResult
+    }
+}
+
+extension DBMongoSessionConnection {
+    
+    func databases() -> EventLoopFuture<[String]> {
+        return connection.databases()
+    }
 }

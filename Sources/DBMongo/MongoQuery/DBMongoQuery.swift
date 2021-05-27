@@ -27,22 +27,24 @@ import MongoSwift
 
 public struct DBMongoQuery {
     
-    let connection: MongoDBDriver.Connection
-    
-    var session: ClientSession?
+    let connection: DBMongoConnection
 }
 
 extension DBMongoQuery {
+    
+    var session: ClientSession? {
+        return connection.session
+    }
     
     public var eventLoop: EventLoop {
         return connection.eventLoop
     }
 }
 
-extension MongoDBDriver.Connection {
+extension DBMongoConnection {
     
     public func mongoQuery() -> DBMongoQuery {
-        return DBMongoQuery(connection: self, session: nil)
+        return DBMongoQuery(connection: self)
     }
 }
 
@@ -92,31 +94,11 @@ extension DBMongoQuery {
 
 extension DBMongoQuery {
     
-    public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
-        return connection.client.startSession(options: options)
-    }
-    
-    public func session(_ session: ClientSession) -> Self {
-        var result = self
-        result.session = session
-        return result
-    }
-    
-    public func withSession<T>(
-        options: ClientSessionOptions? = nil,
-        _ sessionBody: (ClientSession) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
-        return connection.client.withSession(options: options, sessionBody)
-    }
-    
     public func withTransaction<T>(
-        options: ClientSessionOptions? = nil,
-        _ transactionBody: @escaping (ClientSession) throws -> EventLoopFuture<T>
+        _ transactionBody: @escaping (DBMongoQuery) throws -> EventLoopFuture<T>
     ) -> EventLoopFuture<T> {
-        
-        return connection.client.withSession(options: options) { session in
-            session.withTransaction { try transactionBody(session) }
-        }
+        guard let session = self.session else { fatalError("session not available.") }
+        return session.withTransaction { try transactionBody(self) }
     }
 }
 
