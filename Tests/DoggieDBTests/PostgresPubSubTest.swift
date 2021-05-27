@@ -51,7 +51,7 @@ class PostgresPubSubTest: XCTestCase {
                 ]
             }
             
-            self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
+            self.connection = try Database.connect(url: url, on: eventLoopGroup).wait()
             
             print("POSTGRES:", try connection.version().wait())
             

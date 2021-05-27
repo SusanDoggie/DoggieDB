@@ -61,7 +61,7 @@ class RedisTest: XCTestCase {
                 ]
             }
             
-            self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
+            self.connection = try Database.connect(url: url, on: eventLoopGroup).wait()
             
         } catch {
             

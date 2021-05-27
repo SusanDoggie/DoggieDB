@@ -68,7 +68,7 @@ class MongoDBTest: XCTestCase {
             
             url.queryItems = queryItems.isEmpty ? nil : queryItems
             
-            self.connection = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
+            self.connection = try Database.connect(url: url, on: eventLoopGroup).wait()
             
         } catch {
             

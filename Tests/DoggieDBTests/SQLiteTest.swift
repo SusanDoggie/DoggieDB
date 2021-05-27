@@ -40,7 +40,7 @@ class SQLiteTest: XCTestCase {
             threadPool = NIOThreadPool(numberOfThreads: 2)
             eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
             
-            self.connection = try Database.createSQLite(threadPool: threadPool, on: eventLoopGroup.next()).wait()
+            self.connection = try Database.createSQLite(threadPool: threadPool, on: eventLoopGroup).wait()
             print("SQLITE:", try connection.version().wait())
             
         } catch {
