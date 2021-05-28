@@ -27,7 +27,7 @@ import MongoSwift
 
 public struct DBMongoQuery {
     
-    let connection: DBMongoConnection
+    let connection: DBMongoConnectionProtocol
 }
 
 extension DBMongoQuery {
@@ -38,13 +38,6 @@ extension DBMongoQuery {
     
     public var eventLoopGroup: EventLoopGroup {
         return connection.eventLoopGroup
-    }
-}
-
-extension DBMongoConnection {
-    
-    public func mongoQuery() -> DBMongoQuery {
-        return DBMongoQuery(connection: self)
     }
 }
 

@@ -27,7 +27,7 @@ import MongoSwift
 
 public struct DBMongoListCollectionsExpression<T>: DBMongoExpression {
     
-    let connection: DBMongoConnection
+    let connection: DBMongoConnectionProtocol
     
     public let database: MongoDatabase
     

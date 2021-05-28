@@ -34,7 +34,7 @@ struct MongoDBDriver: DBDriverProtocol {
 
 extension MongoDBDriver {
     
-    class Connection: DBMongoConnection {
+    class Connection: DBMongoConnectionProtocol {
         
         var driver: DBDriver { return .mongoDB }
         
@@ -147,14 +147,19 @@ extension MongoDBDriver.Connection {
         return self.database.map { client.db($0) }
     }
     
+    func bind(to eventLoop: EventLoop) -> DBConnection {
+        let client = self.client.bound(to: eventLoop)
+        return DBMongoConnection(connection: self, client: client, session: nil)
+    }
+    
     func withSession(on eventLoop: EventLoop?) -> DBConnection {
         if let eventLoop = eventLoop {
             let client = self.client.bound(to: eventLoop)
             let session = client.startSession()
-            return DBMongoSessionConnection(connection: self, client: client, session: session)
+            return DBMongoConnection(connection: self, client: client, session: session)
         } else {
             let session = self.client.startSession()
-            return DBMongoSessionConnection(connection: self, client: nil, session: session)
+            return DBMongoConnection(connection: self, client: nil, session: session)
         }
     }
 }

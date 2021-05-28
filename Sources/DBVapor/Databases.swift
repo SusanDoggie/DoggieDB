@@ -64,7 +64,7 @@ public class DatabasePool {
             self.connection = connection
             
             self.pool = EventLoopGroupConnectionPool(
-                source: DBConnectionPoolSource(generator: { _, eventLoop in connection.map { $0.withSession(on: eventLoop) } }),
+                source: DBConnectionPoolSource(generator: { _, eventLoop in connection.map { $0.bind(to: eventLoop) } }),
                 maxConnectionsPerEventLoop: maxConnectionsPerEventLoop,
                 requestTimeout: requestTimeout,
                 logger: logger,
