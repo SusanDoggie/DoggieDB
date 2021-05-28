@@ -31,7 +31,7 @@ public protocol DBConnection: AnyObject {
     
     var isClosed: Bool { get }
     
-    func withSession() -> DBConnection
+    func withSession(on eventLoop: EventLoop?) -> DBConnection
     
     func close() -> EventLoopFuture<Void>
     
@@ -76,7 +76,7 @@ public protocol DBConnection: AnyObject {
 
 extension DBConnection {
     
-    public func withSession() -> DBConnection {
+    public func withSession(on eventLoop: EventLoop?) -> DBConnection {
         fatalError("unsupported operation")
     }
 }

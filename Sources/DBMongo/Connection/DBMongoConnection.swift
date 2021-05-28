@@ -1,5 +1,5 @@
 //
-//  EventLoopConnectionPool.swift
+//  DBMongoConnection.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,32 +23,13 @@
 //  THE SOFTWARE.
 //
 
-public class DBConnectionPoolItem: ConnectionPoolItem {
-    
-    public let connection: DBConnection
-    
-    init(connection: DBConnection) {
-        self.connection = connection
-    }
-    
-    public var eventLoop: EventLoop {
-        return connection.eventLoopGroup.next()
-    }
-    
-    public var isClosed: Bool {
-        return connection.isClosed
-    }
-    
-    public func close() -> EventLoopFuture<Void> {
-        return connection.close()
-    }
-}
+import MongoSwift
 
-public struct DBConnectionPoolSource: ConnectionPoolSource {
+protocol DBMongoConnection: DBConnection {
     
-    let generator: (Logger, EventLoop) -> EventLoopFuture<DBConnection>
+    var database: String? { get }
     
-    public func makeConnection(logger: Logger, on eventLoop: EventLoop) -> EventLoopFuture<DBConnectionPoolItem> {
-        return generator(logger, eventLoop).map { DBConnectionPoolItem(connection: $0) }
-    }
+    var session: ClientSession? { get }
+    
+    func _database() -> MongoDatabase?
 }

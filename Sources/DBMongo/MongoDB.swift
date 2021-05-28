@@ -25,33 +25,6 @@
 
 import MongoSwift
 
-protocol DBMongoConnection: DBConnection {
-    
-    var connection: MongoDBDriver.Connection { get }
-    
-    var session: ClientSession? { get }
-    
-}
-
-extension DBMongoConnection {
-    
-    var driver: DBDriver {
-        return connection.driver
-    }
-    
-    var eventLoopGroup: EventLoopGroup {
-        return connection.eventLoopGroup
-    }
-    
-    var client: MongoClient {
-        return connection.client
-    }
-    
-    var database: MongoDatabase? {
-        return connection.database
-    }
-}
-
 struct MongoDBDriver: DBDriverProtocol {
     
     static var isSessionSupported: Bool { true }
@@ -68,11 +41,11 @@ extension MongoDBDriver {
         private(set) var isClosed: Bool = false
         
         let client: MongoClient
-        let database: MongoDatabase?
+        let database: String?
         
         let eventLoopGroup: EventLoopGroup
         
-        init(client: MongoClient, database: MongoDatabase?, eventLoopGroup: EventLoopGroup) {
+        init(client: MongoClient, database: String?, eventLoopGroup: EventLoopGroup) {
             self.client = client
             self.database = database
             self.eventLoopGroup = eventLoopGroup
@@ -148,7 +121,7 @@ extension MongoDBDriver {
             return eventLoopGroup.next().makeSucceededFuture(
                 Connection(
                     client: client,
-                    database: config.database.map { client.db($0, options: nil) },
+                    database: config.database,
                     eventLoopGroup: eventLoopGroup
                 )
             )
@@ -170,9 +143,19 @@ extension MongoDBDriver.Connection {
         return nil
     }
     
-    func withSession() -> DBConnection {
-        let session = self.client.startSession()
-        return DBMongoSessionConnection(connection: self, session: session)
+    func _database() -> MongoDatabase? {
+        return self.database.map { client.db($0) }
+    }
+    
+    func withSession(on eventLoop: EventLoop?) -> DBConnection {
+        if let eventLoop = eventLoop {
+            let client = self.client.bound(to: eventLoop)
+            let session = client.startSession()
+            return DBMongoSessionConnection(connection: self, client: client, session: session)
+        } else {
+            let session = self.client.startSession()
+            return DBMongoSessionConnection(connection: self, client: nil, session: session)
+        }
     }
 }
 

@@ -41,6 +41,8 @@ extension DatabaseID: ExpressibleByStringLiteral {
 
 public class DatabasePool {
     
+    let connection: EventLoopFuture<DBConnection>?
+    
     let pool: EventLoopGroupConnectionPool<DBConnectionPoolSource>
     
     public init(
@@ -50,13 +52,43 @@ public class DatabasePool {
         logger: Logger,
         on eventLoopGroup: EventLoopGroup
     ) {
-        self.pool = .init(
-            source: source,
-            maxConnectionsPerEventLoop: maxConnectionsPerEventLoop,
-            requestTimeout: requestTimeout,
-            logger: logger,
-            on: eventLoopGroup
-        )
+        
+        if source.driver.isSessionSupported {
+            
+            let connection = Database.connect(
+                config: source.configuration,
+                logger: logger,
+                driver: source.driver,
+                on: eventLoopGroup)
+            
+            self.connection = connection
+            
+            self.pool = EventLoopGroupConnectionPool(
+                source: DBConnectionPoolSource(generator: { _, eventLoop in connection.map { $0.withSession(on: eventLoop) } }),
+                maxConnectionsPerEventLoop: maxConnectionsPerEventLoop,
+                requestTimeout: requestTimeout,
+                logger: logger,
+                on: eventLoopGroup
+            )
+            
+        } else {
+            
+            self.connection = nil
+            
+            self.pool = EventLoopGroupConnectionPool(
+                source: DBConnectionPoolSource(generator: { logger, eventLoop in
+                    Database.connect(
+                        config: source.configuration,
+                        logger: logger,
+                        driver: source.driver,
+                        on: eventLoop)
+                }),
+                maxConnectionsPerEventLoop: maxConnectionsPerEventLoop,
+                requestTimeout: requestTimeout,
+                logger: logger,
+                on: eventLoopGroup
+            )
+        }
     }
     
     public func withConnection<Result>(
@@ -66,7 +98,11 @@ public class DatabasePool {
     }
     
     func shutdown() {
-        pool.shutdown()
+        if let connection = self.connection {
+            connection.flatMap { $0.close() }.whenComplete { _ in self.pool.shutdown() }
+        } else {
+            pool.shutdown()
+        }
     }
 }
 
