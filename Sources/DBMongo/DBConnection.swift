@@ -26,7 +26,7 @@
 extension DBConnection {
     
     public func mongoQuery() -> DBMongoQuery {
-        guard let connection = self as? MongoDBDriver.Connection else { fatalError("unsupported operation") }
+        guard let connection = self as? DBMongoConnection else { fatalError("unsupported operation") }
         return connection.mongoQuery()
     }
 }
