@@ -30,47 +30,37 @@ const defaultStorageOptions = {
 	persistent: false,
 }
 
-async function resolveStorage(type) {
-    if (global.window && storageAvailable(type)) {
-		return type == 'sessionStorage' ? sessionStorage : localStorage;
-	}
+function resolveStorage(type) {
+    if (global.window && storageAvailable(type)) return window[type];
 }
+
+const sessionStorage = resolveStorage('sessionStorage');
+const localStorage = resolveStorage('localStorage');
 
 class Storage {
 
 	get keys() {
-		return Promise.all([
-			resolveStorage('sessionStorage').then(storage => Object.keys(storage)),
-			resolveStorage('localStorage').then(storage => Object.keys(storage)),
-		]).then((keys) => _.uniq(keys.flat()));
+		return _.uniq([Object.keys(sessionStorage), Object.keys(localStorage)].flat());
 	}
 	
-	async clear() {
-		const _sessionStorage = await resolveStorage('sessionStorage');
-		const _localStorage = await resolveStorage('localStorage');
-		_localStorage?.clear();
-		_sessionStorage?.clear();
+	clear() {
+		localStorage?.clear();
+		sessionStorage?.clear();
 	}
 	
-	async removeItem(key) {
-		const _sessionStorage = await resolveStorage('sessionStorage');
-		const _localStorage = await resolveStorage('localStorage');
-		_localStorage?.removeItem(key);
-		_sessionStorage?.removeItem(key);
+	removeItem(key) {
+		localStorage?.removeItem(key);
+		sessionStorage?.removeItem(key);
 	}
 
-	async getItem(key) {
-		const _sessionStorage = await resolveStorage('sessionStorage');
-		const _localStorage = await resolveStorage('localStorage');
-		const data = _sessionStorage?.getItem(key) ?? _localStorage?.getItem(key);
+	getItem(key) {
+		const data = sessionStorage?.getItem(key) ?? localStorage?.getItem(key);
 		return _.isNil(data) ? undefined : EJSON.parse(data);
 	}
 
-	async setItem(key, value, options = defaultStorageOptions) {
-		const _storage = await resolveStorage(options.persistent ? 'localStorage' : 'sessionStorage');
-		if (_storage) {
-			_storage.setItem(key, EJSON.stringify(value));
-		}
+	setItem(key, value, options = defaultStorageOptions) {
+		const storage = options.persistent ? localStorage : sessionStorage;
+		storage?.setItem(key, EJSON.stringify(value));
 	}
 }
 

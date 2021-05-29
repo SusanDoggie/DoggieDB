@@ -31,8 +31,8 @@ class Home extends React.Component {
 
   async loadData() {
 
-    const connectionStr = await storage.getItem('connectionStr');
-    const isConnected = await storage.getItem('isConnected');
+    const connectionStr = storage.getItem('connectionStr');
+    const isConnected = storage.getItem('isConnected');
 
     if (!_.isEmpty(connectionStr)) {
       this.setState({ connectionStr }, isConnected ? () => this.connect() : null);
