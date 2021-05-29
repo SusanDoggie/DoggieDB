@@ -1,80 +1,15 @@
 import _ from 'lodash';
 import React from 'react';
 import { Button, View, TextInput, Text, ScrollView, StyleSheet } from 'react-native';
-import ReactDataSheet from 'react-datasheet';
 import { withRouter } from 'react-router';
 import { EJSON } from 'bson';
 import Url from 'url';
 
-import RoundButton from '../components/RoundButton';
+import RoundButton from '../../components/RoundButton';
+import ResultTable from './ResultTable';
+import storage from '../../utils/storage';
 
-import { withDatabase } from '../utils/database';
-
-class ValueViewer extends React.PureComponent {
-
-  render() {
-    
-    const { value } = this.props.value;
-    
-    if (_.isString(value)) {
-      return <Text>{value}</Text>;
-    }
-    
-    return <Text>{EJSON.stringify(value)}</Text>;
-  }
-}
-
-class ResultTable extends React.PureComponent {
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      style: 'table',
-    };
-  }
-
-  renderBody() {
-    
-    if (!_.isArray(this.props.data)) {
-      return <Text>{EJSON.stringify(this.props.data, null, 4)}</Text>;
-    }
-
-    switch (this.state.style) {
-
-      case 'table':
-
-        const columns = this.props.data.reduce((result, x) => _.uniq(result.concat(Object.keys(x))), []);
-        const grid = this.props.data.map(x => columns.map(c => { return { value: x[c] } }));
-
-        return <ReactDataSheet
-          data={grid}
-          sheetRenderer={props => (
-            <table className={props.className}>
-                <thead>
-                    <tr>
-                      {columns.map(col => (<th><Text>{col}</Text></th>))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {props.children}
-                </tbody>
-            </table>
-          )}
-          valueViewer={ValueViewer}
-          valueRenderer={x => x} />;
-
-      case 'raw':
-        return <Text>{EJSON.stringify(this.props.data, null, 4)}</Text>;
-    }
-  }
-
-  render() {
-    return <ScrollView>
-    {this.renderBody()}
-    </ScrollView>;
-  }
-}
+import { withDatabase } from '../../utils/database';
 
 class Home extends React.Component {
 
@@ -87,6 +22,18 @@ class Home extends React.Component {
       command: '',
       result: '',
     };
+
+    this.loadData();
+  }
+
+  async loadData() {
+
+    const connectionStr = await storage.getItem('connectionStr');
+    const isConnected = await storage.getItem('isConnected');
+
+    if (!_.isEmpty(connectionStr)) {
+      this.setState({ connectionStr }, isConnected ? () => this.connect() : null);
+    }
   }
 
   async connect() {
@@ -98,6 +45,9 @@ class Home extends React.Component {
       await database.connect(this.state.connectionStr);
 
       this.setState({ isConnected: true });
+
+      storage.setItem('connectionStr', this.state.connectionStr);
+      storage.setItem('isConnected', true);
 
     } catch (e) {
       console.log(e);
@@ -144,6 +94,13 @@ class Home extends React.Component {
     </View>;
   }
 
+  setConnectionStr(connectionStr) {
+
+    this.setState({ connectionStr });
+
+    storage.setItem('connectionStr', connectionStr);
+  }
+
   renderLoginPanel() {
 
     const url = Url.parse(this.state.connectionStr);
@@ -168,7 +125,7 @@ class Home extends React.Component {
           borderBottomColor: 'black',
           marginTop: 8,
         }}
-        onChangeText={(connectionStr) => this.setState({ connectionStr })}
+        onChangeText={(connectionStr) => this.setConnectionStr(connectionStr)}
         value={this.state.connectionStr} />
 
       <Text style={{
