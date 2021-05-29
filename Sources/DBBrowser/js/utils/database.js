@@ -2,6 +2,7 @@ import _ from 'lodash';
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { EJSON } from 'bson';
+import { EventEmitter } from 'events';
 
 function createSocket() {
 	if (_.isNil(global.WebSocket) || _.isNil(global.location)) return;
@@ -13,12 +14,19 @@ function createDatabase() {
 	const socket = createSocket();
 	if (!socket) return;
 	
+	const eventEmitter = new EventEmitter();
 	const callbacks = {};
 	
 	let isopen = false;
-	
-	socket.onopen = () => isopen = true;
-	socket.onclose = () => isopen = false;
+
+	socket.onopen = () => {
+		isopen = true;
+		eventEmitter.emit('WEBSOCKET_DID_OPENED');
+	};
+	socket.onclose = () => {
+		isopen = false;
+		eventEmitter.emit('WEBSOCKET_DID_CLOSED');
+	};
 	socket.onmessage = ({data}) => {
 		const result = EJSON.parse(data);
 		if (result['success']) {
@@ -37,9 +45,14 @@ function createDatabase() {
 	}
 	
 	class Database {
-
+		
 		connect(url) {
 			return socket_run({ action: 'connect', url });
+		}
+
+		addListener(event, listener) {
+			eventEmitter.addListener(event, listener);
+			return { remove: () => { eventEmitter.removeListener(event, listener) } };	
 		}
 		
 		runSQLCommand(sql) {

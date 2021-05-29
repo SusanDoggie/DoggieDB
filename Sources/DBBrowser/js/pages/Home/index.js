@@ -41,10 +41,14 @@ class Home extends React.Component {
 
   async connect() {
     
-    try {
-
-      const database = this.props.database;
+    const database = this.props.database;
   
+    try {
+      
+      if (this.state.isConnected) {
+        return;
+      }
+
       await database.connect(this.state.connectionStr);
 
       this.setState({ isConnected: true });
@@ -53,7 +57,12 @@ class Home extends React.Component {
       storage.setItem('isConnected', true);
 
     } catch (e) {
+
       console.log(e);
+
+      if (e.message == 'socket not connected') {
+        database.addListener('WEBSOCKET_DID_OPENED', () => this.connect());
+      }
     }
   }
 
