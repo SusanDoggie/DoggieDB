@@ -22,6 +22,9 @@ class Home extends React.Component {
       command: '',
       result: '',
     };
+  }
+
+  componentDidMount() {
 
     this.loadData();
   }
