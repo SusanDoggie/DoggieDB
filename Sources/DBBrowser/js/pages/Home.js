@@ -21,7 +21,7 @@ class ResultTable extends React.PureComponent {
 
   renderBody() {
     
-    if (!_,isArray(this.props.data)) {
+    if (!_.isArray(this.props.data)) {
       return <Text>{EJSON.stringify(this.props.data, null, 4)}</Text>;
     }
 
