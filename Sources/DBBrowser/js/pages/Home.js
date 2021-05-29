@@ -25,11 +25,23 @@ class ResultTable extends React.PureComponent {
       case 'table': 
 
         const columns = this.props.data.reduce((result, x) => _.uniq(result.concat(Object.keys(x))), []);
-        const grid = this.props.data.map(x => columns.map(c => x[c]));
+        const grid = this.props.data.map(x => columns.map(c => { return { value: x[c] } }));
 
         return <ReactDataSheet
           data={grid}
-          valueRenderer={x => _.isString(x) ? x : EJSON.stringify(x)} />;
+          sheetRenderer={props => (
+            <table className={props.className}>
+                <thead>
+                    <tr>
+                        {columns.map(col => (<th>{col}</th>))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {props.children}
+                </tbody>
+            </table>
+          )}
+          valueRenderer={x => _.isString(x.value) ? x.value : EJSON.stringify(x.value)} />;
 
       case 'raw': 
         return <Text>{EJSON.stringify(this.props.data, null, 4)}</Text>;
@@ -37,9 +49,9 @@ class ResultTable extends React.PureComponent {
   }
 
   render() {
-    return <View>
-      {this.renderBody()}
-    </View>;
+    return <ScrollView>
+    {this.renderBody()}
+    </ScrollView>;
   }
 }
 
