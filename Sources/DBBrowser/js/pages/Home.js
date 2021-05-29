@@ -1,12 +1,47 @@
 import _ from 'lodash';
 import React from 'react';
 import { Button, View, TextInput, Text, ScrollView, StyleSheet } from 'react-native';
-import { withRouter } from "react-router";
+import ReactDataSheet from 'react-datasheet';
+import { withRouter } from 'react-router';
 import { EJSON } from 'bson';
 
 import RoundButton from '../components/RoundButton';
 
 import { withDatabase } from '../utils/database';
+
+class ResultTable extends React.PureComponent {
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      style: 'table',
+    };
+  }
+
+  renderBody() {
+    switch (this.state.style) {
+
+      case 'table': 
+
+        const columns = this.props.data.reduce((result, x) => _.uniq(result.concat(Object.keys(x))), []);
+        const grid = this.props.data.map(x => columns.map(c => x[c]));
+
+        return <ReactDataSheet
+          data={grid}
+          valueRenderer={x => _.isString(x) ? x : EJSON.stringify(x)} />;
+
+      case 'raw': 
+        return <Text>{EJSON.stringify(this.props.data, null, 4)}</Text>;
+    }
+  }
+
+  render() {
+    return <View>
+      {this.renderBody()}
+    </View>;
+  }
+}
 
 class Home extends React.Component {
 
@@ -55,7 +90,7 @@ class Home extends React.Component {
         result = await database.runSQLCommand(this.state.command);
       }
 
-      this.setState({ result: EJSON.stringify(result, null, 4) });
+      this.setState({ result });
       
     } catch (e) {
       console.log(e);
@@ -71,7 +106,7 @@ class Home extends React.Component {
       value={this.state.command} />
       <Button title='Run' onPress={() => this.runCommand()} />
       <ScrollView style={{ flex: 1 }}>
-      <Text>{this.state.result}</Text>
+      {!_.isEmpty(this.state.result) && <ResultTable data={this.state.result} />}
       </ScrollView>
     </View>;
   }
@@ -79,8 +114,8 @@ class Home extends React.Component {
   renderLoginPanel() {
 
     return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <View style={{ 
-        width: 256,
+      <View style={{
+        width: 512,
         padding: 16,
 			  borderRadius: 16,
 			  overflow: 'hidden',
