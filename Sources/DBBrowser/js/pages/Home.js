@@ -4,6 +4,7 @@ import { Button, View, TextInput, Text, ScrollView, StyleSheet } from 'react-nat
 import ReactDataSheet from 'react-datasheet';
 import { withRouter } from 'react-router';
 import { EJSON } from 'bson';
+import Url from 'url';
 
 import RoundButton from '../components/RoundButton';
 
@@ -142,8 +143,10 @@ class Home extends React.Component {
       </ScrollView>
     </View>;
   }
-  
+
   renderLoginPanel() {
+
+    const url = Url.parse(this.state.connectionStr);
 
     return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
       <View style={{
@@ -155,6 +158,7 @@ class Home extends React.Component {
 			  justifyContent: 'center',
         backgroundColor: 'white',
       }}>
+
       <Text style={{
         fontSize: 12,
       }}>Connection String</Text>
@@ -166,6 +170,43 @@ class Home extends React.Component {
         }}
         onChangeText={(connectionStr) => this.setState({ connectionStr })}
         value={this.state.connectionStr} />
+
+      <Text style={{
+        fontSize: 12,
+        marginTop: 16,
+      }}>Host</Text>
+      <TextInput
+        style={{ 
+          borderBottomWidth: StyleSheet.hairlineWidth, 
+          borderBottomColor: 'black',
+          marginTop: 8,
+        }}
+        value={url.protocol && url.host ? url.protocol+'//'+url.host : ''} />
+
+      <Text style={{
+        fontSize: 12,
+        marginTop: 16,
+      }}>Auth</Text>
+      <TextInput
+        style={{ 
+          borderBottomWidth: StyleSheet.hairlineWidth, 
+          borderBottomColor: 'black',
+          marginTop: 8,
+        }}
+        value={url.auth} />
+
+      <Text style={{
+        fontSize: 12,
+        marginTop: 16,
+      }}>Database</Text>
+      <TextInput
+        style={{ 
+          borderBottomWidth: StyleSheet.hairlineWidth, 
+          borderBottomColor: 'black',
+          marginTop: 8,
+        }}
+        value={url.pathname?.split('/')[1]} />
+
       <RoundButton
         style={{
           marginTop: 16,
