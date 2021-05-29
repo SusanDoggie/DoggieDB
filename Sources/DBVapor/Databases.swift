@@ -53,7 +53,7 @@ public class DatabasePool {
         on eventLoopGroup: EventLoopGroup
     ) {
         
-        if source.driver.isSessionSupported {
+        if source.driver.isSessionBased {
             
             let connection = Database.connect(
                 config: source.configuration,

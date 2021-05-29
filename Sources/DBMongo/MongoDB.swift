@@ -27,7 +27,7 @@ import MongoSwift
 
 struct MongoDBDriver: DBDriverProtocol {
     
-    static var isSessionSupported: Bool { true }
+    static var isSessionBased: Bool { true }
     
     static var defaultPort: Int { 27017 }
 }
@@ -145,6 +145,12 @@ extension MongoDBDriver.Connection {
     
     func _database() -> MongoDatabase? {
         return self.database.map { client.db($0) }
+    }
+    
+    func isSessionSupported() -> EventLoopFuture<Bool> {
+        guard let database = connection._database() else { fatalError("database not selected.") }
+        let version = database.runCommand(["buildInfo": 1]).map { $0["versionArray"]!.arrayValue!.map { $0.toInt()! } }
+        return version.map { !$0.lexicographicallyPrecedes([3, 6]) }
     }
     
     func bind(to eventLoop: EventLoop) -> DBConnection {

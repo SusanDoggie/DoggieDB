@@ -90,7 +90,7 @@ extension DBMongoQuery {
     public func withTransaction<T>(
         _ transactionBody: @escaping (DBMongoQuery) throws -> EventLoopFuture<T>
     ) -> EventLoopFuture<T> {
-        guard let session = self.session else { fatalError("session not available.") }
+        guard let session = self.session else { fatalError("session not started.") }
         return session.withTransaction { try transactionBody(self) }
     }
 }
