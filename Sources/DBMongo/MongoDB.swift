@@ -166,6 +166,11 @@ extension MongoDBDriver.Connection {
 
 extension MongoDBDriver.Connection {
     
+    func version() -> EventLoopFuture<String> {
+        guard let database = connection._database() else { fatalError("database not selected.") }
+        return database.runCommand(["buildInfo": 1]).map { $0["version"]!.stringValue! }
+    }
+    
     func databases() -> EventLoopFuture<[String]> {
         return self.client.listDatabaseNames()
     }

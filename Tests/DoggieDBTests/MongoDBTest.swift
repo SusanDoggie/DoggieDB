@@ -70,6 +70,8 @@ class MongoDBTest: XCTestCase {
             
             self.connection = try Database.connect(url: url, on: eventLoopGroup).wait()
             
+            print("MONGO:", try connection.version().wait())
+            
         } catch {
             
             print(error)
