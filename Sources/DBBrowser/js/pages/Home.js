@@ -9,6 +9,20 @@ import RoundButton from '../components/RoundButton';
 
 import { withDatabase } from '../utils/database';
 
+class ValueViewer extends React.PureComponent {
+
+  render() {
+    
+    const { value } = this.props.value;
+    
+    if (_.isString(value)) {
+      return <Text>{value}</Text>;
+    }
+    
+    return <Text>{EJSON.stringify(value)}</Text>;
+  }
+}
+
 class ResultTable extends React.PureComponent {
 
   constructor(props) {
@@ -27,7 +41,7 @@ class ResultTable extends React.PureComponent {
 
     switch (this.state.style) {
 
-      case 'table': 
+      case 'table':
 
         const columns = this.props.data.reduce((result, x) => _.uniq(result.concat(Object.keys(x))), []);
         const grid = this.props.data.map(x => columns.map(c => { return { value: x[c] } }));
@@ -38,7 +52,7 @@ class ResultTable extends React.PureComponent {
             <table className={props.className}>
                 <thead>
                     <tr>
-                        {columns.map(col => (<th>{col}</th>))}
+                      {columns.map(col => (<th><Text>{col}</Text></th>))}
                     </tr>
                 </thead>
                 <tbody>
@@ -46,9 +60,10 @@ class ResultTable extends React.PureComponent {
                 </tbody>
             </table>
           )}
-          valueRenderer={x => _.isString(x.value) ? x.value : EJSON.stringify(x.value)} />;
+          valueViewer={ValueViewer}
+          valueRenderer={x => x} />;
 
-      case 'raw': 
+      case 'raw':
         return <Text>{EJSON.stringify(this.props.data, null, 4)}</Text>;
     }
   }
