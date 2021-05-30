@@ -3,7 +3,9 @@ import React from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import ReactDataSheet from 'react-datasheet';
 import { v4 as uuidv4 } from 'uuid';
+import { EJSON } from 'bson';
 
+import Button from '../../components/Button';
 import JsonCode from './JsonCode';
 
 class ValueViewer extends React.PureComponent {
@@ -16,7 +18,7 @@ class ValueViewer extends React.PureComponent {
       return <Text>{value}</Text>;
     }
     
-    return <JsonCode value={this.props.data} />;
+    return <Text>{EJSON.stringify(value)}</Text>;
   }
 }
 
@@ -75,8 +77,14 @@ export default class ResultTable extends React.PureComponent {
       ...props
     } = this.props;
     
-    return <ScrollView {...props}>
+    return <View {...props}>
+    <View style={{ flexDirection: 'row' }}>
+      {_.isArray(this.props.data) && <Button title='table' onPress={() => this.setState({ style: 'table' })} />}
+      <Button title='raw' onPress={() => this.setState({ style: 'raw' })} />
+    </View>
+    <ScrollView style={{ flex: 1 }}>
     {this.renderBody()}
-    </ScrollView>;
+    </ScrollView>
+    </View>;
   }
 }

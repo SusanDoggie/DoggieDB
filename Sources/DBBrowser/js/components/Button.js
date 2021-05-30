@@ -35,6 +35,8 @@ export default class Button extends React.PureComponent {
 		onHoverIn={_onHoverIn}
 		onHoverOut={_onHoverOut}
 		style={{
+			padding: 8,
+			borderRadius: 4,
 			alignItems: 'center',
 			justifyContent: 'center',
 			backgroundColor: this.state.isHover ? '#1691E8' : '#2196F3',

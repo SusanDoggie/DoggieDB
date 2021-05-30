@@ -1,11 +1,12 @@
 import _ from 'lodash';
 import React from 'react';
-import { Button, View, TextInput, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, TextInput, Text, ScrollView, StyleSheet } from 'react-native';
 import { withRouter } from 'react-router';
 import { EJSON } from 'bson';
 import CodeMirror from 'react-codemirror';
 import Url from 'url';
 
+import Button from '../../components/Button';
 import RoundButton from '../../components/RoundButton';
 import ResultTable from './ResultTable';
 import storage from '../../utils/storage';
