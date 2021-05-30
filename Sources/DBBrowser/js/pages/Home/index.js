@@ -18,6 +18,7 @@ class Home extends React.Component {
 
     this.state = {
       isConnected: false,
+      autoConnect: false,
       connectionStr: '',
       command: '',
       result: '',
@@ -26,16 +27,21 @@ class Home extends React.Component {
 
   componentDidMount() {
 
-    this.loadData();
+    this.autoConnect();
+
+    const database = this.props.database;
+  
+    database.addListener('WEBSOCKET_DID_OPENED', () => this.state.autoConnect && this.connect());
+    database.addListener('WEBSOCKET_DID_CLOSED', () => this.setState({ isConnected: false }));
   }
 
-  async loadData() {
+  async autoConnect() {
 
     const connectionStr = storage.getItem('connectionStr');
     const isConnected = storage.getItem('isConnected');
 
     if (!_.isEmpty(connectionStr)) {
-      this.setState({ connectionStr }, isConnected ? () => this.connect() : null);
+      this.setState({ connectionStr, autoConnect: true }, isConnected ? () => this.connect() : null);
     }
   }
 
@@ -51,7 +57,7 @@ class Home extends React.Component {
 
       await database.connect(this.state.connectionStr);
 
-      this.setState({ isConnected: true });
+      this.setState({ isConnected: true, autoConnect: false });
 
       storage.setItem('connectionStr', this.state.connectionStr);
       storage.setItem('isConnected', true);
@@ -59,10 +65,6 @@ class Home extends React.Component {
     } catch (e) {
 
       console.log(e);
-
-      if (e.message == 'socket not connected') {
-        database.addListener('WEBSOCKET_DID_OPENED', () => this.connect());
-      }
     }
   }
 
@@ -96,7 +98,7 @@ class Home extends React.Component {
     
     return <View style={{ flex: 1 }}>
       <TextInput
-      multiline
+      multiline={true}
       onChangeText={(command) => this.setState({ command })}
       value={this.state.command} />
       <Button title='Run' onPress={() => this.runCommand()} />
@@ -108,7 +110,7 @@ class Home extends React.Component {
 
   setConnectionStr(connectionStr) {
 
-    this.setState({ connectionStr });
+    this.setState({ connectionStr, autoConnect: false });
 
     storage.setItem('connectionStr', connectionStr);
   }
@@ -162,7 +164,7 @@ class Home extends React.Component {
           borderBottomColor: 'black',
           marginTop: 8,
         }}
-        value={url.auth} />
+        value={url.auth ?? ''} />
 
       <Text style={{
         fontSize: 12,
@@ -174,7 +176,7 @@ class Home extends React.Component {
           borderBottomColor: 'black',
           marginTop: 8,
         }}
-        value={url.pathname?.split('/')[1]} />
+        value={url.pathname?.split('/')[1] ?? ''} />
 
       <RoundButton
         style={{

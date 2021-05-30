@@ -39,7 +39,7 @@ const localStorage = resolveStorage('localStorage');
 
 class Storage {
 
-	get keys() {
+	keys() {
 		return _.uniq([Object.keys(sessionStorage), Object.keys(localStorage)].flat());
 	}
 	
