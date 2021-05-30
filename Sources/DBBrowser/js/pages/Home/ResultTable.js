@@ -22,6 +22,49 @@ class ValueViewer extends React.PureComponent {
   }
 }
 
+class DataSheet extends React.PureComponent {
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      token: uuidv4(),
+    };
+  }
+
+  render() {
+    return <ReactDataSheet
+      data={this.props.data}
+      sheetRenderer={props => <table className={props.className}>
+            <thead style={{
+              backgroundColor: 'white',
+              position: 'sticky',
+              top: 0,
+            }}>
+                <tr>
+                  <th />
+                  {this.props.columns.map((col, i) => <th key={`${this.state.token}-col-${i}`}>
+                    <Text>{col}</Text>
+                    </th>)}
+                </tr>
+            </thead>
+            <tbody style={{
+              backgroundColor: 'white',
+            }}>
+                {props.children}
+            </tbody>
+        </table>}
+      rowRenderer={props => (
+        <tr>
+            <td><Text>{props.row}</Text></td>
+            {props.children}
+        </tr>
+      )}
+      valueViewer={ValueViewer}
+      valueRenderer={x => x} />;
+  }
+}
+
 export default class ResultTable extends React.PureComponent {
 
   constructor(props) {
@@ -46,27 +89,16 @@ export default class ResultTable extends React.PureComponent {
         const columns = this.props.data.reduce((result, x) => _.uniq(result.concat(Object.keys(x))), []);
         const grid = this.props.data.map(x => columns.map(c => { return { value: x[c] } }));
 
-        return <ReactDataSheet
+        return <ScrollView style={{ flex: 1 }}>
+          <DataSheet
           data={grid}
-          sheetRenderer={props => (
-            <table className={props.className}>
-                <thead>
-                    <tr>
-                      {columns.map((col, i) => <th key={`${this.state.token}-col-${i}`}>
-                        <Text>{col}</Text>
-                        </th>)}
-                    </tr>
-                </thead>
-                <tbody>
-                    {props.children}
-                </tbody>
-            </table>
-          )}
-          valueViewer={ValueViewer}
-          valueRenderer={x => x} />;
+          columns={columns} />
+        </ScrollView>;
 
       case 'raw':
-        return <JsonCode value={this.props.data} space={4} />;
+        return <ScrollView style={{ flex: 1 }}>
+        <JsonCode value={this.props.data} space={4} />
+        </ScrollView>
     }
   }
 
@@ -82,9 +114,7 @@ export default class ResultTable extends React.PureComponent {
       {_.isArray(this.props.data) && <Button title='table' onPress={() => this.setState({ style: 'table' })} />}
       <Button title='raw' onPress={() => this.setState({ style: 'raw' })} />
     </View>
-    <ScrollView style={{ flex: 1 }}>
     {this.renderBody()}
-    </ScrollView>
     </View>;
   }
 }
