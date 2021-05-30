@@ -2,8 +2,9 @@ import _ from 'lodash';
 import React from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import ReactDataSheet from 'react-datasheet';
-import { EJSON } from 'bson';
 import { v4 as uuidv4 } from 'uuid';
+
+import JsonCode from './JsonCode';
 
 class ValueViewer extends React.PureComponent {
 
@@ -15,7 +16,7 @@ class ValueViewer extends React.PureComponent {
       return <Text>{value}</Text>;
     }
     
-    return <Text>{EJSON.stringify(value)}</Text>;
+    return <JsonCode value={this.props.data} />;
   }
 }
 
@@ -33,7 +34,7 @@ export default class ResultTable extends React.PureComponent {
   renderBody() {
     
     if (!_.isArray(this.props.data)) {
-      return <Text>{EJSON.stringify(this.props.data, null, 4)}</Text>;
+      return <JsonCode value={this.props.data} space={4} />;
     }
 
     switch (this.state.style) {
@@ -63,7 +64,7 @@ export default class ResultTable extends React.PureComponent {
           valueRenderer={x => x} />;
 
       case 'raw':
-        return <Text>{EJSON.stringify(this.props.data, null, 4)}</Text>;
+        return <JsonCode value={this.props.data} space={4} />;
     }
   }
 

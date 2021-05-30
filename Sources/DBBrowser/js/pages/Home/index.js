@@ -120,6 +120,7 @@ class Home extends React.Component {
       <View style={{ flexDirection: 'row' }}>
         <Button title='Run' onPress={() => this.runCommand()} />
       </View>
+      <View style={{ height: 300 }}>
       <CodeMirror
       value={this.state.command}
       onChange={(command) => this.setState({ command })}
@@ -127,6 +128,7 @@ class Home extends React.Component {
         mode: mode,
         lineNumbers: true,
       }} />
+      </View>
       {!_.isEmpty(this.state.result) && <ResultTable 
         style={{ flex: 1 }} 
         data={this.state.result} />}
