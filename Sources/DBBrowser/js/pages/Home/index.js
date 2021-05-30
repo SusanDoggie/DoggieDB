@@ -99,9 +99,9 @@ class Home extends React.Component {
 
   renderDashboard() {
 
-    let mode = 'text/x-sql';
-
     const url = Url.parse(this.state.connectionStr);
+
+    let mode = null;
 
     switch (url.protocol) {
       case 'mysql:': 
@@ -111,22 +111,22 @@ class Home extends React.Component {
         mode = 'text/x-pgsql';
         break;
       case 'mongodb:': 
-        mode = 'application/json';
+        mode = 'application/x-json';
         break;
       default: break;
     }
-    
+
     return <View style={{ flex: 1 }}>
       <View style={{ flexDirection: 'row' }}>
         <Button title='Run' onPress={() => this.runCommand()} />
       </View>
       <CodeMirror
-      mode={mode}
-      options={{ 
-        lineNumbers: true,
-      }}
       value={this.state.command}
-      onChange={(command) => this.setState({ command })} />
+      onChange={(command) => this.setState({ command })}
+      options={{ 
+        mode: mode,
+        lineNumbers: true,
+      }} />
       {!_.isEmpty(this.state.result) && <ResultTable 
         style={{ flex: 1 }} 
         data={this.state.result} />}
