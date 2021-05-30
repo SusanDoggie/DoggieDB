@@ -3,6 +3,7 @@ import React from 'react';
 import { Button, View, TextInput, Text, ScrollView, StyleSheet } from 'react-native';
 import { withRouter } from 'react-router';
 import { EJSON } from 'bson';
+import CodeMirror from 'react-codemirror';
 import Url from 'url';
 
 import RoundButton from '../../components/RoundButton';
@@ -76,7 +77,9 @@ class Home extends React.Component {
 
       let result;
   
-      if (this.state.connectionStr.startsWith('mongodb://')) {
+      const url = Url.parse(this.state.connectionStr);
+
+      if (url.protocol == 'mongodb:') {
         
         const command = EJSON.parse(this.state.command);
 
@@ -95,16 +98,38 @@ class Home extends React.Component {
   }
 
   renderDashboard() {
+
+    let mode = 'text/x-sql';
+
+    const url = Url.parse(this.state.connectionStr);
+
+    switch (url.protocol) {
+      case 'mysql:': 
+        mode = 'text/x-mysql';
+        break;
+      case 'postgres:': 
+        mode = 'text/x-pgsql';
+        break;
+      case 'mongodb:': 
+        mode = 'application/json';
+        break;
+      default: break;
+    }
     
     return <View style={{ flex: 1 }}>
-      <TextInput
-      multiline={true}
-      onChangeText={(command) => this.setState({ command })}
-      value={this.state.command} />
-      <Button title='Run' onPress={() => this.runCommand()} />
-      <ScrollView style={{ flex: 1 }}>
-      {!_.isEmpty(this.state.result) && <ResultTable data={this.state.result} />}
-      </ScrollView>
+      <View style={{ flexDirection: 'row' }}>
+        <Button title='Run' onPress={() => this.runCommand()} />
+      </View>
+      <CodeMirror
+      mode={mode}
+      options={{ 
+        lineNumbers: true,
+      }}
+      value={this.state.command}
+      onChange={(command) => this.setState({ command })} />
+      {!_.isEmpty(this.state.result) && <ResultTable 
+        style={{ flex: 1 }} 
+        data={this.state.result} />}
     </View>;
   }
 

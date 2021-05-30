@@ -1,8 +1,9 @@
 import _ from 'lodash';
 import React from 'react';
-import { Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import ReactDataSheet from 'react-datasheet';
 import { EJSON } from 'bson';
+import { v4 as uuidv4 } from 'uuid';
 
 class ValueViewer extends React.PureComponent {
 
@@ -24,6 +25,7 @@ export default class ResultTable extends React.PureComponent {
     super(props);
 
     this.state = {
+      token: uuidv4(),
       style: 'table',
     };
   }
@@ -47,7 +49,9 @@ export default class ResultTable extends React.PureComponent {
             <table className={props.className}>
                 <thead>
                     <tr>
-                      {columns.map(col => (<th><Text>{col}</Text></th>))}
+                      {columns.map((col, i) => <th key={`${this.state.token}-col-${i}`}>
+                        <Text>{col}</Text>
+                        </th>)}
                     </tr>
                 </thead>
                 <tbody>
@@ -64,7 +68,13 @@ export default class ResultTable extends React.PureComponent {
   }
 
   render() {
-    return <ScrollView>
+    
+    const { 
+      data, 
+      ...props
+    } = this.props;
+    
+    return <ScrollView {...props}>
     {this.renderBody()}
     </ScrollView>;
   }
