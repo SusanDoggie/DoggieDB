@@ -86,7 +86,9 @@ extension DBMongoEventLoopBoundConnection {
 extension DBMongoEventLoopBoundConnection {
     
     func close() -> EventLoopFuture<Void> {
-        return eventLoopGroup.next().makeSucceededVoidFuture()
+        let closeResult = eventLoopGroup.next().makeSucceededVoidFuture()
+        closeResult.whenComplete { _ in self.isClosed = true }
+        return closeResult
     }
 }
 
