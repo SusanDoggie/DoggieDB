@@ -53,7 +53,7 @@ public class DatabasePool {
         on eventLoopGroup: EventLoopGroup
     ) {
         
-        if source.driver.isSessionBased {
+        if source.driver.isThreadBased {
             
             let connection = Database.connect(
                 config: source.configuration,
@@ -63,11 +63,9 @@ public class DatabasePool {
             
             self.connection = connection
             
-            let isSessionSupported = connection.flatMap { $0.isSessionSupported() }
-            
             self.pool = EventLoopGroupConnectionPool(
                 source: DBConnectionPoolSource(generator: { _, eventLoop in
-                    connection.flatMap { conn in isSessionSupported.map { $0 ? conn.withSession(on: eventLoop) : conn.bind(to: eventLoop) }  }
+                    connection.map { $0.bind(to: eventLoop)  }
                 }),
                 maxConnectionsPerEventLoop: maxConnectionsPerEventLoop,
                 requestTimeout: requestTimeout,

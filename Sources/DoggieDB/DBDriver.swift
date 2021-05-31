@@ -27,7 +27,7 @@ public protocol DBDriverProtocol {
     
     static var defaultPort: Int { get }
     
-    static var isSessionBased: Bool { get }
+    static var isThreadBased: Bool { get }
     
     static var sqlDialect: SQLDialect.Type? { get }
     
@@ -40,7 +40,7 @@ public protocol DBDriverProtocol {
 
 extension DBDriverProtocol {
     
-    public static var isSessionBased: Bool {
+    public static var isThreadBased: Bool {
         return false
     }
     
@@ -60,8 +60,8 @@ public struct DBDriver: Hashable {
 
 extension DBDriver {
     
-    public var isSessionBased: Bool {
-        return rawValue.isSessionBased
+    public var isThreadBased: Bool {
+        return rawValue.isThreadBased
     }
     
     public var defaultPort: Int {

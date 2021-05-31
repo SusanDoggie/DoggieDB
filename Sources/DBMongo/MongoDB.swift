@@ -27,7 +27,7 @@ import MongoSwift
 
 struct MongoDBDriver: DBDriverProtocol {
     
-    static var isSessionBased: Bool { true }
+    static var isThreadBased: Bool { true }
     
     static var defaultPort: Int { 27017 }
 }
