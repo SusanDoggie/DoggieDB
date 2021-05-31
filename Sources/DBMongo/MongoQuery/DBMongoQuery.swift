@@ -32,10 +32,10 @@ public struct DBMongoQuery {
     var session: ClientSession?
 }
 
-extension MongoDBDriver.Connection {
+extension DBMongoQuery {
     
-    public func mongoQuery() -> DBMongoQuery {
-        return DBMongoQuery(connection: self, session: nil)
+    public var eventLoopGroup: EventLoopGroup {
+        return connection.eventLoopGroup
     }
 }
 
