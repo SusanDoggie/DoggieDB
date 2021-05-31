@@ -135,45 +135,34 @@ extension MongoDBDriver {
 
 extension MongoDBDriver.Connection {
     
-    var connection: MongoDBDriver.Connection {
-        return self
-    }
-    
-    var session: ClientSession? {
-        return nil
-    }
-    
     func _database() -> MongoDatabase? {
         return self.database.map { client.db($0) }
     }
     
-    func isSessionSupported() -> EventLoopFuture<Bool> {
-        guard let database = connection._database() else { fatalError("database not selected.") }
-        let version = database.runCommand(["buildInfo": 1]).map { $0["versionArray"]!.arrayValue!.map { $0.toInt()! } }
-        return version.map { !$0.lexicographicallyPrecedes([3, 6]) }
+    func startSession(options: ClientSessionOptions?) -> ClientSession {
+        return self.client.startSession(options: options)
     }
+    
+    func withSession<T>(
+        options: ClientSessionOptions?,
+        _ sessionBody: (ClientSession) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        return self.client.withSession(options: options, sessionBody)
+    }
+}
+
+extension MongoDBDriver.Connection {
     
     func bind(to eventLoop: EventLoop) -> DBConnection {
         let client = self.client.bound(to: eventLoop)
-        return DBMongoConnection(connection: self, client: client, session: nil)
-    }
-    
-    func withSession(on eventLoop: EventLoop?) -> DBConnection {
-        if let eventLoop = eventLoop {
-            let client = self.client.bound(to: eventLoop)
-            let session = client.startSession()
-            return DBMongoConnection(connection: self, client: client, session: session)
-        } else {
-            let session = self.client.startSession()
-            return DBMongoConnection(connection: self, client: nil, session: session)
-        }
+        return DBMongoEventLoopBoundConnection(connection: self, client: client)
     }
 }
 
 extension MongoDBDriver.Connection {
     
     func version() -> EventLoopFuture<String> {
-        guard let database = connection._database() else { fatalError("database not selected.") }
+        guard let database = self._database() else { fatalError("database not selected.") }
         return database.runCommand(["buildInfo": 1]).map { $0["version"]!.stringValue! }
     }
     

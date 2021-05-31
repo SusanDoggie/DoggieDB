@@ -28,16 +28,14 @@ import MongoSwift
 public struct DBMongoQuery {
     
     let connection: DBMongoConnectionProtocol
+    
+    var session: ClientSession?
 }
 
-extension DBMongoQuery {
+extension MongoDBDriver.Connection {
     
-    var session: ClientSession? {
-        return connection.session
-    }
-    
-    public var eventLoopGroup: EventLoopGroup {
-        return connection.eventLoopGroup
+    public func mongoQuery() -> DBMongoQuery {
+        return DBMongoQuery(connection: self, session: nil)
     }
 }
 
@@ -87,11 +85,31 @@ extension DBMongoQuery {
 
 extension DBMongoQuery {
     
-    public func withTransaction<T>(
-        _ transactionBody: @escaping (DBMongoQuery) throws -> EventLoopFuture<T>
+    public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
+        return connection.startSession(options: options)
+    }
+    
+    public func session(_ session: ClientSession) -> Self {
+        var result = self
+        result.session = session
+        return result
+    }
+    
+    public func withSession<T>(
+        options: ClientSessionOptions? = nil,
+        _ sessionBody: (ClientSession) throws -> EventLoopFuture<T>
     ) -> EventLoopFuture<T> {
-        guard let session = self.session else { fatalError("session not started.") }
-        return session.withTransaction { try transactionBody(self) }
+        return connection.withSession(options: options, sessionBody)
+    }
+    
+    public func withTransaction<T>(
+        options: ClientSessionOptions? = nil,
+        _ transactionBody: @escaping (ClientSession) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        
+        return connection.withSession(options: options) { session in
+            session.withTransaction { try transactionBody(session) }
+        }
     }
 }
 

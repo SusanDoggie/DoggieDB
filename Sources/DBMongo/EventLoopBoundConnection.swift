@@ -1,5 +1,5 @@
 //
-//  DBMongoConnection.swift
+//  EventLoopBoundConnection.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -29,29 +29,31 @@ protocol DBMongoConnectionProtocol: DBConnection {
     
     var database: String? { get }
     
-    var session: ClientSession? { get }
-    
     func _database() -> MongoDatabase?
+    
+    func startSession(options: ClientSessionOptions?) -> ClientSession
+    
+    func withSession<T>(
+        options: ClientSessionOptions?,
+        _ sessionBody: (ClientSession) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T>
 }
 
-class DBMongoConnection: DBMongoConnectionProtocol {
+class DBMongoEventLoopBoundConnection: DBMongoConnectionProtocol {
     
     let connection: MongoDBDriver.Connection
     
-    let client: EventLoopBoundMongoClient?
-    
-    let session: ClientSession?
+    let client: EventLoopBoundMongoClient
     
     private(set) var isClosed: Bool = false
     
-    init(connection: MongoDBDriver.Connection, client: EventLoopBoundMongoClient?, session: ClientSession?) {
+    init(connection: MongoDBDriver.Connection, client: EventLoopBoundMongoClient) {
         self.connection = connection
         self.client = client
-        self.session = session
     }
 }
 
-extension DBMongoConnection {
+extension DBMongoEventLoopBoundConnection {
     
     var driver: DBDriver {
         return connection.driver
@@ -62,38 +64,42 @@ extension DBMongoConnection {
     }
     
     var eventLoopGroup: EventLoopGroup {
-        return client?.eventLoop ?? connection.eventLoopGroup
+        return client.eventLoop
     }
     
     func _database() -> MongoDatabase? {
-        return database.map { client?.db($0) ?? connection.client.db($0) }
+        return database.map { client.db($0) }
+    }
+    
+    func startSession(options: ClientSessionOptions?) -> ClientSession {
+        return client.startSession(options: options)
+    }
+    
+    func withSession<T>(
+        options: ClientSessionOptions?,
+        _ sessionBody: (ClientSession) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        return client.withSession(options: options, sessionBody)
     }
 }
 
-extension DBMongoConnection {
+extension DBMongoEventLoopBoundConnection {
     
     func close() -> EventLoopFuture<Void> {
-        guard let session = session else { return eventLoopGroup.next().makeSucceededVoidFuture() }
-        let closeResult = session.end()
-        closeResult.whenComplete { _ in self.isClosed = true }
-        return closeResult
+        return eventLoopGroup.next().makeSucceededVoidFuture()
     }
 }
 
-extension DBMongoConnection {
+extension DBMongoEventLoopBoundConnection {
     
     func bind(to eventLoop: EventLoop) -> DBConnection {
         return connection.bind(to: eventLoop)
     }
-    
-    func withSession(on eventLoop: EventLoop?) -> DBConnection {
-        return connection.withSession(on: eventLoop)
-    }
 }
 
-extension DBMongoConnection {
+extension DBMongoEventLoopBoundConnection {
     
     func databases() -> EventLoopFuture<[String]> {
-        return client?.listDatabaseNames() ?? connection.databases()
+        return client.listDatabaseNames()
     }
 }
