@@ -87,7 +87,7 @@ extension Database.Configuration {
             url.host = host
             connectionString += url.percentEncodedHost ?? ""
             
-            if let port = url.port {
+            if let port = socketAddress.port {
                 connectionString += ":\(port)"
             }
         }
