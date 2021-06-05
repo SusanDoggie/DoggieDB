@@ -49,6 +49,18 @@ public struct DBConnectionSource {
 extension DBConnectionSource {
     
     public init(
+        string: String,
+        maxConnectionsPerEventLoop: Int = 1,
+        requestTimeout: TimeAmount = .seconds(10)
+    ) throws {
+        guard let url = URL(string: string) else { throw Database.Error.invalidURL }
+        self.driver = try url.driver()
+        self.configuration = try Database.Configuration(url: url)
+        self.maxConnectionsPerEventLoop = maxConnectionsPerEventLoop
+        self.requestTimeout = requestTimeout
+    }
+    
+    public init(
         url: URL,
         maxConnectionsPerEventLoop: Int = 1,
         requestTimeout: TimeAmount = .seconds(10)

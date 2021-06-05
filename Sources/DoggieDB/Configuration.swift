@@ -196,6 +196,11 @@ extension URL {
 
 extension Database.Configuration {
     
+    public init(string: String) throws {
+        guard let url = URL(string: string) else { throw Database.Error.invalidURL }
+        try self.init(url: url)
+    }
+    
     public init(url: URL) throws {
         
         if let url = URLComponents(url: url, resolvingAgainstBaseURL: true) {
