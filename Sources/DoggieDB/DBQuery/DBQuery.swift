@@ -25,11 +25,7 @@
 
 public protocol DBQueryProtocol {
     
-    associatedtype Result
-    
     var connection: DBConnection { get }
-    
-    func execute() -> EventLoopFuture<Result>
 }
 
 extension DBQueryProtocol {

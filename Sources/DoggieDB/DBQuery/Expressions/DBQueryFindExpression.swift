@@ -25,8 +25,6 @@
 
 public struct DBQueryFindExpression: DBQueryProtocol {
     
-    public typealias Result = DBObject
-    
     public let connection: DBConnection
     
     public let table: String
