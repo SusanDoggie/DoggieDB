@@ -86,7 +86,7 @@ extension SQLBuilder {
     }
 }
 
-extension DBConnection where Self: DBSQLConnection {
+extension DBSQLConnection {
     
     public func sqlQuery() -> SQLBuilder {
         return SQLBuilder(connection: self)

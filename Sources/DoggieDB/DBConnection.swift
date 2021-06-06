@@ -39,6 +39,12 @@ public protocol DBConnection: AnyObject {
     
     func databases() -> EventLoopFuture<[String]>
     
+    func redisQuery() -> DBRedisQuery
+    
+    func redisPubSub() -> DBRedisPubSub
+    
+    func postgresPubSub() -> DBPostgresPubSub
+    
 }
 
 extension DBConnection {
@@ -113,12 +119,6 @@ public protocol DBSQLConnection: DBConnection {
     ) -> EventLoopFuture<DBQueryMetadata>
     
     func sqlQuery() -> SQLBuilder
-    
-    func redisQuery() -> DBRedisQuery
-    
-    func redisPubSub() -> DBRedisPubSub
-    
-    func postgresPubSub() -> DBPostgresPubSub
 }
 
 extension DBSQLConnection {
@@ -130,19 +130,9 @@ extension DBSQLConnection {
 
 extension DBConnection {
     
-    public func sqlQuery() -> SQLBuilder {
-        fatalError("unsupported operation")
-    }
-}
-
-extension DBConnection {
-    
     public func redisQuery() -> DBRedisQuery {
         fatalError("unsupported operation")
     }
-}
-
-extension DBConnection {
     
     public func redisPubSub() -> DBRedisPubSub {
         fatalError("unsupported operation")
