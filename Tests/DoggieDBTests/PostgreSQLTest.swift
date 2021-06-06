@@ -126,7 +126,7 @@ class PostgreSQLTest: XCTestCase {
                 .column(name: "column_2", type: "TEXT", optional: false)
                 .column(name: "column_3", type: "TEXT", optional: false)
                 .column(name: "column_4", type: "TEXT")
-                .column(name: "column_5", type: "TEXT", optional: false)
+                .column(name: "column_5", type: "TEXT", optional: false, unique: true)
                 .primaryKey("column_1", "column_3", "column_2")
                 .execute().wait()
             
