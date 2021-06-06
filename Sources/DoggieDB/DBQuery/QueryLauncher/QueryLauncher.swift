@@ -25,15 +25,15 @@
 
 public protocol QueryLauncher {
     
-    func execute<Result>(_ query: DBQueryProtocol) -> EventLoopFuture<Result>
+    func count(_ query: DBQueryFindExpression) -> EventLoopFuture<Int>
+    
+    func execute(_ query: DBQueryFindExpression) -> EventLoopFuture<[DBObject]>
 }
 
-extension DBQueryProtocol {
+extension DBConnection {
     
-    func execute<Result>() -> EventLoopFuture<Result> {
-        guard let launcher = self.connection as? QueryLauncher else {
-            return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-        }
-        return launcher.execute(self)
+    var launcher: QueryLauncher? {
+        
+        return nil
     }
 }
