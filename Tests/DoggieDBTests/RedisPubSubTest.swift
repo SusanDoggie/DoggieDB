@@ -85,7 +85,7 @@ class RedisPubSubTest: XCTestCase {
             
             try connection.redisPubSub().subscribe(toChannels: ["Test"]) { channel, message in
                 
-                promise.completeWith(message.map { $0.string ?? "" })
+                promise.succeed(message)
                 
             }.wait()
             
