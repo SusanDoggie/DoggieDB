@@ -25,6 +25,8 @@
 
 public struct DBQueryFindExpression: DBQueryProtocol {
     
+    public typealias Result = DBObject
+    
     public let connection: DBConnection
     
     public let table: String
@@ -36,6 +38,8 @@ public struct DBQueryFindExpression: DBQueryProtocol {
     public var limit: Int = .max
     
     public var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
+    
+    public var includes: Set<String> = []
     
     public var returning: DBQueryReturning = .after
     
@@ -56,4 +60,5 @@ extension DBQueryFindExpression: DBQueryFilterOption { }
 extension DBQueryFindExpression: DBQuerySkipOptions { }
 extension DBQueryFindExpression: DBQueryLimitOption { }
 extension DBQueryFindExpression: DBQuerySortOption { }
+extension DBQueryFindExpression: DBQueryIncludesOption { }
 extension DBQueryFindExpression: DBQueryReturningOption { }

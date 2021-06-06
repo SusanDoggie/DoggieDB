@@ -1,5 +1,5 @@
 //
-//  DBQuery.swift
+//  QueryLauncher.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,34 +23,17 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBQueryProtocol {
+public protocol _QueryLauncher {
     
-    associatedtype Result
-    
-    var connection: DBConnection { get }
-    
-    func execute() -> EventLoopFuture<Result>
+    func execute<Q: DBQueryProtocol>(_ query: Q) -> EventLoopFuture<Q.Result>
 }
 
 extension DBQueryProtocol {
     
-    public var eventLoopGroup: EventLoopGroup {
-        return connection.eventLoopGroup
-    }
-}
-
-public struct DBQuery {
-    
-    public let connection: DBConnection
-    
-    init(connection: DBConnection) {
-        self.connection = connection
-    }
-}
-
-extension DBConnection {
-    
-    public func query() -> DBQuery {
-        return DBQuery(connection: self)
+    public func execute() -> EventLoopFuture<Result> {
+        guard let launcher = self.connection as? _QueryLauncher else {
+            return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+        }
+        return launcher.execute(self)
     }
 }

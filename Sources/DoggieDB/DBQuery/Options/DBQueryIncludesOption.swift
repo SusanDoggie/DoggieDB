@@ -1,5 +1,5 @@
 //
-//  DBQuery.swift
+//  DBQueryIncludesOption.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,34 +23,18 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBQueryProtocol {
+public protocol DBQueryIncludesOption {
     
-    associatedtype Result
+    var includes: Set<String> { get set }
     
-    var connection: DBConnection { get }
-    
-    func execute() -> EventLoopFuture<Result>
 }
 
-extension DBQueryProtocol {
+extension DBQueryIncludesOption {
     
-    public var eventLoopGroup: EventLoopGroup {
-        return connection.eventLoopGroup
+    public func includes(_ includes: Set<String>) -> Self {
+        var result = self
+        result.includes = includes
+        return result
     }
-}
-
-public struct DBQuery {
     
-    public let connection: DBConnection
-    
-    init(connection: DBConnection) {
-        self.connection = connection
-    }
-}
-
-extension DBConnection {
-    
-    public func query() -> DBQuery {
-        return DBQuery(connection: self)
-    }
 }

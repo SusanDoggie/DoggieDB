@@ -1,5 +1,5 @@
 //
-//  DBQuery.swift
+//  DBObject.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,34 +23,6 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBQueryProtocol {
+public struct DBObject {
     
-    associatedtype Result
-    
-    var connection: DBConnection { get }
-    
-    func execute() -> EventLoopFuture<Result>
-}
-
-extension DBQueryProtocol {
-    
-    public var eventLoopGroup: EventLoopGroup {
-        return connection.eventLoopGroup
-    }
-}
-
-public struct DBQuery {
-    
-    public let connection: DBConnection
-    
-    init(connection: DBConnection) {
-        self.connection = connection
-    }
-}
-
-extension DBConnection {
-    
-    public func query() -> DBQuery {
-        return DBQuery(connection: self)
-    }
 }
