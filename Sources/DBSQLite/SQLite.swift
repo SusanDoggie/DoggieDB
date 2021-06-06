@@ -99,6 +99,10 @@ extension SQLiteDriver.Connection {
         return self.execute("SELECT name FROM sqlite_master WHERE type = 'view'").map { $0.map { $0["name"]!.string! } }
     }
     
+    func materializedViews() -> EventLoopFuture<[String]> {
+        return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
     func columns(of table: String) -> EventLoopFuture<[DBQueryRow]> {
         return self.execute("pragma table_info(\(identifier: table))")
     }
