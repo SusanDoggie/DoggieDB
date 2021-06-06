@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public protocol _QueryLauncher {
+public protocol QueryLauncher {
     
     func execute<Q: DBQueryProtocol>(_ query: Q) -> EventLoopFuture<Q.Result>
 }
@@ -31,7 +31,7 @@ public protocol _QueryLauncher {
 extension DBQueryProtocol {
     
     public func execute() -> EventLoopFuture<Result> {
-        guard let launcher = self.connection as? _QueryLauncher else {
+        guard let launcher = self.connection as? QueryLauncher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
         }
         return launcher.execute(self)
