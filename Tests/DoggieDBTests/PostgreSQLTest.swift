@@ -29,7 +29,7 @@ import XCTest
 class PostgreSQLTest: XCTestCase {
     
     var eventLoopGroup: MultiThreadedEventLoopGroup!
-    var connection: DBConnection!
+    var connection: DBSQLConnection!
     
     override func setUpWithError() throws {
         
@@ -51,7 +51,7 @@ class PostgreSQLTest: XCTestCase {
                 ]
             }
             
-            self.connection = try Database.connect(url: url, on: eventLoopGroup).wait()
+            self.connection = try Database.connect(url: url, on: eventLoopGroup).wait() as? DBSQLConnection
             
             print("POSTGRES:", try connection.version().wait())
             

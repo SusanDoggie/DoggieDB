@@ -135,6 +135,41 @@ extension PostgreSQLDriver.Connection {
         return self.execute(sql)
     }
     
+    func primaryKey(of table: String) -> EventLoopFuture<[String]> {
+
+        var sql: SQLRaw = """
+            SELECT
+                a.attname AS column_name,
+                k.indseq AS seq
+            FROM
+                pg_class t,
+                pg_index ix,
+                UNNEST(ix.indkey) WITH ORDINALITY k(attnum, indseq),
+                pg_attribute a
+            WHERE
+                t.oid = ix.indrelid
+                AND a.attrelid = t.oid
+                AND a.attnum = k.attnum
+                AND t.relkind = 'r'
+            """
+        
+        if let split = table.firstIndex(of: ".") {
+            
+            let _schema = table.prefix(upTo: split)
+            let _name = table.suffix(from: split).dropFirst()
+            
+            sql.append(" AND n.nspname = \(_schema) AND t.relname = \(_name)")
+            
+        } else {
+            
+            sql.append(" AND t.relname = \(table)")
+        }
+        
+        return self.execute(sql).map {
+            $0.sorted { $0["seq"]?.intValue ?? .max }.compactMap { $0["column_name"]?.string }
+        }
+    }
+    
     func indices(of table: String) -> EventLoopFuture<[DBQueryRow]> {
         
         var sql: SQLRaw = """
