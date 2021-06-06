@@ -136,7 +136,7 @@ extension PostgreSQLDriver.Connection {
     }
     
     func primaryKey(of table: String) -> EventLoopFuture<[String]> {
-
+        
         var sql: SQLRaw = """
             SELECT
                 a.attname AS column_name,

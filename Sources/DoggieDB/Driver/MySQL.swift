@@ -113,6 +113,35 @@ extension MySQLDriver.Connection {
         return self.execute("SHOW COLUMNS FROM \(identifier: table)")
     }
     
+    func primaryKey(of table: String) -> EventLoopFuture<[String]> {
+        
+        var sql: SQLRaw = """
+            SELECT
+                COLUMN_NAME,
+                SEQ_IN_INDEX
+            FROM
+                INFORMATION_SCHEMA.STATISTICS
+            WHERE
+                INDEX_NAME = 'PRIMARY'
+            """
+        
+        if let split = table.firstIndex(of: ".") {
+            
+            let _schema = table.prefix(upTo: split)
+            let _name = table.suffix(from: split).dropFirst()
+            
+            sql.append(" AND TABLE_SCHEMA = \(_schema) AND TABLE_NAME = \(_name)")
+            
+        } else {
+            
+            sql.append(" AND TABLE_NAME = \(table)")
+        }
+        
+        return self.execute(sql).map {
+            $0.sorted { $0["SEQ_IN_INDEX"]?.intValue ?? .max }.compactMap { $0["COLUMN_NAME"]?.string }
+        }
+    }
+    
     func indices(of table: String) -> EventLoopFuture<[DBQueryRow]> {
         
         var sql: SQLRaw = "SELECT * FROM INFORMATION_SCHEMA.STATISTICS"

@@ -121,13 +121,6 @@ public protocol DBSQLConnection: DBConnection {
     func sqlQuery() -> SQLBuilder
 }
 
-extension DBSQLConnection {
-    
-    public func primaryKey(of table: String) -> EventLoopFuture<[String]> {
-        return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-}
-
 extension DBConnection {
     
     public func redisQuery() -> DBRedisQuery {

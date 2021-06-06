@@ -107,6 +107,22 @@ extension SQLiteDriver.Connection {
         return self.execute("pragma table_info(\(identifier: table))")
     }
     
+    func primaryKey(of table: String) -> EventLoopFuture<[String]> {
+        
+        let sql: SQLRaw = """
+            SELECT
+                ii.seqno,
+                ii.name AS column_name
+            FROM pragma_index_list(\(identifier: table)) AS il,
+                pragma_index_info(il.name) AS ii
+            WHERE il.origin = 'pk'
+            """
+        
+        return self.execute(sql).map {
+            $0.sorted { $0["seqno"]?.intValue ?? .max }.compactMap { $0["column_name"]?.string }
+        }
+    }
+    
     func indices(of table: String) -> EventLoopFuture<[DBQueryRow]> {
         return self.execute("""
             SELECT

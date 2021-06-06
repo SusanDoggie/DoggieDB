@@ -117,6 +117,30 @@ class PostgreSQLTest: XCTestCase {
         }
     }
     
+    func testPrimaryKey() throws {
+        
+        do {
+            
+            _ = try connection.sqlQuery().createTable("testPrimaryKey")
+                .column(name: "column_1", type: "INTEGER", optional: false)
+                .column(name: "column_2", type: "TEXT", optional: false)
+                .column(name: "column_3", type: "TEXT")
+                .column(name: "column_4", type: "TEXT")
+                .column(name: "column_5", type: "TEXT", optional: false)
+                .primaryKey("column_1", "column_2")
+                .execute().wait()
+            
+            let primaryKey = try connection.primaryKey(of: "testPrimaryKey").wait()
+            
+            XCTAssertEqual(primaryKey, ["column_1", "column_2"])
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
     func testBindInt() throws {
         
         do {
