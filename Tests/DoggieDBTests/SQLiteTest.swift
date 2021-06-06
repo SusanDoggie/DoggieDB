@@ -119,15 +119,15 @@ class SQLiteTest: XCTestCase {
             _ = try connection.sqlQuery().createTable("testPrimaryKey")
                 .column(name: "column_1", type: "INTEGER", optional: false)
                 .column(name: "column_2", type: "TEXT", optional: false)
-                .column(name: "column_3", type: "TEXT")
+                .column(name: "column_3", type: "TEXT", optional: false)
                 .column(name: "column_4", type: "TEXT")
                 .column(name: "column_5", type: "TEXT", optional: false)
-                .primaryKey("column_1", "column_2")
+                .primaryKey("column_1", "column_3", "column_2")
                 .execute().wait()
             
             let primaryKey = try connection.primaryKey(of: "testPrimaryKey").wait()
             
-            XCTAssertEqual(primaryKey, ["column_1", "column_2"])
+            XCTAssertEqual(primaryKey, ["column_1", "column_3", "column_2"])
             
         } catch {
             
