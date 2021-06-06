@@ -65,29 +65,6 @@ extension DBConnection {
     }
 }
 
-extension DBConnection {
-    
-    public func execute(
-        _ sql: SQLRaw
-    ) -> EventLoopFuture<[DBQueryRow]> {
-        return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-    
-    public func execute(
-        _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) -> Void
-    ) -> EventLoopFuture<DBQueryMetadata> {
-        return self.execute(sql, onRow: onRow as (DBQueryRow) throws -> Void)
-    }
-    
-    public func execute(
-        _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) throws -> Void
-    ) -> EventLoopFuture<DBQueryMetadata> {
-        return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-}
-
 public protocol DBSQLConnection: DBConnection {
     
     func tables() -> EventLoopFuture<[String]>
@@ -119,6 +96,29 @@ public protocol DBSQLConnection: DBConnection {
     ) -> EventLoopFuture<DBQueryMetadata>
     
     func sqlQuery() -> SQLBuilder
+}
+
+extension DBSQLConnection {
+    
+    public func execute(
+        _ sql: SQLRaw
+    ) -> EventLoopFuture<[DBQueryRow]> {
+        return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
+    
+    public func execute(
+        _ sql: SQLRaw,
+        onRow: @escaping (DBQueryRow) -> Void
+    ) -> EventLoopFuture<DBQueryMetadata> {
+        return self.execute(sql, onRow: onRow as (DBQueryRow) throws -> Void)
+    }
+    
+    public func execute(
+        _ sql: SQLRaw,
+        onRow: @escaping (DBQueryRow) throws -> Void
+    ) -> EventLoopFuture<DBQueryMetadata> {
+        return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
 }
 
 extension DBConnection {

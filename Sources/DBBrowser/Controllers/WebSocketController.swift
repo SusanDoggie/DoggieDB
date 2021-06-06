@@ -106,13 +106,13 @@ extension WebSocketController {
             
         case "runCommand":
             
-            guard let connection = session.connection else {
-                self.send(ws, ["success": false, "token": message["token"], "error": .string("database not connected")])
-                return
-            }
-            
             switch message["type"].stringValue {
             case "sql":
+                
+                guard let connection = session.connection as? DBSQLConnection else {
+                    self.send(ws, ["success": false, "token": message["token"], "error": .string("database not connected")])
+                    return
+                }
                 
                 guard let command = message["command"].stringValue else {
                     self.send(ws, ["success": false, "token": message["token"], "error": .string("invalid command")])
@@ -138,6 +138,11 @@ extension WebSocketController {
                 }
                 
             case "mongo":
+                
+                guard let connection = session.connection else {
+                    self.send(ws, ["success": false, "token": message["token"], "error": .string("database not connected")])
+                    return
+                }
                 
                 guard let command = message["command"].documentValue else {
                     self.send(ws, ["success": false, "token": message["token"], "error": .string("invalid command")])

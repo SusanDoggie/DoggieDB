@@ -66,7 +66,7 @@ enum SQLBuilderComponent {
 
 public struct SQLBuilder {
     
-    let connection: DBConnection?
+    let connection: DBSQLConnection?
     
     var components: [SQLBuilderComponent] = []
     
@@ -74,7 +74,7 @@ public struct SQLBuilder {
         self.connection = nil
     }
     
-    init(connection: DBConnection) {
+    init(connection: DBSQLConnection) {
         self.connection = connection
     }
 }
