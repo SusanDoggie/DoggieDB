@@ -56,6 +56,24 @@ extension DBConnection {
 
 extension DBConnection {
     
+    public func redisQuery() -> DBRedisQuery {
+        fatalError("unsupported operation")
+    }
+    
+    public func redisPubSub() -> DBRedisPubSub {
+        fatalError("unsupported operation")
+    }
+}
+
+extension DBConnection {
+    
+    public func postgresPubSub() -> DBPostgresPubSub {
+        fatalError("unsupported operation")
+    }
+}
+
+extension DBConnection {
+    
     public func version() -> EventLoopFuture<String> {
         return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
@@ -118,23 +136,5 @@ extension DBSQLConnection {
         onRow: @escaping (DBQueryRow) throws -> Void
     ) -> EventLoopFuture<DBQueryMetadata> {
         return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-    }
-}
-
-extension DBConnection {
-    
-    public func redisQuery() -> DBRedisQuery {
-        fatalError("unsupported operation")
-    }
-    
-    public func redisPubSub() -> DBRedisPubSub {
-        fatalError("unsupported operation")
-    }
-}
-
-extension DBConnection {
-    
-    public func postgresPubSub() -> DBPostgresPubSub {
-        fatalError("unsupported operation")
     }
 }
