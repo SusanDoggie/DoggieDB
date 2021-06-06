@@ -26,7 +26,7 @@
 import Utils
 import RediStack
 
-extension DBValue {
+extension DBData {
     
     init(_ value: RESPValue) throws {
         switch value {
@@ -44,7 +44,7 @@ extension DBValue {
         case .bulkString(.none): self.init(Data())
             
         case let .integer(value): self.init(value)
-        case let .array(array): try self.init(array.map(DBValue.init))
+        case let .array(array): try self.init(array.map(DBData.init))
         case let .error(error): throw error
         }
     }
@@ -52,7 +52,7 @@ extension DBValue {
 
 extension RESPValue {
     
-    init(_ value: DBValue) throws {
+    init(_ value: DBData) throws {
         switch value.base {
         case .null: self = .null
         case let .boolean(value): self = .integer(value ? 1 : 0)

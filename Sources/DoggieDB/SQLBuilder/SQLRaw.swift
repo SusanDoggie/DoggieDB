@@ -43,19 +43,19 @@ enum SQLRawComponent: Hashable {
     
     case decimal(Decimal)
     
-    case bind(DBValue)
+    case bind(DBData)
 }
 
 extension SQLRawComponent {
     
-    init(_ value: DBValue) {
+    init(_ value: DBData) {
         switch value.base {
         case .null: self = .null
         case let .boolean(value): self = .boolean(value)
         case let .signed(value): self = .signed(value)
         case let .unsigned(value): self = .unsigned(value)
-        case let .number(value): self = value.isFinite ? .number(value) : .bind(DBValue(value))
-        case let .decimal(value): self = value.isFinite ? .decimal(value) : .bind(DBValue(value))
+        case let .number(value): self = value.isFinite ? .number(value) : .bind(DBData(value))
+        case let .decimal(value): self = value.isFinite ? .decimal(value) : .bind(DBData(value))
         default: self = .bind(value)
         }
     }
@@ -114,11 +114,11 @@ public struct SQLRaw: Hashable {
         self.components = string.isEmpty ? [] : [.string(String(string))]
     }
     
-    public init(_ value: DBValue) {
+    public init(_ value: DBData) {
         self.components = [SQLRawComponent(value)]
     }
     
-    public init(bind value: DBValue) {
+    public init(bind value: DBData) {
         self.components = [.bind(value)]
     }
 }
@@ -173,12 +173,12 @@ extension SQLRaw: ExpressibleByStringInterpolation {
             self.components.append(contentsOf: raw.components)
         }
         
-        public mutating func appendInterpolation<T: DBValueConvertible>(_ value: T) {
-            self.components.append(SQLRawComponent(value.toDBValue()))
+        public mutating func appendInterpolation<T: DBDataConvertible>(_ value: T) {
+            self.components.append(SQLRawComponent(value.toDBData()))
         }
         
-        public mutating func appendInterpolation<T: DBValueConvertible>(bind value: T) {
-            self.components.append(.bind(value.toDBValue()))
+        public mutating func appendInterpolation<T: DBDataConvertible>(bind value: T) {
+            self.components.append(.bind(value.toDBData()))
         }
     }
     

@@ -55,7 +55,7 @@ enum SQLBuilderComponent {
     
     case string(String)
     
-    case value(DBValue)
+    case value(DBData)
     
     case autoIncrement
     
@@ -191,7 +191,7 @@ extension SQLBuilder {
         self.components.append(.string(String(value)))
     }
     
-    mutating func append(_ value: DBValue) {
+    mutating func append(_ value: DBData) {
         self.components.append(.value(value))
     }
 }

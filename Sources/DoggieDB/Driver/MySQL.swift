@@ -209,8 +209,8 @@ extension DBQueryMetadata {
     
     init(_ metadata: MySQLQueryMetadata) {
         self.init([
-            "affectedRows": DBValue(metadata.affectedRows),
-            "lastInsertID": metadata.lastInsertID.map(DBValue.init) ?? nil,
+            "affectedRows": DBData(metadata.affectedRows),
+            "lastInsertID": metadata.lastInsertID.map(DBData.init) ?? nil,
         ])
     }
 }
@@ -229,7 +229,7 @@ extension MySQLRow: DBRowConvertable {
         return self.columnDefinitions.contains { $0.name == column }
     }
     
-    public func value(_ column: String) -> DBValue? {
-        return try? self.column(column).map(DBValue.init)
+    public func value(_ column: String) -> DBData? {
+        return try? self.column(column).map(DBData.init)
     }
 }

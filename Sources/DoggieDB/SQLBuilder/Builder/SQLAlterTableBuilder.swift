@@ -105,7 +105,7 @@ extension SQLAlterTableBuilder {
         name: String,
         type: String,
         optional: Bool = true,
-        default: DBValue? = nil,
+        default: DBData? = nil,
         autoIncrement: Bool = false,
         unique: Bool = false,
         primaryKey: Bool = false,

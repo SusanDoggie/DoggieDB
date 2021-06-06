@@ -58,16 +58,16 @@ extension SQLDialect {
 
 extension DBConnection {
     
-    public func serialize(_ sql: SQLRaw) -> (String, [DBValue])? {
+    public func serialize(_ sql: SQLRaw) -> (String, [DBData])? {
         
         guard let dialect = self.driver.sqlDialect else { return nil }
         
         var raw = ""
-        var binds: [DBValue] = []
+        var binds: [DBData] = []
         
         if dialect.repeatablePlaceholder {
             
-            var mapping: [DBValue: String] = [:]
+            var mapping: [DBData: String] = [:]
             
             for component in sql.components {
                 switch component {

@@ -26,7 +26,7 @@
 import Utils
 import SQLiteNIO
 
-extension DBValue {
+extension DBData {
     
     init(_ value: SQLiteData) {
         switch value {
@@ -41,7 +41,7 @@ extension DBValue {
 
 extension SQLiteData {
     
-    init(_ value: DBValue) throws {
+    init(_ value: DBData) throws {
         switch value.base {
         case .null: self = .null
         case let .boolean(value): self = .integer(value ? 1 : 0)

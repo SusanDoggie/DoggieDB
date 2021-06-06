@@ -25,22 +25,22 @@
 
 import Utils
 
-extension Dictionary where Key == String, Value == DBValue {
+extension Dictionary where Key == String, Value == DBData {
     
     init(_ document: BSONDocument) throws {
         self.init()
         for (key, value) in document {
-            self[key] = try DBValue(value)
+            self[key] = try DBData(value)
         }
     }
 }
 
-extension OrderedDictionary where Key == String, Value == DBValue {
+extension OrderedDictionary where Key == String, Value == DBData {
     
     init(_ document: BSONDocument) throws {
         self.init()
         for (key, value) in document {
-            self[key] = try DBValue(value)
+            self[key] = try DBData(value)
         }
     }
 }
@@ -61,11 +61,11 @@ extension BSONDocument {
         }
     }
     
-    public init(_ dictionary: [String: DBValue]) throws {
+    public init(_ dictionary: [String: DBData]) throws {
         try self.init(dictionary.mapValues(BSON.init))
     }
     
-    public init(_ dictionary: OrderedDictionary<String, DBValue>) throws {
+    public init(_ dictionary: OrderedDictionary<String, DBData>) throws {
         try self.init(dictionary.mapValues(BSON.init))
     }
 }
@@ -81,7 +81,7 @@ extension BSON {
     }
 }
 
-extension DBValue {
+extension DBData {
     
     public init(_ value: BSON) throws {
         switch value {
@@ -105,7 +105,7 @@ extension DBValue {
             
         case let .string(value): self.init(value)
         case let .document(value): try self.init(Dictionary(value))
-        case let .array(value): try self.init(value.map(DBValue.init))
+        case let .array(value): try self.init(value.map(DBData.init))
         case let .binary(value):
             switch value.subtype {
             case .generic, .binaryDeprecated: self.init(value.data)
@@ -132,7 +132,7 @@ extension DBValue {
 
 extension BSON {
     
-    public init(_ value: DBValue) throws {
+    public init(_ value: DBData) throws {
         switch value.base {
         case .null: self = .null
         case let .boolean(value): self = .bool(value)

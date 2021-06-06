@@ -64,7 +64,7 @@ extension DBRedisPubSub {
     }
     
     public func publish(
-        _ message: DBValue,
+        _ message: DBData,
         to channel: String
     ) -> EventLoopFuture<Int> {
         do {
@@ -81,14 +81,14 @@ extension DBRedisPubSub {
     
     public func subscribe(
         toChannels channels: [String],
-        messageReceiver receiver: @escaping (_ channel: String, _ message: Result<DBValue, Error>) -> Void,
+        messageReceiver receiver: @escaping (_ channel: String, _ message: Result<DBData, Error>) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) -> EventLoopFuture<Void> {
         
         return self.connection.subscribe(
             to: channels.map { RedisChannelName($0) },
-            messageReceiver: { publisher, message in receiver(publisher.rawValue, Result { try DBValue(message) }) },
+            messageReceiver: { publisher, message in receiver(publisher.rawValue, Result { try DBData(message) }) },
             onSubscribe: subscribeHandler,
             onUnsubscribe: unsubscribeHandler
         )
@@ -100,14 +100,14 @@ extension DBRedisPubSub {
     
     public func subscribe(
         toPatterns patterns: [String],
-        messageReceiver receiver: @escaping (_ channel: String, _ message: Result<DBValue, Error>) -> Void,
+        messageReceiver receiver: @escaping (_ channel: String, _ message: Result<DBData, Error>) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) -> EventLoopFuture<Void> {
         
         return self.connection.psubscribe(
             to: patterns,
-            messageReceiver: { publisher, message in receiver(publisher.rawValue, Result { try DBValue(message) }) },
+            messageReceiver: { publisher, message in receiver(publisher.rawValue, Result { try DBData(message) }) },
             onSubscribe: subscribeHandler,
             onUnsubscribe: unsubscribeHandler
         )

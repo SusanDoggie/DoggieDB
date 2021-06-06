@@ -76,7 +76,7 @@ extension PostgresData {
     }
 }
 
-extension DBValue {
+extension DBData {
     
     init(_ value: PostgresData) throws {
         switch value.type {
@@ -84,32 +84,32 @@ extension DBValue {
         case .bool:
             
             guard let bool = value.bool else { throw Database.Error.unsupportedType }
-            self = DBValue(bool)
+            self = DBData(bool)
             
         case .bytea:
             
             guard let bytes = value.bytes else { throw Database.Error.unsupportedType }
-            self = DBValue(Data(bytes))
+            self = DBData(Data(bytes))
             
         case .char:
             
             guard let value = value.uint8 else { throw Database.Error.unsupportedType }
-            self = DBValue(value)
+            self = DBData(value)
             
         case .int8:
             
             guard let value = value.int64 else { throw Database.Error.unsupportedType }
-            self = DBValue(value)
+            self = DBData(value)
             
         case .int2:
             
             guard let value = value.int16 else { throw Database.Error.unsupportedType }
-            self = DBValue(value)
+            self = DBData(value)
             
         case .int4:
             
             guard let value = value.int32 else { throw Database.Error.unsupportedType }
-            self = DBValue(value)
+            self = DBData(value)
             
             
         case .name,
@@ -118,23 +118,23 @@ extension DBValue {
              .text:
             
             guard let string = value.string else { throw Database.Error.unsupportedType }
-            self = DBValue(string)
+            self = DBData(string)
             
         case .float4:
             
             guard let float = value.float else { throw Database.Error.unsupportedType }
-            self = DBValue(float)
+            self = DBData(float)
             
         case .float8:
             
             guard let double = value.double else { throw Database.Error.unsupportedType }
-            self = DBValue(double)
+            self = DBData(double)
             
         case .money,
              .numeric:
             
             guard let decimal = value.decimal else { throw Database.Error.unsupportedType }
-            self = DBValue(decimal)
+            self = DBData(decimal)
             
         case .date:
             
@@ -144,10 +144,10 @@ extension DBValue {
                 guard let string = value.string else { throw Database.Error.unsupportedType }
                 guard let dateComponents = PostgresData._decodeDateString(string) else { throw Database.Error.unsupportedType }
                 
-                self = DBValue(dateComponents)
+                self = DBData(dateComponents)
                 
             case .binary:
-                self = value.date.map { DBValue($0) } ?? nil
+                self = value.date.map { DBData($0) } ?? nil
             }
             
         case .time:
@@ -158,7 +158,7 @@ extension DBValue {
                 guard let string = value.string else { throw Database.Error.unsupportedType }
                 guard let dateComponents = PostgresData._decodeTimeString(string, withTimeZone: false) else { throw Database.Error.unsupportedType }
                 
-                self = DBValue(dateComponents)
+                self = DBData(dateComponents)
                 
             case .binary:
                 
@@ -174,7 +174,7 @@ extension DBValue {
                     second: Int(microseconds / 1_000_000) % 60,
                     nanosecond: Int(microseconds % 1_000_000) * 1000)
                 
-                self = DBValue(dateComponents)
+                self = DBData(dateComponents)
             }
             
         case .timetz:
@@ -185,7 +185,7 @@ extension DBValue {
                 guard let string = value.string else { throw Database.Error.unsupportedType }
                 guard let dateComponents = PostgresData._decodeTimeString(string, withTimeZone: true) else { throw Database.Error.unsupportedType }
                 
-                self = DBValue(dateComponents)
+                self = DBData(dateComponents)
                 
             case .binary:
                 
@@ -207,7 +207,7 @@ extension DBValue {
                     second: Int(microseconds / 1_000_000) % 60,
                     nanosecond: Int(microseconds % 1_000_000) * 1000)
                 
-                self = DBValue(dateComponents)
+                self = DBData(dateComponents)
             }
             
         case .timestamp:
@@ -218,10 +218,10 @@ extension DBValue {
                 guard let string = value.string else { throw Database.Error.unsupportedType }
                 guard let date = PostgresData._decodeTimestampString(string, withTimeZone: false) else { throw Database.Error.unsupportedType }
                 
-                self = DBValue(date)
+                self = DBData(date)
                 
             case .binary:
-                self = value.date.map { DBValue($0) } ?? nil
+                self = value.date.map { DBData($0) } ?? nil
             }
             
         case .timestamptz:
@@ -232,16 +232,16 @@ extension DBValue {
                 guard let string = value.string else { throw Database.Error.unsupportedType }
                 guard let date = PostgresData._decodeTimestampString(string, withTimeZone: true) else { throw Database.Error.unsupportedType }
                 
-                self = DBValue(date)
+                self = DBData(date)
                 
             case .binary:
-                self = value.date.map { DBValue($0) } ?? nil
+                self = value.date.map { DBData($0) } ?? nil
             }
             
         case .uuid:
             
             guard let uuid = value.uuid else { throw Database.Error.unsupportedType }
-            self = DBValue(uuid)
+            self = DBData(uuid)
             
         case .boolArray,
              .byteaArray,
@@ -260,17 +260,17 @@ extension DBValue {
              .jsonbArray:
             
             guard let array = value.array else { throw Database.Error.unsupportedType }
-            self = try DBValue(array.map { try DBValue($0) })
+            self = try DBData(array.map { try DBData($0) })
             
         case .json:
             
             guard let json = try? value.json(as: Json.self) else { throw Database.Error.unsupportedType }
-            self = DBValue(json)
+            self = DBData(json)
             
         case .jsonb:
             
             guard let json = try? value.jsonb(as: Json.self) else { throw Database.Error.unsupportedType }
-            self = DBValue(json)
+            self = DBData(json)
             
         default:
             
@@ -278,7 +278,7 @@ extension DBValue {
             case .text:
                 
                 guard let string = value.string else { throw Database.Error.unsupportedType }
-                self = DBValue(string)
+                self = DBData(string)
                 
             case .binary: throw Database.Error.unsupportedType
             }
@@ -288,7 +288,7 @@ extension DBValue {
 
 extension PostgresData {
     
-    init(_ value: DBValue) throws {
+    init(_ value: DBData) throws {
         switch value.base {
         case .null: self = .null
         case let .boolean(value): self.init(bool: value)
@@ -368,7 +368,7 @@ extension PostgresData {
     }
 }
 
-extension DBValue {
+extension DBData {
     
     fileprivate var _elementType: PostgresDataType? {
         switch self.base {
@@ -386,7 +386,7 @@ extension DBValue {
     }
 }
 
-extension Array where Element == DBValue {
+extension Array where Element == DBData {
     
     fileprivate var _postgresArray: ([PostgresData], PostgresDataType)? {
         guard let type = self.first?._elementType else { return nil }

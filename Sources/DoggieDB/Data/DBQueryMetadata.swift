@@ -25,9 +25,9 @@
 
 public struct DBQueryMetadata {
     
-    let metadata: [String: DBValue]
+    let metadata: [String: DBData]
     
-    public init(_ metadata: [String: DBValue] = [:]) {
+    public init(_ metadata: [String: DBData] = [:]) {
         self.metadata = metadata
     }
 }
@@ -38,11 +38,11 @@ extension DBQueryMetadata {
         return self.metadata.count
     }
     
-    public var keys: Dictionary<String, DBValue>.Keys {
+    public var keys: Dictionary<String, DBData>.Keys {
         return self.metadata.keys
     }
     
-    public subscript(_ key: String) -> DBValue? {
+    public subscript(_ key: String) -> DBData? {
         return self.metadata[key]
     }
 }

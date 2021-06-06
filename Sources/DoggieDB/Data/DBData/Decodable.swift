@@ -25,7 +25,7 @@
 
 import Utils
 
-extension DBValue {
+extension DBData {
     
     /// The strategy to use for decoding `Date` values.
     public enum DateDecodingStrategy {
@@ -69,7 +69,7 @@ extension DBValue {
     }
 }
 
-extension DBValue {
+extension DBData {
     
     public func decode<T: Decodable>(_ type: T.Type, options: DecoderOptions = DecoderOptions()) throws -> T {
         return try T(from: _Decoder(value: self, codingPath: [], options: options))
@@ -77,13 +77,13 @@ extension DBValue {
     
     struct _Decoder: Decoder {
         
-        let value: DBValue
+        let value: DBData
         
         let codingPath: [Swift.CodingKey]
         
         let options: DecoderOptions
         
-        init(value: DBValue, codingPath: [Swift.CodingKey], options: DecoderOptions) {
+        init(value: DBData, codingPath: [Swift.CodingKey], options: DecoderOptions) {
             self.value = value
             self.codingPath = codingPath
             self.options = options
@@ -113,13 +113,13 @@ extension DBValue {
     
     struct _KeyedDecodingContainer<Key: Swift.CodingKey> {
         
-        let value: [String : DBValue]
+        let value: [String : DBData]
         
         let codingPath: [Swift.CodingKey]
         
         let options: DecoderOptions
         
-        init(dictionary: [String : DBValue], codingPath: [Swift.CodingKey], options: DecoderOptions) {
+        init(dictionary: [String : DBData], codingPath: [Swift.CodingKey], options: DecoderOptions) {
             self.value = dictionary
             self.codingPath = codingPath
             self.options = options
@@ -128,7 +128,7 @@ extension DBValue {
     
     struct _UnkeyedDecodingContainer {
         
-        let value: [DBValue]
+        let value: [DBData]
         
         let codingPath: [Swift.CodingKey]
         
@@ -136,7 +136,7 @@ extension DBValue {
         
         var currentIndex: Int = 0
         
-        init(array: [DBValue], codingPath: [Swift.CodingKey], options: DecoderOptions) {
+        init(array: [DBData], codingPath: [Swift.CodingKey], options: DecoderOptions) {
             self.value = array
             self.codingPath = codingPath
             self.options = options
@@ -144,7 +144,7 @@ extension DBValue {
     }
 }
 
-extension DBValue._Decoder: SingleValueDecodingContainer {
+extension DBData._Decoder: SingleValueDecodingContainer {
     
     var userInfo: [CodingUserInfoKey: Any] {
         return options.userInfo
@@ -438,7 +438,7 @@ extension DBValue._Decoder: SingleValueDecodingContainer {
     }
 }
 
-extension DBValue._KeyedDecodingContainer: KeyedDecodingContainerProtocol {
+extension DBData._KeyedDecodingContainer: KeyedDecodingContainerProtocol {
     
     var allKeys: [Key] {
         return value.keys.compactMap { Key(stringValue: $0) }
@@ -466,7 +466,7 @@ extension DBValue._KeyedDecodingContainer: KeyedDecodingContainerProtocol {
         var codingPath = self.codingPath
         codingPath.append(key)
         
-        let container = DBValue._KeyedDecodingContainer<NestedKey>(dictionary: dictionary, codingPath: codingPath, options: options)
+        let container = DBData._KeyedDecodingContainer<NestedKey>(dictionary: dictionary, codingPath: codingPath, options: options)
         return KeyedDecodingContainer(container)
     }
     
@@ -478,7 +478,7 @@ extension DBValue._KeyedDecodingContainer: KeyedDecodingContainerProtocol {
         var codingPath = self.codingPath
         codingPath.append(key)
         
-        return DBValue._UnkeyedDecodingContainer(array: array, codingPath: codingPath, options: options)
+        return DBData._UnkeyedDecodingContainer(array: array, codingPath: codingPath, options: options)
     }
     
     func _superDecoder(forKey key: __owned CodingKey) throws -> Decoder {
@@ -488,11 +488,11 @@ extension DBValue._KeyedDecodingContainer: KeyedDecodingContainerProtocol {
         var codingPath = self.codingPath
         codingPath.append(key)
         
-        return DBValue._Decoder(value: entry, codingPath: codingPath, options: options)
+        return DBData._Decoder(value: entry, codingPath: codingPath, options: options)
     }
     
     func superDecoder() throws -> Decoder {
-        return try _superDecoder(forKey: DBValue.CodingKey(stringValue: "super"))
+        return try _superDecoder(forKey: DBData.CodingKey(stringValue: "super"))
     }
     
     func superDecoder(forKey key: Key) throws -> Decoder {
@@ -500,7 +500,7 @@ extension DBValue._KeyedDecodingContainer: KeyedDecodingContainerProtocol {
     }
 }
 
-extension DBValue._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
+extension DBData._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
     
     var count: Int? {
         return value.count
@@ -541,11 +541,11 @@ extension DBValue._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         guard case let .dictionary(dictionary) = self.value[self.currentIndex].base else { throw Database.Error.unsupportedType }
         
         var codingPath = self.codingPath
-        codingPath.append(DBValue.CodingKey(intValue: self.currentIndex))
+        codingPath.append(DBData.CodingKey(intValue: self.currentIndex))
         
         self.currentIndex += 1
         
-        let container = DBValue._KeyedDecodingContainer<NestedKey>(dictionary: dictionary, codingPath: codingPath, options: options)
+        let container = DBData._KeyedDecodingContainer<NestedKey>(dictionary: dictionary, codingPath: codingPath, options: options)
         return KeyedDecodingContainer(container)
     }
     
@@ -556,10 +556,10 @@ extension DBValue._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         guard case let .array(array) = self.value[self.currentIndex].base else { throw Database.Error.unsupportedType }
         
         var codingPath = self.codingPath
-        codingPath.append(DBValue.CodingKey(intValue: self.currentIndex))
+        codingPath.append(DBData.CodingKey(intValue: self.currentIndex))
         
         self.currentIndex += 1
-        return DBValue._UnkeyedDecodingContainer(array: array, codingPath: codingPath, options: options)
+        return DBData._UnkeyedDecodingContainer(array: array, codingPath: codingPath, options: options)
     }
     
     mutating func superDecoder() throws -> Decoder {
@@ -569,9 +569,9 @@ extension DBValue._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         let value = self.value[self.currentIndex]
         
         var codingPath = self.codingPath
-        codingPath.append(DBValue.CodingKey(intValue: self.currentIndex))
+        codingPath.append(DBData.CodingKey(intValue: self.currentIndex))
         
         self.currentIndex += 1
-        return DBValue._Decoder(value: value, codingPath: codingPath, options: options)
+        return DBData._Decoder(value: value, codingPath: codingPath, options: options)
     }
 }

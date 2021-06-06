@@ -31,7 +31,7 @@ public protocol DBRowConvertable {
     
     func contains(column: String) -> Bool
     
-    func value(_ column: String) -> DBValue?
+    func value(_ column: String) -> DBData?
 }
 
 public struct DBQueryRow {
@@ -46,7 +46,7 @@ public struct DBQueryRow {
 extension DBQueryRow: CustomStringConvertible {
     
     public var description: String {
-        var dict: [String: DBValue] = [:]
+        var dict: [String: DBData] = [:]
         for key in row.keys {
             dict[key] = row.value(key)
         }
@@ -68,7 +68,7 @@ extension DBQueryRow {
         return self.row.contains(column: column)
     }
     
-    public subscript(_ column: String) -> DBValue? {
+    public subscript(_ column: String) -> DBData? {
         return self.row.value(column)
     }
     
@@ -88,10 +88,10 @@ extension BSONDocument {
     }
 }
 
-extension DBValue {
+extension DBData {
     
     public init(_ row: DBQueryRow) {
-        var dict: [String: DBValue] = [:]
+        var dict: [String: DBData] = [:]
         for key in row.keys {
             guard let value = row[key] else { continue }
             dict[key] = value
