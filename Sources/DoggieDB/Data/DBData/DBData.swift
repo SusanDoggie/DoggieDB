@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-import Utils
+@_implementationOnly import Utils
 
 public enum DBDataType: Hashable {
     

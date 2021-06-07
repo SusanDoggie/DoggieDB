@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-import Utils
+@_implementationOnly import Utils
 
 extension Dictionary where Key == String, Value == DBData {
     
