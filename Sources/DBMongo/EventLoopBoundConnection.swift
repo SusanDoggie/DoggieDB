@@ -101,6 +101,10 @@ extension DBMongoEventLoopBoundConnection {
 
 extension DBMongoEventLoopBoundConnection {
     
+    func version() -> EventLoopFuture<String> {
+        return connection.version()
+    }
+    
     func databases() -> EventLoopFuture<[String]> {
         return client.listDatabaseNames()
     }
