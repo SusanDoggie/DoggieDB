@@ -25,10 +25,15 @@
 
 @_implementationOnly import Private
 
+public protocol DBQueryProvider {
+    
+    var _launcher: Any { get }
+}
+
 extension DBConnection {
     
     var launcher: DBQueryLauncher? {
         guard let provider = self as? DBQueryProvider else { return nil }
-        return provider._launcher
+        return provider._launcher as? DBQueryLauncher
     }
 }

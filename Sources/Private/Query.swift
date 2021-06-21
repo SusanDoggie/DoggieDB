@@ -29,8 +29,3 @@ public protocol DBQueryLauncher {
     
     func execute<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]>
 }
-
-public protocol DBQueryProvider {
-    
-    var _launcher: DBQueryLauncher { get }
-}
