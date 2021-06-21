@@ -1,5 +1,5 @@
 //
-//  Exported.swift
+//  Query.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,6 +23,14 @@
 //  THE SOFTWARE.
 //
 
-@_exported import DoggieCore
+public protocol DBQueryLauncher {
+    
+    func count<Query>(_ query: Query) -> EventLoopFuture<Int>
+    
+    func execute<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]>
+}
 
-@_exported import NIO
+public protocol DBQueryProvider {
+    
+    var _launcher: DBQueryLauncher { get }
+}

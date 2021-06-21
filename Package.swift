@@ -55,6 +55,7 @@ let package = Package(
             name: "Utils",
             dependencies: [
                 .product(name: "DoggieCore", package: "Doggie"),
+                .product(name: "NIO", package: "swift-nio"),
             ]
         ),
         .target(

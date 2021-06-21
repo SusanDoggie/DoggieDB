@@ -1,5 +1,5 @@
 //
-//  QueryLauncher.swift
+//  DBQueryLauncher.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,17 +23,12 @@
 //  THE SOFTWARE.
 //
 
-public protocol QueryLauncher {
-    
-    func count(_ query: DBQueryFindExpression) -> EventLoopFuture<Int>
-    
-    func execute(_ query: DBQueryFindExpression) -> EventLoopFuture<[DBObject]>
-}
+@_implementationOnly import Utils
 
 extension DBConnection {
     
-    var launcher: QueryLauncher? {
-        
-        return nil
+    var launcher: DBQueryLauncher? {
+        guard let provider = self as? DBQueryProvider else { return nil }
+        return provider._launcher
     }
 }
