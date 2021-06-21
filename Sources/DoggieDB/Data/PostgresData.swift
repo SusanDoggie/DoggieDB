@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-@_implementationOnly import Utils
+@_implementationOnly import Private
 import PostgresNIO
 
 private let psqlDateStart = Date(timeIntervalSince1970: 946_684_800)

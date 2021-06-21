@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-@_implementationOnly import Utils
+@_implementationOnly import Private
 
 extension Dictionary where Key == String, Value == DBData {
     
