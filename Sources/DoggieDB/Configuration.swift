@@ -209,7 +209,7 @@ extension Database.Configuration {
         }
         
         let driver = try url.driver()
-        let tlsConfiguration: TLSConfiguration?
+        var tlsConfiguration: TLSConfiguration?
         
         let socketAddress = try url.multipleHosts.map { try SocketAddress.makeAddressResolvingHost($0.host, port: $0.port ?? driver.rawValue.defaultPort) }
         
@@ -232,7 +232,8 @@ extension Database.Configuration {
             default: certificateVerification = .fullVerification
             }
             
-            tlsConfiguration = .forClient(certificateVerification: certificateVerification)
+            tlsConfiguration = TLSConfiguration.makeClientConfiguration()
+            tlsConfiguration?.certificateVerification = certificateVerification
             
         } else {
             
@@ -256,7 +257,7 @@ extension Database.Configuration {
         guard let hostname = url.host else { throw Database.Error.invalidURL }
         
         let driver = try url.driver()
-        let tlsConfiguration: TLSConfiguration?
+        var tlsConfiguration: TLSConfiguration?
         
         let enable_ssl = url.queryItems?.last { $0.name == "ssl" }?.value
         let ssl_mode = url.queryItems?.last { $0.name == "sslmode" }?.value
@@ -272,7 +273,8 @@ extension Database.Configuration {
             default: certificateVerification = .fullVerification
             }
             
-            tlsConfiguration = .forClient(certificateVerification: certificateVerification)
+            tlsConfiguration = TLSConfiguration.makeClientConfiguration()
+            tlsConfiguration?.certificateVerification = certificateVerification
             
         } else {
             
