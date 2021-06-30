@@ -76,6 +76,10 @@ extension BSON {
         self = .document(document)
     }
     
+    public init<Wrapped: BSONConvertible>(_ value: Wrapped?) {
+        self = value.toBSON()
+    }
+    
     public init<S: Sequence>(_ elements: S) where S.Element: BSONConvertible {
         self = .array(elements.map { $0.toBSON() })
     }
