@@ -45,11 +45,11 @@ public indirect enum MongoPredicateExpression {
     
     case matching(MongoPredicateValue, MongoPredicateValue)
     
-    case startsWith(MongoPredicateValue, String)
+    case startsWith(MongoPredicateValue, String, options: NSRegularExpression.Options = [])
     
-    case endsWith(MongoPredicateValue, String)
+    case endsWith(MongoPredicateValue, String, options: NSRegularExpression.Options = [])
     
-    case contains(MongoPredicateValue, String)
+    case contains(MongoPredicateValue, String, options: NSRegularExpression.Options = [])
     
     case and(MongoPredicateExpression, MongoPredicateExpression)
     
@@ -70,7 +70,24 @@ extension MongoPredicateValue {
     }
 }
 
-func quote(_ str: String) -> String {
+private let regexOptsMap: [Character: NSRegularExpression.Options] = [
+    "i": .caseInsensitive,
+    "m": .anchorsMatchLines,
+    "s": .dotMatchesLineSeparators,
+    "u": .useUnicodeWordBoundaries,
+    "x": .allowCommentsAndWhitespace
+]
+
+extension NSRegularExpression.Options {
+    
+    var stringOptions: String {
+        var optsString = ""
+        for (char, o) in regexOptsMap { if self.contains(o) { optsString += String(char) } }
+        return String(optsString.sorted())
+    }
+}
+
+private func quote(_ str: String) -> String {
     return "\\Q\(str.replace(regex: "\\\\E", template: "\\\\E\\\\\\\\E\\\\Q"))\\E"
 }
 
@@ -193,17 +210,17 @@ extension MongoPredicateExpression {
             
             return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": value.toBSON()]]
             
-        case let .startsWith(.key(key), str):
+        case let .startsWith(.key(key), str, options):
             
-            return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": "^\(quote(str))".toBSON()]]
+            return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": "^\(quote(str))".toBSON(), "options": options.stringOptions.toBSON()]]
             
-        case let .endsWith(.key(key), str):
+        case let .endsWith(.key(key), str, options):
             
-            return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": "\(quote(str))$".toBSON()]]
+            return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": "\(quote(str))$".toBSON(), "options": options.stringOptions.toBSON()]]
             
-        case let .contains(.key(key), str):
+        case let .contains(.key(key), str, options):
             
-            return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": quote(str).toBSON()]]
+            return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": quote(str).toBSON(), "options": options.stringOptions.toBSON()]]
             
         case let .and(lhs, rhs):
             
@@ -280,17 +297,17 @@ extension MongoPredicateExpression {
             
             return [key: ["$regex": value.toBSON()]]
             
-        case let .startsWith(.key(key), str):
+        case let .startsWith(.key(key), str, options):
             
-            return [key: ["$regex": "^\(quote(str))".toBSON()]]
+            return [key: ["$regex": "^\(quote(str))".toBSON(), "$options": options.stringOptions.toBSON()]]
             
-        case let .endsWith(.key(key), str):
+        case let .endsWith(.key(key), str, options):
             
-            return [key: ["$regex": "\(quote(str))$".toBSON()]]
+            return [key: ["$regex": "\(quote(str))$".toBSON(), "$options": options.stringOptions.toBSON()]]
             
-        case let .contains(.key(key), str):
+        case let .contains(.key(key), str, options):
             
-            return [key: ["$regex": quote(str).toBSON()]]
+            return [key: ["$regex": quote(str).toBSON(), "$options": options.stringOptions.toBSON()]]
             
         case let .and(lhs, rhs):
             
