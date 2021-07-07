@@ -45,6 +45,12 @@ public indirect enum MongoPredicateExpression {
     
     case matching(MongoPredicateValue, MongoPredicateValue)
     
+    case startsWith(MongoPredicateValue, String)
+    
+    case endsWith(MongoPredicateValue, String)
+    
+    case contains(MongoPredicateValue, String)
+    
     case and(MongoPredicateExpression, MongoPredicateExpression)
     
     case or(MongoPredicateExpression, MongoPredicateExpression)
@@ -62,6 +68,10 @@ extension MongoPredicateValue {
     static func key(_ key: MongoPredicateKey) -> MongoPredicateValue {
         return .key(key.key)
     }
+}
+
+func quote(_ str: String) -> String {
+    return "\\Q\(str.replace(regex: "\\\\E", template: "\\\\E\\\\\\\\E\\\\Q"))\\E"
 }
 
 extension MongoPredicateExpression {
@@ -183,6 +193,18 @@ extension MongoPredicateExpression {
             
             return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": value.toBSON()]]
             
+        case let .startsWith(.key(key), str):
+            
+            return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": "^\(quote(str))".toBSON()]]
+            
+        case let .endsWith(.key(key), str):
+            
+            return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": "\(quote(str))$".toBSON()]]
+            
+        case let .contains(.key(key), str):
+            
+            return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": quote(str).toBSON()]]
+            
         case let .and(lhs, rhs):
             
             let _lhs = lhs._andList ?? [lhs]
@@ -257,6 +279,18 @@ extension MongoPredicateExpression {
         case let .matching(.key(key), .value(value)):
             
             return [key: ["$regex": value.toBSON()]]
+            
+        case let .startsWith(.key(key), str):
+            
+            return [key: ["$regex": "^\(quote(str))".toBSON()]]
+            
+        case let .endsWith(.key(key), str):
+            
+            return [key: ["$regex": "\(quote(str))$".toBSON()]]
+            
+        case let .contains(.key(key), str):
+            
+            return [key: ["$regex": quote(str).toBSON()]]
             
         case let .and(lhs, rhs):
             
