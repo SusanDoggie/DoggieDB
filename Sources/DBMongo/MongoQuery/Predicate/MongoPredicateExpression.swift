@@ -51,9 +51,9 @@ public indirect enum MongoPredicateExpression {
     
     case contains(MongoPredicateValue, String, options: NSRegularExpression.Options = [])
     
-    case and(MongoPredicateExpression, MongoPredicateExpression)
+    case and([MongoPredicateExpression])
     
-    case or(MongoPredicateExpression, MongoPredicateExpression)
+    case or([MongoPredicateExpression])
 }
 
 public enum MongoPredicateValue {
@@ -95,20 +95,14 @@ extension MongoPredicateExpression {
     
     var _andList: [MongoPredicateExpression]? {
         switch self {
-        case let .and(lhs, rhs):
-            let _lhs = lhs._andList ?? [lhs]
-            let _rhs = rhs._andList ?? [rhs]
-            return _lhs + _rhs
+        case let .and(list): return list.flatMap { $0._andList ?? [$0] }
         default: return nil
         }
     }
     
     var _orList: [MongoPredicateExpression]? {
         switch self {
-        case let .or(lhs, rhs):
-            let _lhs = lhs._orList ?? [lhs]
-            let _rhs = rhs._orList ?? [rhs]
-            return _lhs + _rhs
+        case let .or(list): return list.flatMap { $0._orList ?? [$0] }
         default: return nil
         }
     }
@@ -222,18 +216,14 @@ extension MongoPredicateExpression {
             
             return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": quote(str).toBSON(), "options": options.stringOptions.toBSON()]]
             
-        case let .and(lhs, rhs):
+        case let .and(list):
             
-            let _lhs = lhs._andList ?? [lhs]
-            let _rhs = rhs._andList ?? [rhs]
-            let list = _lhs + _rhs
+            let list = list.flatMap { $0._andList ?? [$0] }
             return try ["$and": BSON(list.map { try $0._expression() })]
             
-        case let .or(lhs, rhs):
+        case let .or(list):
             
-            let _lhs = lhs._orList ?? [lhs]
-            let _rhs = rhs._orList ?? [rhs]
-            let list = _lhs + _rhs
+            let list = list.flatMap { $0._orList ?? [$0] }
             return try ["$or": BSON(list.map { try $0._expression() })]
             
         default: throw Database.Error.invalidExpression
@@ -309,18 +299,14 @@ extension MongoPredicateExpression {
             
             return [key: ["$regex": quote(str).toBSON(), "$options": options.stringOptions.toBSON()]]
             
-        case let .and(lhs, rhs):
+        case let .and(list):
             
-            let _lhs = lhs._andList ?? [lhs]
-            let _rhs = rhs._andList ?? [rhs]
-            let list = _lhs + _rhs
+            let list = list.flatMap { $0._andList ?? [$0] }
             return try ["$and": BSON(list.map { try $0.toBSONDocument() })]
             
-        case let .or(lhs, rhs):
+        case let .or(list):
             
-            let _lhs = lhs._orList ?? [lhs]
-            let _rhs = rhs._orList ?? [rhs]
-            let list = _lhs + _rhs
+            let list = list.flatMap { $0._orList ?? [$0] }
             return try ["$or": BSON(list.map { try $0.toBSONDocument() })]
             
         default: return try ["$expr": BSON(_expression())]
@@ -501,9 +487,9 @@ public prefix func !(x: MongoPredicateExpression) -> MongoPredicateExpression {
 }
 
 public func && (lhs: MongoPredicateExpression, rhs: MongoPredicateExpression) -> MongoPredicateExpression {
-    return .and(lhs, rhs)
+    return .and([lhs, rhs])
 }
 
 public func || (lhs: MongoPredicateExpression, rhs: MongoPredicateExpression) -> MongoPredicateExpression {
-    return .or(lhs, rhs)
+    return .or([lhs, rhs])
 }

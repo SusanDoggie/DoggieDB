@@ -49,9 +49,9 @@ public indirect enum SQLPredicateExpression {
     
     case notLike(SQLPredicateValue, String)
     
-    case and(SQLPredicateExpression, SQLPredicateExpression)
+    case and([SQLPredicateExpression])
     
-    case or(SQLPredicateExpression, SQLPredicateExpression)
+    case or([SQLPredicateExpression])
 }
 
 public enum SQLPredicateValue {
@@ -80,17 +80,17 @@ extension SQLRaw.StringInterpolation {
 
 extension SQLPredicateExpression {
     
-    var isAndOperator: Bool {
+    var _andList: [SQLPredicateExpression]? {
         switch self {
-        case .and: return true
-        default: return false
+        case let .and(list): return list.flatMap { $0._andList ?? [$0] }
+        default: return nil
         }
     }
     
-    var isOrOperator: Bool {
+    var _orList: [SQLPredicateExpression]? {
         switch self {
-        case .or: return true
-        default: return false
+        case let .or(list): return list.flatMap { $0._orList ?? [$0] }
+        default: return nil
         }
     }
     
@@ -123,61 +123,37 @@ extension SQLPredicateExpression {
             
         case let .like(x, pattern): builder.append("\(x) LIKE \(pattern)" as SQLRaw)
         case let .notLike(x, pattern): builder.append("\(x) NOT LIKE \(pattern)" as SQLRaw)
-        case let .and(lhs, rhs):
+        case let .and(list):
             
-            if lhs.isOrOperator {
-                if rhs.isOrOperator {
+            let list = list.flatMap { $0._andList ?? [$0] }
+            guard !list.isEmpty else { return }
+            
+            for (i, item) in list.enumerated() {
+                if i == 0 {
                     builder.append("(")
-                    lhs.serialize(into: &builder)
+                } else {
                     builder.append(") AND (")
-                    rhs.serialize(into: &builder)
-                    builder.append(")")
-                } else {
-                    builder.append("(")
-                    lhs.serialize(into: &builder)
-                    builder.append(") AND ")
-                    rhs.serialize(into: &builder)
                 }
-            } else {
-                if rhs.isOrOperator {
-                    lhs.serialize(into: &builder)
-                    builder.append(" AND (")
-                    rhs.serialize(into: &builder)
-                    builder.append(")")
-                } else {
-                    lhs.serialize(into: &builder)
-                    builder.append(" AND ")
-                    rhs.serialize(into: &builder)
-                }
+                item.serialize(into: &builder)
             }
             
-        case let .or(lhs, rhs):
+            builder.append(")")
             
-            if lhs.isAndOperator {
-                if rhs.isAndOperator {
+        case let .or(list):
+            
+            let list = list.flatMap { $0._orList ?? [$0] }
+            guard !list.isEmpty else { return }
+            
+            for (i, item) in list.enumerated() {
+                if i == 0 {
                     builder.append("(")
-                    lhs.serialize(into: &builder)
+                } else {
                     builder.append(") OR (")
-                    rhs.serialize(into: &builder)
-                    builder.append(")")
-                } else {
-                    builder.append("(")
-                    lhs.serialize(into: &builder)
-                    builder.append(") OR ")
-                    rhs.serialize(into: &builder)
                 }
-            } else {
-                if rhs.isAndOperator {
-                    lhs.serialize(into: &builder)
-                    builder.append(" OR (")
-                    rhs.serialize(into: &builder)
-                    builder.append(")")
-                } else {
-                    lhs.serialize(into: &builder)
-                    builder.append(" OR ")
-                    rhs.serialize(into: &builder)
-                }
+                item.serialize(into: &builder)
             }
+            
+            builder.append(")")
         }
     }
 }
@@ -331,9 +307,9 @@ public prefix func !(x: SQLPredicateExpression) -> SQLPredicateExpression {
 }
 
 public func && (lhs: SQLPredicateExpression, rhs: SQLPredicateExpression) -> SQLPredicateExpression {
-    return .and(lhs, rhs)
+    return .and([lhs, rhs])
 }
 
 public func || (lhs: SQLPredicateExpression, rhs: SQLPredicateExpression) -> SQLPredicateExpression {
-    return .or(lhs, rhs)
+    return .or([lhs, rhs])
 }
