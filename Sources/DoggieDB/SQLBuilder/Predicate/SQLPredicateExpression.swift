@@ -126,34 +126,46 @@ extension SQLPredicateExpression {
         case let .and(list):
             
             let list = list.flatMap { $0._andList ?? [$0] }
-            guard !list.isEmpty else { return }
             
-            for (i, item) in list.enumerated() {
-                if i == 0 {
-                    builder.append("(")
-                } else {
-                    builder.append(") AND (")
+            switch list.count {
+            case 0: fatalError("invalid expression")
+            case 1: list[0].serialize(into: &builder)
+                
+            default:
+                
+                for (i, item) in list.enumerated() {
+                    if i == 0 {
+                        builder.append("(")
+                    } else {
+                        builder.append(") AND (")
+                    }
+                    item.serialize(into: &builder)
                 }
-                item.serialize(into: &builder)
+                
+                builder.append(")")
             }
-            
-            builder.append(")")
             
         case let .or(list):
             
             let list = list.flatMap { $0._orList ?? [$0] }
-            guard !list.isEmpty else { return }
             
-            for (i, item) in list.enumerated() {
-                if i == 0 {
-                    builder.append("(")
-                } else {
-                    builder.append(") OR (")
+            switch list.count {
+            case 0: fatalError("invalid expression")
+            case 1: list[0].serialize(into: &builder)
+                
+            default:
+                
+                for (i, item) in list.enumerated() {
+                    if i == 0 {
+                        builder.append("(")
+                    } else {
+                        builder.append(") OR (")
+                    }
+                    item.serialize(into: &builder)
                 }
-                item.serialize(into: &builder)
+                
+                builder.append(")")
             }
-            
-            builder.append(")")
         }
     }
 }

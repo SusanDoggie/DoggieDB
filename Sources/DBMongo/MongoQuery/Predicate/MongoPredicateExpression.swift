@@ -219,12 +219,22 @@ extension MongoPredicateExpression {
         case let .and(list):
             
             let list = list.flatMap { $0._andList ?? [$0] }
-            return try ["$and": BSON(list.map { try $0._expression() })]
+            
+            switch list.count {
+            case 0: throw Database.Error.invalidExpression
+            case 1: return try list[0]._expression()
+            default: return try ["$and": BSON(list.map { try $0._expression() })]
+            }
             
         case let .or(list):
             
             let list = list.flatMap { $0._orList ?? [$0] }
-            return try ["$or": BSON(list.map { try $0._expression() })]
+            
+            switch list.count {
+            case 0: throw Database.Error.invalidExpression
+            case 1: return try list[0]._expression()
+            default: return try ["$or": BSON(list.map { try $0._expression() })]
+            }
             
         default: throw Database.Error.invalidExpression
         }
@@ -302,12 +312,22 @@ extension MongoPredicateExpression {
         case let .and(list):
             
             let list = list.flatMap { $0._andList ?? [$0] }
-            return try ["$and": BSON(list.map { try $0.toBSONDocument() })]
+            
+            switch list.count {
+            case 0: throw Database.Error.invalidExpression
+            case 1: return try list[0]._expression()
+            default: return try ["$and": BSON(list.map { try $0._expression() })]
+            }
             
         case let .or(list):
             
             let list = list.flatMap { $0._orList ?? [$0] }
-            return try ["$or": BSON(list.map { try $0.toBSONDocument() })]
+            
+            switch list.count {
+            case 0: throw Database.Error.invalidExpression
+            case 1: return try list[0]._expression()
+            default: return try ["$or": BSON(list.map { try $0._expression() })]
+            }
             
         default: return try ["$expr": BSON(_expression())]
         }
