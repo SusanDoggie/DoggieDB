@@ -315,8 +315,8 @@ extension MongoPredicateExpression {
             
             switch list.count {
             case 0: throw Database.Error.invalidExpression
-            case 1: return try list[0]._expression()
-            default: return try ["$and": BSON(list.map { try $0._expression() })]
+            case 1: return try list[0].toBSONDocument()
+            default: return try ["$and": BSON(list.map { try $0.toBSONDocument() })]
             }
             
         case let .or(list):
@@ -325,8 +325,8 @@ extension MongoPredicateExpression {
             
             switch list.count {
             case 0: throw Database.Error.invalidExpression
-            case 1: return try list[0]._expression()
-            default: return try ["$or": BSON(list.map { try $0._expression() })]
+            case 1: return try list[0].toBSONDocument()
+            default: return try ["$or": BSON(list.map { try $0.toBSONDocument() })]
             }
             
         default: return try ["$expr": BSON(_expression())]
