@@ -148,6 +148,7 @@ extension PostgreSQLDriver.Connection {
                 pg_attribute a
             WHERE
                 t.oid = ix.indrelid
+                AND ix.indisprimary
                 AND a.attrelid = t.oid
                 AND a.attnum = k.attnum
                 AND t.relkind = 'r'
