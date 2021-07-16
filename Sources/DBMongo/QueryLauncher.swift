@@ -188,11 +188,17 @@ extension MongoPredicateExpression {
             
         case let .between(x, from, to):
             
-            throw Database.Error.invalidExpression
+            self = try .and([
+                .greaterThanOrEqualTo(MongoPredicateValue(from), MongoPredicateValue(x)),
+                .lessThanOrEqualTo(MongoPredicateValue(to), MongoPredicateValue(x)),
+            ])
             
         case let .notBetween(x, from, to):
             
-            throw Database.Error.invalidExpression
+            self = try .not(.and([
+                .greaterThanOrEqualTo(MongoPredicateValue(from), MongoPredicateValue(x)),
+                .lessThanOrEqualTo(MongoPredicateValue(to), MongoPredicateValue(x)),
+            ]))
             
         case let .matching(lhs, rhs): self = try .matching(MongoPredicateValue(lhs), MongoPredicateValue(rhs))
         case let .startsWith(value, pattern, options): self = try .startsWith(MongoPredicateValue(value), pattern, options: options)

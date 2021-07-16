@@ -280,23 +280,23 @@ public func ~= <C: Collection>(lhs: C, rhs: SQLPredicateKey) -> SQLPredicateExpr
 }
 
 public func ~= <T: DBDataConvertible>(lhs: Range<T>, rhs: SQLPredicateKey) -> SQLPredicateExpression {
-    return .between(.key(rhs), .value(lhs.lowerBound.toDBData()), .value(lhs.upperBound.toDBData()))
+    return lhs.lowerBound <= rhs && rhs < lhs.upperBound
 }
 
 public func ~= <T: DBDataConvertible>(lhs: ClosedRange<T>, rhs: SQLPredicateKey) -> SQLPredicateExpression {
-    return rhs <= lhs.lowerBound && lhs.upperBound <= rhs
+    return .between(.key(rhs), .value(lhs.lowerBound.toDBData()), .value(lhs.upperBound.toDBData()))
 }
 
 public func ~= <T: DBDataConvertible>(lhs: PartialRangeFrom<T>, rhs: SQLPredicateKey) -> SQLPredicateExpression {
-    return rhs <= lhs.lowerBound
+    return lhs.lowerBound <= rhs
 }
 
 public func ~= <T: DBDataConvertible>(lhs: PartialRangeUpTo<T>, rhs: SQLPredicateKey) -> SQLPredicateExpression {
-    return lhs.upperBound < rhs
+    return rhs < lhs.upperBound
 }
 
 public func ~= <T: DBDataConvertible>(lhs: PartialRangeThrough<T>, rhs: SQLPredicateKey) -> SQLPredicateExpression {
-    return lhs.upperBound <= rhs
+    return rhs <= lhs.upperBound
 }
 
 public func =~ (lhs: SQLPredicateKey, rhs: String) -> SQLPredicateExpression {
@@ -308,23 +308,23 @@ public func =~ <C: Collection>(lhs: SQLPredicateKey, rhs: C) -> SQLPredicateExpr
 }
 
 public func =~ <T: DBDataConvertible>(lhs: SQLPredicateKey, rhs: Range<T>) -> SQLPredicateExpression {
-    return .between(.key(lhs), .value(rhs.lowerBound.toDBData()), .value(rhs.upperBound.toDBData()))
+    return rhs.lowerBound <= lhs && lhs < rhs.upperBound
 }
 
 public func =~ <T: DBDataConvertible>(lhs: SQLPredicateKey, rhs: ClosedRange<T>) -> SQLPredicateExpression {
-    return lhs <= rhs.lowerBound && rhs.upperBound <= lhs
+    return .between(.key(lhs), .value(rhs.lowerBound.toDBData()), .value(rhs.upperBound.toDBData()))
 }
 
 public func =~ <T: DBDataConvertible>(lhs: SQLPredicateKey, rhs: PartialRangeFrom<T>) -> SQLPredicateExpression {
-    return lhs <= rhs.lowerBound
+    return rhs.lowerBound <= lhs
 }
 
 public func =~ <T: DBDataConvertible>(lhs: SQLPredicateKey, rhs: PartialRangeUpTo<T>) -> SQLPredicateExpression {
-    return rhs.upperBound < lhs
+    return lhs < rhs.upperBound
 }
 
 public func =~ <T: DBDataConvertible>(lhs: SQLPredicateKey, rhs: PartialRangeThrough<T>) -> SQLPredicateExpression {
-    return rhs.upperBound <= lhs
+    return lhs <= rhs.upperBound
 }
 
 public prefix func !(x: SQLPredicateExpression) -> SQLPredicateExpression {
