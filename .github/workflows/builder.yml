@@ -190,9 +190,9 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   ubuntu_swift_nightly:
-    name: nightly-${{ matrix.distro }}
+    name: nightly-${{ matrix.swift_version }}-${{ matrix.distro }}
     container:
-      image: docker://swiftlang/swift:nightly-${{ matrix.distro }}
+      image: docker://swiftlang/swift:nightly-${{ matrix.swift_version }}-${{ matrix.distro }}
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -219,6 +219,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        swift_version: [5.5, main]
         distro: [xenial, bionic, focal]
     steps:
     - uses: actions/checkout@v1
@@ -245,9 +246,9 @@ jobs:
         REDIS_HOST: redis
         MONGO_HOST: mongo
   linux_swift_nightly:
-    name: nightly-${{ matrix.distro }}
+    name: nightly-${{ matrix.swift_version }}-${{ matrix.distro }}
     container:
-      image: docker://swiftlang/swift:nightly-${{ matrix.distro }}
+      image: docker://swiftlang/swift:nightly-${{ matrix.swift_version }}-${{ matrix.distro }}
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -274,6 +275,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        swift_version: [5.5, main]
         distro: [centos8]
         include:
           - distro: centos8
