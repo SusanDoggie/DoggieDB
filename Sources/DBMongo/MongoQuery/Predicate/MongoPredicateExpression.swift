@@ -443,23 +443,23 @@ public func ~= <C: Collection>(lhs: C, rhs: MongoPredicateKey) -> MongoPredicate
 }
 
 public func ~= <T: BSONConvertible>(lhs: Range<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
-    return rhs <= lhs.lowerBound && lhs.upperBound < rhs
+    return lhs.lowerBound <= rhs && rhs < lhs.upperBound
 }
 
 public func ~= <T: BSONConvertible>(lhs: ClosedRange<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
-    return rhs <= lhs.lowerBound && lhs.upperBound <= rhs
+    return lhs.lowerBound <= rhs && rhs <= lhs.upperBound
 }
 
 public func ~= <T: BSONConvertible>(lhs: PartialRangeFrom<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
-    return rhs <= lhs.lowerBound
+    return lhs.lowerBound <= rhs
 }
 
 public func ~= <T: BSONConvertible>(lhs: PartialRangeUpTo<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
-    return lhs.upperBound < rhs
+    return rhs < lhs.upperBound
 }
 
 public func ~= <T: BSONConvertible>(lhs: PartialRangeThrough<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
-    return lhs.upperBound <= rhs
+    return rhs <= lhs.upperBound
 }
 
 public func =~ (lhs: MongoPredicateKey, rhs: NSRegularExpression) -> MongoPredicateExpression {
@@ -483,23 +483,23 @@ public func =~ <C: Collection>(lhs: MongoPredicateKey, rhs: C) -> MongoPredicate
 }
 
 public func =~ <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: Range<T>) -> MongoPredicateExpression {
-    return lhs <= rhs.lowerBound && rhs.upperBound < lhs
+    return rhs.lowerBound <= lhs && lhs < rhs.upperBound
 }
 
 public func =~ <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: ClosedRange<T>) -> MongoPredicateExpression {
-    return lhs <= rhs.lowerBound && rhs.upperBound <= lhs
+    return rhs.lowerBound <= lhs && lhs <= rhs.upperBound
 }
 
 public func =~ <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: PartialRangeFrom<T>) -> MongoPredicateExpression {
-    return lhs <= rhs.lowerBound
+    return rhs.lowerBound <= lhs
 }
 
 public func =~ <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: PartialRangeUpTo<T>) -> MongoPredicateExpression {
-    return rhs.upperBound < lhs
+    return lhs < rhs.upperBound
 }
 
 public func =~ <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: PartialRangeThrough<T>) -> MongoPredicateExpression {
-    return rhs.upperBound <= lhs
+    return lhs <= rhs.upperBound
 }
 
 public prefix func !(x: MongoPredicateExpression) -> MongoPredicateExpression {

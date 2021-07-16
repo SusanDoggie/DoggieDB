@@ -195,19 +195,19 @@ public func ~= <T: DBDataConvertible>(lhs: Range<T>, rhs: DBQueryPredicateKey) -
 }
 
 public func ~= <T: DBDataConvertible>(lhs: ClosedRange<T>, rhs: DBQueryPredicateKey) -> DBQueryPredicateExpression {
-    return rhs <= lhs.lowerBound && lhs.upperBound <= rhs
+    return lhs.lowerBound <= rhs && rhs <= lhs.upperBound
 }
 
 public func ~= <T: DBDataConvertible>(lhs: PartialRangeFrom<T>, rhs: DBQueryPredicateKey) -> DBQueryPredicateExpression {
-    return rhs <= lhs.lowerBound
+    return lhs.lowerBound <= rhs
 }
 
 public func ~= <T: DBDataConvertible>(lhs: PartialRangeUpTo<T>, rhs: DBQueryPredicateKey) -> DBQueryPredicateExpression {
-    return lhs.upperBound < rhs
+    return rhs < lhs.upperBound
 }
 
 public func ~= <T: DBDataConvertible>(lhs: PartialRangeThrough<T>, rhs: DBQueryPredicateKey) -> DBQueryPredicateExpression {
-    return lhs.upperBound <= rhs
+    return rhs <= lhs.upperBound
 }
 
 public func =~ (lhs: DBQueryPredicateKey, rhs: String) -> DBQueryPredicateExpression {
@@ -239,19 +239,19 @@ public func =~ <T: DBDataConvertible>(lhs: DBQueryPredicateKey, rhs: Range<T>) -
 }
 
 public func =~ <T: DBDataConvertible>(lhs: DBQueryPredicateKey, rhs: ClosedRange<T>) -> DBQueryPredicateExpression {
-    return lhs <= rhs.lowerBound && rhs.upperBound <= lhs
+    return rhs.lowerBound <= lhs && lhs <= rhs.upperBound
 }
 
 public func =~ <T: DBDataConvertible>(lhs: DBQueryPredicateKey, rhs: PartialRangeFrom<T>) -> DBQueryPredicateExpression {
-    return lhs <= rhs.lowerBound
+    return rhs.lowerBound <= lhs
 }
 
 public func =~ <T: DBDataConvertible>(lhs: DBQueryPredicateKey, rhs: PartialRangeUpTo<T>) -> DBQueryPredicateExpression {
-    return rhs.upperBound < lhs
+    return lhs < rhs.upperBound
 }
 
 public func =~ <T: DBDataConvertible>(lhs: DBQueryPredicateKey, rhs: PartialRangeThrough<T>) -> DBQueryPredicateExpression {
-    return rhs.upperBound <= lhs
+    return lhs <= rhs.upperBound
 }
 
 public prefix func !(x: DBQueryPredicateExpression) -> DBQueryPredicateExpression {
