@@ -1,5 +1,5 @@
 //
-//  DBQueryFindOneExpression.swift
+//  DBQueryUpsertOption.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,40 +23,18 @@
 //  THE SOFTWARE.
 //
 
-public struct DBQueryFindOneExpression: DBQueryProtocol {
+public protocol DBQueryUpsertOption {
     
-    public let connection: DBConnection
+    var upsert: Bool { get set }
     
-    public let table: String
-    
-    public var filters: [DBQueryPredicateExpression] = []
-    
-    public var skip: Int = 0
-    
-    public var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
-    
-    public var includes: Set<String> = []
-    
-    public var upsert: Bool = false
-    
-    public var returning: DBQueryReturning = .after
-    
-    init(connection: DBConnection, table: String) {
-        self.connection = connection
-        self.table = table
-    }
 }
 
-extension DBQuery {
+extension DBQueryUpsertOption {
     
-    public func findOne(_ table: String) -> DBQueryFindOneExpression {
-        return DBQueryFindOneExpression(connection: connection, table: table)
+    public func upsert(_ upsert: Bool) -> Self {
+        var result = self
+        result.upsert = upsert
+        return result
     }
+    
 }
-
-extension DBQueryFindOneExpression: DBQueryFilterOption { }
-extension DBQueryFindOneExpression: DBQuerySkipOptions { }
-extension DBQueryFindOneExpression: DBQuerySortOption { }
-extension DBQueryFindOneExpression: DBQueryIncludesOption { }
-extension DBQueryFindOneExpression: DBQueryUpsertOption { }
-extension DBQueryFindOneExpression: DBQueryReturningOption { }
