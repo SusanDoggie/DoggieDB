@@ -46,42 +46,42 @@ struct QueryLauncher: DBQueryLauncher {
         }
     }
     
-    func execute<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]> {
+    func find<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]> {
+        
+        guard let query = query as? DBQueryFindExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
         
         do {
             
-            switch (query, Result.self) {
+            let filter = try self.filterBSONDocument(query)
             
-            case let (_query, _) as (DBQueryFindExpression, DBObject.Type):
-                
-                let filter = try self.filterBSONDocument(_query)
-                
-                var query = connection.mongoQuery().collection(_query.table).find().filter(filter)
-                
-                if !_query.sort.isEmpty {
-                    query = query.sort(_query.sort.mapValues(DBMongoSortOrder.init))
-                }
-                if _query.skip > 0 {
-                    query = query.skip(_query.skip)
-                }
-                if _query.limit != .max {
-                    query = query.limit(_query.limit)
-                }
-                
-                if !_query.includes.isEmpty {
-                    let projection = Dictionary(uniqueKeysWithValues: _query.includes.map { ($0, 1) })
-                    query = query.projection(BSONDocument(projection))
-                }
-                
-                return query.execute().flatMap { $0.toArray() }.map { $0.map { DBObject($0) as! Result } }
-                
-            default: fatalError()
+            var mongoQuery = connection.mongoQuery().collection(query.table).find().filter(filter)
+            
+            if !query.sort.isEmpty {
+                mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
             }
+            if query.skip > 0 {
+                mongoQuery = mongoQuery.skip(query.skip)
+            }
+            if query.limit != .max {
+                mongoQuery = mongoQuery.limit(query.limit)
+            }
+            
+            if !query.includes.isEmpty {
+                let projection = Dictionary(uniqueKeysWithValues: query.includes.map { ($0, 1) })
+                mongoQuery = mongoQuery.projection(BSONDocument(projection))
+            }
+            
+            return mongoQuery.execute().flatMap { $0.toArray() }.map { $0.map { DBObject($0) as! Result } }
             
         } catch {
             
             return connection.eventLoopGroup.next().makeFailedFuture(error)
         }
+    }
+    
+    func findOne<Query, Result>(_ query: Query) -> EventLoopFuture<Result?> {
+        fatalError()
     }
 }
 

@@ -37,7 +37,11 @@ struct SQLQueryLauncher: DBQueryLauncher {
         fatalError()
     }
     
-    func execute<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]> {
+    func find<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]> {
+        fatalError()
+    }
+    
+    func findOne<Query, Result>(_ query: Query) -> EventLoopFuture<Result?> {
         fatalError()
     }
 }

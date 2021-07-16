@@ -27,5 +27,7 @@ public protocol DBQueryLauncher {
     
     func count<Query>(_ query: Query) -> EventLoopFuture<Int>
     
-    func execute<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]>
+    func find<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]>
+    
+    func findOne<Query, Result>(_ query: Query) -> EventLoopFuture<Result?>
 }
