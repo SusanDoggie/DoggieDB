@@ -37,6 +37,8 @@ public struct DBQueryFindOneExpression: DBQueryProtocol {
     
     public var includes: Set<String> = []
     
+    public var setOnInsert: [String: DBData] = [:]
+    
     public var upsert: Bool = false
     
     public var returning: DBQueryReturning = .after
@@ -51,6 +53,15 @@ extension DBQuery {
     
     public func findOne(_ table: String) -> DBQueryFindOneExpression {
         return DBQueryFindOneExpression(connection: connection, table: table)
+    }
+}
+
+extension DBQueryFindOneExpression {
+    
+    public func setOnInsert(_ setOnInsert: [String: DBData]) -> Self {
+        var result = self
+        result.setOnInsert = setOnInsert
+        return result
     }
 }
 
