@@ -85,6 +85,16 @@ extension DBQueryFindOneExpression {
     }
 }
 
+extension DBQueryFindOneExpression {
+    
+    public func execute() -> EventLoopFuture<DBObject?> {
+        guard let launcher = self.connection.launcher else {
+            return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+        }
+        return launcher.execute(self).map { $0.first }
+    }
+}
+
 extension DBQueryFindOneExpression: DBQueryFilterOption { }
 extension DBQueryFindOneExpression: DBQuerySkipOptions { }
 extension DBQueryFindOneExpression: DBQuerySortOption { }
