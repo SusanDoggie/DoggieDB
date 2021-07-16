@@ -25,4 +25,6 @@
 
 public struct DBObject {
     
+    public init() {
+    }
 }

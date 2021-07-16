@@ -53,9 +53,15 @@ public indirect enum DBQueryPredicateExpression {
     
     case matching(DBQueryPredicateValue, DBQueryPredicateValue)
     
-    case and(DBQueryPredicateExpression, DBQueryPredicateExpression)
+    case startsWith(DBQueryPredicateValue, String, options: NSRegularExpression.Options = [])
     
-    case or(DBQueryPredicateExpression, DBQueryPredicateExpression)
+    case endsWith(DBQueryPredicateValue, String, options: NSRegularExpression.Options = [])
+    
+    case contains(DBQueryPredicateValue, String, options: NSRegularExpression.Options = [])
+    
+    case and([DBQueryPredicateExpression])
+    
+    case or([DBQueryPredicateExpression])
 }
 
 public enum DBQueryPredicateValue {
@@ -253,9 +259,9 @@ public prefix func !(x: DBQueryPredicateExpression) -> DBQueryPredicateExpressio
 }
 
 public func && (lhs: DBQueryPredicateExpression, rhs: DBQueryPredicateExpression) -> DBQueryPredicateExpression {
-    return .and(lhs, rhs)
+    return .and([lhs, rhs])
 }
 
 public func || (lhs: DBQueryPredicateExpression, rhs: DBQueryPredicateExpression) -> DBQueryPredicateExpression {
-    return .or(lhs, rhs)
+    return .or([lhs, rhs])
 }

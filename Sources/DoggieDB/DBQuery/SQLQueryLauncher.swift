@@ -30,6 +30,10 @@ struct SQLQueryLauncher: DBQueryLauncher {
     let connection: DBSQLConnection
     
     func count<Query>(_ query: Query) -> EventLoopFuture<Int> {
+        
+        guard let query = query as? DBQueryFindExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
+        
         fatalError()
     }
     
