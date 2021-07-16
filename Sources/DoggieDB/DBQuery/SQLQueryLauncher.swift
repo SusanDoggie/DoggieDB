@@ -72,6 +72,11 @@ extension SQLPredicateExpression {
             guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
             self = .containsIn(SQLPredicateValue(x), array)
             
+        case let .notContainsIn(x, .value(list)):
+            
+            guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
+            self = .notContainsIn(SQLPredicateValue(x), array)
+            
         case let .like(value, pattern): self = .like(SQLPredicateValue(value), pattern)
         case let .notLike(value, pattern): self = .notLike(SQLPredicateValue(value), pattern)
         case let .and(list): self = try .and(list.map(SQLPredicateExpression.init))
