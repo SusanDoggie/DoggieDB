@@ -1,5 +1,5 @@
 //
-//  DBQueryLauncher.swift
+//  QueryLauncher.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,20 +25,22 @@
 
 @_implementationOnly import Private
 
-public protocol DBQueryLauncherProvider {
+struct QueryLauncher: DBQueryLauncher {
     
-    var _launcher: Any { get }
+    let connection: MongoDBDriver.Connection
+    
+    func count<Query>(_ query: Query) -> EventLoopFuture<Int> {
+        fatalError()
+    }
+    
+    func execute<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]> {
+        fatalError()
+    }
 }
 
-extension DBConnection {
+extension MongoDBDriver.Connection: DBQueryLauncherProvider {
     
-    var launcher: DBQueryLauncher? {
-        
-        if let connection = self as? DBSQLConnection {
-            return SQLQueryLauncher(connection: connection)
-        }
-        
-        guard let provider = self as? DBQueryLauncherProvider else { return nil }
-        return provider._launcher as? DBQueryLauncher
+    var _launcher: Any {
+        return QueryLauncher(connection: self)
     }
 }
