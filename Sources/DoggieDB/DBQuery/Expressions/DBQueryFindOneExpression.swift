@@ -23,6 +23,14 @@
 //  THE SOFTWARE.
 //
 
+public enum DBQueryUpdateOperation {
+    
+    case set(DBData)
+    
+    case increment(DBData)
+    
+}
+
 public struct DBQueryFindOneExpression: DBQueryProtocol {
     
     public let connection: DBConnection
@@ -36,6 +44,8 @@ public struct DBQueryFindOneExpression: DBQueryProtocol {
     public var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
     
     public var includes: Set<String> = []
+    
+    public var update: [String: DBQueryUpdateOperation] = [:]
     
     public var setOnInsert: [String: DBData] = [:]
     
@@ -56,9 +66,21 @@ extension DBQuery {
 
 extension DBQueryFindOneExpression {
     
+    public func update(_ update: [String: DBData]) -> Self {
+        var result = self
+        result.update = result.update.merging(update.mapValues { .set($0) }) { _, rhs in rhs }
+        return result
+    }
+    
+    public func update(_ update: [String: DBQueryUpdateOperation]) -> Self {
+        var result = self
+        result.update = result.update.merging(update) { _, rhs in rhs }
+        return result
+    }
+    
     public func setOnInsert(_ setOnInsert: [String: DBData]) -> Self {
         var result = self
-        result.setOnInsert = setOnInsert
+        result.setOnInsert = result.setOnInsert.merging(setOnInsert) { _, rhs in rhs }
         return result
     }
 }
