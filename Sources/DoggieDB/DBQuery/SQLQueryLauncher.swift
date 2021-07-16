@@ -53,3 +53,40 @@ struct SQLQueryLauncher: DBQueryLauncher {
         fatalError()
     }
 }
+
+extension SQLPredicateExpression {
+    
+    init(_ expression: DBQueryPredicateExpression) throws {
+        switch expression {
+        case let .not(expr): self = try .not(SQLPredicateExpression(expr))
+        case let .equal(lhs, rhs): self = .equal(SQLPredicateValue(lhs), SQLPredicateValue(rhs))
+        case let .notEqual(lhs, rhs): self = .notEqual(SQLPredicateValue(lhs), SQLPredicateValue(rhs))
+        case let .lessThan(lhs, rhs): self = .lessThan(SQLPredicateValue(lhs), SQLPredicateValue(rhs))
+        case let .greaterThan(lhs, rhs): self = .greaterThan(SQLPredicateValue(lhs), SQLPredicateValue(rhs))
+        case let .lessThanOrEqualTo(lhs, rhs): self = .lessThanOrEqualTo(SQLPredicateValue(lhs), SQLPredicateValue(rhs))
+        case let .greaterThanOrEqualTo(lhs, rhs): self = .greaterThanOrEqualTo(SQLPredicateValue(lhs), SQLPredicateValue(rhs))
+        case let .between(x, from, to): self = .between(SQLPredicateValue(x), SQLPredicateValue(from), SQLPredicateValue(to))
+        case let .notBetween(x, from, to): self = .notBetween(SQLPredicateValue(x), SQLPredicateValue(from), SQLPredicateValue(to))
+        case let .containsIn(x, .value(list)):
+            
+            guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
+            self = .containsIn(SQLPredicateValue(x), array)
+            
+        case let .like(value, pattern): self = .like(SQLPredicateValue(value), pattern)
+        case let .notLike(value, pattern): self = .notLike(SQLPredicateValue(value), pattern)
+        case let .and(list): self = try .and(list.map(SQLPredicateExpression.init))
+        case let .or(list): self = try .or(list.map(SQLPredicateExpression.init))
+        default: throw Database.Error.invalidExpression
+        }
+    }
+}
+
+extension SQLPredicateValue {
+    
+    init(_ value: DBQueryPredicateValue) {
+        switch value {
+        case let .key(key): self = .key(key)
+        case let .value(value): self = .value(value.toDBData())
+        }
+    }
+}
