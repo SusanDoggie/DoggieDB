@@ -41,8 +41,6 @@ public struct DBQueryFindOneExpression: DBQueryProtocol {
     
     public var upsert: Bool = false
     
-    public var returning: DBQueryReturning = .after
-    
     init(connection: DBConnection, table: String) {
         self.connection = connection
         self.table = table
@@ -70,4 +68,3 @@ extension DBQueryFindOneExpression: DBQuerySkipOptions { }
 extension DBQueryFindOneExpression: DBQuerySortOption { }
 extension DBQueryFindOneExpression: DBQueryIncludesOption { }
 extension DBQueryFindOneExpression: DBQueryUpsertOption { }
-extension DBQueryFindOneExpression: DBQueryReturningOption { }
