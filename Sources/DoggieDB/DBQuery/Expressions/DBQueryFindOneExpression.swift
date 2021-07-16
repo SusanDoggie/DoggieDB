@@ -1,5 +1,5 @@
 //
-//  DBQueryFindExpression.swift
+//  DBQueryFindOneExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public struct DBQueryFindExpression: DBQueryProtocol {
+public struct DBQueryFindOneExpression: DBQueryProtocol {
     
     public let connection: DBConnection
     
@@ -33,11 +33,11 @@ public struct DBQueryFindExpression: DBQueryProtocol {
     
     public var skip: Int = 0
     
-    public var limit: Int = .max
-    
     public var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
     
     public var includes: Set<String> = []
+    
+    public var returning: DBQueryReturning = .after
     
     init(connection: DBConnection, table: String) {
         self.connection = connection
@@ -47,37 +47,13 @@ public struct DBQueryFindExpression: DBQueryProtocol {
 
 extension DBQuery {
     
-    public func find(_ table: String) -> DBQueryFindExpression {
-        return DBQueryFindExpression(connection: connection, table: table)
+    public func findOne(_ table: String) -> DBQueryFindOneExpression {
+        return DBQueryFindOneExpression(connection: connection, table: table)
     }
 }
 
-extension DBQueryFindExpression {
-    
-    public func count() -> EventLoopFuture<Int> {
-        guard let launcher = self.connection.launcher else {
-            return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-        }
-        return launcher.count(self)
-    }
-}
-
-extension DBQueryFindExpression {
-    
-    public func toArray() -> EventLoopFuture<[DBObject]> {
-        guard let launcher = self.connection.launcher else {
-            return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
-        }
-        return launcher.execute(self)
-    }
-    
-    public func first() -> EventLoopFuture<DBObject?> {
-        return self.limit(1).toArray().map { $0.first }
-    }
-}
-
-extension DBQueryFindExpression: DBQueryFilterOption { }
-extension DBQueryFindExpression: DBQuerySkipOptions { }
-extension DBQueryFindExpression: DBQueryLimitOption { }
-extension DBQueryFindExpression: DBQuerySortOption { }
-extension DBQueryFindExpression: DBQueryIncludesOption { }
+extension DBQueryFindOneExpression: DBQueryFilterOption { }
+extension DBQueryFindOneExpression: DBQuerySkipOptions { }
+extension DBQueryFindOneExpression: DBQuerySortOption { }
+extension DBQueryFindOneExpression: DBQueryIncludesOption { }
+extension DBQueryFindOneExpression: DBQueryReturningOption { }
