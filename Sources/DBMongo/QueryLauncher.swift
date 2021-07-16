@@ -36,7 +36,7 @@ struct QueryLauncher: DBQueryLauncher {
         
         do {
             
-            let filter = try self.filterBSONDocument(query)
+            let filter = try self.filterBSONDocument(query.filters)
             
             return connection.mongoQuery().collection(query.table).count().filter(filter).execute()
             
@@ -53,7 +53,7 @@ struct QueryLauncher: DBQueryLauncher {
         
         do {
             
-            let filter = try self.filterBSONDocument(query)
+            let filter = try self.filterBSONDocument(query.filters)
             
             var mongoQuery = connection.mongoQuery().collection(query.table).find().filter(filter)
             
@@ -80,8 +80,81 @@ struct QueryLauncher: DBQueryLauncher {
         }
     }
     
-    func findOne<Query, Result>(_ query: Query) -> EventLoopFuture<Result?> {
-        fatalError()
+    func findAndDelete<Query>(_ query: Query) -> EventLoopFuture<Int?> {
+        
+        guard let query = query as? DBQueryFindExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
+        
+        do {
+            
+            let filter = try self.filterBSONDocument(query.filters)
+            
+            let mongoQuery = connection.mongoQuery().collection(query.table).deleteMany().filter(filter)
+            
+            return mongoQuery.execute().map { $0?.deletedCount }
+            
+        } catch {
+            
+            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        }
+    }
+    
+    func findOneAndUpdate<Query, Result>(_ query: Query) -> EventLoopFuture<Result?> {
+        
+        guard let query = query as? DBQueryFindOneExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
+        
+        do {
+            
+            let filter = try self.filterBSONDocument(query.filters)
+            
+            var mongoQuery = connection.mongoQuery().collection(query.table).findOneAndUpdate().filter(filter)
+            
+            mongoQuery = mongoQuery.upsert(query.upsert)
+            
+            if !query.sort.isEmpty {
+                mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
+            }
+            
+            if !query.includes.isEmpty {
+                let projection = Dictionary(uniqueKeysWithValues: query.includes.map { ($0, 1) })
+                mongoQuery = mongoQuery.projection(BSONDocument(projection))
+            }
+            
+            return mongoQuery.execute().map { $0.map { DBObject($0) as! Result } }
+            
+        } catch {
+            
+            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        }
+    }
+    
+    func findOneAndDelete<Query, Result>(_ query: Query) -> EventLoopFuture<Result?> {
+        
+        guard let query = query as? DBQueryFindOneExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
+        
+        do {
+            
+            let filter = try self.filterBSONDocument(query.filters)
+            
+            var mongoQuery = connection.mongoQuery().collection(query.table).findOneAndDelete().filter(filter)
+            
+            if !query.sort.isEmpty {
+                mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
+            }
+            
+            if !query.includes.isEmpty {
+                let projection = Dictionary(uniqueKeysWithValues: query.includes.map { ($0, 1) })
+                mongoQuery = mongoQuery.projection(BSONDocument(projection))
+            }
+            
+            return mongoQuery.execute().map { $0.map { DBObject($0) as! Result } }
+            
+        } catch {
+            
+            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        }
     }
 }
 
@@ -94,8 +167,8 @@ extension DBObject {
 
 extension QueryLauncher {
     
-    func filterBSONDocument(_ query: DBQueryFindExpression) throws -> BSONDocument {
-        return try query.filters.map(MongoPredicateExpression.init).reduce { $0 && $1 }?.toBSONDocument() ?? [:]
+    func filterBSONDocument(_ filters: [DBQueryPredicateExpression]) throws -> BSONDocument {
+        return try filters.map(MongoPredicateExpression.init).reduce { $0 && $1 }?.toBSONDocument() ?? [:]
     }
 }
 

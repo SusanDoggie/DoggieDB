@@ -39,8 +39,6 @@ public struct DBQueryFindOneExpression: DBQueryProtocol {
     
     public var filters: [DBQueryPredicateExpression] = []
     
-    public var skip: Int = 0
-    
     public var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
     
     public var includes: Set<String> = []
@@ -87,16 +85,25 @@ extension DBQueryFindOneExpression {
 
 extension DBQueryFindOneExpression {
     
+    public func delete() -> EventLoopFuture<DBObject?> {
+        guard let launcher = self.connection.launcher else {
+            return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+        }
+        return launcher.findOneAndDelete(self)
+    }
+}
+
+extension DBQueryFindOneExpression {
+    
     public func execute() -> EventLoopFuture<DBObject?> {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
         }
-        return launcher.findOne(self)
+        return launcher.findOneAndUpdate(self)
     }
 }
 
 extension DBQueryFindOneExpression: DBQueryFilterOption { }
-extension DBQueryFindOneExpression: DBQuerySkipOptions { }
 extension DBQueryFindOneExpression: DBQuerySortOption { }
 extension DBQueryFindOneExpression: DBQueryIncludesOption { }
 extension DBQueryFindOneExpression: DBQueryUpsertOption { }
