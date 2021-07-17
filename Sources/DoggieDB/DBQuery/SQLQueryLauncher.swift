@@ -144,12 +144,13 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             
             return connection.primaryKey(of: query.class).flatMap { primaryKeys in
                 
-                let update: [String: SQLRaw] = Dictionary(uniqueKeysWithValues:query.update.map { key, value in
+                var update: [String: SQLRaw] = [:]
+                for (key, value) in query.update {
                     switch value {
-                    case let .set(value): return (key, "\(value)")
-                    case let .increment(value): return (key, "\(identifier: key) + \(value)")
+                    case let .set(value): update[key] = "\(value)"
+                    case let .increment(value): update[key] = "\(identifier: key) + \(value)"
                     }
-                })
+                }
                 
                 var sqlQuery = connection.sqlQuery().update(query.class).set(update)
                 
