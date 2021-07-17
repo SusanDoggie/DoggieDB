@@ -143,13 +143,6 @@ struct QueryLauncher: DBQueryLauncher {
     }
 }
 
-extension DBObject {
-    
-    init(_ object: BSONDocument) {
-        self.init()
-    }
-}
-
 extension MongoPredicateExpression {
     
     init(_ expression: DBQueryPredicateExpression) throws {

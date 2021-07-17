@@ -118,13 +118,6 @@ struct SQLQueryLauncher: DBQueryLauncher {
     }
 }
 
-extension DBObject {
-    
-    init(_ object: DBQueryRow) {
-        self.init()
-    }
-}
-
 extension SQLPredicateExpression {
     
     init(_ expression: DBQueryPredicateExpression) throws {

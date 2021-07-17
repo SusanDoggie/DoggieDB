@@ -25,6 +25,19 @@
 
 public struct DBObject {
     
-    public init() {
+    private let _id: Set<String>
+}
+
+extension DBObject {
+    
+    public init(_ object: BSONDocument) {
+        self._id = ["_id"]
+    }
+}
+
+extension DBObject {
+    
+    init(_ object: DBQueryRow) {
+        self._id = []
     }
 }
