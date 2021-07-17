@@ -89,6 +89,7 @@ extension DBObject {
             return _columns[column]
         }
         set {
+            guard !_id.contains(column) else { return }
             _updates[column] = .set(newValue ?? nil)
         }
     }
