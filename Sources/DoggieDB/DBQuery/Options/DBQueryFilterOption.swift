@@ -31,7 +31,7 @@ public protocol DBQueryFilterOption {
 
 extension DBQueryFilterOption {
     
-    public func filter(_ predicate: (DBQueryPredicateBuilder) -> DBQueryPredicateExpression) throws -> Self {
+    public func filter(_ predicate: (DBQueryPredicateBuilder) -> DBQueryPredicateExpression) -> Self {
         var result = self
         result.filters.append(predicate(DBQueryPredicateBuilder()))
         return result

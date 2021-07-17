@@ -41,6 +41,8 @@ extension Database {
         
         case invalidExpression
         
+        case invalidObjectId
+        
         case unknown
         
     }

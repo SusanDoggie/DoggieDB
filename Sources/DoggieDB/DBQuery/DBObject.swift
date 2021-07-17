@@ -67,9 +67,9 @@ extension DBObject {
 
 extension DBObject {
     
-    public var id: DBData? {
-        if primaryKeys.count == 1, let _id = primaryKeys.first {
-            return _columns[_id]
+    public var objectId: DBData? {
+        if primaryKeys.count == 1, let objectId = primaryKeys.first {
+            return _columns[objectId]
         }
         return DBData(self._columns.filter { primaryKeys.contains($0.key) })
     }
@@ -95,5 +95,32 @@ extension DBObject {
             guard !primaryKeys.contains(column) else { return }
             _updates[column] = .set(newValue ?? nil)
         }
+    }
+}
+
+extension DBObject {
+    
+    public func fetch(on connection: DBConnection) -> EventLoopFuture<DBObject?> {
+        
+        let objectId = self._columns.filter { primaryKeys.contains($0.key) }
+        guard objectId.count == primaryKeys.count else { return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidObjectId) }
+        
+        return connection.query().findOne(self.class)
+            .filter { object in .and(objectId.map { object[$0] == $1 }) }
+            .execute()
+    }
+}
+
+extension DBObject {
+    
+    public func save(on connection: DBConnection) -> EventLoopFuture<DBObject?> {
+        
+        let objectId = self._columns.filter { primaryKeys.contains($0.key) }
+        guard objectId.count == primaryKeys.count else { return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidObjectId) }
+        
+        return connection.query().findOne(self.class)
+            .filter { object in .and(objectId.map { object[$0] == $1 }) }
+            .update(_updates)
+            .execute()
     }
 }
