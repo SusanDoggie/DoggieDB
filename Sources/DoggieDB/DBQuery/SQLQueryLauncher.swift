@@ -62,7 +62,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 var sqlQuery = connection.sqlQuery().select()
                 
                 if query.includes.isEmpty {
-                    sqlQuery = sqlQuery.columns("COUNT(*)")
+                    sqlQuery = sqlQuery.columns("*")
                 } else {
                     let includes = query.includes.union(primaryKeys)
                     sqlQuery = sqlQuery.columns(includes.map { "\(identifier: $0)" })
@@ -115,13 +115,29 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
+    func _findOne(_ rowId: String, _ filter: SQLPredicateExpression, _ query: DBQueryFindOneExpression) -> SQLSelectBuilder {
+        
+        var select = SQLSelectBuilder.select().columns("\(identifier: rowId)").from(query.class).where { _ in filter }
+        
+        if !query.sort.isEmpty {
+            select = select.orderBy(query.sort.map {
+                switch $1 {
+                case .ascending: return "\(identifier: $0) ASC"
+                case .descending: return "\(identifier: $0) DESC"
+                }
+            })
+        }
+        
+        return select.limit(1)
+    }
+    
     func findOneAndUpdate<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
         fatalError()
     }
     
     func findOneAndDelete<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
         
-        guard let query = query as? DBQueryFindExpression else { fatalError() }
+        guard let query = query as? DBQueryFindOneExpression else { fatalError() }
         guard self.connection === query.connection else { fatalError() }
         
         do {
@@ -132,11 +148,18 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             
             return connection.primaryKey(of: query.class).flatMap { primaryKeys in
                 
-                let select = SQLSelectBuilder.select().columns("\(identifier: rowId)").from(query.class).where { _ in filter }.limit(1)
+                var sqlQuery = connection.sqlQuery().delete(query.class)
                 
-                let sqlQuery = connection.sqlQuery().delete(query.class).where { _ in .containsInSelect(.key(rowId), select) }.returning("*")
+                sqlQuery.builder.append("WHERE \(identifier: rowId) IN (" as SQLRaw)
+                sqlQuery.builder.append(_findOne(rowId, filter, query).builder)
+                sqlQuery.builder.append(")")
                 
-                return sqlQuery.execute().map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                if query.includes.isEmpty {
+                    return sqlQuery.returning("*").execute().map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                } else {
+                    let includes = Array(query.includes.union(primaryKeys))
+                    return sqlQuery.returning(includes).execute().map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                }
             }
         } catch {
             

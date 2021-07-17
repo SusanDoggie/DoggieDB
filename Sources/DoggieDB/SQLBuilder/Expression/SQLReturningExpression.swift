@@ -48,6 +48,19 @@ extension SQLReturningExpression {
     /// Specify a list of columns to be part of the result set of the query.
     /// Each provided name is a string assumed to be a valid SQL identifier and
     /// is not qualified.
+    public func returning(_ columns: [String]) -> SQLFinalizedBuilder {
+        
+        var builder = self
+        
+        builder.builder.append("RETURNING")
+        builder.builder.append(columns.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ", "))
+        
+        return SQLFinalizedBuilder(builder: builder.builder)
+    }
+    
+    /// Specify a list of columns to be part of the result set of the query.
+    /// Each provided name is a string assumed to be a valid SQL identifier and
+    /// is not qualified.
     public func returning(_ column: String, _ column2: String, _ res: String ...) -> SQLFinalizedBuilder {
         
         var builder = self

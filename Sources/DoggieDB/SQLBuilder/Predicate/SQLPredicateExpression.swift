@@ -47,10 +47,6 @@ public indirect enum SQLPredicateExpression {
     
     case notContainsIn(SQLPredicateValue, [DBData])
     
-    case containsInSelect(SQLPredicateValue, SQLSelectBuilder)
-    
-    case notContainsInSelect(SQLPredicateValue, SQLSelectBuilder)
-    
     case like(SQLPredicateValue, String)
     
     case notLike(SQLPredicateValue, String)
@@ -136,18 +132,6 @@ extension SQLPredicateExpression {
                 }
                 builder.append(item)
             }
-            builder.append(")")
-            
-        case let .containsInSelect(x, select):
-            
-            builder.append("\(x) IN (" as SQLRaw)
-            builder.append(select.builder)
-            builder.append(")")
-            
-        case let .notContainsInSelect(x, select):
-            
-            builder.append("\(x) NOT IN (" as SQLRaw)
-            builder.append(select.builder)
             builder.append(")")
             
         case let .like(x, pattern): builder.append("\(x) LIKE \(pattern)" as SQLRaw)
