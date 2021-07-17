@@ -36,6 +36,16 @@ public struct DBObject {
 
 extension DBObject {
     
+    public init(class: String) {
+        self.class = `class`
+        self.primaryKeys = []
+        self._columns = [:]
+        self._updates = [:]
+    }
+}
+
+extension DBObject {
+    
     public init(class: String, object: BSONDocument) {
         
         var _columns: [String: DBData] = [:]
