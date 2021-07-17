@@ -83,6 +83,9 @@ extension DBObject {
     
     public subscript(column: String) -> DBData? {
         get {
+            if _id.contains(column) {
+                return _columns[column]
+            }
             if let value = _updates[column]?.value {
                 return value == nil ? nil : value
             }
