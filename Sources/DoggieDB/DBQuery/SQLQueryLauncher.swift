@@ -25,7 +25,7 @@
 
 @_implementationOnly import Private
 
-struct SQLQueryLauncher: DBQueryLauncher {
+struct SQLQueryLauncher: _DBQueryLauncher {
     
     let connection: DBSQLConnection
     
@@ -48,7 +48,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
         }
     }
     
-    func find<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]> {
+    func find<Query>(_ query: Query) -> EventLoopFuture<[_DBObject]> {
         
         guard let query = query as? DBQueryFindExpression else { fatalError() }
         guard self.connection === query.connection else { fatalError() }
@@ -85,7 +85,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
                     sqlQuery = sqlQuery.offset(query.skip)
                 }
                 
-                return sqlQuery.execute().map { $0.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) as! Result } }
+                return sqlQuery.execute().map { $0.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
             }
             
         } catch {
@@ -94,7 +94,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
         }
     }
     
-    func findAndDelete<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]> {
+    func findAndDelete<Query>(_ query: Query) -> EventLoopFuture<[_DBObject]> {
         
         guard let query = query as? DBQueryFindExpression else { fatalError() }
         guard self.connection === query.connection else { fatalError() }
@@ -107,7 +107,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
                 
                 let sqlQuery = connection.sqlQuery().delete(query.class).where { _ in filter }.returning("*")
                 
-                return sqlQuery.execute().map { $0.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) as! Result } }
+                return sqlQuery.execute().map { $0.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
             }
         } catch {
             
@@ -115,15 +115,15 @@ struct SQLQueryLauncher: DBQueryLauncher {
         }
     }
     
-    func findOneAndUpdate<Query, Result>(_ query: Query) -> EventLoopFuture<Result?> {
+    func findOneAndUpdate<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
         fatalError()
     }
     
-    func findOneAndDelete<Query, Result>(_ query: Query) -> EventLoopFuture<Result?> {
+    func findOneAndDelete<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
         return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     
-    func insert<Data, Result>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<(Result, Bool)?> {
+    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<(_DBObject, Bool)?> {
         
         guard let data = data as? [String: DBData] else { fatalError() }
         
@@ -139,8 +139,22 @@ struct SQLQueryLauncher: DBQueryLauncher {
             
             let sqlQuery = connection.sqlQuery().insert(`class`).columns(columns).values(values.map { "\($0)" }).returning("*")
             
-            return sqlQuery.execute().map { $0.first.map { (DBObject(table: `class`, primaryKeys: primaryKeys, object: $0) as! Result, true) } }
+            return sqlQuery.execute().map { $0.first.map { (_DBObject(table: `class`, primaryKeys: primaryKeys, object: $0), true) } }
         }
+    }
+}
+
+extension _DBObject {
+    
+    init(table: String, primaryKeys: [String], object: DBQueryRow) {
+        
+        var _columns: [String: DBData] = [:]
+        for key in object.keys {
+            guard let value = object[key] else { continue }
+            _columns[key] = value
+        }
+        
+        self.init(class: table, primaryKeys: Set(primaryKeys), columns: _columns)
     }
 }
 

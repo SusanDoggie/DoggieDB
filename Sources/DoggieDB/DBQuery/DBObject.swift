@@ -23,6 +23,8 @@
 //  THE SOFTWARE.
 //
 
+@_implementationOnly import Private
+
 public struct DBObject {
     
     public let `class`: String
@@ -42,35 +44,11 @@ extension DBObject {
         self._columns = [:]
         self._updates = [:]
     }
-}
-
-extension DBObject {
     
-    public init(class: String, object: BSONDocument) {
-        
-        var _columns: [String: DBData] = [:]
-        for (key, value) in object {
-            guard let value = try? DBData(value) else { continue }
-            _columns[key] = value
-        }
-        
-        self.class = `class`
-        self.primaryKeys = ["_id"]
-        self._columns = _columns
-        self._updates = [:]
-    }
-    
-    init(table: String, primaryKeys: [String], object: DBQueryRow) {
-        
-        var _columns: [String: DBData] = [:]
-        for key in object.keys {
-            guard let value = object[key] else { continue }
-            _columns[key] = value
-        }
-        
-        self.class = table
-        self.primaryKeys = Set(primaryKeys)
-        self._columns = _columns
+    init(_ object: _DBObject) {
+        self.class = object.class
+        self.primaryKeys = object.primaryKeys
+        self._columns = object.columns as? [String: DBData] ?? [:]
         self._updates = [:]
     }
 }
@@ -139,17 +117,17 @@ extension DBObject {
                 return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
             }
             
-            let result: EventLoopFuture<(DBObject, Bool)?> = launcher.insert(self.class, _updates.compactMapValues { $0.value })
+            let result = launcher.insert(self.class, _updates.compactMapValues { $0.value })
             
             return result.flatMap {
                 
                 guard let (object, is_complete) = $0 else { return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unknown) }
                 
                 if is_complete {
-                    return connection.eventLoopGroup.next().makeSucceededFuture(object)
+                    return connection.eventLoopGroup.next().makeSucceededFuture(DBObject(object))
                 }
                 
-                return object.fetch(on: connection)
+                return DBObject(object).fetch(on: connection)
             }
         }
         

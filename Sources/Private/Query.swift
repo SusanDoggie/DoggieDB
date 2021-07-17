@@ -23,17 +23,36 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBQueryLauncher {
+public struct _DBObject {
+    
+    public let `class`: String
+    
+    public let primaryKeys: Set<String>
+    
+    public let columns: [String: Any]
+    
+    public init(
+        class: String,
+        primaryKeys: Set<String>,
+        columns: [String: Any]
+    ) {
+        self.class = `class`
+        self.primaryKeys = primaryKeys
+        self.columns = columns
+    }
+}
+
+public protocol _DBQueryLauncher {
     
     func count<Query>(_ query: Query) -> EventLoopFuture<Int>
     
-    func find<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]>
+    func find<Query>(_ query: Query) -> EventLoopFuture<[_DBObject]>
     
-    func findAndDelete<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]>
+    func findAndDelete<Query>(_ query: Query) -> EventLoopFuture<[_DBObject]>
     
-    func findOneAndUpdate<Query, Result>(_ query: Query) -> EventLoopFuture<Result?>
+    func findOneAndUpdate<Query>(_ query: Query) -> EventLoopFuture<_DBObject?>
     
-    func findOneAndDelete<Query, Result>(_ query: Query) -> EventLoopFuture<Result?>
+    func findOneAndDelete<Query>(_ query: Query) -> EventLoopFuture<_DBObject?>
     
-    func insert<Data, Result>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<(Result, Bool)?>
+    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<(_DBObject, Bool)?>
 }

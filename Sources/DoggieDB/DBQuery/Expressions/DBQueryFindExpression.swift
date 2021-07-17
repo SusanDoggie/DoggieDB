@@ -68,7 +68,7 @@ extension DBQueryFindExpression {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
         }
-        return launcher.find(self)
+        return launcher.find(self).map { $0.map(DBObject.init) }
     }
     
     public func first() -> EventLoopFuture<DBObject?> {
@@ -82,7 +82,7 @@ extension DBQueryFindExpression {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
         }
-        return launcher.findAndDelete(self)
+        return launcher.findAndDelete(self).map { $0.map(DBObject.init) }
     }
 }
 

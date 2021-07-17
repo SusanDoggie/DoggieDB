@@ -32,13 +32,13 @@ public protocol DBQueryLauncherProvider {
 
 extension DBConnection {
     
-    var launcher: DBQueryLauncher? {
+    var launcher: _DBQueryLauncher? {
         
         if let connection = self as? DBSQLConnection {
             return SQLQueryLauncher(connection: connection)
         }
         
         guard let provider = self as? DBQueryLauncherProvider else { return nil }
-        return provider._launcher as? DBQueryLauncher
+        return provider._launcher as? _DBQueryLauncher
     }
 }

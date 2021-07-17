@@ -25,7 +25,7 @@
 
 @_implementationOnly import Private
 
-struct QueryLauncher: DBQueryLauncher {
+struct QueryLauncher: _DBQueryLauncher {
     
     let connection: MongoDBDriver.Connection
     
@@ -46,7 +46,7 @@ struct QueryLauncher: DBQueryLauncher {
         }
     }
     
-    func find<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]> {
+    func find<Query>(_ query: Query) -> EventLoopFuture<[_DBObject]> {
         
         guard let query = query as? DBQueryFindExpression else { fatalError() }
         guard self.connection === query.connection else { fatalError() }
@@ -72,7 +72,7 @@ struct QueryLauncher: DBQueryLauncher {
                 mongoQuery = mongoQuery.projection(BSONDocument(projection))
             }
             
-            return mongoQuery.execute().flatMap { $0.toArray() }.map { $0.map { DBObject(class: query.class, object: $0) as! Result } }
+            return mongoQuery.execute().flatMap { $0.toArray() }.map { $0.map { _DBObject(class: query.class, object: $0) } }
             
         } catch {
             
@@ -80,11 +80,11 @@ struct QueryLauncher: DBQueryLauncher {
         }
     }
     
-    func findAndDelete<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]> {
+    func findAndDelete<Query>(_ query: Query) -> EventLoopFuture<[_DBObject]> {
         return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     
-    func findOneAndUpdate<Query, Result>(_ query: Query) -> EventLoopFuture<Result?> {
+    func findOneAndUpdate<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
         
         guard let query = query as? DBQueryFindOneExpression else { fatalError() }
         guard self.connection === query.connection else { fatalError() }
@@ -106,7 +106,7 @@ struct QueryLauncher: DBQueryLauncher {
                 mongoQuery = mongoQuery.projection(BSONDocument(projection))
             }
             
-            return mongoQuery.execute().map { $0.map { DBObject(class: query.class, object: $0) as! Result } }
+            return mongoQuery.execute().map { $0.map { _DBObject(class: query.class, object: $0) } }
             
         } catch {
             
@@ -114,7 +114,7 @@ struct QueryLauncher: DBQueryLauncher {
         }
     }
     
-    func findOneAndDelete<Query, Result>(_ query: Query) -> EventLoopFuture<Result?> {
+    func findOneAndDelete<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
         
         guard let query = query as? DBQueryFindOneExpression else { fatalError() }
         guard self.connection === query.connection else { fatalError() }
@@ -134,7 +134,7 @@ struct QueryLauncher: DBQueryLauncher {
                 mongoQuery = mongoQuery.projection(BSONDocument(projection))
             }
             
-            return mongoQuery.execute().map { $0.map { DBObject(class: query.class, object: $0) as! Result } }
+            return mongoQuery.execute().map { $0.map { _DBObject(class: query.class, object: $0) } }
             
         } catch {
             
@@ -142,7 +142,7 @@ struct QueryLauncher: DBQueryLauncher {
         }
     }
     
-    func insert<Data, Result>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<(Result, Bool)?> {
+    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<(_DBObject, Bool)?> {
         
         guard let data = data as? [String: DBData] else { fatalError() }
         
@@ -150,12 +150,26 @@ struct QueryLauncher: DBQueryLauncher {
             
             return try connection.mongoQuery().collection(`class`)
                 .insertOne().value(BSONDocument(data))
-                .execute().map { $0.map { (DBObject(class: `class`, object: ["_id": $0.insertedID]) as! Result, false) }  }
+                .execute().map { $0.map { (_DBObject(class: `class`, object: ["_id": $0.insertedID]), false) }  }
             
         } catch {
             
             return connection.eventLoopGroup.next().makeFailedFuture(error)
         }
+    }
+}
+
+extension _DBObject {
+    
+    init(class: String, object: BSONDocument) {
+        
+        var _columns: [String: DBData] = [:]
+        for (key, value) in object {
+            guard let value = try? DBData(value) else { continue }
+            _columns[key] = value
+        }
+        
+        self.init(class: `class`, primaryKeys: ["_id"], columns: _columns)
     }
 }
 
