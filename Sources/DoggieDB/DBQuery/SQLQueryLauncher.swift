@@ -123,8 +123,24 @@ struct SQLQueryLauncher: DBQueryLauncher {
         return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     
-    func insert<Data, Result>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<Result?> {
-        fatalError()
+    func insert<Data, Result>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<(Result, Bool)?> {
+        
+        guard let data = data as? [String: DBData] else { fatalError() }
+        
+        return connection.primaryKey(of: `class`).flatMap { primaryKeys in
+            
+            var columns: [String] = []
+            var values: [DBData] = []
+            
+            for (key, value) in data {
+                columns.append(key)
+                values.append(value)
+            }
+            
+            let sqlQuery = connection.sqlQuery().insert(`class`).columns(columns).values(values.map { "\($0)" }).returning("*")
+            
+            return sqlQuery.execute().map { $0.first.map { (DBObject(table: `class`, primaryKeys: primaryKeys, object: $0) as! Result, true) } }
+        }
     }
 }
 

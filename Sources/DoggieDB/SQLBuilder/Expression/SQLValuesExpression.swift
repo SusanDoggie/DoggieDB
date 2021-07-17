@@ -40,6 +40,17 @@ extension SQLValuesExpression {
         return SQLValuesBuilder(builder: builder.builder)
     }
     
+    public func values(_ values: [SQLRaw]) -> SQLValuesBuilder<Self> {
+        
+        var builder = self
+        
+        builder.builder.append("VALUES (")
+        builder.builder.append(values.joined(separator: ", "))
+        builder.builder.append(")")
+        
+        return SQLValuesBuilder(builder: builder.builder)
+    }
+    
     public func values(_ value: SQLRaw, _ value2: SQLRaw, _ res: SQLRaw ...) -> SQLValuesBuilder<Self> {
         
         var builder = self

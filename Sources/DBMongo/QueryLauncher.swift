@@ -142,7 +142,7 @@ struct QueryLauncher: DBQueryLauncher {
         }
     }
     
-    func insert<Data, Result>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<Result?> {
+    func insert<Data, Result>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<(Result, Bool)?> {
         
         guard let data = data as? [String: DBData] else { fatalError() }
         
@@ -150,7 +150,7 @@ struct QueryLauncher: DBQueryLauncher {
             
             return try connection.mongoQuery().collection(`class`)
                 .insertOne().value(BSONDocument(data))
-                .execute().map { $0.flatMap { try? ["_id": DBData($0.insertedID)] } as? Result }
+                .execute().map { $0.map { (DBObject(class: `class`, object: ["_id": $0.insertedID]) as! Result, false) }  }
             
         } catch {
             

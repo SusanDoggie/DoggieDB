@@ -48,6 +48,17 @@ extension SQLInsertBuilder {
         return builder
     }
     
+    public func columns(_ columns: [String]) -> SQLInsertBuilder {
+        
+        var builder = self
+        
+        builder.builder.append("(")
+        builder.builder.append(columns.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ", "))
+        builder.builder.append(")")
+        
+        return builder
+    }
+    
     public func columns(_ column: String, _ column2: String, _ res: String ...) -> SQLInsertBuilder {
         
         var builder = self
