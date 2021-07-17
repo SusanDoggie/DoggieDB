@@ -27,7 +27,7 @@ public struct DBObject {
     
     public let `class`: String
     
-    private let _id: Set<String>
+    public let primaryKeys: Set<String>
     
     private let _columns: [String: DBData]
     
@@ -45,12 +45,12 @@ extension DBObject {
         }
         
         self.class = `class`
-        self._id = ["_id"]
+        self.primaryKeys = ["_id"]
         self._columns = _columns
         self._updates = [:]
     }
     
-    init(table: String, object: DBQueryRow) {
+    init(table: String, primaryKeys: [String], object: DBQueryRow) {
         
         var _columns: [String: DBData] = [:]
         for key in object.keys {
@@ -59,7 +59,7 @@ extension DBObject {
         }
         
         self.class = table
-        self._id = []
+        self.primaryKeys = Set(primaryKeys)
         self._columns = _columns
         self._updates = [:]
     }
@@ -68,10 +68,10 @@ extension DBObject {
 extension DBObject {
     
     public var id: DBData? {
-        if _id.count == 1, let _id = _id.first {
+        if primaryKeys.count == 1, let _id = primaryKeys.first {
             return _columns[_id]
         }
-        return DBData(self._columns.filter { _id.contains($0.key) })
+        return DBData(self._columns.filter { primaryKeys.contains($0.key) })
     }
 }
 
@@ -83,7 +83,7 @@ extension DBObject {
     
     public subscript(column: String) -> DBData? {
         get {
-            if _id.contains(column) {
+            if primaryKeys.contains(column) {
                 return _columns[column]
             }
             if let value = _updates[column]?.value {
@@ -92,7 +92,7 @@ extension DBObject {
             return _columns[column]
         }
         set {
-            guard !_id.contains(column) else { return }
+            guard !primaryKeys.contains(column) else { return }
             _updates[column] = .set(newValue ?? nil)
         }
     }

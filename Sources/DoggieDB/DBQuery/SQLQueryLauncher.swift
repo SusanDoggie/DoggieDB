@@ -57,32 +57,36 @@ struct SQLQueryLauncher: DBQueryLauncher {
             
             let filter = try SQLPredicateExpression(.and(query.filters))
             
-            var sqlQuery = connection.sqlQuery().select()
-            
-            if query.includes.isEmpty {
-                sqlQuery = sqlQuery.columns("COUNT(*)")
-            } else {
-                sqlQuery = sqlQuery.columns(query.includes.map { "\(identifier: $0)" })
+            return connection.primaryKey(of: query.class).flatMap { primaryKeys in
+                
+                var sqlQuery = connection.sqlQuery().select()
+                
+                if query.includes.isEmpty {
+                    sqlQuery = sqlQuery.columns("COUNT(*)")
+                } else {
+                    let includes = query.includes.union(primaryKeys)
+                    sqlQuery = sqlQuery.columns(includes.map { "\(identifier: $0)" })
+                }
+                
+                sqlQuery = sqlQuery.from(query.class).where { _ in filter }
+                
+                if !query.sort.isEmpty {
+                    sqlQuery = sqlQuery.orderBy(query.sort.map {
+                        switch $1 {
+                        case .ascending: return "\(identifier: $0) ASC"
+                        case .descending: return "\(identifier: $0) DESC"
+                        }
+                    })
+                }
+                if query.limit != .max {
+                    sqlQuery = sqlQuery.limit(query.limit)
+                }
+                if query.skip > 0 {
+                    sqlQuery = sqlQuery.offset(query.skip)
+                }
+                
+                return sqlQuery.execute().map { $0.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) as! Result } }
             }
-            
-            sqlQuery = sqlQuery.from(query.class).where { _ in filter }
-            
-            if !query.sort.isEmpty {
-                sqlQuery = sqlQuery.orderBy(query.sort.map {
-                    switch $1 {
-                    case .ascending: return "\(identifier: $0) ASC"
-                    case .descending: return "\(identifier: $0) DESC"
-                    }
-                })
-            }
-            if query.limit != .max {
-                sqlQuery = sqlQuery.limit(query.limit)
-            }
-            if query.skip > 0 {
-                sqlQuery = sqlQuery.offset(query.skip)
-            }
-            
-            return sqlQuery.execute().map { $0.map { DBObject(table: query.class, object: $0) as! Result } }
             
         } catch {
             
@@ -99,10 +103,12 @@ struct SQLQueryLauncher: DBQueryLauncher {
             
             let filter = try SQLPredicateExpression(.and(query.filters))
             
-            let sqlQuery = connection.sqlQuery().delete(query.class).where { _ in filter }.returning("*")
-            
-            return sqlQuery.execute().map { $0.map { DBObject(table: query.class, object: $0) as! Result } }
-            
+            return connection.primaryKey(of: query.class).flatMap { primaryKeys in
+                
+                let sqlQuery = connection.sqlQuery().delete(query.class).where { _ in filter }.returning("*")
+                
+                return sqlQuery.execute().map { $0.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) as! Result } }
+            }
         } catch {
             
             return connection.eventLoopGroup.next().makeFailedFuture(error)
