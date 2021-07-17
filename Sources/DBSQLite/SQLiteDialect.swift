@@ -25,6 +25,10 @@
 
 struct SQLiteDialect: SQLDialect {
     
+    static var rowId: String? {
+        return "ROWID"
+    }
+    
     static func identifier(_ str: String) -> String {
         return "\"\(str)\""
     }

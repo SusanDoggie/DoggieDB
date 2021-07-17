@@ -120,7 +120,28 @@ struct SQLQueryLauncher: _DBQueryLauncher {
     }
     
     func findOneAndDelete<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
-        return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
+        
+        guard let query = query as? DBQueryFindExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
+        
+        do {
+            
+            guard let rowId = connection.driver.sqlDialect?.rowId else { throw Database.Error.unsupportedOperation }
+            
+            let filter = try SQLPredicateExpression(.and(query.filters))
+            
+            return connection.primaryKey(of: query.class).flatMap { primaryKeys in
+                
+                let select = SQLSelectBuilder.select().columns("\(identifier: rowId)").from(query.class).where { _ in filter }.limit(1)
+                
+                let sqlQuery = connection.sqlQuery().delete(query.class).where { _ in .containsInSelect(.key(rowId), select) }.returning("*")
+                
+                return sqlQuery.execute().map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+            }
+        } catch {
+            
+            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        }
     }
     
     func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<(_DBObject, Bool)?> {

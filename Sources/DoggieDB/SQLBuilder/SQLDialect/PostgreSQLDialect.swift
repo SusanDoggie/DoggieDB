@@ -25,6 +25,10 @@
 
 struct PostgreSQLDialect: SQLDialect {
     
+    static var rowId: String? {
+        return "CTID"
+    }
+    
     static func identifier(_ str: String) -> String {
         return "\"\(str)\""
     }

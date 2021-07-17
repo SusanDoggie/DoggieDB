@@ -25,6 +25,8 @@
 
 public protocol SQLDialect {
     
+    static var rowId: String? { get }
+    
     static func identifier(_ str: String) -> String
     
     static var repeatablePlaceholder: Bool { get }
@@ -46,6 +48,10 @@ public protocol SQLDialect {
 }
 
 extension SQLDialect {
+    
+    public static var rowId: String? {
+        return nil
+    }
     
     public static var literalNull: String {
         return "NULL"
