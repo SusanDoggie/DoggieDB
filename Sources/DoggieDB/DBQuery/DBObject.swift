@@ -26,12 +26,19 @@
 public struct DBObject {
     
     private let _id: Set<String>
+    
+    private var _columns: [String: DBData]
 }
 
 extension DBObject {
     
     public init(_ object: BSONDocument) {
         self._id = ["_id"]
+        self._columns = [:]
+        for (key, value) in object {
+            guard let value = try? DBData(value) else { continue }
+            self._columns[key] = value
+        }
     }
 }
 
@@ -39,5 +46,10 @@ extension DBObject {
     
     init(_ object: DBQueryRow) {
         self._id = []
+        self._columns = [:]
+        for key in object.keys {
+            guard let value = object[key] else { continue }
+            self._columns[key] = value
+        }
     }
 }
