@@ -120,7 +120,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
     }
     
     func findOneAndDelete<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
-        return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+        return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
     }
     
     func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<(_DBObject, Bool)?> {

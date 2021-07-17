@@ -100,7 +100,7 @@ extension SQLiteDriver.Connection {
     }
     
     func materializedViews() -> EventLoopFuture<[String]> {
-        return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+        return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
     }
     
     func columns(of table: String) -> EventLoopFuture<[DBQueryRow]> {
@@ -156,7 +156,7 @@ extension SQLiteDriver.Connection {
         do {
             
             guard let (raw, binds) = self.serialize(sql) else {
-                throw Database.Error.invalidOperation(message: "unsupported operation")
+                throw Database.Error.unsupportedOperation
             }
             
             let _binds = try binds.map(SQLiteData.init)
@@ -177,7 +177,7 @@ extension SQLiteDriver.Connection {
         do {
             
             guard let (raw, binds) = self.serialize(sql) else {
-                throw Database.Error.invalidOperation(message: "unsupported operation")
+                throw Database.Error.unsupportedOperation
             }
             
             let _binds = try binds.map(SQLiteData.init)

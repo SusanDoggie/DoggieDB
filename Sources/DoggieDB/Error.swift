@@ -31,7 +31,7 @@ extension Database {
         
         case invalidConfiguration(message: String)
         
-        case invalidOperation(message: String)
+        case unsupportedOperation
         
         case valueNotFound
         

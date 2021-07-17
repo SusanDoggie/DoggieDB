@@ -75,11 +75,11 @@ extension DBConnection {
 extension DBConnection {
     
     public func version() -> EventLoopFuture<String> {
-        return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+        return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
     }
     
     public func databases() -> EventLoopFuture<[String]> {
-        return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+        return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
     }
 }
 
@@ -121,7 +121,7 @@ extension DBSQLConnection {
     public func execute(
         _ sql: SQLRaw
     ) -> EventLoopFuture<[DBQueryRow]> {
-        return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+        return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
     }
     
     public func execute(
@@ -135,6 +135,6 @@ extension DBSQLConnection {
         _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) throws -> Void
     ) -> EventLoopFuture<DBQueryMetadata> {
-        return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+        return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
     }
 }

@@ -117,7 +117,7 @@ extension DBObject {
         if objectId.isEmpty {
             
             guard let launcher = connection.launcher else {
-                return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+                return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
             }
             
             let result = launcher.insert(self.class, _updates.compactMapValues { $0.value })

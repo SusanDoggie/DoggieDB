@@ -144,7 +144,7 @@ extension SQLBuilder: SQLBuilderProtocol {
         guard let connection = self.connection else { fatalError() }
         
         guard let raw = self.raw else {
-            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
         
         return connection.execute(raw)
@@ -155,7 +155,7 @@ extension SQLBuilder: SQLBuilderProtocol {
         guard let connection = self.connection else { fatalError() }
         
         guard let raw = self.raw else {
-            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
         
         return connection.execute(raw, onRow: onRow)
@@ -166,7 +166,7 @@ extension SQLBuilder: SQLBuilderProtocol {
         guard let connection = self.connection else { fatalError() }
         
         guard let raw = self.raw else {
-            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
         
         return connection.execute(raw, onRow: onRow)

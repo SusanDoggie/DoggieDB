@@ -106,7 +106,7 @@ extension MySQLDriver.Connection {
     }
     
     func materializedViews() -> EventLoopFuture<[String]> {
-        return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+        return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
     }
     
     func columns(of table: String) -> EventLoopFuture<[DBQueryRow]> {
@@ -192,7 +192,7 @@ extension MySQLDriver.Connection {
         do {
             
             guard let (raw, binds) = self.serialize(sql) else {
-                throw Database.Error.invalidOperation(message: "unsupported operation")
+                throw Database.Error.unsupportedOperation
             }
             
             if binds.isEmpty {
@@ -218,7 +218,7 @@ extension MySQLDriver.Connection {
         do {
             
             guard let (raw, binds) = self.serialize(sql) else {
-                throw Database.Error.invalidOperation(message: "unsupported operation")
+                throw Database.Error.unsupportedOperation
             }
             
             var metadata: MySQLQueryMetadata?

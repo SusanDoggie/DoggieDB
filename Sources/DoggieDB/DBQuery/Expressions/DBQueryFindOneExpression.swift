@@ -79,7 +79,7 @@ extension DBQueryFindOneExpression {
     
     public func execute() -> EventLoopFuture<DBObject?> {
         guard let launcher = self.connection.launcher else {
-            return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+            return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
         return launcher.findOneAndUpdate(self).map { $0.map(DBObject.init) }
     }
@@ -89,7 +89,7 @@ extension DBQueryFindOneExpression {
     
     public func delete() -> EventLoopFuture<DBObject?> {
         guard let launcher = self.connection.launcher else {
-            return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+            return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
         return launcher.findOneAndDelete(self).map { $0.map(DBObject.init) }
     }

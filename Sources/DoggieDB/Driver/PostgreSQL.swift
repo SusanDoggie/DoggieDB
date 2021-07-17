@@ -264,7 +264,7 @@ extension PostgreSQLDriver.Connection {
         do {
             
             guard let (raw, binds) = self.serialize(sql) else {
-                throw Database.Error.invalidOperation(message: "unsupported operation")
+                throw Database.Error.unsupportedOperation
             }
             
             if binds.isEmpty {
@@ -290,7 +290,7 @@ extension PostgreSQLDriver.Connection {
         do {
             
             guard let (raw, binds) = self.serialize(sql) else {
-                throw Database.Error.invalidOperation(message: "unsupported operation")
+                throw Database.Error.unsupportedOperation
             }
             
             var metadata: PostgresQueryMetadata?
