@@ -141,6 +141,10 @@ struct QueryLauncher: DBQueryLauncher {
             return connection.eventLoopGroup.next().makeFailedFuture(error)
         }
     }
+    
+    func insert<Data, Result>(_ data: [String : Data]) -> EventLoopFuture<Result> {
+        fatalError()
+    }
 }
 
 extension MongoPredicateExpression {

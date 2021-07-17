@@ -119,8 +119,8 @@ extension DBObject {
             return connection.query().findOne(self.class)
                 .filter { object in .and(objectId.map { object[$0] == $1 }) }
                 .execute()
-                .flatMapThrowing {
-                    guard let object = $0 else { throw Database.Error.objectNotFound }
+                .flatMapThrowing { object in
+                    guard let object = object else { throw Database.Error.objectNotFound }
                     return object
                 }
             
@@ -133,14 +133,23 @@ extension DBObject {
         
         let objectId = self._columns.filter { primaryKeys.contains($0.key) }
         
+        if objectId.isEmpty {
+            
+            guard let launcher = connection.launcher else {
+                return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+            }
+            
+            return launcher.insert(_updates.compactMapValues { $0.value })
+        }
+        
         if objectId.count == primaryKeys.count {
             
             return connection.query().findOne(self.class)
                 .filter { object in .and(objectId.map { object[$0] == $1 }) }
                 .update(_updates)
                 .execute()
-                .flatMapThrowing {
-                    guard let object = $0 else { throw Database.Error.objectNotFound }
+                .flatMapThrowing { object in
+                    guard let object = object else { throw Database.Error.objectNotFound }
                     return object
                 }
             

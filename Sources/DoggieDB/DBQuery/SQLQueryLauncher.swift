@@ -122,6 +122,10 @@ struct SQLQueryLauncher: DBQueryLauncher {
     func findOneAndDelete<Query, Result>(_ query: Query) -> EventLoopFuture<Result?> {
         return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
+    
+    func insert<Data, Result>(_ data: [String : Data]) -> EventLoopFuture<Result> {
+        fatalError()
+    }
 }
 
 extension SQLPredicateExpression {

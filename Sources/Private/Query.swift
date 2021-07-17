@@ -34,4 +34,6 @@ public protocol DBQueryLauncher {
     func findOneAndUpdate<Query, Result>(_ query: Query) -> EventLoopFuture<Result?>
     
     func findOneAndDelete<Query, Result>(_ query: Query) -> EventLoopFuture<Result?>
+    
+    func insert<Data, Result>(_ data: [String: Data]) -> EventLoopFuture<Result>
 }
