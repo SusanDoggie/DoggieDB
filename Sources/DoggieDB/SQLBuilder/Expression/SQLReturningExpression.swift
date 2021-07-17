@@ -36,7 +36,11 @@ extension SQLReturningExpression {
         
         var builder = self
         
-        builder.builder.append("RETURNING \(identifier: column)" as SQLRaw)
+        if column == "*" {
+            builder.builder.append("RETURNING *" as SQLRaw)
+        } else {
+            builder.builder.append("RETURNING \(identifier: column)" as SQLRaw)
+        }
         
         return SQLFinalizedBuilder(builder: builder.builder)
     }

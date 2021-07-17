@@ -41,16 +41,34 @@ struct SQLQueryLauncher: DBQueryLauncher {
         fatalError()
     }
     
-    func findAndDelete<Query>(_ query: Query) -> EventLoopFuture<Int?> {
-        fatalError()
+    func findAndDelete<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]> {
+        
+        guard let query = query as? DBQueryFindExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
+        
+        do {
+            
+            let filter = try SQLPredicateExpression(.and(query.filters))
+            
+            let sqlQuery = connection.sqlQuery().delete(query.table).where { _ in filter }.returning("*")
+            
+            return sqlQuery.execute().map { $0.map { DBObject($0) as! Result } }
+            
+        } catch {
+            
+            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        }
     }
     
     func findOneAndUpdate<Query, Result>(_ query: Query) -> EventLoopFuture<Result?> {
         fatalError()
     }
+}
+
+extension DBObject {
     
-    func findOneAndDelete<Query, Result>(_ query: Query) -> EventLoopFuture<Result?> {
-        fatalError()
+    init(_ object: DBQueryRow) {
+        self.init()
     }
 }
 

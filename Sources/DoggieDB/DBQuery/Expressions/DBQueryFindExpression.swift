@@ -76,6 +76,16 @@ extension DBQueryFindExpression {
     }
 }
 
+extension DBQueryFindExpression {
+    
+    public func delete() -> EventLoopFuture<[DBObject]> {
+        guard let launcher = self.connection.launcher else {
+            return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+        }
+        return launcher.findAndDelete(self)
+    }
+}
+
 extension DBQueryFindExpression: DBQueryFilterOption { }
 extension DBQueryFindExpression: DBQuerySkipOptions { }
 extension DBQueryFindExpression: DBQueryLimitOption { }
