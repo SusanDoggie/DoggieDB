@@ -25,7 +25,7 @@
 
 public struct DBObject {
     
-    private let _class: String
+    public let `class`: String
     
     private let _id: Set<String>
     
@@ -44,7 +44,7 @@ extension DBObject {
             _columns[key] = value
         }
         
-        self._class = `class`
+        self.class = `class`
         self._id = ["_id"]
         self._columns = _columns
         self._updates = [:]
@@ -58,10 +58,20 @@ extension DBObject {
             _columns[key] = value
         }
         
-        self._class = table
+        self.class = table
         self._id = []
         self._columns = _columns
         self._updates = [:]
+    }
+}
+
+extension DBObject {
+    
+    public var id: DBData? {
+        if _id.count == 1, let _id = _id.first {
+            return _columns[_id]
+        }
+        return DBData(self._columns.filter { _id.contains($0.key) })
     }
 }
 
