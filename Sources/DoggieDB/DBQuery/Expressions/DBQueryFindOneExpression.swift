@@ -23,14 +23,6 @@
 //  THE SOFTWARE.
 //
 
-public enum DBQueryUpdateOperation {
-    
-    case set(DBData)
-    
-    case increment(DBData)
-    
-}
-
 public struct DBQueryFindOneExpression: DBQueryProtocol {
     
     public let connection: DBConnection

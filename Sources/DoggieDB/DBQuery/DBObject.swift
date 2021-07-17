@@ -67,4 +67,19 @@ extension DBObject {
 
 extension DBObject {
     
+    public var keys: Set<String> {
+        return Set(_columns.keys).union(_updates.keys)
+    }
+    
+    public subscript(column: String) -> DBData? {
+        get {
+            if let value = _updates[column]?.value {
+                return value == nil ? nil : value
+            }
+            return _columns[column]
+        }
+        set {
+            _updates[column] = .set(newValue ?? nil)
+        }
+    }
 }
