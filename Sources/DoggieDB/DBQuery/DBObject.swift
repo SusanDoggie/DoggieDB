@@ -61,7 +61,7 @@ extension DBObject {
         case 1: return _columns[primaryKeys.first!]
         default:
             let objectId = self._columns.filter { primaryKeys.contains($0.key) }
-            return !objectId.isEmpty && objectId.count == primaryKeys.count ? DBData(objectId) : nil
+            return objectId.count == primaryKeys.count ? DBData(objectId) : nil
         }
     }
 }
