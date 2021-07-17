@@ -40,6 +40,16 @@ extension SQLOrderByExpression {
     }
     
     /// Adds an `ORDER BY` clause to the statement.
+    public func orderBy(_ list: [SQLRaw]) -> Self {
+        
+        var builder = self
+        
+        builder.builder.append("ORDER BY \(list.joined(separator: ", "))")
+        
+        return builder
+    }
+    
+    /// Adds an `ORDER BY` clause to the statement.
     public func orderBy(_ orderBy: SQLRaw, _ orderBy2: SQLRaw, _ res: SQLRaw ...) -> Self {
         
         var builder = self

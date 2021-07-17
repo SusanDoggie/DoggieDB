@@ -34,11 +34,60 @@ struct SQLQueryLauncher: DBQueryLauncher {
         guard let query = query as? DBQueryFindExpression else { fatalError() }
         guard self.connection === query.connection else { fatalError() }
         
-        fatalError()
+        do {
+            
+            let filter = try SQLPredicateExpression(.and(query.filters))
+            
+            let sqlQuery = connection.sqlQuery().select().columns("COUNT(*)").from(query.table).where { _ in filter }
+            
+            return sqlQuery.execute().map { $0.first.flatMap { $0[$0.keys[0]]?.intValue } ?? 0 }
+            
+        } catch {
+            
+            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        }
     }
     
     func find<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]> {
-        fatalError()
+        
+        guard let query = query as? DBQueryFindExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
+        
+        do {
+            
+            let filter = try SQLPredicateExpression(.and(query.filters))
+            
+            var sqlQuery = connection.sqlQuery().select()
+            
+            if query.includes.isEmpty {
+                sqlQuery = sqlQuery.columns("COUNT(*)")
+            } else {
+                sqlQuery = sqlQuery.columns(query.includes.map { "\(identifier: $0)" })
+            }
+            
+            sqlQuery = sqlQuery.from(query.table).where { _ in filter }
+            
+            if !query.sort.isEmpty {
+                sqlQuery = sqlQuery.orderBy(query.sort.map {
+                    switch $1 {
+                    case .ascending: return "\(identifier: $0) ASC"
+                    case .descending: return "\(identifier: $0) DESC"
+                    }
+                })
+            }
+            if query.limit != .max {
+                sqlQuery = sqlQuery.limit(query.limit)
+            }
+            if query.skip > 0 {
+                sqlQuery = sqlQuery.offset(query.skip)
+            }
+            
+            return sqlQuery.execute().map { $0.map { DBObject($0) as! Result } }
+            
+        } catch {
+            
+            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        }
     }
     
     func findAndDelete<Query, Result>(_ query: Query) -> EventLoopFuture<[Result]> {

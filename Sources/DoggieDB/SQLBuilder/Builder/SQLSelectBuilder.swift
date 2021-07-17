@@ -82,6 +82,15 @@ extension SQLSelectBuilderProtocol {
         
         return builder
     }
+    
+    public func columns(_ columns: [SQLRaw]) -> Self {
+        
+        var builder = self
+        
+        builder.builder.append(columns.joined(separator: ", "))
+        
+        return builder
+    }
 }
 
 extension SQLSelectBuilderProtocol {
