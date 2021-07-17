@@ -103,21 +103,39 @@ extension DBObject {
     public func fetch(on connection: DBConnection) -> EventLoopFuture<DBObject?> {
         
         let objectId = self._columns.filter { primaryKeys.contains($0.key) }
-        guard objectId.count == primaryKeys.count else { return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidObjectId) }
         
-        return connection.query().findOne(self.class)
-            .filter { object in .and(objectId.map { object[$0] == $1 }) }
-            .execute()
+        if objectId.count == primaryKeys.count {
+            
+            return connection.query().findOne(self.class)
+                .filter { object in .and(objectId.map { object[$0] == $1 }) }
+                .execute()
+                .flatMapThrowing {
+                    guard let object = $0 else { throw Database.Error.objectNotFound }
+                    return object
+                }
+            
+        } else {
+            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidObjectId)
+        }
     }
     
     public func save(on connection: DBConnection) -> EventLoopFuture<DBObject?> {
         
         let objectId = self._columns.filter { primaryKeys.contains($0.key) }
-        guard objectId.count == primaryKeys.count else { return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidObjectId) }
         
-        return connection.query().findOne(self.class)
-            .filter { object in .and(objectId.map { object[$0] == $1 }) }
-            .update(_updates)
-            .execute()
+        if objectId.count == primaryKeys.count {
+            
+            return connection.query().findOne(self.class)
+                .filter { object in .and(objectId.map { object[$0] == $1 }) }
+                .update(_updates)
+                .execute()
+                .flatMapThrowing {
+                    guard let object = $0 else { throw Database.Error.objectNotFound }
+                    return object
+                }
+            
+        } else {
+            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidObjectId)
+        }
     }
 }

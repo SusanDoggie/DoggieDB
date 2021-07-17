@@ -43,6 +43,8 @@ extension Database {
         
         case invalidObjectId
         
+        case objectNotFound
+        
         case unknown
         
     }
