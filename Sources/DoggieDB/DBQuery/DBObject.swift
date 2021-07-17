@@ -109,9 +109,6 @@ extension DBObject {
             .filter { object in .and(objectId.map { object[$0] == $1 }) }
             .execute()
     }
-}
-
-extension DBObject {
     
     public func save(on connection: DBConnection) -> EventLoopFuture<DBObject?> {
         
