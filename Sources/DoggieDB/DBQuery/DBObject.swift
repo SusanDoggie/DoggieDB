@@ -56,10 +56,13 @@ extension DBObject {
 extension DBObject {
     
     public var objectId: DBData? {
-        if primaryKeys.count == 1, let objectId = primaryKeys.first {
-            return _columns[objectId]
+        switch primaryKeys.count {
+        case 0: return nil
+        case 1: return _columns[primaryKeys.first!]
+        default:
+            let objectId = self._columns.filter { primaryKeys.contains($0.key) }
+            return !objectId.isEmpty && objectId.count == primaryKeys.count ? DBData(objectId) : nil
         }
-        return DBData(self._columns.filter { primaryKeys.contains($0.key) })
     }
 }
 
