@@ -100,7 +100,7 @@ extension DBObject {
 
 extension DBObject {
     
-    public func fetch(on connection: DBConnection) -> EventLoopFuture<DBObject?> {
+    public func fetch(on connection: DBConnection) -> EventLoopFuture<DBObject> {
         
         let objectId = self._columns.filter { primaryKeys.contains($0.key) }
         
@@ -119,7 +119,7 @@ extension DBObject {
         }
     }
     
-    public func save(on connection: DBConnection) -> EventLoopFuture<DBObject?> {
+    public func save(on connection: DBConnection) -> EventLoopFuture<DBObject> {
         
         let objectId = self._columns.filter { primaryKeys.contains($0.key) }
         
