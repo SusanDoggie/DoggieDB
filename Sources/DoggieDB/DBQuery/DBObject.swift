@@ -139,7 +139,14 @@ extension DBObject {
                 return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
             }
             
-            return launcher.insert(_updates.compactMapValues { $0.value })
+            let result: EventLoopFuture<[String: DBData]?> = launcher.insert(self.class, _updates.compactMapValues { $0.value })
+            
+            return result.flatMapThrowing { objectId -> DBObject in
+                
+                guard let objectId = objectId else { throw Database.Error.unknown }
+                return DBObject(class: self.class, primaryKeys: Set(objectId.keys), _columns: objectId, _updates: [:])
+                
+            }.flatMap { $0.fetch(on: connection) }
         }
         
         if objectId.count == primaryKeys.count {

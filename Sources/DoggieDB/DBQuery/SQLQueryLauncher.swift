@@ -123,7 +123,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
         return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
     }
     
-    func insert<Data, Result>(_ data: [String : Data]) -> EventLoopFuture<Result> {
+    func insert<Data, Result>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<Result?> {
         fatalError()
     }
 }

@@ -142,8 +142,20 @@ struct QueryLauncher: DBQueryLauncher {
         }
     }
     
-    func insert<Data, Result>(_ data: [String : Data]) -> EventLoopFuture<Result> {
-        fatalError()
+    func insert<Data, Result>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<Result?> {
+        
+        guard let data = data as? [String: DBData] else { fatalError() }
+        
+        do {
+            
+            return try connection.mongoQuery().collection(`class`)
+                .insertOne().value(BSONDocument(data))
+                .execute().map { $0.flatMap { try? ["_id": DBData($0.insertedID)] } as? Result }
+            
+        } catch {
+            
+            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        }
     }
 }
 
