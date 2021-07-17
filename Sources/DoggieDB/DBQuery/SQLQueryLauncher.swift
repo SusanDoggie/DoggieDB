@@ -38,7 +38,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
             
             let filter = try SQLPredicateExpression(.and(query.filters))
             
-            let sqlQuery = connection.sqlQuery().select().columns("COUNT(*)").from(query.table).where { _ in filter }
+            let sqlQuery = connection.sqlQuery().select().columns("COUNT(*)").from(query.class).where { _ in filter }
             
             return sqlQuery.execute().map { $0.first.flatMap { $0[$0.keys[0]]?.intValue } ?? 0 }
             
@@ -65,7 +65,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
                 sqlQuery = sqlQuery.columns(query.includes.map { "\(identifier: $0)" })
             }
             
-            sqlQuery = sqlQuery.from(query.table).where { _ in filter }
+            sqlQuery = sqlQuery.from(query.class).where { _ in filter }
             
             if !query.sort.isEmpty {
                 sqlQuery = sqlQuery.orderBy(query.sort.map {
@@ -82,7 +82,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
                 sqlQuery = sqlQuery.offset(query.skip)
             }
             
-            return sqlQuery.execute().map { $0.map { DBObject($0) as! Result } }
+            return sqlQuery.execute().map { $0.map { DBObject(table: query.class, object: $0) as! Result } }
             
         } catch {
             
@@ -99,9 +99,9 @@ struct SQLQueryLauncher: DBQueryLauncher {
             
             let filter = try SQLPredicateExpression(.and(query.filters))
             
-            let sqlQuery = connection.sqlQuery().delete(query.table).where { _ in filter }.returning("*")
+            let sqlQuery = connection.sqlQuery().delete(query.class).where { _ in filter }.returning("*")
             
-            return sqlQuery.execute().map { $0.map { DBObject($0) as! Result } }
+            return sqlQuery.execute().map { $0.map { DBObject(table: query.class, object: $0) as! Result } }
             
         } catch {
             

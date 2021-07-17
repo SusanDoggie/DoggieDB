@@ -35,7 +35,7 @@ public struct DBQueryFindOneExpression: DBQueryProtocol {
     
     public let connection: DBConnection
     
-    public let table: String
+    public let `class`: String
     
     public var filters: [DBQueryPredicateExpression] = []
     
@@ -49,16 +49,16 @@ public struct DBQueryFindOneExpression: DBQueryProtocol {
     
     public var upsert: Bool = false
     
-    init(connection: DBConnection, table: String) {
+    init(connection: DBConnection, class: String) {
         self.connection = connection
-        self.table = table
+        self.class = `class`
     }
 }
 
 extension DBQuery {
     
-    public func findOne(_ table: String) -> DBQueryFindOneExpression {
-        return DBQueryFindOneExpression(connection: connection, table: table)
+    public func findOne(_ class: String) -> DBQueryFindOneExpression {
+        return DBQueryFindOneExpression(connection: connection, class: `class`)
     }
 }
 

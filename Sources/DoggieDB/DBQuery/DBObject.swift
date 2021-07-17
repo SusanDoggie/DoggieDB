@@ -25,31 +25,46 @@
 
 public struct DBObject {
     
+    private let _class: String
+    
     private let _id: Set<String>
     
-    private var _columns: [String: DBData]
+    private let _columns: [String: DBData]
+    
+    private var _updates: [String: DBQueryUpdateOperation]
 }
 
 extension DBObject {
     
-    public init(_ object: BSONDocument) {
-        self._id = ["_id"]
-        self._columns = [:]
+    public init(class: String, object: BSONDocument) {
+        
+        var _columns: [String: DBData] = [:]
         for (key, value) in object {
             guard let value = try? DBData(value) else { continue }
-            self._columns[key] = value
+            _columns[key] = value
         }
+        
+        self._class = `class`
+        self._id = ["_id"]
+        self._columns = _columns
+        self._updates = [:]
+    }
+    
+    init(table: String, object: DBQueryRow) {
+        
+        var _columns: [String: DBData] = [:]
+        for key in object.keys {
+            guard let value = object[key] else { continue }
+            _columns[key] = value
+        }
+        
+        self._class = table
+        self._id = []
+        self._columns = _columns
+        self._updates = [:]
     }
 }
 
 extension DBObject {
     
-    init(_ object: DBQueryRow) {
-        self._id = []
-        self._columns = [:]
-        for key in object.keys {
-            guard let value = object[key] else { continue }
-            self._columns[key] = value
-        }
-    }
 }

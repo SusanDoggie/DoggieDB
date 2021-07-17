@@ -38,7 +38,7 @@ struct QueryLauncher: DBQueryLauncher {
             
             let filter = try MongoPredicateExpression(.and(query.filters)).toBSONDocument()
             
-            return connection.mongoQuery().collection(query.table).count().filter(filter).execute()
+            return connection.mongoQuery().collection(query.class).count().filter(filter).execute()
             
         } catch {
             
@@ -55,7 +55,7 @@ struct QueryLauncher: DBQueryLauncher {
             
             let filter = try MongoPredicateExpression(.and(query.filters)).toBSONDocument()
             
-            var mongoQuery = connection.mongoQuery().collection(query.table).find().filter(filter)
+            var mongoQuery = connection.mongoQuery().collection(query.class).find().filter(filter)
             
             if !query.sort.isEmpty {
                 mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
@@ -72,7 +72,7 @@ struct QueryLauncher: DBQueryLauncher {
                 mongoQuery = mongoQuery.projection(BSONDocument(projection))
             }
             
-            return mongoQuery.execute().flatMap { $0.toArray() }.map { $0.map { DBObject($0) as! Result } }
+            return mongoQuery.execute().flatMap { $0.toArray() }.map { $0.map { DBObject(class: query.class, object: $0) as! Result } }
             
         } catch {
             
@@ -93,7 +93,7 @@ struct QueryLauncher: DBQueryLauncher {
             
             let filter = try MongoPredicateExpression(.and(query.filters)).toBSONDocument()
             
-            var mongoQuery = connection.mongoQuery().collection(query.table).findOneAndUpdate().filter(filter)
+            var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter)
             
             mongoQuery = mongoQuery.upsert(query.upsert)
             
@@ -106,7 +106,7 @@ struct QueryLauncher: DBQueryLauncher {
                 mongoQuery = mongoQuery.projection(BSONDocument(projection))
             }
             
-            return mongoQuery.execute().map { $0.map { DBObject($0) as! Result } }
+            return mongoQuery.execute().map { $0.map { DBObject(class: query.class, object: $0) as! Result } }
             
         } catch {
             
@@ -123,7 +123,7 @@ struct QueryLauncher: DBQueryLauncher {
             
             let filter = try MongoPredicateExpression(.and(query.filters)).toBSONDocument()
             
-            var mongoQuery = connection.mongoQuery().collection(query.table).findOneAndDelete().filter(filter)
+            var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndDelete().filter(filter)
             
             if !query.sort.isEmpty {
                 mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
@@ -134,7 +134,7 @@ struct QueryLauncher: DBQueryLauncher {
                 mongoQuery = mongoQuery.projection(BSONDocument(projection))
             }
             
-            return mongoQuery.execute().map { $0.map { DBObject($0) as! Result } }
+            return mongoQuery.execute().map { $0.map { DBObject(class: query.class, object: $0) as! Result } }
             
         } catch {
             
