@@ -132,7 +132,42 @@ struct SQLQueryLauncher: _DBQueryLauncher {
     }
     
     func findOneAndUpdate<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
-        fatalError()
+        
+        guard let query = query as? DBQueryFindOneExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
+        
+        do {
+            
+            guard let rowId = connection.driver.sqlDialect?.rowId else { throw Database.Error.unsupportedOperation }
+            
+            let filter = try SQLPredicateExpression(.and(query.filters))
+            
+            return connection.primaryKey(of: query.class).flatMap { primaryKeys in
+                
+                let update: [String: SQLRaw] = Dictionary(uniqueKeysWithValues:query.update.map { key, value in
+                    switch value {
+                    case let .set(value): return (key, "\(value)")
+                    case let .increment(value): return (key, "\(identifier: key) + \(value)")
+                    }
+                })
+                
+                var sqlQuery = connection.sqlQuery().update(query.class).set(update)
+                
+                sqlQuery.builder.append("WHERE \(identifier: rowId) IN (" as SQLRaw)
+                sqlQuery.builder.append(_findOne(rowId, filter, query).builder)
+                sqlQuery.builder.append(")")
+                
+                if query.includes.isEmpty {
+                    return sqlQuery.returning("*").execute().map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                } else {
+                    let includes = Array(query.includes.union(primaryKeys))
+                    return sqlQuery.returning(includes).execute().map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                }
+            }
+        } catch {
+            
+            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        }
     }
     
     func findOneAndDelete<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
