@@ -63,6 +63,10 @@ struct SQLQueryLauncher: DBQueryLauncher {
     func findOneAndUpdate<Query, Result>(_ query: Query) -> EventLoopFuture<Result?> {
         fatalError()
     }
+    
+    func findOneAndDelete<Query, Result>(_ query: Query) -> EventLoopFuture<Result?> {
+        return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidOperation(message: "unsupported operation"))
+    }
 }
 
 extension DBObject {
