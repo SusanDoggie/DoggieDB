@@ -80,8 +80,23 @@ struct QueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func findAndDelete<Query>(_ query: Query) -> EventLoopFuture<[_DBObject]> {
-        return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
+    func findAndDelete<Query>(_ query: Query) -> EventLoopFuture<Int?> {
+        
+        guard let query = query as? DBQueryFindExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
+        
+        do {
+            
+            let filter = try MongoPredicateExpression(.and(query.filters)).toBSONDocument()
+            
+            let mongoQuery = connection.mongoQuery().collection(query.class).deleteMany().filter(filter)
+            
+            return mongoQuery.execute().map { $0?.deletedCount }
+            
+        } catch {
+            
+            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        }
     }
     
     func findOneAndUpdate<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {

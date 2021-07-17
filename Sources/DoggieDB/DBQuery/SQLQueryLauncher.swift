@@ -94,7 +94,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func findAndDelete<Query>(_ query: Query) -> EventLoopFuture<[_DBObject]> {
+    func findAndDelete<Query>(_ query: Query) -> EventLoopFuture<Int?> {
         
         guard let query = query as? DBQueryFindExpression else { fatalError() }
         guard self.connection === query.connection else { fatalError() }
@@ -103,12 +103,12 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             
             let filter = try SQLPredicateExpression(.and(query.filters))
             
-            return connection.primaryKey(of: query.class).flatMap { primaryKeys in
-                
-                let sqlQuery = connection.sqlQuery().delete(query.class).where { _ in filter }.returning("*")
-                
-                return sqlQuery.execute().map { $0.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
-            }
+            var sqlQuery = connection.sqlQuery().delete(query.class).where { _ in filter }
+            
+            sqlQuery.builder.append("RETURNING 0")
+            
+            return sqlQuery.execute().map { $0.count }
+            
         } catch {
             
             return connection.eventLoopGroup.next().makeFailedFuture(error)

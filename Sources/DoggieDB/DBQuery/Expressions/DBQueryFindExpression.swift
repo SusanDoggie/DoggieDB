@@ -78,11 +78,11 @@ extension DBQueryFindExpression {
 
 extension DBQueryFindExpression {
     
-    public func delete() -> EventLoopFuture<[DBObject]> {
+    public func delete() -> EventLoopFuture<Int?> {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.findAndDelete(self).map { $0.map(DBObject.init) }
+        return launcher.findAndDelete(self)
     }
 }
 
