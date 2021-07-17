@@ -165,12 +165,13 @@ jobs:
         include:
           - distro: centos8
             jsc: webkit2gtk3-jsc-devel
+            allowerasing: --allowerasing
     steps:
     - uses: actions/checkout@v1
       with:
         submodules: recursive
     - name: Prepare		
-      run: yum update -y --allowerasing
+      run: yum update -y ${{ matrix.allowerasing }}
     - name: Install libmongoc
       run: yum install -y mongo-c-driver openssl-devel
     - name: Install sqlite3
@@ -283,12 +284,13 @@ jobs:
         include:
           - distro: centos8
             jsc: webkit2gtk3-jsc-devel
+            allowerasing: --allowerasing
     steps:
     - uses: actions/checkout@v1
       with:
         submodules: recursive
     - name: Prepare		
-      run: yum update -y --allowerasing
+      run: yum update -y ${{ matrix.allowerasing }}
     - name: Install libmongoc
       run: yum install -y mongo-c-driver openssl-devel
     - name: Install sqlite3
