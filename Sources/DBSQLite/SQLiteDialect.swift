@@ -41,11 +41,11 @@ struct SQLiteDialect: SQLDialect {
         return "?\(position)"
     }
     
-    static func nullSafeEqual(_ lhs: SQLPredicateValue, _ rhs: SQLPredicateValue) -> SQLRaw {
+    static func nullSafeEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) -> SQLRaw {
         return "\(lhs) IS \(rhs)"
     }
     
-    static func nullSafeNotEqual(_ lhs: SQLPredicateValue, _ rhs: SQLPredicateValue) -> SQLRaw {
+    static func nullSafeNotEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) -> SQLRaw {
         return "\(lhs) IS NOT \(rhs)"
     }
     

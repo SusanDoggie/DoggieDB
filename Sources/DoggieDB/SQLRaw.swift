@@ -211,7 +211,7 @@ extension SQLRaw {
     }
 }
 
-extension Array where Element == SQLRaw {
+extension Collection where Element == SQLRaw {
     
     public func joined(separator: SQLRaw) -> SQLRaw {
         return SQLRaw(components: self.reduce([]) { $0 + separator.components + $1.components })

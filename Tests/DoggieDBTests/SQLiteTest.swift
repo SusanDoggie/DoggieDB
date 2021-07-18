@@ -69,13 +69,15 @@ class SQLiteTest: XCTestCase {
         
         do {
             
-            _ = try connection.sqlQuery().createTable("contacts")
-                .column(name: "contact_id", type: "INTEGER", optional: false, primaryKey: true)
-                .column(name: "first_name", type: "TEXT", optional: false)
-                .column(name: "last_name", type: "TEXT")
-                .column(name: "email", type: "TEXT", optional: false, unique: true)
-                .column(name: "phone", type: "TEXT", optional: false, unique: true)
-                .execute().wait()
+            _ = try connection.execute("""
+                CREATE TABLE contacts (
+                    contact_id INTEGER NOT NULL PRIMARY KEY,
+                    first_name TEXT NOT NULL,
+                    last_name TEXT,
+                    email TEXT NOT NULL UNIQUE,
+                    phone TEXT NOT NULL UNIQUE,
+                )
+                """).wait()
             
             XCTAssertTrue(try connection.tables().wait().contains("contacts"))
             
@@ -116,14 +118,16 @@ class SQLiteTest: XCTestCase {
         
         do {
             
-            _ = try connection.sqlQuery().createTable("testPrimaryKey")
-                .column(name: "column_1", type: "INTEGER", optional: false)
-                .column(name: "column_2", type: "TEXT", optional: false)
-                .column(name: "column_3", type: "TEXT", optional: false)
-                .column(name: "column_4", type: "TEXT")
-                .column(name: "column_5", type: "TEXT", optional: false, unique: true)
-                .primaryKey("column_1", "column_3", "column_2")
-                .execute().wait()
+            _ = try connection.execute("""
+                CREATE TABLE testPrimaryKey (
+                    column_1 INTEGER NOT NULL,
+                    column_2 TEXT NOT NULL,
+                    column_3 TEXT NOT NULL,
+                    column_4 TEXT,
+                    column_5 TEXT NOT NULL UNIQUE,
+                    PRIMARY KEY (column_1, column_3, column_2)
+                )
+                """).wait()
             
             let primaryKey = try connection.primaryKey(of: "testPrimaryKey").wait()
             
@@ -237,13 +241,15 @@ class SQLiteTest: XCTestCase {
         
         do {
             
-            let result = try connection.sqlQuery()
-                .withRecursive([
-                    "test": SQLSelectBuilder.select().columns("1 AS n").union().select().columns("n+1 AS n").from("test")
-                ])
-                .select().columns("n").from("test")
-                .limit(10)
-                .execute().wait()
+            let result = try connection.execute("""
+                WITH RECURSIVE test AS (
+                    SELECT 1 AS n
+                    UNION
+                    SELECT n+1 AS n FROM test
+                )
+                SELECT n FROM test
+                LIMIT 10
+                """).wait()
             
             for (i, row) in result.enumerated() {
                 XCTAssertEqual(row["n"]?.intValue, i + 1)
@@ -260,11 +266,11 @@ class SQLiteTest: XCTestCase {
         
         do {
             
-            _ = try connection.sqlQuery().beginTransaction().execute().wait()
+            _ = try connection.execute("BEGIN").wait()
             
             let result = try connection.execute("SELECT \(1) as value").wait()
             
-            _ = try connection.sqlQuery().commit().execute().wait()
+            _ = try connection.execute("COMMIT").wait()
             
             XCTAssertEqual(result[0]["value"]?.intValue, 1)
             

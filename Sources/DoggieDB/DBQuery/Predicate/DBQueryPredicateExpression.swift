@@ -78,6 +78,88 @@ extension DBQueryPredicateValue {
     }
 }
 
+extension SQLRaw.StringInterpolation {
+    
+    public mutating func appendInterpolation(_ value: DBQueryPredicateValue) {
+        switch value {
+        case let .key(key): self.appendInterpolation(identifier: key)
+        case let .value(value): self.appendInterpolation(value.toDBData())
+        }
+    }
+}
+
+extension DBQueryPredicateExpression {
+    
+    var _andList: [DBQueryPredicateExpression]? {
+        switch self {
+        case let .and(list): return list.flatMap { $0._andList ?? [$0] }
+        default: return nil
+        }
+    }
+    
+    var _orList: [DBQueryPredicateExpression]? {
+        switch self {
+        case let .or(list): return list.flatMap { $0._orList ?? [$0] }
+        default: return nil
+        }
+    }
+    
+    func serialize(_ dialect: SQLDialect.Type) throws -> SQLRaw {
+        
+        switch self {
+        case let .not(x): return try "NOT (\(x.serialize(dialect)))"
+        case let .equal(lhs, rhs): return dialect.nullSafeEqual(lhs, rhs)
+        case let .notEqual(lhs, rhs): return dialect.nullSafeNotEqual(lhs, rhs)
+        case let .lessThan(lhs, rhs): return "\(lhs) < \(rhs)"
+        case let .greaterThan(lhs, rhs): return "\(lhs) > \(rhs)"
+        case let .lessThanOrEqualTo(lhs, rhs): return "\(lhs) <= \(rhs)"
+        case let .greaterThanOrEqualTo(lhs, rhs): return "\(lhs) >= \(rhs)"
+        case let .between(x, from, to): return "\(x) BETWEEN \(from) AND \(to)"
+        case let .notBetween(x, from, to): return "\(x) NOT BETWEEN \(from) AND \(to)"
+        case let .containsIn(x, .value(list)):
+            
+            guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
+            return "\(x) IN (\(array.map { "\($0)" as SQLRaw }.joined(separator: ",")))"
+            
+        case let .notContainsIn(x, .value(list)):
+            
+            guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
+            return "\(x) NOT IN (\(array.map { "\($0)" as SQLRaw }.joined(separator: ",")))"
+            
+        case let .like(x, pattern): return "\(x) LIKE \(pattern)"
+        case let .notLike(x, pattern): return "\(x) NOT LIKE \(pattern)"
+        case let .and(list):
+            
+            let list = list.flatMap { $0._andList ?? [$0] }
+            
+            switch list.count {
+            case 0: fatalError("invalid expression")
+            case 1: return try list[0].serialize(dialect)
+            default: return try "\(list.map { try "(\($0.serialize(dialect)))" as SQLRaw }.joined(separator: " AND "))"
+            }
+            
+        case let .or(list):
+            
+            let list = list.flatMap { $0._orList ?? [$0] }
+            
+            switch list.count {
+            case 0: fatalError("invalid expression")
+            case 1: return try list[0].serialize(dialect)
+            default: return try "\(list.map { try "(\($0.serialize(dialect)))" as SQLRaw }.joined(separator: " OR "))"
+            }
+            
+        default: throw Database.Error.invalidExpression
+        }
+    }
+}
+
+extension Collection where Element == DBQueryPredicateExpression {
+    
+    func serialize(_ dialect: SQLDialect.Type) throws -> SQLRaw {
+        return try DBQueryPredicateExpression.and(Array(self)).serialize(dialect)
+    }
+}
+
 public func == (lhs: DBQueryPredicateKey, rhs: DBQueryPredicateKey) -> DBQueryPredicateExpression {
     return .equal(.key(lhs), .key(rhs))
 }

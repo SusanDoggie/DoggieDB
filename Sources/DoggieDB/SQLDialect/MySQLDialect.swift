@@ -1,5 +1,5 @@
 //
-//  SQLOrderByExpression.swift
+//  MySQLDialect.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,41 +23,34 @@
 //  THE SOFTWARE.
 //
 
-public protocol SQLOrderByExpression: SQLBuilderProtocol {
+struct MySQLDialect: SQLDialect {
     
-}
-
-extension SQLOrderByExpression {
-    
-    /// Adds an `ORDER BY` clause to the statement.
-    public func orderBy(_ orderBy: SQLRaw) -> Self {
-        
-        var builder = self
-        
-        builder.builder.append("ORDER BY \(orderBy)")
-        
-        return builder
+    static func identifier(_ str: String) -> String {
+        return "`\(str)`"
     }
     
-    /// Adds an `ORDER BY` clause to the statement.
-    public func orderBy(_ list: [SQLRaw]) -> Self {
-        
-        var builder = self
-        
-        builder.builder.append("ORDER BY \(list.joined(separator: ", "))")
-        
-        return builder
+    static var repeatablePlaceholder: Bool {
+        return false
     }
     
-    /// Adds an `ORDER BY` clause to the statement.
-    public func orderBy(_ orderBy: SQLRaw, _ orderBy2: SQLRaw, _ res: SQLRaw ...) -> Self {
-        
-        var builder = self
-        
-        let list = [orderBy, orderBy2] + res
-        
-        builder.builder.append("ORDER BY \(list.joined(separator: ", "))")
-        
-        return builder
+    static func bindPlaceholder(at position: Int) -> String {
+        return "?"
     }
+    
+    static func nullSafeEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) -> SQLRaw {
+        return "\(lhs) <=> \(rhs)"
+    }
+    
+    static func nullSafeNotEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) -> SQLRaw {
+        return "NOT \(lhs) <=> \(rhs)"
+    }
+    
+    static func literalBoolean(_ value: Bool) -> String {
+        return value ? "1" : "0"
+    }
+    
+    static var autoIncrementClause: String {
+        return "AUTO_INCREMENT"
+    }
+    
 }

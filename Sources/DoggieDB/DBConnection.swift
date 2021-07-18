@@ -113,7 +113,6 @@ public protocol DBSQLConnection: DBConnection {
         onRow: @escaping (DBQueryRow) throws -> Void
     ) -> EventLoopFuture<DBQueryMetadata>
     
-    func sqlQuery() -> SQLBuilder
 }
 
 extension DBSQLConnection {

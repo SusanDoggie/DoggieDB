@@ -25,6 +25,20 @@
 
 @_implementationOnly import Private
 
+extension OrderedDictionary where Key == String, Value == DBQuerySortOrder {
+    
+    func serialize() -> SQLRaw {
+        guard !self.isEmpty else { return "" }
+        let list: [SQLRaw] = self.map {
+            switch $1 {
+            case .ascending: return "\(identifier: $0) ASC"
+            case .descending: return "\(identifier: $0) DESC"
+            }
+        }
+        return list.joined(separator: ",")
+    }
+}
+
 struct SQLQueryLauncher: _DBQueryLauncher {
     
     let connection: DBSQLConnection
@@ -36,11 +50,15 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         
         do {
             
-            let filter = try SQLPredicateExpression(.and(query.filters))
+            guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
             
-            let sqlQuery = connection.sqlQuery().select().columns("COUNT(*)").from(query.class).where { _ in filter }
+            let sql: SQLRaw = try """
+                SELECT COUNT(*)
+                FROM \(identifier: query.class)
+                WHERE \(query.filters.serialize(dialect.self))
+                """
             
-            return sqlQuery.execute().map { $0.first.flatMap { $0[$0.keys[0]]?.intValue } ?? 0 }
+            return connection.execute(sql).map { $0.first.flatMap { $0[$0.keys[0]]?.intValue } ?? 0 }
             
         } catch {
             
@@ -55,37 +73,40 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         
         do {
             
-            let filter = try SQLPredicateExpression(.and(query.filters))
+            guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
             
             return connection.primaryKey(of: query.class).flatMap { primaryKeys in
                 
-                var sqlQuery = connection.sqlQuery().select()
-                
-                if query.includes.isEmpty {
-                    sqlQuery = sqlQuery.columns("*")
-                } else {
-                    let includes = query.includes.union(primaryKeys)
-                    sqlQuery = sqlQuery.columns(includes.map { "\(identifier: $0)" })
+                do {
+                    
+                    var sql: SQLRaw = ""
+                    
+                    if query.includes.isEmpty {
+                        sql += "SELECT * "
+                    } else {
+                        let includes = query.includes.union(primaryKeys)
+                        sql += "SELECT \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")) "
+                    }
+                    
+                    sql += try """
+                        FROM \(identifier: query.class)
+                        WHERE \(query.filters.serialize(dialect.self))
+                        ORDER BY \(query.sort.serialize())
+                        """
+                    
+                    if query.limit != .max {
+                        sql += " LIMIT \(query.limit)"
+                    }
+                    if query.skip > 0 {
+                        sql += " OFFSET \(query.skip)"
+                    }
+                    
+                    return connection.execute(sql).map { $0.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                    
+                } catch {
+                    
+                    return connection.eventLoopGroup.next().makeFailedFuture(error)
                 }
-                
-                sqlQuery = sqlQuery.from(query.class).where { _ in filter }
-                
-                if !query.sort.isEmpty {
-                    sqlQuery = sqlQuery.orderBy(query.sort.map {
-                        switch $1 {
-                        case .ascending: return "\(identifier: $0) ASC"
-                        case .descending: return "\(identifier: $0) DESC"
-                        }
-                    })
-                }
-                if query.limit != .max {
-                    sqlQuery = sqlQuery.limit(query.limit)
-                }
-                if query.skip > 0 {
-                    sqlQuery = sqlQuery.offset(query.skip)
-                }
-                
-                return sqlQuery.execute().map { $0.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
             }
             
         } catch {
@@ -101,13 +122,15 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         
         do {
             
-            let filter = try SQLPredicateExpression(.and(query.filters))
+            guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
             
-            var sqlQuery = connection.sqlQuery().delete(query.class).where { _ in filter }
+            let sql: SQLRaw = try """
+                DELETE FROM \(identifier: query.class)
+                WHERE \(query.filters.serialize(dialect.self))
+                RETURNING 0
+                """
             
-            sqlQuery.builder.append("RETURNING 0")
-            
-            return sqlQuery.execute().map { $0.count }
+            return connection.execute(sql).map { $0.count }
             
         } catch {
             
@@ -115,20 +138,18 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func _findOne(_ rowId: String, _ filter: SQLPredicateExpression, _ query: DBQueryFindOneExpression) -> SQLSelectBuilder {
+    func _findOne(_ query: DBQueryFindOneExpression) throws -> SQLRaw {
         
-        var select = SQLSelectBuilder.select().columns("\(identifier: rowId)").from(query.class).where { _ in filter }
+        guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
+        guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
         
-        if !query.sort.isEmpty {
-            select = select.orderBy(query.sort.map {
-                switch $1 {
-                case .ascending: return "\(identifier: $0) ASC"
-                case .descending: return "\(identifier: $0) DESC"
-                }
-            })
-        }
-        
-        return select.limit(1)
+        return try """
+            SELECT \(identifier: rowId)
+            FROM \(identifier: query.class)
+            WHERE \(query.filters.serialize(dialect.self))
+            ORDER BY \(query.sort.serialize())
+            LIMIT 1
+            """
     }
     
     func findOneAndUpdate<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
@@ -139,8 +160,6 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         do {
             
             guard let rowId = connection.driver.sqlDialect?.rowId else { throw Database.Error.unsupportedOperation }
-            
-            let filter = try SQLPredicateExpression(.and(query.filters))
             
             var update: [String: SQLRaw] = [:]
             var setOnInsert: [String: DBData] = [:]
@@ -156,21 +175,24 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 }
             }
             
+            var sql: SQLRaw = try """
+                UPDATE \(identifier: query.class)
+                SET \(update.map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
+                WHERE \(identifier: rowId) IN (\(self._findOne(query)))
+                """
+            
             return connection.primaryKey(of: query.class).flatMap { primaryKeys in
                 
-                var sqlQuery = connection.sqlQuery().update(query.class).set(update)
-                
-                sqlQuery.builder.append("WHERE \(identifier: rowId) IN (" as SQLRaw)
-                sqlQuery.builder.append(_findOne(rowId, filter, query).builder)
-                sqlQuery.builder.append(")")
-                
                 if query.includes.isEmpty {
-                    return sqlQuery.returning("*").execute().map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                    sql += "RETURNING *"
                 } else {
-                    let includes = Array(query.includes.union(primaryKeys))
-                    return sqlQuery.returning(includes).execute().map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                    let includes = query.includes.union(primaryKeys)
+                    sql += "RETURNING \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")) "
                 }
+                
+                return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
             }
+            
         } catch {
             
             return connection.eventLoopGroup.next().makeFailedFuture(error)
@@ -186,22 +208,21 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             
             guard let rowId = connection.driver.sqlDialect?.rowId else { throw Database.Error.unsupportedOperation }
             
-            let filter = try SQLPredicateExpression(.and(query.filters))
+            var sql: SQLRaw = try """
+                DELETE FROM \(identifier: query.class)
+                WHERE \(identifier: rowId) IN (\(self._findOne(query)))
+                """
             
             return connection.primaryKey(of: query.class).flatMap { primaryKeys in
                 
-                var sqlQuery = connection.sqlQuery().delete(query.class)
-                
-                sqlQuery.builder.append("WHERE \(identifier: rowId) IN (" as SQLRaw)
-                sqlQuery.builder.append(_findOne(rowId, filter, query).builder)
-                sqlQuery.builder.append(")")
-                
                 if query.includes.isEmpty {
-                    return sqlQuery.returning("*").execute().map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                    sql += "RETURNING *"
                 } else {
-                    let includes = Array(query.includes.union(primaryKeys))
-                    return sqlQuery.returning(includes).execute().map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                    let includes = query.includes.union(primaryKeys)
+                    sql += "RETURNING \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")) "
                 }
+                
+                return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
             }
         } catch {
             
@@ -213,19 +234,23 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         
         guard let data = data as? [String: DBData] else { fatalError() }
         
+        var columns: [String] = []
+        var values: [DBData] = []
+        
+        for (key, value) in data {
+            columns.append(key)
+            values.append(value)
+        }
+        
+        let sql: SQLRaw = """
+            INSERT INTO \(identifier: `class`)
+            (\(columns.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")))
+            VALUES (\(values.map { "\($0)" as SQLRaw }.joined(separator: ",")))
+            RETURNING *
+            """
+        
         return connection.primaryKey(of: `class`).flatMap { primaryKeys in
-            
-            var columns: [String] = []
-            var values: [DBData] = []
-            
-            for (key, value) in data {
-                columns.append(key)
-                values.append(value)
-            }
-            
-            let sqlQuery = connection.sqlQuery().insert(`class`).columns(columns).values(values.map { "\($0)" }).returning("*")
-            
-            return sqlQuery.execute().map { $0.first.map { (_DBObject(table: `class`, primaryKeys: primaryKeys, object: $0), true) } }
+            connection.execute(sql).map { $0.first.map { (_DBObject(table: `class`, primaryKeys: primaryKeys, object: $0), true) } }
         }
     }
 }
@@ -241,47 +266,5 @@ extension _DBObject {
         }
         
         self.init(class: table, primaryKeys: Set(primaryKeys), columns: _columns)
-    }
-}
-
-extension SQLPredicateExpression {
-    
-    init(_ expression: DBQueryPredicateExpression) throws {
-        switch expression {
-        case let .not(expr): self = try .not(SQLPredicateExpression(expr))
-        case let .equal(lhs, rhs): self = .equal(SQLPredicateValue(lhs), SQLPredicateValue(rhs))
-        case let .notEqual(lhs, rhs): self = .notEqual(SQLPredicateValue(lhs), SQLPredicateValue(rhs))
-        case let .lessThan(lhs, rhs): self = .lessThan(SQLPredicateValue(lhs), SQLPredicateValue(rhs))
-        case let .greaterThan(lhs, rhs): self = .greaterThan(SQLPredicateValue(lhs), SQLPredicateValue(rhs))
-        case let .lessThanOrEqualTo(lhs, rhs): self = .lessThanOrEqualTo(SQLPredicateValue(lhs), SQLPredicateValue(rhs))
-        case let .greaterThanOrEqualTo(lhs, rhs): self = .greaterThanOrEqualTo(SQLPredicateValue(lhs), SQLPredicateValue(rhs))
-        case let .between(x, from, to): self = .between(SQLPredicateValue(x), SQLPredicateValue(from), SQLPredicateValue(to))
-        case let .notBetween(x, from, to): self = .notBetween(SQLPredicateValue(x), SQLPredicateValue(from), SQLPredicateValue(to))
-        case let .containsIn(x, .value(list)):
-            
-            guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
-            self = .containsIn(SQLPredicateValue(x), array)
-            
-        case let .notContainsIn(x, .value(list)):
-            
-            guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
-            self = .notContainsIn(SQLPredicateValue(x), array)
-            
-        case let .like(value, pattern): self = .like(SQLPredicateValue(value), pattern)
-        case let .notLike(value, pattern): self = .notLike(SQLPredicateValue(value), pattern)
-        case let .and(list): self = try .and(list.map(SQLPredicateExpression.init))
-        case let .or(list): self = try .or(list.map(SQLPredicateExpression.init))
-        default: throw Database.Error.invalidExpression
-        }
-    }
-}
-
-extension SQLPredicateValue {
-    
-    init(_ value: DBQueryPredicateValue) {
-        switch value {
-        case let .key(key): self = .key(key)
-        case let .value(value): self = .value(value.toDBData())
-        }
     }
 }
