@@ -40,6 +40,13 @@ extension DBMongoFilterOption {
         return result
     }
     
+    /// a `BSONDocument`, the filter that documents must match
+    public func filter(_ filter: [BSONDocument]) -> Self {
+        var result = self
+        result.filters.append(contentsOf: filter)
+        return result
+    }
+    
     public func filter(_ predicate: (MongoPredicateBuilder) -> MongoPredicateExpression) throws -> Self {
         var result = self
         try result.filters.append(predicate(MongoPredicateBuilder()).toBSONDocument())
