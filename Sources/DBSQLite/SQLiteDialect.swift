@@ -30,7 +30,7 @@ struct SQLiteDialect: SQLDialect {
     }
     
     static func identifier(_ str: String) -> String {
-        return "\"\(str)\""
+        return "\"\(str.lowercased())\""
     }
     
     static var repeatablePlaceholder: Bool {
