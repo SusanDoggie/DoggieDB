@@ -49,8 +49,4 @@ struct MySQLDialect: SQLDialect {
         return value ? "1" : "0"
     }
     
-    static var autoIncrementClause: String {
-        return "AUTO_INCREMENT"
-    }
-    
 }

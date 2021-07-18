@@ -31,8 +31,6 @@ enum SQLRawComponent: Hashable {
     
     case null
     
-    case `default`
-    
     case boolean(Bool)
     
     case signed(Int64)
@@ -120,13 +118,6 @@ public struct SQLRaw: Hashable {
     
     public init(bind value: DBData) {
         self.components = [.bind(value)]
-    }
-}
-
-extension SQLRaw {
-    
-    public static var `default`: SQLRaw {
-        return SQLRaw(components: [.default])
     }
 }
 

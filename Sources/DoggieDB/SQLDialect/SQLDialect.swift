@@ -39,11 +39,7 @@ public protocol SQLDialect {
     
     static var literalNull: String { get }
     
-    static var literalDefault: String { get }
-    
     static func literalBoolean(_ value: Bool) -> String
-    
-    static var autoIncrementClause: String { get }
     
 }
 
@@ -57,9 +53,6 @@ extension SQLDialect {
         return "NULL"
     }
     
-    public static var literalDefault: String {
-        return "DEFAULT"
-    }
 }
 
 extension DBConnection {
@@ -78,7 +71,6 @@ extension DBConnection {
             for component in sql.components {
                 switch component {
                 case .null: raw.append(dialect.literalNull)
-                case .default: raw.append(dialect.literalDefault)
                 case let .identifier(string): raw.append(dialect.identifier(string))
                 case let .string(string): raw.append(string)
                 case let .boolean(bool): raw.append(dialect.literalBoolean(bool))
@@ -105,7 +97,6 @@ extension DBConnection {
             for component in sql.components {
                 switch component {
                 case .null: raw.append(dialect.literalNull)
-                case .default: raw.append(dialect.literalDefault)
                 case let .identifier(string): raw.append(dialect.identifier(string))
                 case let .string(string): raw.append(string)
                 case let .boolean(bool): raw.append(dialect.literalBoolean(bool))

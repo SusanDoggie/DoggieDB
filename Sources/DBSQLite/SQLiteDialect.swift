@@ -53,8 +53,4 @@ struct SQLiteDialect: SQLDialect {
         return value ? "1" : "0"
     }
     
-    static var autoIncrementClause: String {
-        return "AUTOINCREMENT"
-    }
-    
 }
