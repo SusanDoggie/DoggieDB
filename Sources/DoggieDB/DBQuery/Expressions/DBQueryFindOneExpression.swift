@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 //
 
+
 public struct DBQueryFindOneExpression: DBQueryProtocol {
     
     public let connection: DBConnection
@@ -38,6 +39,8 @@ public struct DBQueryFindOneExpression: DBQueryProtocol {
     public var update: [String: DBQueryUpdateOperation] = [:]
     
     public var upsert: Bool = false
+    
+    public var returning: DBQueryReturning = .after
     
     init(connection: DBConnection, class: String) {
         self.connection = connection

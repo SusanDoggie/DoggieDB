@@ -146,7 +146,7 @@ struct QueryLauncher: _DBQueryLauncher {
             
             let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
             
-            var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter).returnDocument(.after)
+            var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter)
             
             var update: [String: BSON] = [:]
             for (key, value) in query.update {
@@ -189,6 +189,11 @@ struct QueryLauncher: _DBQueryLauncher {
             
             mongoQuery = mongoQuery.update(BSONDocument(update))
             mongoQuery = mongoQuery.upsert(query.upsert)
+            
+            switch query.returning {
+            case .before: mongoQuery = mongoQuery.returnDocument(.before)
+            case .after: mongoQuery = mongoQuery.returnDocument(.after)
+            }
             
             if !query.sort.isEmpty {
                 mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
