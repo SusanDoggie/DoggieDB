@@ -107,7 +107,7 @@ extension MongoPredicateExpression {
         }
     }
     
-    private func _expression() throws -> BSONDocument {
+    func _expression() throws -> BSONDocument {
         
         switch self {
         case let .not(x):

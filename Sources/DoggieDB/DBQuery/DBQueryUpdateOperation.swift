@@ -27,7 +27,27 @@ public enum DBQueryUpdateOperation {
     
     case set(DBData)
     
-    case increment(DBData)
+    case setOnInsert(DBData)
+    
+    case inc(DBData)
+    
+    case mul(DBData)
+    
+    case min(DBData)
+    
+    case max(DBData)
+    
+    case addToSet([DBData])
+    
+    case push([DBData])
+    
+    case removeAll([DBData])
+    
+    case removeBy(DBQueryPredicateExpression)
+    
+    case popFirst
+    
+    case popLast
     
 }
 

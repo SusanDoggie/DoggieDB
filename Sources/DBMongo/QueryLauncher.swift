@@ -110,6 +110,46 @@ struct QueryLauncher: _DBQueryLauncher {
             
             var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter)
             
+            var update: [String: BSON] = [:]
+            for (key, value) in query.update {
+                switch value {
+                case let .set(value): update[key] = try BSON(value)
+                case let .setOnInsert(value): update["$setOnInsert", default: [:]][key] = try BSON(value)
+                case let .inc(value): update["$inc", default: [:]][key] = try BSON(value)
+                case let .mul(value): update["$mul", default: [:]][key] = try BSON(value)
+                case let .min(value): update["$min", default: [:]][key] = try BSON(value)
+                case let .max(value): update["$max", default: [:]][key] = try BSON(value)
+                case let .addToSet(value):
+                    
+                    switch value.count {
+                    case 0: break
+                    case 1: update["$addToSet", default: [:]][key] = try BSON(value[0])
+                    default: update["$addToSet", default: [:]][key] = try ["$each": BSON(value.map(BSON.init))]
+                    }
+                    
+                case let .push(value):
+                    
+                    switch value.count {
+                    case 0: break
+                    case 1: update["$push", default: [:]][key] = try BSON(value[0])
+                    default: update["$push", default: [:]][key] = try ["$each": BSON(value.map(BSON.init))]
+                    }
+                    
+                case let .removeAll(value):
+                    
+                    switch value.count {
+                    case 0: break
+                    case 1: update["$pull", default: [:]][key] = try BSON(value[0])
+                    default: update["$pullAll", default: [:]][key] = try BSON(value.map(BSON.init))
+                    }
+                    
+                case let .removeBy(expression): update["$pull", default: [:]][key] = try BSON(MongoPredicateExpression(expression)._expression())
+                case .popFirst: update["$pop", default: [:]][key] = -1
+                case .popLast: update["$pop", default: [:]][key] = 1
+                }
+            }
+            
+            mongoQuery = mongoQuery.update(BSONDocument(update))
             mongoQuery = mongoQuery.upsert(query.upsert)
             
             if !query.sort.isEmpty {

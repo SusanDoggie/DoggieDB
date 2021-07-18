@@ -142,15 +142,21 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             
             let filter = try SQLPredicateExpression(.and(query.filters))
             
-            return connection.primaryKey(of: query.class).flatMap { primaryKeys in
-                
-                var update: [String: SQLRaw] = [:]
-                for (key, value) in query.update {
-                    switch value {
-                    case let .set(value): update[key] = "\(value)"
-                    case let .increment(value): update[key] = "\(identifier: key) + \(value)"
-                    }
+            var update: [String: SQLRaw] = [:]
+            var setOnInsert: [String: DBData] = [:]
+            for (key, value) in query.update {
+                switch value {
+                case let .set(value): update[key] = "\(value)"
+                case let .setOnInsert(value): setOnInsert[key] = value
+                case let .inc(value): update[key] = "\(identifier: key) + \(value)"
+                case let .mul(value): update[key] = "\(identifier: key) * \(value)"
+                case let .min(value): update[key] = "\(identifier: key) + \(value)"
+                case let .max(value): update[key] = "\(identifier: key) + \(value)"
+                default: throw Database.Error.unsupportedOperation
                 }
+            }
+            
+            return connection.primaryKey(of: query.class).flatMap { primaryKeys in
                 
                 var sqlQuery = connection.sqlQuery().update(query.class).set(update)
                 
