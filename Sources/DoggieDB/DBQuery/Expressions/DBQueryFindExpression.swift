@@ -71,6 +71,13 @@ extension DBQueryFindExpression {
         return launcher.find(self).map { $0.map(DBObject.init) }
     }
     
+    public func forEach(_ body: @escaping (DBObject) throws -> Void) -> EventLoopFuture<Void> {
+        guard let launcher = self.connection.launcher else {
+            return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
+        }
+        return launcher.find(self) { try body(DBObject($0)) }
+    }
+    
     public func first() -> EventLoopFuture<DBObject?> {
         return self.limit(1).toArray().map { $0.first }
     }

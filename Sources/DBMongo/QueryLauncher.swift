@@ -46,6 +46,33 @@ struct QueryLauncher: _DBQueryLauncher {
         }
     }
     
+    func _find<Query>(_ query: Query) throws -> DBMongoFindExpression<BSONDocument> {
+        
+        guard let query = query as? DBQueryFindExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
+        
+        let filter = try MongoPredicateExpression(.and(query.filters)).toBSONDocument()
+        
+        var mongoQuery = connection.mongoQuery().collection(query.class).find().filter(filter)
+        
+        if !query.sort.isEmpty {
+            mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
+        }
+        if query.skip > 0 {
+            mongoQuery = mongoQuery.skip(query.skip)
+        }
+        if query.limit != .max {
+            mongoQuery = mongoQuery.limit(query.limit)
+        }
+        
+        if !query.includes.isEmpty {
+            let projection = Dictionary(uniqueKeysWithValues: query.includes.map { ($0, 1) })
+            mongoQuery = mongoQuery.projection(BSONDocument(projection))
+        }
+        
+        return mongoQuery
+    }
+    
     func find<Query>(_ query: Query) -> EventLoopFuture<[_DBObject]> {
         
         guard let query = query as? DBQueryFindExpression else { fatalError() }
@@ -53,26 +80,22 @@ struct QueryLauncher: _DBQueryLauncher {
         
         do {
             
-            let filter = try MongoPredicateExpression(.and(query.filters)).toBSONDocument()
+            return try self._find(query).execute().flatMap { $0.toArray() }.map { $0.map { _DBObject(class: query.class, object: $0) } }
             
-            var mongoQuery = connection.mongoQuery().collection(query.class).find().filter(filter)
+        } catch {
             
-            if !query.sort.isEmpty {
-                mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
-            }
-            if query.skip > 0 {
-                mongoQuery = mongoQuery.skip(query.skip)
-            }
-            if query.limit != .max {
-                mongoQuery = mongoQuery.limit(query.limit)
-            }
+            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        }
+    }
+    
+    func find<Query>(_ query: Query, forEach: @escaping (_DBObject) throws -> Void) -> EventLoopFuture<Void> {
+        
+        guard let query = query as? DBQueryFindExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
+        
+        do {
             
-            if !query.includes.isEmpty {
-                let projection = Dictionary(uniqueKeysWithValues: query.includes.map { ($0, 1) })
-                mongoQuery = mongoQuery.projection(BSONDocument(projection))
-            }
-            
-            return mongoQuery.execute().flatMap { $0.toArray() }.map { $0.map { _DBObject(class: query.class, object: $0) } }
+            return try self._find(query).execute().flatMap { $0.forEach { try forEach(_DBObject(class: query.class, object: $0)) } }
             
         } catch {
             

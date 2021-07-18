@@ -66,7 +66,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func find<Query>(_ query: Query) -> EventLoopFuture<[_DBObject]> {
+    func _find<Query>(_ query: Query) -> EventLoopFuture<(SQLRaw, [String])> {
         
         guard let query = query as? DBQueryFindExpression else { fatalError() }
         guard self.connection === query.connection else { fatalError() }
@@ -75,43 +75,61 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             
             guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
             
-            return connection.primaryKey(of: query.class).flatMap { primaryKeys in
+            return connection.primaryKey(of: query.class).flatMapThrowing { primaryKeys in
                 
-                do {
-                    
-                    var sql: SQLRaw = ""
-                    
-                    if query.includes.isEmpty {
-                        sql += "SELECT * "
-                    } else {
-                        let includes = query.includes.union(primaryKeys)
-                        sql += "SELECT \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")) "
-                    }
-                    
-                    sql += try """
+                var sql: SQLRaw = ""
+                
+                if query.includes.isEmpty {
+                    sql += "SELECT * "
+                } else {
+                    let includes = query.includes.union(primaryKeys)
+                    sql += "SELECT \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")) "
+                }
+                
+                sql += try """
                         FROM \(identifier: query.class)
                         WHERE \(query.filters.serialize(dialect.self))
                         ORDER BY \(query.sort.serialize())
                         """
-                    
-                    if query.limit != .max {
-                        sql += " LIMIT \(query.limit)"
-                    }
-                    if query.skip > 0 {
-                        sql += " OFFSET \(query.skip)"
-                    }
-                    
-                    return connection.execute(sql).map { $0.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
-                    
-                } catch {
-                    
-                    return connection.eventLoopGroup.next().makeFailedFuture(error)
+                
+                if query.limit != .max {
+                    sql += " LIMIT \(query.limit)"
                 }
+                if query.skip > 0 {
+                    sql += " OFFSET \(query.skip)"
+                }
+                
+                return (sql, primaryKeys)
             }
             
         } catch {
             
             return connection.eventLoopGroup.next().makeFailedFuture(error)
+        }
+    }
+    
+    func find<Query>(_ query: Query) -> EventLoopFuture<[_DBObject]> {
+        
+        guard let query = query as? DBQueryFindExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
+        
+        return self._find(query).flatMap { sql, primaryKeys in
+            connection.execute(sql).map { $0.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+        }
+    }
+    
+    func find<Query>(_ query: Query, forEach: @escaping (_DBObject) throws -> Void) -> EventLoopFuture<Void> {
+        
+        guard let query = query as? DBQueryFindExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
+        
+        return self._find(query).flatMap { sql, primaryKeys in
+            
+            connection.execute(sql) {
+                
+                try forEach(_DBObject(table: query.class, primaryKeys: primaryKeys, object: $0))
+                
+            }.map { _ in }
         }
     }
     
