@@ -418,4 +418,44 @@ class PostgreSQLTest: XCTestCase {
             throw error
         }
     }
+    
+    func testQuery() throws {
+        
+        do {
+            
+            _ = try connection.execute("""
+                CREATE TABLE testQuery (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    first_name TEXT,
+                    last_name TEXT,
+                    email TEXT,
+                    phone TEXT
+                )
+                """).wait()
+            
+            var obj = DBObject(class: "testQuery")
+            obj["id"] = 1
+            
+            obj = try obj.save(on: connection).wait()
+            
+            obj["last_name"] = "Susan"
+            
+            obj = try obj.save(on: connection).wait()
+            
+            XCTAssertEqual(obj["id"]?.intValue, 1)
+            XCTAssertEqual(obj["last_name"]?.string, "Susan")
+            
+            let list = try connection.query().find("testQuery").toArray().wait()
+            
+            XCTAssertEqual(list.count, 1)
+            
+            XCTAssertEqual(list[0]["id"]?.intValue, 1)
+            XCTAssertEqual(list[0]["last_name"]?.string, "Susan")
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
 }

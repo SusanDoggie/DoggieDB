@@ -114,4 +114,37 @@ class MongoDBTest: XCTestCase {
         }
     }
     
+    func testQuery() throws {
+        
+        do {
+            
+            _ = try connection.mongoQuery().createCollection("testQuery").execute().wait()
+            
+            let objectId = "1"
+            
+            var obj = DBObject(class: "testQuery")
+            obj["_id"] = DBData(objectId)
+            
+            obj = try obj.save(on: connection).wait()
+            
+            obj["last_name"] = "Susan"
+            
+            obj = try obj.save(on: connection).wait()
+            
+            XCTAssertEqual(obj["_id"]?.string, objectId)
+            XCTAssertEqual(obj["last_name"]?.string, "Susan")
+            
+            let list = try connection.query().find("testQuery").toArray().wait()
+            
+            XCTAssertEqual(list.count, 1)
+            
+            XCTAssertEqual(list[0]["_id"]?.string, objectId)
+            XCTAssertEqual(list[0]["last_name"]?.string, "Susan")
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
 }
