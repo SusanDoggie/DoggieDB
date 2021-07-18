@@ -192,14 +192,16 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         
         do {
             
+            if query.upsert {
+                return self.findOneAndUpsert(query)
+            }
+            
             guard let rowId = connection.driver.sqlDialect?.rowId else { throw Database.Error.unsupportedOperation }
             
             var update: [String: SQLRaw] = [:]
-            var setOnInsert: [String: DBData] = [:]
             for (key, value) in query.update {
                 switch value {
                 case let .set(value): update[key] = "\(value)"
-                case let .setOnInsert(value): setOnInsert[key] = value
                 case let .inc(value): update[key] = "\(identifier: key) + \(value)"
                 case let .mul(value): update[key] = "\(identifier: key) * \(value)"
                 case let .min(value): update[key] = "\(identifier: key) + \(value)"
@@ -230,6 +232,11 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             
             return connection.eventLoopGroup.next().makeFailedFuture(error)
         }
+    }
+    
+    func findOneAndUpsert<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
+        
+        return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
     }
     
     func findOneAndDelete<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
