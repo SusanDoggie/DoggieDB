@@ -23,7 +23,6 @@
 //  THE SOFTWARE.
 //
 
-
 public struct DBQueryFindOneExpression: DBQueryProtocol {
     
     public let connection: DBConnection
