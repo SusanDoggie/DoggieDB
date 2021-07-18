@@ -52,11 +52,11 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             
             guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
             
-            let sql: SQLRaw = try """
-                SELECT COUNT(*)
-                FROM \(identifier: query.class)
-                WHERE \(query.filters.serialize(dialect.self))
-                """
+            var sql: SQLRaw = "SELECT COUNT(*) FROM \(identifier: query.class)"
+            
+            if !query.filters.isEmpty {
+                sql += try " WHERE \(query.filters.serialize(dialect.self))"
+            }
             
             return connection.execute(sql).map { $0.first.flatMap { $0[$0.keys[0]]?.intValue } ?? 0 }
             
@@ -86,11 +86,15 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                     sql += "SELECT \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")) "
                 }
                 
-                sql += try """
-                    FROM \(identifier: query.class)
-                    WHERE \(query.filters.serialize(dialect.self))
-                    ORDER BY \(query.sort.serialize())
-                    """
+                sql += "FROM \(identifier: query.class)"
+                
+                if !query.filters.isEmpty {
+                    sql += try " WHERE \(query.filters.serialize(dialect.self))"
+                }
+                
+                if !query.sort.isEmpty {
+                    sql += " ORDER BY \(query.sort.serialize())"
+                }
                 
                 if query.limit != .max {
                     sql += " LIMIT \(query.limit)"
@@ -157,11 +161,13 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             
             guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
             
-            let sql: SQLRaw = try """
-                DELETE FROM \(identifier: query.class)
-                WHERE \(query.filters.serialize(dialect.self))
-                RETURNING 0
-                """
+            var sql: SQLRaw = "DELETE FROM \(identifier: query.class)"
+            
+            if !query.filters.isEmpty {
+                sql += try " WHERE \(query.filters.serialize(dialect.self))"
+            }
+            
+            sql += " RETURNING 0"
             
             return connection.execute(sql).map { $0.count }
             
@@ -176,13 +182,17 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
         guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
         
-        return try """
-            SELECT \(identifier: rowId)
-            FROM \(identifier: query.class)
-            WHERE \(query.filters.serialize(dialect.self))
-            ORDER BY \(query.sort.serialize())
-            LIMIT 1
-            """
+        var sql: SQLRaw = "SELECT \(identifier: rowId) FROM \(identifier: query.class)"
+        
+        if !query.filters.isEmpty {
+            sql += try " WHERE \(query.filters.serialize(dialect.self))"
+        }
+        
+        if !query.sort.isEmpty {
+            sql += " ORDER BY \(query.sort.serialize())"
+        }
+        
+        return sql + " LIMIT 1"
     }
     
     func findOneAndUpdate<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
