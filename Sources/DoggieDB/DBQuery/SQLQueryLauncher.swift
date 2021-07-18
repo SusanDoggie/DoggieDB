@@ -118,6 +118,21 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
+    func find<Query>(_ query: Query, forEach: @escaping (_DBObject) -> Void) -> EventLoopFuture<Void> {
+        
+        guard let query = query as? DBQueryFindExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
+        
+        return self._find(query).flatMap { sql, primaryKeys in
+            
+            connection.execute(sql) {
+                
+                forEach(_DBObject(table: query.class, primaryKeys: primaryKeys, object: $0))
+                
+            }.map { _ in }
+        }
+    }
+    
     func find<Query>(_ query: Query, forEach: @escaping (_DBObject) throws -> Void) -> EventLoopFuture<Void> {
         
         guard let query = query as? DBQueryFindExpression else { fatalError() }
