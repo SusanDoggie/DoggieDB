@@ -146,7 +146,7 @@ struct QueryLauncher: _DBQueryLauncher {
             
             let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
             
-            var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter)
+            var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter).returnDocument(.after)
             
             var update: [String: BSON] = [:]
             for (key, value) in query.update {
