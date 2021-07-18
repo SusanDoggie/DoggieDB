@@ -118,6 +118,8 @@ extension PostgreSQLDriver.Connection {
     
     func columns(of table: String) -> EventLoopFuture<[DBQueryRow]> {
         
+        let table = table.lowercased()
+        
         var sql: SQLRaw = "SELECT * FROM information_schema.columns"
         
         if let split = table.firstIndex(of: ".") {
@@ -136,6 +138,8 @@ extension PostgreSQLDriver.Connection {
     }
     
     func primaryKey(of table: String) -> EventLoopFuture<[String]> {
+        
+        let table = table.lowercased()
         
         var sql: SQLRaw = """
             SELECT
@@ -172,6 +176,8 @@ extension PostgreSQLDriver.Connection {
     }
     
     func indices(of table: String) -> EventLoopFuture<[DBQueryRow]> {
+        
+        let table = table.lowercased()
         
         var sql: SQLRaw = """
             SELECT
@@ -214,6 +220,8 @@ extension PostgreSQLDriver.Connection {
     }
     
     func foreignKeys(of table: String) -> EventLoopFuture<[DBQueryRow]> {
+        
+        let table = table.lowercased()
         
         var sql: SQLRaw = """
             SELECT kcu.table_schema AS table_schema,
