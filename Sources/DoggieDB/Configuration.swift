@@ -126,7 +126,6 @@ extension URL {
     public func driver() throws -> DBDriver {
         switch scheme {
         case "redis": return .redis
-        case "mysql": return .mySQL
         case "postgres": return .postgreSQL
         case "mongodb":
             guard let driver = _typeByName("7DBMongo13MongoDBDriverV") as? DBDriverProtocol.Type else { throw Database.Error.invalidURL }
@@ -141,7 +140,6 @@ extension URLComponents {
     public func driver() throws -> DBDriver {
         switch scheme {
         case "redis": return .redis
-        case "mysql": return .mySQL
         case "postgres": return .postgreSQL
         case "mongodb":
             guard let driver = _typeByName("7DBMongo13MongoDBDriverV") as? DBDriverProtocol.Type else { throw Database.Error.invalidURL }

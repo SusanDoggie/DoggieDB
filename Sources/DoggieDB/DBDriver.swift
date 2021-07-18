@@ -90,8 +90,6 @@ extension DBDriver {
 
 extension DBDriver {
     
-    public static let mySQL = DBDriver(rawValue: MySQLDriver.self)
-    
     public static let postgreSQL = DBDriver(rawValue: PostgreSQLDriver.self)
     
     public static let redis = DBDriver(rawValue: RedisDriver.self)

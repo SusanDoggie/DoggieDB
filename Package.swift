@@ -46,7 +46,6 @@ let package = Package(
         .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "1.1.0"),
         .package(url: "https://gitlab.com/mordil/RediStack.git", from: "1.0.0"),
         .package(url: "https://github.com/vapor/sqlite-nio.git", from: "1.1.0"),
-        .package(url: "https://github.com/vapor/mysql-nio.git", from: "1.3.0"),
         .package(url: "https://github.com/vapor/postgres-nio.git", from: "1.5.0"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.44.0"),
     ],
@@ -67,7 +66,6 @@ let package = Package(
                 .product(name: "DoggieCore", package: "Doggie"),
                 .product(name: "SwiftBSON", package: "swift-bson"),
                 .product(name: "RediStack", package: "RediStack"),
-                .product(name: "MySQLNIO", package: "mysql-nio"),
                 .product(name: "PostgresNIO", package: "postgres-nio"),
             ]
         ),
