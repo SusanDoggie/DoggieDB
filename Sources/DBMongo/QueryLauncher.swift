@@ -36,7 +36,7 @@ struct QueryLauncher: _DBQueryLauncher {
         
         do {
             
-            let filter = try MongoPredicateExpression(.and(query.filters)).toBSONDocument()
+            let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
             
             return connection.mongoQuery().collection(query.class).count().filter(filter).execute()
             
@@ -51,7 +51,7 @@ struct QueryLauncher: _DBQueryLauncher {
         guard let query = query as? DBQueryFindExpression else { fatalError() }
         guard self.connection === query.connection else { fatalError() }
         
-        let filter = try MongoPredicateExpression(.and(query.filters)).toBSONDocument()
+        let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
         
         var mongoQuery = connection.mongoQuery().collection(query.class).find().filter(filter)
         
@@ -125,7 +125,7 @@ struct QueryLauncher: _DBQueryLauncher {
         
         do {
             
-            let filter = try MongoPredicateExpression(.and(query.filters)).toBSONDocument()
+            let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
             
             let mongoQuery = connection.mongoQuery().collection(query.class).deleteMany().filter(filter)
             
@@ -144,7 +144,7 @@ struct QueryLauncher: _DBQueryLauncher {
         
         do {
             
-            let filter = try MongoPredicateExpression(.and(query.filters)).toBSONDocument()
+            let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
             
             var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter)
             
@@ -214,7 +214,7 @@ struct QueryLauncher: _DBQueryLauncher {
         
         do {
             
-            let filter = try MongoPredicateExpression(.and(query.filters)).toBSONDocument()
+            let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
             
             var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndDelete().filter(filter)
             
