@@ -75,7 +75,7 @@ class SQLiteTest: XCTestCase {
                     first_name TEXT NOT NULL,
                     last_name TEXT,
                     email TEXT NOT NULL UNIQUE,
-                    phone TEXT NOT NULL UNIQUE,
+                    phone TEXT NOT NULL UNIQUE
                 )
                 """).wait()
             
