@@ -55,7 +55,9 @@ public protocol SQLDialect {
     
     static func literalBoolean(_ value: Bool) -> String
     
-    static func arrayOperation(_ key: String, _ operation: SQLDialectArrayOperation) -> SQLRaw?
+    static func typeCast(_ value: DBData, _ columnType: String) throws -> SQLRaw
+    
+    static func arrayOperation(_ column: String, _ columnType: String, _ operation: SQLDialectArrayOperation) throws -> SQLRaw
     
 }
 
@@ -69,8 +71,12 @@ extension SQLDialect {
         return "NULL"
     }
     
-    public static func arrayOperation(_ key: String, _ operation: SQLDialectArrayOperation) -> SQLRaw? {
-        return nil
+    public static func typeCast(_ value: DBData, _ columnType: String) throws -> SQLRaw {
+        throw Database.Error.unsupportedOperation
+    }
+    
+    public static func arrayOperation(_ column: String, _ columnType: String, _ operation: SQLDialectArrayOperation) throws -> SQLRaw {
+        throw Database.Error.unsupportedOperation
     }
     
 }

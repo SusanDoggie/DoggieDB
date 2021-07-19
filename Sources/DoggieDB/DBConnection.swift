@@ -83,6 +83,25 @@ extension DBConnection {
     }
 }
 
+public struct DBSQLColumnInfo {
+    
+    public var name: String
+    
+    public var type: String
+    
+    public var isOptional: Bool
+    
+    public init(
+        name: String,
+        type: String,
+        isOptional: Bool
+    ) {
+        self.name = name
+        self.type = type
+        self.isOptional = isOptional
+    }
+}
+
 public protocol DBSQLConnection: DBConnection {
     
     func tables() -> EventLoopFuture<[String]>
@@ -91,7 +110,7 @@ public protocol DBSQLConnection: DBConnection {
     
     func materializedViews() -> EventLoopFuture<[String]>
     
-    func columns(of table: String) -> EventLoopFuture<[DBQueryRow]>
+    func columns(of table: String) -> EventLoopFuture<[DBSQLColumnInfo]>
     
     func primaryKey(of table: String) -> EventLoopFuture<[String]>
     

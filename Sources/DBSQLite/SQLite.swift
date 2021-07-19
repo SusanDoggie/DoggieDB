@@ -103,8 +103,16 @@ extension SQLiteDriver.Connection {
         return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
     }
     
-    func columns(of table: String) -> EventLoopFuture<[DBQueryRow]> {
-        return self.execute("pragma table_info(\(identifier: table))")
+    func columns(of table: String) -> EventLoopFuture<[DBSQLColumnInfo]> {
+        return self.execute("pragma table_info(\(identifier: table))").map {
+            $0.map {
+                DBSQLColumnInfo(
+                    name: $0["name"]?.string ?? "",
+                    type: $0["type"]?.string ?? "",
+                    isOptional: $0["notnull"]?.intValue == 0
+                )
+            }
+        }
     }
     
     func primaryKey(of table: String) -> EventLoopFuture<[String]> {

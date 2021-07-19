@@ -53,4 +53,34 @@ struct PostgreSQLDialect: SQLDialect {
         return value ? "true" : "false"
     }
     
+    static func typeCast(_ value: DBData, _ columnType: String) throws -> SQLRaw {
+        return "\(value)::\(literal: columnType)"
+    }
+    
+    static func arrayOperation(_ column: String, _ columnType: String, _ operation: SQLDialectArrayOperation) throws -> SQLRaw {
+        
+        switch operation {
+        
+        case let .push(list):
+            
+            if columnType.hasSuffix("[]") {
+                
+                throw Database.Error.unsupportedOperation
+                
+            } else if columnType == "json" {
+                
+                return "(\(identifier: column)::jsonb || array_to_json(\(list)))::json"
+                
+            } else if columnType == "jsonb" {
+                
+                return "\(identifier: column) || array_to_json(\(list))::jsonb"
+                
+            } else {
+                throw Database.Error.unsupportedOperation
+            }
+            
+        default: throw Database.Error.unsupportedOperation
+        }
+    }
+    
 }

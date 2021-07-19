@@ -389,9 +389,9 @@ extension DBData {
 extension Array where Element == DBData {
     
     fileprivate var _postgresArray: ([PostgresData], PostgresDataType)? {
-        guard let type = self.first?._elementType else { return nil }
-        guard self.dropFirst().allSatisfy({ $0._elementType == type }) else { return nil }
         guard let array = try? self.map({ try PostgresData($0) }) else { return nil }
+        guard let type = array.first?.type else { return nil }
+        guard array.dropFirst().allSatisfy({ $0.type == type }) else { return nil }
         return (array, type)
     }
 }

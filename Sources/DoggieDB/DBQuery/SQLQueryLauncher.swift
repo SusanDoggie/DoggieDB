@@ -200,74 +200,59 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         guard let query = query as? DBQueryFindOneExpression else { fatalError() }
         guard self.connection === query.connection else { fatalError() }
         
-        do {
+        if query.upsert {
+            return self.findOneAndUpsert(query)
+        }
+        
+        return connection.columns(of: query.class).flatMap { columnInfos in
             
-            if query.upsert {
-                return self.findOneAndUpsert(query)
-            }
-            
-            guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
-            guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
-            
-            var update: [String: SQLRaw] = [:]
-            for (key, value) in query.update {
-                switch value {
-                case let .set(value): update[key] = "\(value)"
-                case let .inc(value): update[key] = "\(identifier: key) + \(value)"
-                case let .mul(value): update[key] = "\(identifier: key) * \(value)"
-                case let .min(value): update[key] = "\(identifier: key) + \(value)"
-                case let .max(value): update[key] = "\(identifier: key) + \(value)"
-                    
-                case let .addToSet(list):
-                    
-                    guard let sql = dialect.arrayOperation(key, .addToSet(list)) else { throw Database.Error.unsupportedOperation }
-                    update[key] = sql
+            do {
                 
-                case let .push(list):
+                guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
+                guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
                 
-                    guard let sql = dialect.arrayOperation(key, .push(list)) else { throw Database.Error.unsupportedOperation }
-                    update[key] = sql
+                var update: [String: SQLRaw] = [:]
+                for (key, value) in query.update {
                     
-                case let .removeAll(list):
-                
-                    guard let sql = dialect.arrayOperation(key, .removeAll(list)) else { throw Database.Error.unsupportedOperation }
-                    update[key] = sql
+                    guard let column_info = columnInfos.first(where: { $0.name == key }) else { throw Database.Error.columnNotExist }
                     
-                case .popFirst:
-                
-                    guard let sql = dialect.arrayOperation(key, .popFirst) else { throw Database.Error.unsupportedOperation }
-                    update[key] = sql
-                    
-                case .popLast:
-                
-                    guard let sql = dialect.arrayOperation(key, .popLast) else { throw Database.Error.unsupportedOperation }
-                    update[key] = sql
-                    
-                default: throw Database.Error.unsupportedOperation
+                    switch value {
+                    case let .set(value): update[key] = try dialect.typeCast(value, column_info.type)
+                    case let .inc(value): update[key] = try "\(identifier: key) + \(dialect.typeCast(value, column_info.type))"
+                    case let .mul(value): update[key] = try "\(identifier: key) * \(dialect.typeCast(value, column_info.type))"
+                    case let .min(value): update[key] = try "\(identifier: key) + \(dialect.typeCast(value, column_info.type))"
+                    case let .max(value): update[key] = try "\(identifier: key) + \(dialect.typeCast(value, column_info.type))"
+                    case let .addToSet(list): update[key] = try dialect.arrayOperation(key, column_info.type, .addToSet(list))
+                    case let .push(list): update[key] = try dialect.arrayOperation(key, column_info.type, .push(list))
+                    case let .removeAll(list): update[key] = try dialect.arrayOperation(key, column_info.type, .removeAll(list))
+                    case .popFirst: update[key] = try dialect.arrayOperation(key, column_info.type, .popFirst)
+                    case .popLast: update[key] = try dialect.arrayOperation(key, column_info.type, .popLast)
+                    default: throw Database.Error.unsupportedOperation
+                    }
                 }
-            }
-            
-            var sql: SQLRaw = try """
+                
+                var sql: SQLRaw = try """
                 UPDATE \(identifier: query.class)
                 SET \(update.map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
                 WHERE \(identifier: rowId) IN (\(self._findOne(query)))
                 """
-            
-            return connection.primaryKey(of: query.class).flatMap { primaryKeys in
                 
-                if query.includes.isEmpty {
-                    sql += " RETURNING *"
-                } else {
-                    let includes = query.includes.union(primaryKeys)
-                    sql += " RETURNING \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")) "
+                return connection.primaryKey(of: query.class).flatMap { primaryKeys in
+                    
+                    if query.includes.isEmpty {
+                        sql += " RETURNING *"
+                    } else {
+                        let includes = query.includes.union(primaryKeys)
+                        sql += " RETURNING \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")) "
+                    }
+                    
+                    return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
                 }
                 
-                return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+            } catch {
+                
+                return connection.eventLoopGroup.next().makeFailedFuture(error)
             }
-            
-        } catch {
-            
-            return connection.eventLoopGroup.next().makeFailedFuture(error)
         }
     }
     
@@ -311,23 +296,36 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         
         guard let data = data as? [String: DBData] else { fatalError() }
         
-        var columns: [String] = []
-        var values: [DBData] = []
-        
-        for (key, value) in data {
-            columns.append(key)
-            values.append(value)
-        }
-        
-        let sql: SQLRaw = """
-            INSERT INTO \(identifier: `class`)
-            (\(columns.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")))
-            VALUES (\(values.map { "\($0)" as SQLRaw }.joined(separator: ",")))
-            RETURNING *
-            """
-        
-        return connection.primaryKey(of: `class`).flatMap { primaryKeys in
-            connection.execute(sql).map { $0.first.map { (_DBObject(table: `class`, primaryKeys: primaryKeys, object: $0), true) } }
+        return connection.columns(of: `class`).flatMap { columnInfos in
+            
+            do {
+                
+                guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
+                
+                var columns: [String] = []
+                var values: [SQLRaw] = []
+                
+                for (key, value) in data {
+                    guard let column_info = columnInfos.first(where: { $0.name == key }) else { throw Database.Error.columnNotExist }
+                    columns.append(key)
+                    try values.append(dialect.typeCast(value, column_info.type))
+                }
+                
+                let sql: SQLRaw = """
+                    INSERT INTO \(identifier: `class`)
+                    (\(columns.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")))
+                    VALUES (\(values.joined(separator: ",")))
+                    RETURNING *
+                    """
+                
+                return connection.primaryKey(of: `class`).flatMap { primaryKeys in
+                    connection.execute(sql).map { $0.first.map { (_DBObject(table: `class`, primaryKeys: primaryKeys, object: $0), true) } }
+                }
+                
+            } catch {
+                
+                return connection.eventLoopGroup.next().makeFailedFuture(error)
+            }
         }
     }
 }

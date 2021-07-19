@@ -83,29 +83,23 @@ class SQLiteTest: XCTestCase {
             
             let tableInfo = try connection.columns(of: "contacts").wait()
             
-            guard let contact_id = tableInfo.first(where: { $0["name"] == "contact_id" }) else { XCTFail(); return }
-            guard let first_name = tableInfo.first(where: { $0["name"] == "first_name" }) else { XCTFail(); return }
-            guard let last_name = tableInfo.first(where: { $0["name"] == "last_name" }) else { XCTFail(); return }
-            guard let email = tableInfo.first(where: { $0["name"] == "email" }) else { XCTFail(); return }
-            guard let phone = tableInfo.first(where: { $0["name"] == "phone" }) else { XCTFail(); return }
+            guard let contact_id = tableInfo.first(where: { $0.name == "contact_id" }) else { XCTFail(); return }
+            guard let first_name = tableInfo.first(where: { $0.name == "first_name" }) else { XCTFail(); return }
+            guard let last_name = tableInfo.first(where: { $0.name == "last_name" }) else { XCTFail(); return }
+            guard let email = tableInfo.first(where: { $0.name == "email" }) else { XCTFail(); return }
+            guard let phone = tableInfo.first(where: { $0.name == "phone" }) else { XCTFail(); return }
             
-            XCTAssertEqual(contact_id["type"]?.string, "INTEGER")
-            XCTAssertEqual(first_name["type"]?.string, "TEXT")
-            XCTAssertEqual(last_name["type"]?.string, "TEXT")
-            XCTAssertEqual(email["type"]?.string, "TEXT")
-            XCTAssertEqual(phone["type"]?.string, "TEXT")
+            XCTAssertEqual(contact_id.type, "INTEGER")
+            XCTAssertEqual(first_name.type, "TEXT")
+            XCTAssertEqual(last_name.type, "TEXT")
+            XCTAssertEqual(email.type, "TEXT")
+            XCTAssertEqual(phone.type, "TEXT")
             
-            XCTAssertEqual(contact_id["pk"], 1)
-            XCTAssertEqual(first_name["pk"], 0)
-            XCTAssertEqual(last_name["pk"], 0)
-            XCTAssertEqual(email["pk"], 0)
-            XCTAssertEqual(phone["pk"], 0)
-            
-            XCTAssertEqual(contact_id["notnull"], 1)
-            XCTAssertEqual(first_name["notnull"], 1)
-            XCTAssertEqual(last_name["notnull"], 0)
-            XCTAssertEqual(email["notnull"], 1)
-            XCTAssertEqual(phone["notnull"], 1)
+            XCTAssertEqual(contact_id.isOptional, false)
+            XCTAssertEqual(first_name.isOptional, false)
+            XCTAssertEqual(last_name.isOptional, true)
+            XCTAssertEqual(email.isOptional, false)
+            XCTAssertEqual(phone.isOptional, false)
             
         } catch {
             

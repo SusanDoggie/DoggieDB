@@ -40,9 +40,9 @@ class PostgreSQLTest: XCTestCase {
             var url = URLComponents()
             url.scheme = "postgres"
             url.host = env("POSTGRES_HOST") ?? "localhost"
-            url.user = env("POSTGRES_USERNAME")
-            url.password = env("POSTGRES_PASSWORD")
-            url.path = "/\(env("POSTGRES_DATABASE") ?? "")"
+            url.user = env("POSTGRES_USERNAME") ?? "doggiedb"
+            url.password = env("POSTGRES_PASSWORD") ?? "doggiedb"
+            url.path = "/\(env("POSTGRES_DATABASE") ?? "postgres")"
             
             if let ssl_mode = env("POSTGRES_SSLMODE") {
                 url.queryItems = [
@@ -94,23 +94,23 @@ class PostgreSQLTest: XCTestCase {
             
             let tableInfo = try connection.columns(of: "contacts").wait()
             
-            guard let contact_id = tableInfo.first(where: { $0["column_name"] == "contact_id" }) else { XCTFail(); return }
-            guard let first_name = tableInfo.first(where: { $0["column_name"] == "first_name" }) else { XCTFail(); return }
-            guard let last_name = tableInfo.first(where: { $0["column_name"] == "last_name" }) else { XCTFail(); return }
-            guard let email = tableInfo.first(where: { $0["column_name"] == "email" }) else { XCTFail(); return }
-            guard let phone = tableInfo.first(where: { $0["column_name"] == "phone" }) else { XCTFail(); return }
+            guard let contact_id = tableInfo.first(where: { $0.name == "contact_id" }) else { XCTFail(); return }
+            guard let first_name = tableInfo.first(where: { $0.name == "first_name" }) else { XCTFail(); return }
+            guard let last_name = tableInfo.first(where: { $0.name == "last_name" }) else { XCTFail(); return }
+            guard let email = tableInfo.first(where: { $0.name == "email" }) else { XCTFail(); return }
+            guard let phone = tableInfo.first(where: { $0.name == "phone" }) else { XCTFail(); return }
             
-            XCTAssertEqual(contact_id["data_type"]?.string, "integer")
-            XCTAssertEqual(first_name["data_type"]?.string, "text")
-            XCTAssertEqual(last_name["data_type"]?.string, "text")
-            XCTAssertEqual(email["data_type"]?.string, "text")
-            XCTAssertEqual(phone["data_type"]?.string, "text")
+            XCTAssertEqual(contact_id.type, "integer")
+            XCTAssertEqual(first_name.type, "text")
+            XCTAssertEqual(last_name.type, "text")
+            XCTAssertEqual(email.type, "text")
+            XCTAssertEqual(phone.type, "text")
             
-            XCTAssertEqual(contact_id["is_nullable"]?.string, "NO")
-            XCTAssertEqual(first_name["is_nullable"]?.string, "NO")
-            XCTAssertEqual(last_name["is_nullable"]?.string, "YES")
-            XCTAssertEqual(email["is_nullable"]?.string, "NO")
-            XCTAssertEqual(phone["is_nullable"]?.string, "NO")
+            XCTAssertEqual(contact_id.isOptional, false)
+            XCTAssertEqual(first_name.isOptional, false)
+            XCTAssertEqual(last_name.isOptional, true)
+            XCTAssertEqual(email.isOptional, false)
+            XCTAssertEqual(phone.isOptional, false)
             
         } catch {
             
@@ -451,6 +451,45 @@ class PostgreSQLTest: XCTestCase {
             
             XCTAssertEqual(list[0]["id"]?.intValue, 1)
             XCTAssertEqual(list[0]["last_name"]?.string, "Susan")
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testQueryArrayOperation() throws {
+        
+        do {
+            
+            _ = try connection.execute("""
+                CREATE TABLE testQueryArrayOperation (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    int_array INTEGER[],
+                    json_array JSON,
+                    jsonb_array JSONB
+                )
+                """).wait()
+            
+            var obj = DBObject(class: "testQueryArrayOperation")
+            obj["id"] = 1
+            obj["int_array"] = []
+            obj["json_array"] = []
+            obj["jsonb_array"] = []
+            
+            obj = try obj.save(on: connection).wait()
+            
+            obj.push("int_array", with: 1)
+            obj.push("json_array", with: 1)
+            obj.push("jsonb_array", with: 1)
+            
+            obj = try obj.save(on: connection).wait()
+            
+            XCTAssertEqual(obj["id"]?.intValue, 1)
+            XCTAssertEqual(obj["int_array"]?.array, [1])
+            XCTAssertEqual(obj["json_array"]?.array, [1])
+            XCTAssertEqual(obj["jsonb_array"]?.array, [1])
             
         } catch {
             

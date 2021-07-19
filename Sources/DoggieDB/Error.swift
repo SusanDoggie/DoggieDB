@@ -45,6 +45,8 @@ extension Database {
         
         case objectNotFound
         
+        case columnNotExist
+        
         case unknown
         
     }

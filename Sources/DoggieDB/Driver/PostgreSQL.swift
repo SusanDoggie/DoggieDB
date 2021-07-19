@@ -116,7 +116,7 @@ extension PostgreSQLDriver.Connection {
         return self.execute("SELECT matviewname FROM pg_catalog.pg_matviews WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'").map { $0.map { $0["matviewname"]!.string! } }
     }
     
-    func columns(of table: String) -> EventLoopFuture<[DBQueryRow]> {
+    func columns(of table: String) -> EventLoopFuture<[DBSQLColumnInfo]> {
         
         let table = table.lowercased()
         
@@ -134,7 +134,15 @@ extension PostgreSQLDriver.Connection {
             sql.append(" WHERE table_name = \(table)")
         }
         
-        return self.execute(sql)
+        return self.execute(sql).map {
+            $0.map {
+                DBSQLColumnInfo(
+                    name: $0["column_name"]?.string ?? "",
+                    type: $0["data_type"]?.string ?? "",
+                    isOptional: $0["is_nullable"]?.string == "YES"
+                )
+            }
+        }
     }
     
     func primaryKey(of table: String) -> EventLoopFuture<[String]> {
