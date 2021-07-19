@@ -181,7 +181,6 @@ struct QueryLauncher: _DBQueryLauncher {
                     default: update["$pullAll", default: [:]][key] = try BSON(value.map(BSON.init))
                     }
                     
-                case let .removeBy(expression): update["$pull", default: [:]][key] = try BSON(MongoPredicateExpression(expression)._expression())
                 case .popFirst: update["$pop", default: [:]][key] = -1
                 case .popLast: update["$pop", default: [:]][key] = 1
                 }

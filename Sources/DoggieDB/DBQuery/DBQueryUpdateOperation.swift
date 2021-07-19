@@ -43,8 +43,6 @@ public enum DBQueryUpdateOperation {
     
     case removeAll([DBData])
     
-    case removeBy(DBQueryPredicateExpression)
-    
     case popFirst
     
     case popLast
