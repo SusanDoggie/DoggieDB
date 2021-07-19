@@ -488,8 +488,8 @@ class PostgreSQLTest: XCTestCase {
             
             XCTAssertEqual(obj["id"]?.intValue, 1)
             XCTAssertEqual(obj["int_array"]?.array, [1])
-            XCTAssertEqual(obj["json_array"]?.array, [1])
-            XCTAssertEqual(obj["jsonb_array"]?.array, [1])
+            XCTAssertEqual(obj["json_array"]?.array, [1.0])
+            XCTAssertEqual(obj["jsonb_array"]?.array, [1.0])
             
         } catch {
             

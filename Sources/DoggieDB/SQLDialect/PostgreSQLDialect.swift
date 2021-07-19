@@ -54,7 +54,12 @@ struct PostgreSQLDialect: SQLDialect {
     }
     
     static func typeCast(_ value: DBData, _ columnType: String) throws -> SQLRaw {
-        return "\(value)::\(literal: columnType)"
+        
+        if columnType.hasSuffix("[]") && value.array?.count == 0 {
+            return "'{}'"
+        }
+        
+        return "CAST(\(value) AS \(literal: columnType))"
     }
     
     static func arrayOperation(_ column: String, _ columnType: String, _ operation: SQLDialectArrayOperation) throws -> SQLRaw {
@@ -65,11 +70,11 @@ struct PostgreSQLDialect: SQLDialect {
             
             if columnType.hasSuffix("[]") {
                 
-                throw Database.Error.unsupportedOperation
+                return "\(identifier: column) || CAST(\(list) AS \(literal: columnType))"
                 
             } else if columnType == "json" {
                 
-                return "(\(identifier: column)::jsonb || array_to_json(\(list)))::json"
+                return "(\(identifier: column)::jsonb || array_to_json(\(list))::jsonb)::json"
                 
             } else if columnType == "jsonb" {
                 
