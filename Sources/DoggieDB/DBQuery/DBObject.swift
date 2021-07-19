@@ -192,4 +192,27 @@ extension DBObject {
             return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidObjectId)
         }
     }
+    
+    public func delete(on connection: DBConnection) -> EventLoopFuture<DBObject> {
+        
+        let objectId = self._columns.filter { primaryKeys.contains($0.key) }
+        
+        if objectId.isEmpty {
+            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidObjectId)
+        }
+        
+        if objectId.count == primaryKeys.count {
+            
+            return connection.query().findOne(self.class)
+                .filter { object in .and(objectId.map { object[$0] == $1 }) }
+                .delete()
+                .flatMapThrowing { object in
+                    guard let object = object else { throw Database.Error.objectNotFound }
+                    return object
+                }
+            
+        } else {
+            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidObjectId)
+        }
+    }
 }
