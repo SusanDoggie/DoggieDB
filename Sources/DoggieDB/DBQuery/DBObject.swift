@@ -91,6 +91,49 @@ extension DBObject {
 
 extension DBObject {
     
+    public mutating func set<T: DBDataConvertible>(_ key: String, _ value: T) {
+        _updates[key] = .set(value.toDBData())
+    }
+    
+    public mutating func increment<T: DBDataConvertible & Numeric>(_ key: String, by amount: T) {
+        _updates[key] = .inc(amount.toDBData())
+    }
+    
+    public mutating func multiply<T: DBDataConvertible & Numeric>(_ key: String, by amount: T) {
+        _updates[key] = .mul(amount.toDBData())
+    }
+    
+    public mutating func max<T: DBDataConvertible>(_ key: String, by value: T) {
+        _updates[key] = .max(value.toDBData())
+    }
+    
+    public mutating func min<T: DBDataConvertible>(_ key: String, by value: T) {
+        _updates[key] = .min(value.toDBData())
+    }
+    
+    public mutating func addToSet<T: DBDataConvertible>(_ key: String, with value: T, _ res: T...) {
+        _updates[key] = .addToSet([value.toDBData()] + res.map { $0.toDBData() })
+    }
+    
+    public mutating func push<T: DBDataConvertible>(_ key: String, with value: T, _ res: T...) {
+        _updates[key] = .push([value.toDBData()] + res.map { $0.toDBData() })
+    }
+    
+    public mutating func removeAll<T: DBDataConvertible>(_ key: String, _ value: T, _ res: T...) {
+        _updates[key] = .removeAll([value.toDBData()] + res.map { $0.toDBData() })
+    }
+    
+    public mutating func popFirst(for key: String) {
+        _updates[key] = .popFirst
+    }
+    
+    public mutating func popLast(for key: String) {
+        _updates[key] = .popLast
+    }
+}
+
+extension DBObject {
+    
     public func fetch(on connection: DBConnection) -> EventLoopFuture<DBObject> {
         
         let objectId = self._columns.filter { primaryKeys.contains($0.key) }
