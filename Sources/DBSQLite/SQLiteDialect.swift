@@ -53,4 +53,17 @@ struct SQLiteDialect: SQLDialect {
         return value ? "1" : "0"
     }
     
+    static func updateOperation(_ column: String, _ columnType: String, _ operation: SQLDialectUpdateOperation) throws -> SQLRaw {
+        
+        switch operation {
+        
+        case let .inc(value): return "\(identifier: column) + \(value)"
+        case let .mul(value): return "\(identifier: column) * \(value)"
+        case let .min(value): return "MIN(\(identifier: column),\(value))"
+        case let .max(value): return "MAX(\(identifier: column),\(value))"
+            
+        default: throw Database.Error.unsupportedOperation
+        }
+    }
+    
 }

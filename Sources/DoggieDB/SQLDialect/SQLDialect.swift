@@ -23,7 +23,15 @@
 //  THE SOFTWARE.
 //
 
-public enum SQLDialectArrayOperation {
+public enum SQLDialectUpdateOperation {
+    
+    case inc(DBData)
+    
+    case mul(DBData)
+    
+    case min(DBData)
+    
+    case max(DBData)
     
     case addToSet([DBData])
     
@@ -57,7 +65,7 @@ public protocol SQLDialect {
     
     static func typeCast(_ value: DBData, _ columnType: String) throws -> SQLRaw
     
-    static func arrayOperation(_ column: String, _ columnType: String, _ operation: SQLDialectArrayOperation) throws -> SQLRaw
+    static func updateOperation(_ column: String, _ columnType: String, _ operation: SQLDialectUpdateOperation) throws -> SQLRaw
     
 }
 
@@ -75,7 +83,7 @@ extension SQLDialect {
         throw Database.Error.unsupportedOperation
     }
     
-    public static func arrayOperation(_ column: String, _ columnType: String, _ operation: SQLDialectArrayOperation) throws -> SQLRaw {
+    public static func updateOperation(_ column: String, _ columnType: String, _ operation: SQLDialectUpdateOperation) throws -> SQLRaw {
         throw Database.Error.unsupportedOperation
     }
     

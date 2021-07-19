@@ -218,15 +218,15 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                     
                     switch value {
                     case let .set(value): update[key] = try dialect.typeCast(value, column_info.type)
-                    case let .inc(value): update[key] = try "\(identifier: key) + \(dialect.typeCast(value, column_info.type))"
-                    case let .mul(value): update[key] = try "\(identifier: key) * \(dialect.typeCast(value, column_info.type))"
-                    case let .min(value): update[key] = try "\(identifier: key) + \(dialect.typeCast(value, column_info.type))"
-                    case let .max(value): update[key] = try "\(identifier: key) + \(dialect.typeCast(value, column_info.type))"
-                    case let .addToSet(list): update[key] = try dialect.arrayOperation(key, column_info.type, .addToSet(list))
-                    case let .push(list): update[key] = try dialect.arrayOperation(key, column_info.type, .push(list))
-                    case let .removeAll(list): update[key] = try dialect.arrayOperation(key, column_info.type, .removeAll(list))
-                    case .popFirst: update[key] = try dialect.arrayOperation(key, column_info.type, .popFirst)
-                    case .popLast: update[key] = try dialect.arrayOperation(key, column_info.type, .popLast)
+                    case let .inc(value): update[key] = try dialect.updateOperation(key, column_info.type, .inc(value))
+                    case let .mul(value): update[key] = try dialect.updateOperation(key, column_info.type, .mul(value))
+                    case let .min(value): update[key] = try dialect.updateOperation(key, column_info.type, .min(value))
+                    case let .max(value): update[key] = try dialect.updateOperation(key, column_info.type, .max(value))
+                    case let .addToSet(list): update[key] = try dialect.updateOperation(key, column_info.type, .addToSet(list))
+                    case let .push(list): update[key] = try dialect.updateOperation(key, column_info.type, .push(list))
+                    case let .removeAll(list): update[key] = try dialect.updateOperation(key, column_info.type, .removeAll(list))
+                    case .popFirst: update[key] = try dialect.updateOperation(key, column_info.type, .popFirst)
+                    case .popLast: update[key] = try dialect.updateOperation(key, column_info.type, .popLast)
                     default: throw Database.Error.unsupportedOperation
                     }
                 }

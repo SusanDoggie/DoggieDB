@@ -62,10 +62,15 @@ struct PostgreSQLDialect: SQLDialect {
         return "CAST(\(value) AS \(literal: columnType))"
     }
     
-    static func arrayOperation(_ column: String, _ columnType: String, _ operation: SQLDialectArrayOperation) throws -> SQLRaw {
+    static func updateOperation(_ column: String, _ columnType: String, _ operation: SQLDialectUpdateOperation) throws -> SQLRaw {
         
         switch operation {
         
+        case let .inc(value): return "\(identifier: column) + \(value)"
+        case let .mul(value): return "\(identifier: column) * \(value)"
+        case let .min(value): return "LEAST(\(identifier: column),\(value))"
+        case let .max(value): return "GREATEST(\(identifier: column),\(value))"
+            
         case let .push(list):
             
             if columnType.hasSuffix("[]") {
