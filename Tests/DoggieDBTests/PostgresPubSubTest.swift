@@ -82,13 +82,13 @@ class PostgresPubSubTest: XCTestCase {
             
             let promise = connection.eventLoopGroup.next().makePromise(of: String.self)
             
-            try connection.postgresPubSub().subscribe(channel: "Test") { channel, message in
+            try connection.postgresPubSub().subscribe(channel: "test") { channel, message in
                 
                 promise.succeed(message)
                 
             }.wait()
             
-            _ = try connection.postgresPubSub().publish("hello", to: "Test").wait()
+            _ = try connection.postgresPubSub().publish("hello", to: "test").wait()
             
             let result = try promise.futureResult.wait()
             
