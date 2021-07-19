@@ -120,18 +120,33 @@ extension PostgreSQLDriver.Connection {
         
         let table = table.lowercased()
         
-        var sql: SQLRaw = "SELECT * FROM information_schema.columns"
+        var sql: SQLRaw = """
+            SELECT
+                a.attname AS column_name,
+                format_type(a.atttypid, a.atttypmod) AS data_type,
+                a.attnum ,
+                a.attnotnull
+            FROM
+                pg_namespace n,
+                pg_class t,
+                pg_attribute a
+            WHERE
+                a.attnum > 0
+                AND n.oid = t.relnamespace
+                AND a.attrelid = t.oid
+                AND NOT a.attisdropped
+            """
         
         if let split = table.firstIndex(of: ".") {
             
             let _schema = table.prefix(upTo: split)
             let _name = table.suffix(from: split).dropFirst()
             
-            sql.append(" WHERE table_schema = \(_schema) AND table_name = \(_name)")
+            sql.append(" AND n.nspname = \(_schema) AND t.relname = \(_name)")
             
         } else {
             
-            sql.append(" WHERE table_name = \(table)")
+            sql.append(" AND t.relname = \(table)")
         }
         
         return self.execute(sql).map {
@@ -139,7 +154,7 @@ extension PostgreSQLDriver.Connection {
                 DBSQLColumnInfo(
                     name: $0["column_name"]?.string ?? "",
                     type: $0["data_type"]?.string ?? "",
-                    isOptional: $0["is_nullable"]?.string == "YES"
+                    isOptional: $0["attnotnull"]?.boolValue == false
                 )
             }
         }
