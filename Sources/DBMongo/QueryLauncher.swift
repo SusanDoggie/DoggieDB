@@ -151,7 +151,14 @@ struct QueryLauncher: _DBQueryLauncher {
             var update: [String: BSON] = [:]
             for (key, value) in query.update {
                 switch value {
-                case let .set(value): update[key] = try BSON(value)
+                case let .set(value):
+                    
+                    if value == nil {
+                        update["$unset", default: [:]][key] = ""
+                    } else {
+                        update[key] = try BSON(value)
+                    }
+                    
                 case let .setOnInsert(value): update["$setOnInsert", default: [:]][key] = try BSON(value)
                 case let .inc(value): update["$inc", default: [:]][key] = try BSON(value)
                 case let .mul(value): update["$mul", default: [:]][key] = try BSON(value)
