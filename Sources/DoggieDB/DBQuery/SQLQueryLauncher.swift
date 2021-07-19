@@ -206,7 +206,8 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 return self.findOneAndUpsert(query)
             }
             
-            guard let rowId = connection.driver.sqlDialect?.rowId else { throw Database.Error.unsupportedOperation }
+            guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
+            guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
             
             var update: [String: SQLRaw] = [:]
             for (key, value) in query.update {
@@ -216,6 +217,32 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 case let .mul(value): update[key] = "\(identifier: key) * \(value)"
                 case let .min(value): update[key] = "\(identifier: key) + \(value)"
                 case let .max(value): update[key] = "\(identifier: key) + \(value)"
+                    
+                case let .addToSet(list):
+                    
+                    guard let sql = dialect.arrayOperation(key, .addToSet(list)) else { throw Database.Error.unsupportedOperation }
+                    update[key] = sql
+                
+                case let .push(list):
+                
+                    guard let sql = dialect.arrayOperation(key, .push(list)) else { throw Database.Error.unsupportedOperation }
+                    update[key] = sql
+                    
+                case let .removeAll(list):
+                
+                    guard let sql = dialect.arrayOperation(key, .removeAll(list)) else { throw Database.Error.unsupportedOperation }
+                    update[key] = sql
+                    
+                case .popFirst:
+                
+                    guard let sql = dialect.arrayOperation(key, .popFirst) else { throw Database.Error.unsupportedOperation }
+                    update[key] = sql
+                    
+                case .popLast:
+                
+                    guard let sql = dialect.arrayOperation(key, .popLast) else { throw Database.Error.unsupportedOperation }
+                    update[key] = sql
+                    
                 default: throw Database.Error.unsupportedOperation
                 }
             }

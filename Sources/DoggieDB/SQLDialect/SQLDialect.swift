@@ -23,6 +23,20 @@
 //  THE SOFTWARE.
 //
 
+public enum SQLDialectArrayOperation {
+    
+    case addToSet([DBData])
+    
+    case push([DBData])
+    
+    case removeAll([DBData])
+    
+    case popFirst
+    
+    case popLast
+    
+}
+
 public protocol SQLDialect {
     
     static var rowId: String? { get }
@@ -41,6 +55,8 @@ public protocol SQLDialect {
     
     static func literalBoolean(_ value: Bool) -> String
     
+    static func arrayOperation(_ key: String, _ operation: SQLDialectArrayOperation) -> SQLRaw?
+    
 }
 
 extension SQLDialect {
@@ -51,6 +67,10 @@ extension SQLDialect {
     
     public static var literalNull: String {
         return "NULL"
+    }
+    
+    public static func arrayOperation(_ key: String, _ operation: SQLDialectArrayOperation) -> SQLRaw? {
+        return nil
     }
     
 }
