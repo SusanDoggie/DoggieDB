@@ -195,14 +195,12 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         return sql + " LIMIT 1"
     }
     
-    func findOneAndUpdate<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
+    func findOneAndUpdate<Query, Update>(_ query: Query, _ update: [String: Update]) -> EventLoopFuture<_DBObject?> {
         
         guard let query = query as? DBQueryFindOneExpression else { fatalError() }
         guard self.connection === query.connection else { fatalError() }
         
-        if query.upsert {
-            return self.findOneAndUpsert(query)
-        }
+        guard let update = update as? [String: DBQueryUpdateOperation] else { fatalError() }
         
         return connection.columns(of: query.class).flatMap { columnInfos in
             
@@ -211,29 +209,28 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
                 guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
                 
-                var update: [String: SQLRaw] = [:]
-                for (key, value) in query.update {
+                var _update: [String: SQLRaw] = [:]
+                for (key, value) in update {
                     
                     guard let column_info = columnInfos.first(where: { $0.name == key }) else { throw Database.Error.columnNotExist }
                     
                     switch value {
-                    case let .set(value): update[key] = try dialect.typeCast(value, column_info.type)
-                    case let .inc(value): update[key] = try dialect.updateOperation(key, column_info.type, .inc(value))
-                    case let .mul(value): update[key] = try dialect.updateOperation(key, column_info.type, .mul(value))
-                    case let .min(value): update[key] = try dialect.updateOperation(key, column_info.type, .min(value))
-                    case let .max(value): update[key] = try dialect.updateOperation(key, column_info.type, .max(value))
-                    case let .addToSet(list): update[key] = try dialect.updateOperation(key, column_info.type, .addToSet(list))
-                    case let .push(list): update[key] = try dialect.updateOperation(key, column_info.type, .push(list))
-                    case let .removeAll(list): update[key] = try dialect.updateOperation(key, column_info.type, .removeAll(list))
-                    case .popFirst: update[key] = try dialect.updateOperation(key, column_info.type, .popFirst)
-                    case .popLast: update[key] = try dialect.updateOperation(key, column_info.type, .popLast)
-                    default: throw Database.Error.unsupportedOperation
+                    case let .set(value): _update[key] = try dialect.typeCast(value, column_info.type)
+                    case let .inc(value): _update[key] = try dialect.updateOperation(key, column_info.type, .inc(value))
+                    case let .mul(value): _update[key] = try dialect.updateOperation(key, column_info.type, .mul(value))
+                    case let .min(value): _update[key] = try dialect.updateOperation(key, column_info.type, .min(value))
+                    case let .max(value): _update[key] = try dialect.updateOperation(key, column_info.type, .max(value))
+                    case let .addToSet(list): _update[key] = try dialect.updateOperation(key, column_info.type, .addToSet(list))
+                    case let .push(list): _update[key] = try dialect.updateOperation(key, column_info.type, .push(list))
+                    case let .removeAll(list): _update[key] = try dialect.updateOperation(key, column_info.type, .removeAll(list))
+                    case .popFirst: _update[key] = try dialect.updateOperation(key, column_info.type, .popFirst)
+                    case .popLast: _update[key] = try dialect.updateOperation(key, column_info.type, .popLast)
                     }
                 }
                 
                 var sql: SQLRaw = try """
                 UPDATE \(identifier: query.class)
-                SET \(update.map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
+                SET \(_update.map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
                 WHERE \(identifier: rowId) IN (\(self._findOne(query)))
                 """
                 
@@ -256,7 +253,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func findOneAndUpsert<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
+    func findOneAndUpsert<Query, Update, Data>(_ query: Query, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<_DBObject?> {
         
         return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
     }

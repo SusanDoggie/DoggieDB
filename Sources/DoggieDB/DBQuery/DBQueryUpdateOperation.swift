@@ -27,8 +27,6 @@ public enum DBQueryUpdateOperation {
     
     case set(DBData)
     
-    case setOnInsert(DBData)
-    
     case inc(DBData)
     
     case mul(DBData)

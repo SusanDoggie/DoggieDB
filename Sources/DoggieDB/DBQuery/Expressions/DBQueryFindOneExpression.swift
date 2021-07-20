@@ -35,10 +35,6 @@ public struct DBQueryFindOneExpression: DBQueryProtocol {
     
     public var includes: Set<String> = []
     
-    public var update: [String: DBQueryUpdateOperation] = [:]
-    
-    public var upsert: Bool = false
-    
     public var returning: DBQueryReturning = .after
     
     init(connection: DBConnection, class: String) {
@@ -56,26 +52,29 @@ extension DBQuery {
 
 extension DBQueryFindOneExpression {
     
-    public func update(_ update: [String: DBData]) -> Self {
-        var result = self
-        result.update = result.update.merging(update.mapValues { .set($0) }) { _, rhs in rhs }
-        return result
+    public func update(_ update: [String: DBData]) -> EventLoopFuture<DBObject?> {
+        return self.update(update.mapValues { .set($0) })
     }
     
-    public func update(_ update: [String: DBQueryUpdateOperation]) -> Self {
-        var result = self
-        result.update = result.update.merging(update) { _, rhs in rhs }
-        return result
+    public func update(_ update: [String: DBQueryUpdateOperation]) -> EventLoopFuture<DBObject?> {
+        guard let launcher = self.connection.launcher else {
+            return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
+        }
+        return launcher.findOneAndUpdate(self, update).map { $0.map(DBObject.init) }
     }
 }
 
 extension DBQueryFindOneExpression {
     
-    public func execute() -> EventLoopFuture<DBObject?> {
+    public func upsert(_ update: [String: DBData], setOnInsert: [String: DBData] = [:]) -> EventLoopFuture<DBObject?> {
+        return self.upsert(update.mapValues { .set($0) }, setOnInsert: setOnInsert)
+    }
+    
+    public func upsert(_ update: [String: DBQueryUpdateOperation], setOnInsert: [String: DBData] = [:]) -> EventLoopFuture<DBObject?> {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.findOneAndUpdate(self).map { $0.map(DBObject.init) }
+        return launcher.findOneAndUpsert(self, update, setOnInsert).map { $0.map(DBObject.init) }
     }
 }
 
@@ -92,4 +91,3 @@ extension DBQueryFindOneExpression {
 extension DBQueryFindOneExpression: DBQueryFilterOption { }
 extension DBQueryFindOneExpression: DBQuerySortOption { }
 extension DBQueryFindOneExpression: DBQueryIncludesOption { }
-extension DBQueryFindOneExpression: DBQueryUpsertOption { }

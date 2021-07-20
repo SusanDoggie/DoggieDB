@@ -40,9 +40,9 @@ class PostgreSQLTest: XCTestCase {
             var url = URLComponents()
             url.scheme = "postgres"
             url.host = env("POSTGRES_HOST") ?? "localhost"
-            url.user = env("POSTGRES_USERNAME")
-            url.password = env("POSTGRES_PASSWORD")
-            url.path = "/\(env("POSTGRES_DATABASE") ?? "")"
+            url.user = env("POSTGRES_USERNAME") ?? "doggiedb"
+            url.password = env("POSTGRES_PASSWORD") ?? "doggiedb"
+            url.path = "/\(env("POSTGRES_DATABASE") ?? "postgres")"
             
             if let ssl_mode = env("POSTGRES_SSLMODE") {
                 url.queryItems = [

@@ -25,6 +25,60 @@
 
 @_implementationOnly import Private
 
+extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
+    
+    func toBSONDocument() throws -> BSONDocument {
+        
+        var update: [String: BSON] = [:]
+        
+        for (key, value) in self {
+            switch value {
+            case let .set(value):
+                
+                if value == nil {
+                    update["$unset", default: [:]][key] = ""
+                } else {
+                    update[key] = try BSON(value)
+                }
+                
+            case let .inc(value): update["$inc", default: [:]][key] = try BSON(value)
+            case let .mul(value): update["$mul", default: [:]][key] = try BSON(value)
+            case let .min(value): update["$min", default: [:]][key] = try BSON(value)
+            case let .max(value): update["$max", default: [:]][key] = try BSON(value)
+            case let .addToSet(value):
+                
+                switch value.count {
+                case 0: break
+                case 1: update["$addToSet", default: [:]][key] = try BSON(value[0])
+                default: update["$addToSet", default: [:]][key] = try ["$each": BSON(value.map(BSON.init))]
+                }
+                
+            case let .push(value):
+                
+                switch value.count {
+                case 0: break
+                case 1: update["$push", default: [:]][key] = try BSON(value[0])
+                default: update["$push", default: [:]][key] = try ["$each": BSON(value.map(BSON.init))]
+                }
+                
+            case let .removeAll(value):
+                
+                switch value.count {
+                case 0: break
+                case 1: update["$pull", default: [:]][key] = try BSON(value[0])
+                default: update["$pullAll", default: [:]][key] = try BSON(value.map(BSON.init))
+                }
+                
+            case .popFirst: update["$pop", default: [:]][key] = -1
+            case .popLast: update["$pop", default: [:]][key] = 1
+            }
+        }
+        
+        return BSONDocument(update)
+    }
+    
+}
+
 struct QueryLauncher: _DBQueryLauncher {
     
     let connection: MongoDBDriver.Connection
@@ -137,10 +191,12 @@ struct QueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func findOneAndUpdate<Query>(_ query: Query) -> EventLoopFuture<_DBObject?> {
+    func findOneAndUpdate<Query, Update>(_ query: Query, _ update: [String: Update]) -> EventLoopFuture<_DBObject?> {
         
         guard let query = query as? DBQueryFindOneExpression else { fatalError() }
         guard self.connection === query.connection else { fatalError() }
+        
+        guard let update = update as? [String: DBQueryUpdateOperation] else { fatalError() }
         
         do {
             
@@ -148,53 +204,52 @@ struct QueryLauncher: _DBQueryLauncher {
             
             var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter)
             
-            var update: [String: BSON] = [:]
-            for (key, value) in query.update {
-                switch value {
-                case let .set(value):
-                    
-                    if value == nil {
-                        update["$unset", default: [:]][key] = ""
-                    } else {
-                        update[key] = try BSON(value)
-                    }
-                    
-                case let .setOnInsert(value): update["$setOnInsert", default: [:]][key] = try BSON(value)
-                case let .inc(value): update["$inc", default: [:]][key] = try BSON(value)
-                case let .mul(value): update["$mul", default: [:]][key] = try BSON(value)
-                case let .min(value): update["$min", default: [:]][key] = try BSON(value)
-                case let .max(value): update["$max", default: [:]][key] = try BSON(value)
-                case let .addToSet(value):
-                    
-                    switch value.count {
-                    case 0: break
-                    case 1: update["$addToSet", default: [:]][key] = try BSON(value[0])
-                    default: update["$addToSet", default: [:]][key] = try ["$each": BSON(value.map(BSON.init))]
-                    }
-                    
-                case let .push(value):
-                    
-                    switch value.count {
-                    case 0: break
-                    case 1: update["$push", default: [:]][key] = try BSON(value[0])
-                    default: update["$push", default: [:]][key] = try ["$each": BSON(value.map(BSON.init))]
-                    }
-                    
-                case let .removeAll(value):
-                    
-                    switch value.count {
-                    case 0: break
-                    case 1: update["$pull", default: [:]][key] = try BSON(value[0])
-                    default: update["$pullAll", default: [:]][key] = try BSON(value.map(BSON.init))
-                    }
-                    
-                case .popFirst: update["$pop", default: [:]][key] = -1
-                case .popLast: update["$pop", default: [:]][key] = 1
-                }
+            mongoQuery = try mongoQuery.update(update.toBSONDocument())
+            
+            switch query.returning {
+            case .before: mongoQuery = mongoQuery.returnDocument(.before)
+            case .after: mongoQuery = mongoQuery.returnDocument(.after)
             }
             
-            mongoQuery = mongoQuery.update(BSONDocument(update))
-            mongoQuery = mongoQuery.upsert(query.upsert)
+            if !query.sort.isEmpty {
+                mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
+            }
+            
+            if !query.includes.isEmpty {
+                let projection = Dictionary(uniqueKeysWithValues: query.includes.map { ($0, 1) })
+                mongoQuery = mongoQuery.projection(BSONDocument(projection))
+            }
+            
+            return mongoQuery.execute().map { $0.map { _DBObject(class: query.class, object: $0) } }
+            
+        } catch {
+            
+            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        }
+    }
+    
+    func findOneAndUpsert<Query, Update, Data>(_ query: Query, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<_DBObject?> {
+        
+        guard let query = query as? DBQueryFindOneExpression else { fatalError() }
+        guard self.connection === query.connection else { fatalError() }
+        
+        guard let update = update as? [String: DBQueryUpdateOperation] else { fatalError() }
+        guard let setOnInsert = setOnInsert as? [String: DBData] else { fatalError() }
+        
+        do {
+            
+            let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
+            
+            var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter)
+            
+            var _update = try update.toBSONDocument()
+            
+            if !setOnInsert.isEmpty {
+                _update["$setOnInsert"] = try BSON(setOnInsert.mapValues { try BSON($0) })
+            }
+            
+            mongoQuery = mongoQuery.update(_update)
+            mongoQuery = mongoQuery.upsert(true)
             
             switch query.returning {
             case .before: mongoQuery = mongoQuery.returnDocument(.before)

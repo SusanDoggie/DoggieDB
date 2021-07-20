@@ -140,9 +140,9 @@ extension DBObject {
         
         if objectId.count == primaryKeys.count {
             
-            return connection.query().findOne(self.class)
+            return connection.query().find(self.class)
                 .filter { object in .and(objectId.map { object[$0] == $1 }) }
-                .execute()
+                .first()
                 .flatMapThrowing { object in
                     guard let object = object else { throw Database.Error.objectNotFound }
                     return object
@@ -182,7 +182,6 @@ extension DBObject {
             return connection.query().findOne(self.class)
                 .filter { object in .and(objectId.map { object[$0] == $1 }) }
                 .update(_updates)
-                .execute()
                 .flatMapThrowing { object in
                     guard let object = object else { throw Database.Error.objectNotFound }
                     return object
