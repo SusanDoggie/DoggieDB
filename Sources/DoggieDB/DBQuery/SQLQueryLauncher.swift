@@ -257,11 +257,11 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                     guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
                     
                     var sql: SQLRaw = try """
-                UPDATE \(identifier: query.class)
-                SET \(update.serialize(query.class, columnInfos, dialect).map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
-                FROM (\(self._findOne(query, withData: true))) AS \(identifier: temp)
-                where \(identifier: query.class).\(identifier: rowId) = \(identifier: temp).\(identifier: rowId)
-                """
+                        UPDATE \(identifier: query.class)
+                        SET \(update.serialize(query.class, columnInfos, dialect).map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
+                        FROM (\(self._findOne(query, withData: true))) AS \(identifier: temp)
+                        where \(identifier: query.class).\(identifier: rowId) = \(identifier: temp).\(identifier: rowId)
+                        """
                     
                     return connection.primaryKey(of: query.class).flatMap { primaryKeys in
                         
@@ -287,10 +287,10 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                     guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
                     
                     var sql: SQLRaw = try """
-                UPDATE \(identifier: query.class)
-                SET \(update.serialize(query.class, columnInfos, dialect).map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
-                WHERE \(identifier: rowId) IN (\(self._findOne(query, withData: false)))
-                """
+                        UPDATE \(identifier: query.class)
+                        SET \(update.serialize(query.class, columnInfos, dialect).map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
+                        WHERE \(identifier: rowId) IN (\(self._findOne(query, withData: false)))
+                        """
                     
                     return connection.primaryKey(of: query.class).flatMap { primaryKeys in
                         
