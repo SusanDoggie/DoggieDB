@@ -104,7 +104,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             var sql: SQLRaw = "SELECT COUNT(*) FROM \(identifier: query.class)"
             
             if !query.filters.isEmpty {
-                sql += try " WHERE \(query.filters.serialize(dialect.self))"
+                sql += try "WHERE \(query.filters.serialize(dialect.self))"
             }
             
             return connection.execute(sql).map { $0.first.flatMap { $0[$0.keys[0]]?.intValue } ?? 0 }
@@ -135,7 +135,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 sql += "FROM \(identifier: query.class)"
                 
                 if !query.filters.isEmpty {
-                    sql += try " WHERE \(query.filters.serialize(dialect.self))"
+                    sql += try "WHERE \(query.filters.serialize(dialect.self))"
                 }
                 
                 if !query.sort.isEmpty {
@@ -198,7 +198,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             var sql: SQLRaw = "DELETE FROM \(identifier: query.class)"
             
             if !query.filters.isEmpty {
-                sql += try " WHERE \(query.filters.serialize(dialect.self))"
+                sql += try "WHERE \(query.filters.serialize(dialect.self))"
             }
             
             sql += "RETURNING 0"
@@ -225,7 +225,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
         
         if !query.filters.isEmpty {
-            sql += try " WHERE \(query.filters.serialize(dialect.self))"
+            sql += try "WHERE \(query.filters.serialize(dialect.self))"
         }
         
         if !query.sort.isEmpty {
