@@ -126,10 +126,10 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 var sql: SQLRaw = ""
                 
                 if query.includes.isEmpty {
-                    sql += "SELECT * "
+                    sql += "SELECT *"
                 } else {
                     let includes = query.includes.union(primaryKeys)
-                    sql += "SELECT \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")) "
+                    sql += "SELECT \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
                 }
                 
                 sql += "FROM \(identifier: query.class)"
@@ -139,14 +139,14 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 }
                 
                 if !query.sort.isEmpty {
-                    sql += " ORDER BY \(query.sort.serialize())"
+                    sql += "ORDER BY \(query.sort.serialize())"
                 }
                 
                 if query.limit != .max {
-                    sql += " LIMIT \(query.limit)"
+                    sql += "LIMIT \(query.limit)"
                 }
                 if query.skip > 0 {
-                    sql += " OFFSET \(query.skip)"
+                    sql += "OFFSET \(query.skip)"
                 }
                 
                 return (sql, primaryKeys)
@@ -201,7 +201,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 sql += try " WHERE \(query.filters.serialize(dialect.self))"
             }
             
-            sql += " RETURNING 0"
+            sql += "RETURNING 0"
             
             return connection.execute(sql).map { $0.count }
             
@@ -229,7 +229,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
         
         if !query.sort.isEmpty {
-            sql += " ORDER BY \(query.sort.serialize())"
+            sql += "ORDER BY \(query.sort.serialize())"
         }
         
         return sql + " LIMIT 1"
@@ -267,7 +267,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                     return connection.primaryKey(of: query.class).map { primaryKeys in
                         
                         let includes = query.includes.isEmpty ? Set(columnInfos.map { $0.name }) : query.includes.union(primaryKeys)
-                        sql += " RETURNING \(includes.map { "\(identifier: temp).\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
+                        sql += "RETURNING \(includes.map { "\(identifier: temp).\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
                         
                         return (sql, primaryKeys, columnInfos)
                     }
@@ -296,10 +296,10 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                     return connection.primaryKey(of: query.class).map { primaryKeys in
                         
                         if query.includes.isEmpty {
-                            sql += " RETURNING *"
+                            sql += "RETURNING *"
                         } else {
                             let includes = query.includes.union(primaryKeys)
-                            sql += " RETURNING \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
+                            sql += "RETURNING \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
                         }
                         
                         return (sql, primaryKeys, columnInfos)
@@ -397,10 +397,10 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             return connection.primaryKey(of: query.class).flatMap { primaryKeys in
                 
                 if query.includes.isEmpty {
-                    sql += " RETURNING *"
+                    sql += "RETURNING *"
                 } else {
                     let includes = query.includes.union(primaryKeys)
-                    sql += " RETURNING \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")) "
+                    sql += "RETURNING \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
                 }
                 
                 return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }

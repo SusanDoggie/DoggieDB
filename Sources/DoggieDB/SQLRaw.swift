@@ -185,10 +185,28 @@ extension SQLRaw {
     }
 }
 
+extension Character {
+    
+    fileprivate var isWhitespaceOrNewline: Bool {
+        return self.isNewline || self.isWhitespace
+    }
+}
+
+extension SQLRaw {
+    
+    fileprivate var last_char: Character? {
+        guard case let .string(last_string) = self.components.last else { return nil }
+        return last_string.last
+    }
+}
+
 extension SQLRaw {
     
     public mutating func appendLiteral<T: StringProtocol>(_ value: T) {
         if case var .string(last_string) = self.components.last {
+            if last_string.last?.isWhitespaceOrNewline != true {
+                self.components.append(.string(" "))
+            }
             last_string.append(String(value))
             self.components[self.components.count - 1] = .string(last_string)
         } else {
@@ -197,6 +215,9 @@ extension SQLRaw {
     }
     
     public mutating func append(_ other: SQLRaw) {
+        if self.last_char?.isWhitespaceOrNewline != true {
+            self.components.append(.string(" "))
+        }
         self.components.append(contentsOf: other.components)
         self.components = self.components.simplify()
     }
@@ -210,10 +231,16 @@ extension Collection where Element == SQLRaw {
 }
 
 public func +(lhs: SQLRaw, rhs: SQLRaw) -> SQLRaw {
+    if lhs.last_char?.isWhitespaceOrNewline != true {
+        return SQLRaw(components: lhs.components + [.string(" ")] + rhs.components)
+    }
     return SQLRaw(components: lhs.components + rhs.components)
 }
 
 public func +=(lhs: inout SQLRaw, rhs: SQLRaw) {
+    if lhs.last_char?.isWhitespaceOrNewline != true {
+        lhs.components.append(.string(" "))
+    }
     lhs.components += rhs.components
     lhs.components = lhs.components.simplify()
 }
