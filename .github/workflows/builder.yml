@@ -49,7 +49,7 @@ jobs:
         brew install redis && brew services start redis
         echo ::endgroup::
         echo ::group::Starting MongoDB service
-        brew services start mongodb-community
+        brew install mongodb-community && brew services start mongodb-community
         until echo | mongo 'admin' --eval 'quit(0)'; do sleep 1; done
         SCRIPT=$(cat <<-EOJS
           db.createUser({
