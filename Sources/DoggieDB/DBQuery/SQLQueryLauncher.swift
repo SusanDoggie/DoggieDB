@@ -232,7 +232,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             sql += "ORDER BY \(query.sort.serialize())"
         }
         
-        return sql + " LIMIT 1"
+        return sql + "LIMIT 1"
     }
     
     func _findOneAndUpdate<Update>(_ query: _DBQuery, _ update: [String: Update]) -> EventLoopFuture<(SQLRaw, [String], [DBSQLColumnInfo])> {
