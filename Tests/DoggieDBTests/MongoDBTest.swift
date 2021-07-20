@@ -200,7 +200,7 @@ class MongoDBTest: XCTestCase {
         
         do {
             
-            _ = try connection.mongoQuery().createCollection("testQuery2").execute().wait()
+            _ = try connection.mongoQuery().createCollection("testQueryNumberOperation").execute().wait()
             
             let objectId = "1"
             
@@ -264,7 +264,7 @@ class MongoDBTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["int_array"]?.array, [2])
+            XCTAssertEqual(obj["int_array"]?.array, [2.0])
             
         } catch {
             
@@ -298,7 +298,7 @@ class MongoDBTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["id"]?.intValue, 1)
+            XCTAssertEqual(obj["_id"]?.string, objectId)
             XCTAssertEqual(obj["int_array"]?.array, [1, 5, 5, 4])
             
         } catch {
