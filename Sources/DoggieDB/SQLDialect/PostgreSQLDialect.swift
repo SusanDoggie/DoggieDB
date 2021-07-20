@@ -169,7 +169,6 @@ struct PostgreSQLDialect: SQLDialect {
                 throw Database.Error.unsupportedOperation
             }
             
-        default: throw Database.Error.unsupportedOperation
         }
     }
     
