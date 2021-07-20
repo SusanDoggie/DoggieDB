@@ -244,12 +244,12 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             
             return connection.columns(of: query.class).flatMap { columnInfos in
                 
+                var temp: String
                 var counter = 0
-                var temp = "temp_\(counter)"
-                while temp == query.class {
-                    counter += 1
+                repeat {
                     temp = "temp_\(counter)"
-                }
+                    counter += 1
+                } while temp == query.class
                 
                 do {
                     
