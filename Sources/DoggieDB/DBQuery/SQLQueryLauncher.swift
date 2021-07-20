@@ -72,16 +72,16 @@ extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
             guard let column_info = columnInfos.first(where: { $0.name == key }) else { throw Database.Error.columnNotExist }
             
             switch value {
-            case let .set(value): update[key] = try dialect.typeCast(value, column_info.type)
-            case let .increment(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .increment(value))
-            case let .decrement(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .decrement(value))
-            case let .multiply(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .multiply(value))
-            case let .divide(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .divide(value))
-            case let .min(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .min(value))
-            case let .max(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .max(value))
-            case let .addToSet(list): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .addToSet(list))
-            case let .push(list): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .push(list))
-            case let .removeAll(list): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .removeAll(list))
+            case let .set(value): update[key] = try dialect.typeCast(value.toDBData(), column_info.type)
+            case let .increment(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .increment(value.toDBData()))
+            case let .decrement(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .decrement(value.toDBData()))
+            case let .multiply(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .multiply(value.toDBData()))
+            case let .divide(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .divide(value.toDBData()))
+            case let .min(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .min(value.toDBData()))
+            case let .max(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .max(value.toDBData()))
+            case let .addToSet(list): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .addToSet(list.map { $0.toDBData() }))
+            case let .push(list): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .push(list.map { $0.toDBData() }))
+            case let .removeAll(list): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .removeAll(list.map { $0.toDBData() }))
             case .popFirst: update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .popFirst)
             case .popLast: update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .popLast)
             }
@@ -324,7 +324,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
     func findOneAndUpsert<Update, Data>(_ query: _DBQuery, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<_DBObject?> {
         
         guard let update = update as? [String: DBQueryUpdateOperation] else { fatalError() }
-        guard let setOnInsert = setOnInsert as? [String: DBData] else { fatalError() }
+        guard let setOnInsert = setOnInsert as? [String: DBDataConvertible] else { fatalError() }
         
         var update_temp: String
         var counter = 0
@@ -350,7 +350,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 
                 for (key, value) in insert {
                     guard let column_info = columnInfos.first(where: { $0.name == key }) else { throw Database.Error.columnNotExist }
-                    _insert[key] = try dialect.typeCast(value, column_info.type)
+                    _insert[key] = try dialect.typeCast(value.toDBData(), column_info.type)
                 }
                 
                 let returning: SQLRaw

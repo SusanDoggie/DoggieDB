@@ -196,6 +196,58 @@ class MongoDBTest: XCTestCase {
         }
     }
     
+    func testQuery3() throws {
+        
+        do {
+            
+            _ = try connection.mongoQuery().createCollection("testQuery3").execute().wait()
+            
+            let objectId = "1"
+            
+            let obj = try connection.query()
+                .findOne("testQuery3")
+                .filter { $0["_id"] == objectId }
+                .upsert([
+                    "col": .set("text_1")
+                ], setOnInsert: [
+                    "_id": DBData(objectId)
+                ]).wait()
+            
+            XCTAssertEqual(obj?["_id"]?.string, objectId)
+            XCTAssertEqual(obj?["col"]?.string, "text_1")
+            
+            let obj2 = try connection.query()
+                .findOne("testQuery3")
+                .filter { $0["_id"] == objectId }
+                .upsert([
+                    "col": .set("text_2")
+                ], setOnInsert: [
+                    "_id": DBData(objectId)
+                ]).wait()
+            
+            XCTAssertEqual(obj2?["_id"]?.string, objectId)
+            XCTAssertEqual(obj2?["col"]?.string, "text_2")
+            
+            let obj3 = try connection.query()
+                .findOne("testQuery3")
+                .filter { $0["_id"] == objectId }
+                .returning(.before)
+                .upsert([
+                    "col": .set("text_3")
+                ], setOnInsert: [
+                    "_id": DBData(objectId)
+                ]).wait()
+            
+            XCTAssertEqual(obj3?["_id"]?.string, objectId)
+            XCTAssertEqual(obj3?["col"]?.string, "text_2")
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
     func testQueryNumberOperation() throws {
         
         do {

@@ -35,75 +35,75 @@ extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
             switch value {
             case let .set(value):
                 
-                if value == nil {
+                if value.toDBData() == nil {
                     update["$unset", default: [:]][key] = ""
                 } else {
-                    update[key] = try BSON(value)
+                    update[key] = try BSON(value.toDBData())
                 }
                 
-            case let .increment(value): update["$inc", default: [:]][key] = try BSON(value)
+            case let .increment(value): update["$inc", default: [:]][key] = try BSON(value.toDBData())
             case let .decrement(value):
                 
-                switch value.type {
+                switch value.toDBData().type {
                 case .signed, .unsigned:
                     
-                    guard let value = value.intValue else { throw Database.Error.unsupportedOperation }
+                    guard let value = value.toDBData().intValue else { throw Database.Error.unsupportedOperation }
                     update["$inc", default: [:]][key] = BSON(-value)
                     
                 case .number:
                     
-                    guard let value = value.doubleValue else { throw Database.Error.unsupportedOperation }
+                    guard let value = value.toDBData().doubleValue else { throw Database.Error.unsupportedOperation }
                     update["$inc", default: [:]][key] = BSON(-value)
                     
                 case .decimal:
                     
-                    guard let value = value.decimalValue else { throw Database.Error.unsupportedOperation }
+                    guard let value = value.toDBData().decimalValue else { throw Database.Error.unsupportedOperation }
                     update["$inc", default: [:]][key] = BSON(-value)
                     
                 default: throw Database.Error.unsupportedOperation
                 }
                 
-            case let .multiply(value): update["$mul", default: [:]][key] = try BSON(value)
+            case let .multiply(value): update["$mul", default: [:]][key] = try BSON(value.toDBData())
             case let .divide(value):
                 
-                switch value.type {
+                switch value.toDBData().type {
                 case .signed, .unsigned, .number:
                     
-                    guard let value = value.doubleValue else { throw Database.Error.unsupportedOperation }
+                    guard let value = value.toDBData().doubleValue else { throw Database.Error.unsupportedOperation }
                     update["$mul", default: [:]][key] = BSON(1 / value)
                     
                 case .decimal:
                     
-                    guard let value = value.decimalValue else { throw Database.Error.unsupportedOperation }
+                    guard let value = value.toDBData().decimalValue else { throw Database.Error.unsupportedOperation }
                     update["$mul", default: [:]][key] = BSON(1 / value)
                     
                 default: throw Database.Error.unsupportedOperation
                 }
                 
-            case let .min(value): update["$min", default: [:]][key] = try BSON(value)
-            case let .max(value): update["$max", default: [:]][key] = try BSON(value)
+            case let .min(value): update["$min", default: [:]][key] = try BSON(value.toDBData())
+            case let .max(value): update["$max", default: [:]][key] = try BSON(value.toDBData())
             case let .addToSet(value):
                 
                 switch value.count {
                 case 0: break
-                case 1: update["$addToSet", default: [:]][key] = try BSON(value[0])
-                default: update["$addToSet", default: [:]][key] = try ["$each": BSON(value.map(BSON.init))]
+                case 1: update["$addToSet", default: [:]][key] = try BSON(value[0].toDBData())
+                default: update["$addToSet", default: [:]][key] = try ["$each": BSON(value.map { try BSON($0.toDBData()) })]
                 }
                 
             case let .push(value):
                 
                 switch value.count {
                 case 0: break
-                case 1: update["$push", default: [:]][key] = try BSON(value[0])
-                default: update["$push", default: [:]][key] = try ["$each": BSON(value.map(BSON.init))]
+                case 1: update["$push", default: [:]][key] = try BSON(value[0].toDBData())
+                default: update["$push", default: [:]][key] = try ["$each": BSON(value.map { try BSON($0.toDBData()) })]
                 }
                 
             case let .removeAll(value):
                 
                 switch value.count {
                 case 0: break
-                case 1: update["$pull", default: [:]][key] = try BSON(value[0])
-                default: update["$pullAll", default: [:]][key] = try BSON(value.map(BSON.init))
+                case 1: update["$pull", default: [:]][key] = try BSON(value[0].toDBData())
+                default: update["$pullAll", default: [:]][key] = try BSON(value.map { try BSON($0.toDBData()) })
                 }
                 
             case .popFirst: update["$pop", default: [:]][key] = -1
@@ -269,7 +269,7 @@ struct QueryLauncher: _DBQueryLauncher {
     func findOneAndUpsert<Update, Data>(_ query: _DBQuery, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<_DBObject?> {
         
         guard let update = update as? [String: DBQueryUpdateOperation] else { fatalError() }
-        guard let setOnInsert = setOnInsert as? [String: DBData] else { fatalError() }
+        guard let setOnInsert = setOnInsert as? [String: DBDataConvertible] else { fatalError() }
         
         do {
             
@@ -280,7 +280,7 @@ struct QueryLauncher: _DBQueryLauncher {
             var _update = try update.toBSONDocument()
             
             if !setOnInsert.isEmpty {
-                _update["$setOnInsert"] = try BSON(setOnInsert.mapValues { try BSON($0) })
+                _update["$setOnInsert"] = try BSON(setOnInsert.mapValues { try BSON($0.toDBData()) })
             }
             
             mongoQuery = mongoQuery.update(_update)

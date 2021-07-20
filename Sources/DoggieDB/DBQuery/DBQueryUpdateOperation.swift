@@ -25,25 +25,25 @@
 
 public enum DBQueryUpdateOperation {
     
-    case set(DBData)
+    case set(DBDataConvertible)
     
-    case increment(DBData)
+    case increment(DBDataConvertible)
     
-    case decrement(DBData)
+    case decrement(DBDataConvertible)
     
-    case multiply(DBData)
+    case multiply(DBDataConvertible)
     
-    case divide(DBData)
+    case divide(DBDataConvertible)
     
-    case min(DBData)
+    case min(DBDataConvertible)
     
-    case max(DBData)
+    case max(DBDataConvertible)
     
-    case addToSet([DBData])
+    case addToSet([DBDataConvertible])
     
-    case push([DBData])
+    case push([DBDataConvertible])
     
-    case removeAll([DBData])
+    case removeAll([DBDataConvertible])
     
     case popFirst
     
@@ -55,7 +55,7 @@ extension DBQueryUpdateOperation {
     
     var value: DBData? {
         switch self {
-        case let .set(value): return value
+        case let .set(value): return value.toDBData()
         default: return nil
         }
     }

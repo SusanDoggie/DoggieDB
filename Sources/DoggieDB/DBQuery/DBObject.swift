@@ -91,56 +91,56 @@ extension DBObject {
 
 extension DBObject {
     
-    public mutating func set<T: DBDataConvertible>(_ key: String, _ value: T) {
-        _updates[key] = .set(value.toDBData())
+    public mutating func set(_ key: String, _ value: DBDataConvertible) {
+        _updates[key] = .set(value)
     }
     
     public mutating func increment<T: DBDataConvertible & Numeric>(_ key: String, by amount: T) {
-        _updates[key] = .increment(amount.toDBData())
+        _updates[key] = .increment(amount)
     }
     
     public mutating func decrement<T: DBDataConvertible & Numeric>(_ key: String, by amount: T) {
-        _updates[key] = .decrement(amount.toDBData())
+        _updates[key] = .decrement(amount)
     }
     
     public mutating func multiply<T: DBDataConvertible & Numeric>(_ key: String, by amount: T) {
-        _updates[key] = .multiply(amount.toDBData())
+        _updates[key] = .multiply(amount)
     }
     
     public mutating func divide<T: DBDataConvertible & Numeric>(_ key: String, by amount: T) {
-        _updates[key] = .divide(amount.toDBData())
+        _updates[key] = .divide(amount)
     }
     
-    public mutating func max<T: DBDataConvertible>(_ key: String, by value: T) {
-        _updates[key] = .max(value.toDBData())
+    public mutating func max(_ key: String, by value: DBDataConvertible) {
+        _updates[key] = .max(value)
     }
     
-    public mutating func min<T: DBDataConvertible>(_ key: String, by value: T) {
-        _updates[key] = .min(value.toDBData())
+    public mutating func min(_ key: String, by value: DBDataConvertible) {
+        _updates[key] = .min(value)
     }
     
-    public mutating func addToSet<T: DBDataConvertible>(_ key: String, _ value: T) {
-        _updates[key] = .addToSet([value.toDBData()])
+    public mutating func addToSet(_ key: String, _ value: DBDataConvertible) {
+        _updates[key] = .addToSet([value])
     }
     
-    public mutating func addToSet<T: DBDataConvertible>(_ key: String, values: [T]) {
-        _updates[key] = .addToSet(values.map { $0.toDBData() })
+    public mutating func addToSet(_ key: String, values: [DBDataConvertible]) {
+        _updates[key] = .addToSet(values)
     }
     
-    public mutating func push<T: DBDataConvertible>(_ key: String, _ value: T) {
-        _updates[key] = .push([value.toDBData()])
+    public mutating func push(_ key: String, _ value: DBDataConvertible) {
+        _updates[key] = .push([value])
     }
     
-    public mutating func push<T: DBDataConvertible>(_ key: String, values: [T]) {
-        _updates[key] = .push(values.map { $0.toDBData() })
+    public mutating func push(_ key: String, values: [DBDataConvertible]) {
+        _updates[key] = .push(values)
     }
     
-    public mutating func removeAll<T: DBDataConvertible>(_ key: String, _ value: T) {
-        _updates[key] = .removeAll([value.toDBData()])
+    public mutating func removeAll(_ key: String, _ value: DBDataConvertible) {
+        _updates[key] = .removeAll([value])
     }
     
-    public mutating func removeAll<T: DBDataConvertible>(_ key: String, values: [T]) {
-        _updates[key] = .removeAll(values.map { $0.toDBData() })
+    public mutating func removeAll(_ key: String, values: [DBDataConvertible]) {
+        _updates[key] = .removeAll(values)
     }
     
     public mutating func popFirst(for key: String) {
