@@ -39,6 +39,36 @@ extension OrderedDictionary where Key == String, Value == DBQuerySortOrder {
     }
 }
 
+extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
+    
+    func serialize(_ columnInfos: [DBSQLColumnInfo], _ dialect: SQLDialect.Type) throws -> [String: SQLRaw] {
+        
+        var update: [String: SQLRaw] = [:]
+        
+        for (key, value) in self {
+            
+            guard let column_info = columnInfos.first(where: { $0.name == key }) else { throw Database.Error.columnNotExist }
+            
+            switch value {
+            case let .set(value): update[key] = try dialect.typeCast(value, column_info.type)
+            case let .increment(value): update[key] = try dialect.updateOperation(key, column_info.type, .increment(value))
+            case let .decrement(value): update[key] = try dialect.updateOperation(key, column_info.type, .decrement(value))
+            case let .multiply(value): update[key] = try dialect.updateOperation(key, column_info.type, .multiply(value))
+            case let .divide(value): update[key] = try dialect.updateOperation(key, column_info.type, .divide(value))
+            case let .min(value): update[key] = try dialect.updateOperation(key, column_info.type, .min(value))
+            case let .max(value): update[key] = try dialect.updateOperation(key, column_info.type, .max(value))
+            case let .addToSet(list): update[key] = try dialect.updateOperation(key, column_info.type, .addToSet(list))
+            case let .push(list): update[key] = try dialect.updateOperation(key, column_info.type, .push(list))
+            case let .removeAll(list): update[key] = try dialect.updateOperation(key, column_info.type, .removeAll(list))
+            case .popFirst: update[key] = try dialect.updateOperation(key, column_info.type, .popFirst)
+            case .popLast: update[key] = try dialect.updateOperation(key, column_info.type, .popLast)
+            }
+        }
+        
+        return update
+    }
+}
+
 struct SQLQueryLauncher: _DBQueryLauncher {
     
     let connection: DBSQLConnection
@@ -209,30 +239,9 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
                 guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
                 
-                var _update: [String: SQLRaw] = [:]
-                for (key, value) in update {
-                    
-                    guard let column_info = columnInfos.first(where: { $0.name == key }) else { throw Database.Error.columnNotExist }
-                    
-                    switch value {
-                    case let .set(value): _update[key] = try dialect.typeCast(value, column_info.type)
-                    case let .increment(value): _update[key] = try dialect.updateOperation(key, column_info.type, .increment(value))
-                    case let .decrement(value): _update[key] = try dialect.updateOperation(key, column_info.type, .decrement(value))
-                    case let .multiply(value): _update[key] = try dialect.updateOperation(key, column_info.type, .multiply(value))
-                    case let .divide(value): _update[key] = try dialect.updateOperation(key, column_info.type, .divide(value))
-                    case let .min(value): _update[key] = try dialect.updateOperation(key, column_info.type, .min(value))
-                    case let .max(value): _update[key] = try dialect.updateOperation(key, column_info.type, .max(value))
-                    case let .addToSet(list): _update[key] = try dialect.updateOperation(key, column_info.type, .addToSet(list))
-                    case let .push(list): _update[key] = try dialect.updateOperation(key, column_info.type, .push(list))
-                    case let .removeAll(list): _update[key] = try dialect.updateOperation(key, column_info.type, .removeAll(list))
-                    case .popFirst: _update[key] = try dialect.updateOperation(key, column_info.type, .popFirst)
-                    case .popLast: _update[key] = try dialect.updateOperation(key, column_info.type, .popLast)
-                    }
-                }
-                
                 var sql: SQLRaw = try """
                 UPDATE \(identifier: query.class)
-                SET \(_update.map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
+                SET \(update.serialize(columnInfos, dialect).map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
                 WHERE \(identifier: rowId) IN (\(self._findOne(query)))
                 """
                 
