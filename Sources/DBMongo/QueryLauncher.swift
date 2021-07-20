@@ -38,7 +38,7 @@ extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
                 if value.toDBData() == nil {
                     update["$unset", default: [:]][key] = ""
                 } else {
-                    update[key] = try BSON(value.toDBData())
+                    update["$set", default: [:]][key] = try BSON(value.toDBData())
                 }
                 
             case let .increment(value): update["$inc", default: [:]][key] = try BSON(value.toDBData())
@@ -282,6 +282,8 @@ struct QueryLauncher: _DBQueryLauncher {
             if !setOnInsert.isEmpty {
                 _update["$setOnInsert"] = try BSON(setOnInsert.mapValues { try BSON($0.toDBData()) })
             }
+            
+            print(_update)
             
             mongoQuery = mongoQuery.update(_update)
             mongoQuery = mongoQuery.upsert(true)
