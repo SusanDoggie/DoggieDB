@@ -459,6 +459,57 @@ class PostgreSQLTest: XCTestCase {
         }
     }
     
+    func testQuery2() throws {
+        
+        do {
+            
+            _ = try connection.execute("""
+                CREATE TABLE testQuery2 (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    col TEXT
+                )
+                """).wait()
+            
+            var obj = DBObject(class: "testQuery2")
+            obj["id"] = 1
+            
+            obj = try obj.save(on: connection).wait()
+            
+            obj["col"] = "text_1"
+            
+            obj = try obj.save(on: connection).wait()
+            
+            XCTAssertEqual(obj["id"]?.intValue, 1)
+            XCTAssertEqual(obj["col"]?.string, "text_1")
+            
+            let obj2 = try connection.query()
+                .findOne("testQuery2")
+                .filter { $0["id"] == 1 }
+                .update([
+                    "col": .set("text_2")
+                ]).wait()
+            
+            XCTAssertEqual(obj2?["id"]?.intValue, 1)
+            XCTAssertEqual(obj2?["col"]?.string, "text_2")
+            
+            let obj3 = try connection.query()
+                .findOne("testQuery2")
+                .filter { $0["id"] == 1 }
+                .returning(.before)
+                .update([
+                    "col": .set("text_3")
+                ]).wait()
+            
+            XCTAssertEqual(obj3?["id"]?.intValue, 1)
+            XCTAssertEqual(obj3?["col"]?.string, "text_2")
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
     func testQueryNumberOperation() throws {
         
         do {

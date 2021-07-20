@@ -91,3 +91,4 @@ extension DBQueryFindOneExpression {
 extension DBQueryFindOneExpression: DBQueryFilterOption { }
 extension DBQueryFindOneExpression: DBQuerySortOption { }
 extension DBQueryFindOneExpression: DBQueryIncludesOption { }
+extension DBQueryFindOneExpression: DBQueryReturningOption { }

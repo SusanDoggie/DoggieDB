@@ -41,7 +41,7 @@ extension OrderedDictionary where Key == String, Value == DBQuerySortOrder {
 
 extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
     
-    func serialize(_ columnInfos: [DBSQLColumnInfo], _ dialect: SQLDialect.Type) throws -> [String: SQLRaw] {
+    func serialize(_ table: String, _ columnInfos: [DBSQLColumnInfo], _ dialect: SQLDialect.Type) throws -> [String: SQLRaw] {
         
         var update: [String: SQLRaw] = [:]
         
@@ -51,17 +51,17 @@ extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
             
             switch value {
             case let .set(value): update[key] = try dialect.typeCast(value, column_info.type)
-            case let .increment(value): update[key] = try dialect.updateOperation(key, column_info.type, .increment(value))
-            case let .decrement(value): update[key] = try dialect.updateOperation(key, column_info.type, .decrement(value))
-            case let .multiply(value): update[key] = try dialect.updateOperation(key, column_info.type, .multiply(value))
-            case let .divide(value): update[key] = try dialect.updateOperation(key, column_info.type, .divide(value))
-            case let .min(value): update[key] = try dialect.updateOperation(key, column_info.type, .min(value))
-            case let .max(value): update[key] = try dialect.updateOperation(key, column_info.type, .max(value))
-            case let .addToSet(list): update[key] = try dialect.updateOperation(key, column_info.type, .addToSet(list))
-            case let .push(list): update[key] = try dialect.updateOperation(key, column_info.type, .push(list))
-            case let .removeAll(list): update[key] = try dialect.updateOperation(key, column_info.type, .removeAll(list))
-            case .popFirst: update[key] = try dialect.updateOperation(key, column_info.type, .popFirst)
-            case .popLast: update[key] = try dialect.updateOperation(key, column_info.type, .popLast)
+            case let .increment(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .increment(value))
+            case let .decrement(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .decrement(value))
+            case let .multiply(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .multiply(value))
+            case let .divide(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .divide(value))
+            case let .min(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .min(value))
+            case let .max(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .max(value))
+            case let .addToSet(list): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .addToSet(list))
+            case let .push(list): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .push(list))
+            case let .removeAll(list): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .removeAll(list))
+            case .popFirst: update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .popFirst)
+            case .popLast: update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .popLast)
             }
         }
         
@@ -207,12 +207,18 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func _findOne(_ query: DBQueryFindOneExpression) throws -> SQLRaw {
+    func _findOne(_ query: DBQueryFindOneExpression, withData: Bool) throws -> SQLRaw {
         
         guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
         guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
         
-        var sql: SQLRaw = "SELECT \(identifier: rowId) FROM \(identifier: query.class)"
+        var sql: SQLRaw
+        
+        if withData {
+            sql = "SELECT \(identifier: rowId), * FROM \(identifier: query.class)"
+        } else {
+            sql = "SELECT \(identifier: rowId) FROM \(identifier: query.class)"
+        }
         
         if !query.filters.isEmpty {
             sql += try " WHERE \(query.filters.serialize(dialect.self))"
@@ -232,34 +238,76 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         
         guard let update = update as? [String: DBQueryUpdateOperation] else { fatalError() }
         
-        return connection.columns(of: query.class).flatMap { columnInfos in
+        switch query.returning {
+        
+        case .before:
             
-            do {
+            return connection.columns(of: query.class).flatMap { columnInfos in
                 
-                guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
-                guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
-                
-                var sql: SQLRaw = try """
-                UPDATE \(identifier: query.class)
-                SET \(update.serialize(columnInfos, dialect).map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
-                WHERE \(identifier: rowId) IN (\(self._findOne(query)))
-                """
-                
-                return connection.primaryKey(of: query.class).flatMap { primaryKeys in
-                    
-                    if query.includes.isEmpty {
-                        sql += " RETURNING *"
-                    } else {
-                        let includes = query.includes.union(primaryKeys)
-                        sql += " RETURNING \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")) "
-                    }
-                    
-                    return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                var counter = 0
+                var temp = "temp_\(counter)"
+                while temp == query.class {
+                    counter += 1
+                    temp = "temp_\(counter)"
                 }
                 
-            } catch {
+                do {
+                    
+                    guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
+                    guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
+                    
+                    var sql: SQLRaw = try """
+                UPDATE \(identifier: query.class)
+                SET \(update.serialize(query.class, columnInfos, dialect).map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
+                FROM (\(self._findOne(query, withData: true))) AS \(identifier: temp)
+                where \(identifier: query.class).\(identifier: rowId) = \(identifier: temp).\(identifier: rowId)
+                """
+                    
+                    return connection.primaryKey(of: query.class).flatMap { primaryKeys in
+                        
+                        let includes = query.includes.isEmpty ? Set(columnInfos.map { $0.name }) : query.includes.union(primaryKeys)
+                        sql += " RETURNING \(includes.map { "\(identifier: temp).\(identifier: $0)" as SQLRaw }.joined(separator: ",")) "
+                        
+                        return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                    }
+                    
+                } catch {
+                    
+                    return connection.eventLoopGroup.next().makeFailedFuture(error)
+                }
+            }
+            
+        case .after:
+        
+            return connection.columns(of: query.class).flatMap { columnInfos in
                 
-                return connection.eventLoopGroup.next().makeFailedFuture(error)
+                do {
+                    
+                    guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
+                    guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
+                    
+                    var sql: SQLRaw = try """
+                UPDATE \(identifier: query.class)
+                SET \(update.serialize(query.class, columnInfos, dialect).map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
+                WHERE \(identifier: rowId) IN (\(self._findOne(query, withData: false)))
+                """
+                    
+                    return connection.primaryKey(of: query.class).flatMap { primaryKeys in
+                        
+                        if query.includes.isEmpty {
+                            sql += " RETURNING *"
+                        } else {
+                            let includes = query.includes.union(primaryKeys)
+                            sql += " RETURNING \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")) "
+                        }
+                        
+                        return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                    }
+                    
+                } catch {
+                    
+                    return connection.eventLoopGroup.next().makeFailedFuture(error)
+                }
             }
         }
     }
@@ -280,7 +328,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             
             var sql: SQLRaw = try """
                 DELETE FROM \(identifier: query.class)
-                WHERE \(identifier: rowId) IN (\(self._findOne(query)))
+                WHERE \(identifier: rowId) IN (\(self._findOne(query, withData: false)))
                 """
             
             return connection.primaryKey(of: query.class).flatMap { primaryKeys in
