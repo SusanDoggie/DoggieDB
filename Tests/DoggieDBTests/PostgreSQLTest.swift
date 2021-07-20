@@ -519,9 +519,9 @@ class PostgreSQLTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            obj.push("int_array", with: 1 as DBData, 2.0, 3)
-            obj.push("json_array", with: 1, 2.0, 3)
-            obj.push("jsonb_array", with: 1, 2.0, 3)
+            obj.push("int_array", values: [1 as DBData, 2.0, 3])
+            obj.push("json_array", values: [1, 2.0, 3])
+            obj.push("jsonb_array", values: [1, 2.0, 3])
             
             obj = try obj.save(on: connection).wait()
             
@@ -604,4 +604,43 @@ class PostgreSQLTest: XCTestCase {
             throw error
         }
     }
+    
+    func testQueryArrayOperation3() throws {
+        
+        do {
+            
+            _ = try connection.execute("""
+                CREATE TABLE testQueryArrayOperation3 (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    int_array INTEGER[]
+                )
+                """).wait()
+            
+            var obj = DBObject(class: "testQueryArrayOperation3")
+            obj["id"] = 1
+            obj["int_array"] = [1, 2, 2, 3, 5, 5]
+            
+            obj = try obj.save(on: connection).wait()
+            
+            obj.addToSet("int_array", values: [2, 3, 4, 4])
+            
+            obj = try obj.save(on: connection).wait()
+            
+            XCTAssertEqual(obj["id"]?.intValue, 1)
+            XCTAssertEqual(obj["int_array"]?.array, [1, 2, 2, 3, 5, 5, 4])
+            
+            obj.removeAll("int_array", values: [2, 3])
+            
+            obj = try obj.save(on: connection).wait()
+            
+            XCTAssertEqual(obj["id"]?.intValue, 1)
+            XCTAssertEqual(obj["int_array"]?.array, [1, 5, 4])
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
 }

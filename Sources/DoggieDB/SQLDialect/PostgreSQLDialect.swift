@@ -79,6 +79,26 @@ struct PostgreSQLDialect: SQLDialect {
         case let .min(value): return try "LEAST(\(identifier: column),\(typeCast(value, columnType)))"
         case let .max(value): return try "GREATEST(\(identifier: column),\(typeCast(value, columnType)))"
             
+        case let .addToSet(list):
+            
+            if columnType.hasSuffix("[]") {
+                
+                return try """
+                    ARRAY(
+                        SELECT unnest(\(identifier: column))
+                        UNION ALL
+                        (
+                            SELECT unnest(\(typeCast(DBData(list), columnType)))
+                            EXCEPT
+                            SELECT unnest(\(identifier: column))
+                        )
+                    )
+                    """
+                
+            } else {
+                throw Database.Error.unsupportedOperation
+            }
+            
         case let .push(list):
             
             if columnType.hasSuffix("[]") {
@@ -92,6 +112,22 @@ struct PostgreSQLDialect: SQLDialect {
             } else if columnType == "jsonb" {
                 
                 return "\(identifier: column) || array_to_json(\(list))::jsonb"
+                
+            } else {
+                throw Database.Error.unsupportedOperation
+            }
+            
+        case let .removeAll(list):
+            
+            if columnType.hasSuffix("[]") {
+                
+                return try """
+                    ARRAY(
+                        SELECT unnest(\(identifier: column))
+                        EXCEPT
+                        SELECT unnest(\(typeCast(DBData(list), columnType)))
+                    )
+                    """
                 
             } else {
                 throw Database.Error.unsupportedOperation
