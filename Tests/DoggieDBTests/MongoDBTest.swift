@@ -147,4 +147,165 @@ class MongoDBTest: XCTestCase {
             throw error
         }
     }
+    
+    func testQuery2() throws {
+        
+        do {
+            
+            _ = try connection.mongoQuery().createCollection("testQuery2").execute().wait()
+            
+            let objectId = "1"
+            
+            var obj = DBObject(class: "testQuery2")
+            obj["_id"] = DBData(objectId)
+            
+            obj = try obj.save(on: connection).wait()
+            
+            obj["col"] = "text_1"
+            
+            obj = try obj.save(on: connection).wait()
+            
+            XCTAssertEqual(obj["_id"]?.string, objectId)
+            XCTAssertEqual(obj["col"]?.string, "text_1")
+            
+            let obj2 = try connection.query()
+                .findOne("testQuery2")
+                .filter { $0["_id"] == objectId }
+                .update([
+                    "col": .set("text_2")
+                ]).wait()
+            
+            XCTAssertEqual(obj2?["_id"]?.string, objectId)
+            XCTAssertEqual(obj2?["col"]?.string, "text_2")
+            
+            let obj3 = try connection.query()
+                .findOne("testQuery2")
+                .filter { $0["_id"] == objectId }
+                .returning(.before)
+                .update([
+                    "col": .set("text_3")
+                ]).wait()
+            
+            XCTAssertEqual(obj3?["_id"]?.string, objectId)
+            XCTAssertEqual(obj3?["col"]?.string, "text_2")
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testQueryNumberOperation() throws {
+        
+        do {
+            
+            _ = try connection.mongoQuery().createCollection("testQuery2").execute().wait()
+            
+            let objectId = "1"
+            
+            var obj = DBObject(class: "testQueryNumberOperation")
+            obj["_id"] = DBData(objectId)
+            obj["col_1"] = 1
+            obj["col_2"] = 1
+            obj["col_3"] = 1
+            obj["col_4"] = 1
+            
+            obj = try obj.save(on: connection).wait()
+            
+            obj.increment("col_1", by: 2)
+            obj.decrement("col_2", by: 2)
+            obj.multiply("col_3", by: 2)
+            obj.divide("col_4", by: 2)
+            
+            obj = try obj.save(on: connection).wait()
+            
+            XCTAssertEqual(obj["_id"]?.string, objectId)
+            XCTAssertEqual(obj["col_1"]?.intValue, 3)
+            XCTAssertEqual(obj["col_2"]?.intValue, -1)
+            XCTAssertEqual(obj["col_3"]?.intValue, 2)
+            XCTAssertEqual(obj["col_4"]?.doubleValue, 0.5)
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testQueryArrayOperation() throws {
+        
+        do {
+            
+            _ = try connection.mongoQuery().createCollection("testQueryArrayOperation").execute().wait()
+            
+            let objectId = "1"
+            
+            var obj = DBObject(class: "testQueryArrayOperation")
+            obj["_id"] = DBData(objectId)
+            obj["int_array"] = []
+            
+            obj = try obj.save(on: connection).wait()
+            
+            obj.push("int_array", values: [1 as DBData, 2.0, 3])
+            
+            obj = try obj.save(on: connection).wait()
+            
+            XCTAssertEqual(obj["_id"]?.string, objectId)
+            XCTAssertEqual(obj["int_array"]?.array, [1, 2, 3])
+            
+            obj.popFirst(for: "int_array")
+            
+            obj = try obj.save(on: connection).wait()
+            
+            XCTAssertEqual(obj["int_array"]?.array, [2, 3])
+            
+            obj.popLast(for: "int_array")
+            
+            obj = try obj.save(on: connection).wait()
+            
+            XCTAssertEqual(obj["int_array"]?.array, [2])
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testQueryArrayOperation2() throws {
+        
+        do {
+            
+            _ = try connection.mongoQuery().createCollection("testQueryArrayOperation2").execute().wait()
+            
+            let objectId = "1"
+            
+            var obj = DBObject(class: "testQueryArrayOperation2")
+            obj["_id"] = DBData(objectId)
+            obj["int_array"] = [1, 2, 2, 3, 5, 5]
+            
+            obj = try obj.save(on: connection).wait()
+            
+            obj.addToSet("int_array", values: [2, 3, 4, 4])
+            
+            obj = try obj.save(on: connection).wait()
+            
+            XCTAssertEqual(obj["_id"]?.string, objectId)
+            XCTAssertEqual(obj["int_array"]?.array, [1, 2, 2, 3, 5, 5, 4])
+            
+            obj.removeAll("int_array", values: [2, 3])
+            
+            obj = try obj.save(on: connection).wait()
+            
+            XCTAssertEqual(obj["id"]?.intValue, 1)
+            XCTAssertEqual(obj["int_array"]?.array, [1, 5, 4])
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
 }
