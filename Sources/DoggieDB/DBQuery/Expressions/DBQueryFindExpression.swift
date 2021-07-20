@@ -23,21 +23,23 @@
 //  THE SOFTWARE.
 //
 
+@_implementationOnly import Private
+
 public struct DBQueryFindExpression: DBQueryProtocol {
     
     public let connection: DBConnection
     
     public let `class`: String
     
-    public var filters: [DBQueryPredicateExpression] = []
+    var filters: [DBQueryPredicateExpression] = []
     
-    public var skip: Int = 0
+    var skip: Int = 0
     
-    public var limit: Int = .max
+    var limit: Int = .max
     
-    public var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
+    var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
     
-    public var includes: Set<String> = []
+    var includes: Set<String> = []
     
     init(connection: DBConnection, class: String) {
         self.connection = connection
@@ -52,13 +54,26 @@ extension DBQuery {
     }
 }
 
+extension _DBQuery {
+    
+    init(_ query: DBQueryFindExpression) {
+        self.init(class: query.class, query: [
+            "filters": query.filters,
+            "skip": query.skip,
+            "limit": query.limit,
+            "sort": query.sort,
+            "includes": query.includes,
+        ])
+    }
+}
+
 extension DBQueryFindExpression {
     
     public func count() -> EventLoopFuture<Int> {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.count(self)
+        return launcher.count(_DBQuery(self))
     }
 }
 
@@ -68,21 +83,21 @@ extension DBQueryFindExpression {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.find(self).map { $0.map(DBObject.init) }
+        return launcher.find(_DBQuery(self)).map { $0.map(DBObject.init) }
     }
     
     public func forEach(_ body: @escaping (DBObject) -> Void) -> EventLoopFuture<Void> {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.find(self) { body(DBObject($0)) }
+        return launcher.find(_DBQuery(self)) { body(DBObject($0)) }
     }
     
     public func forEach(_ body: @escaping (DBObject) throws -> Void) -> EventLoopFuture<Void> {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.find(self) { try body(DBObject($0)) }
+        return launcher.find(_DBQuery(self)) { try body(DBObject($0)) }
     }
     
     public func first() -> EventLoopFuture<DBObject?> {
@@ -96,12 +111,39 @@ extension DBQueryFindExpression {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.findAndDelete(self)
+        return launcher.findAndDelete(_DBQuery(self))
     }
 }
 
-extension DBQueryFindExpression: DBQueryFilterOption { }
-extension DBQueryFindExpression: DBQuerySkipOptions { }
-extension DBQueryFindExpression: DBQueryLimitOption { }
-extension DBQueryFindExpression: DBQuerySortOption { }
-extension DBQueryFindExpression: DBQueryIncludesOption { }
+extension DBQueryFindExpression {
+    
+    public func filter(_ predicate: (DBQueryPredicateBuilder) -> DBQueryPredicateExpression) -> Self {
+        var result = self
+        result.filters.append(predicate(DBQueryPredicateBuilder()))
+        return result
+    }
+    
+    public func skip(_ skip: Int) -> Self {
+        var result = self
+        result.skip = skip
+        return result
+    }
+    
+    public func limit(_ limit: Int) -> Self {
+        var result = self
+        result.limit = limit
+        return result
+    }
+    
+    public func sort(_ sort: OrderedDictionary<String, DBQuerySortOrder>) -> Self {
+        var result = self
+        result.sort = sort
+        return result
+    }
+    
+    public func includes(_ includes: Set<String>) -> Self {
+        var result = self
+        result.includes = includes
+        return result
+    }
+}

@@ -42,23 +42,39 @@ public struct _DBObject {
     }
 }
 
+public struct _DBQuery {
+    
+    public let `class`: String
+    
+    public let query: [String: Any]
+    
+    public init(class: String, query: [String: Any]) {
+        self.class = `class`
+        self.query = query
+    }
+    
+    public subscript(_ key: String) -> Any? {
+        return query[key]
+    }
+}
+
 public protocol _DBQueryLauncher {
     
-    func count<Query>(_ query: Query) -> EventLoopFuture<Int>
+    func count(_ query: _DBQuery) -> EventLoopFuture<Int>
     
-    func find<Query>(_ query: Query) -> EventLoopFuture<[_DBObject]>
+    func find(_ query: _DBQuery) -> EventLoopFuture<[_DBObject]>
     
-    func find<Query>(_ query: Query, forEach: @escaping (_DBObject) -> Void) -> EventLoopFuture<Void>
+    func find(_ query: _DBQuery, forEach: @escaping (_DBObject) -> Void) -> EventLoopFuture<Void>
     
-    func find<Query>(_ query: Query, forEach: @escaping (_DBObject) throws -> Void) -> EventLoopFuture<Void>
+    func find(_ query: _DBQuery, forEach: @escaping (_DBObject) throws -> Void) -> EventLoopFuture<Void>
     
-    func findAndDelete<Query>(_ query: Query) -> EventLoopFuture<Int?>
+    func findAndDelete(_ query: _DBQuery) -> EventLoopFuture<Int?>
     
-    func findOneAndUpdate<Query, Update>(_ query: Query, _ update: [String: Update]) -> EventLoopFuture<_DBObject?>
+    func findOneAndUpdate<Update>(_ query: _DBQuery, _ update: [String: Update]) -> EventLoopFuture<_DBObject?>
     
-    func findOneAndUpsert<Query, Update, Data>(_ query: Query, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<_DBObject?>
+    func findOneAndUpsert<Update, Data>(_ query: _DBQuery, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<_DBObject?>
     
-    func findOneAndDelete<Query>(_ query: Query) -> EventLoopFuture<_DBObject?>
+    func findOneAndDelete(_ query: _DBQuery) -> EventLoopFuture<_DBObject?>
     
     func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<(_DBObject, Bool)?>
 }

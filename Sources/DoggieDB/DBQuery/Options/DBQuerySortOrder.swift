@@ -1,5 +1,5 @@
 //
-//  DBQueryLimitOption.swift
+//  DBQuerySortOrder.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,17 +23,15 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBQueryLimitOption {
+public enum DBQuerySortOrder {
     
-    var limit: Int { get set }
+    case ascending
     
+    case descending
 }
 
-extension DBQueryLimitOption {
+public protocol DBQuerySortOption {
     
-    public func limit(_ limit: Int) -> Self {
-        var result = self
-        result.limit = limit
-        return result
-    }
+    var sort: OrderedDictionary<String, DBQuerySortOrder> { get set }
+    
 }

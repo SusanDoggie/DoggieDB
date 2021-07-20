@@ -1,5 +1,5 @@
 //
-//  DBQueryIncludesOption.swift
+//  DBQueryReturning.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,18 +23,15 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBQueryIncludesOption {
+public enum DBQueryReturning {
     
-    var includes: Set<String> { get set }
+    case before
     
+    case after
 }
 
-extension DBQueryIncludesOption {
+public protocol DBQueryReturningOption {
     
-    public func includes(_ includes: Set<String>) -> Self {
-        var result = self
-        result.includes = includes
-        return result
-    }
+    var returning: DBQueryReturning { get set }
     
 }

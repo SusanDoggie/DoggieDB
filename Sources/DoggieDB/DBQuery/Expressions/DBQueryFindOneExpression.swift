@@ -23,19 +23,21 @@
 //  THE SOFTWARE.
 //
 
+@_implementationOnly import Private
+
 public struct DBQueryFindOneExpression: DBQueryProtocol {
     
     public let connection: DBConnection
     
     public let `class`: String
     
-    public var filters: [DBQueryPredicateExpression] = []
+    var filters: [DBQueryPredicateExpression] = []
     
-    public var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
+    var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
     
-    public var includes: Set<String> = []
+    var includes: Set<String> = []
     
-    public var returning: DBQueryReturning = .after
+    var returning: DBQueryReturning = .after
     
     init(connection: DBConnection, class: String) {
         self.connection = connection
@@ -50,6 +52,18 @@ extension DBQuery {
     }
 }
 
+extension _DBQuery {
+    
+    init(_ query: DBQueryFindOneExpression) {
+        self.init(class: query.class, query: [
+            "filters": query.filters,
+            "sort": query.sort,
+            "includes": query.includes,
+            "returning": query.returning,
+        ])
+    }
+}
+
 extension DBQueryFindOneExpression {
     
     public func update(_ update: [String: DBData]) -> EventLoopFuture<DBObject?> {
@@ -60,7 +74,7 @@ extension DBQueryFindOneExpression {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.findOneAndUpdate(self, update).map { $0.map(DBObject.init) }
+        return launcher.findOneAndUpdate(_DBQuery(self), update).map { $0.map(DBObject.init) }
     }
 }
 
@@ -74,7 +88,7 @@ extension DBQueryFindOneExpression {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.findOneAndUpsert(self, update, setOnInsert).map { $0.map(DBObject.init) }
+        return launcher.findOneAndUpsert(_DBQuery(self), update, setOnInsert).map { $0.map(DBObject.init) }
     }
 }
 
@@ -84,11 +98,33 @@ extension DBQueryFindOneExpression {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.findOneAndDelete(self).map { $0.map(DBObject.init) }
+        return launcher.findOneAndDelete(_DBQuery(self)).map { $0.map(DBObject.init) }
     }
 }
 
-extension DBQueryFindOneExpression: DBQueryFilterOption { }
-extension DBQueryFindOneExpression: DBQuerySortOption { }
-extension DBQueryFindOneExpression: DBQueryIncludesOption { }
-extension DBQueryFindOneExpression: DBQueryReturningOption { }
+extension DBQueryFindOneExpression {
+    
+    public func filter(_ predicate: (DBQueryPredicateBuilder) -> DBQueryPredicateExpression) -> Self {
+        var result = self
+        result.filters.append(predicate(DBQueryPredicateBuilder()))
+        return result
+    }
+    
+    public func sort(_ sort: OrderedDictionary<String, DBQuerySortOrder>) -> Self {
+        var result = self
+        result.sort = sort
+        return result
+    }
+    
+    public func includes(_ includes: Set<String>) -> Self {
+        var result = self
+        result.includes = includes
+        return result
+    }
+    
+    public func returning(_ returning: DBQueryReturning) -> Self {
+        var result = self
+        result.returning = returning
+        return result
+    }
+}
