@@ -107,11 +107,11 @@ struct PostgreSQLDialect: SQLDialect {
                 
             } else if columnType == "json" {
                 
-                return "(\(identifier: column)::jsonb || array_to_json(\(list))::jsonb)::json"
+                return "(\(identifier: column)::jsonb || to_jsonb(\(list)))::json"
                 
             } else if columnType == "jsonb" {
                 
-                return "\(identifier: column) || array_to_json(\(list))::jsonb"
+                return "\(identifier: column) || to_jsonb(\(list))"
                 
             } else {
                 throw Database.Error.unsupportedOperation
