@@ -252,13 +252,13 @@ class MongoDBTest: XCTestCase {
             obj = try obj.save(on: connection).wait()
             
             XCTAssertEqual(obj["_id"]?.string, objectId)
-            XCTAssertEqual(obj["int_array"]?.array, [1, 2, 3])
+            XCTAssertEqual(obj["int_array"]?.array, [1, 2.0, 3])
             
             obj.popFirst(for: "int_array")
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["int_array"]?.array, [2, 3])
+            XCTAssertEqual(obj["int_array"]?.array, [2.0, 3])
             
             obj.popLast(for: "int_array")
             
@@ -299,7 +299,7 @@ class MongoDBTest: XCTestCase {
             obj = try obj.save(on: connection).wait()
             
             XCTAssertEqual(obj["id"]?.intValue, 1)
-            XCTAssertEqual(obj["int_array"]?.array, [1, 5, 4])
+            XCTAssertEqual(obj["int_array"]?.array, [1, 5, 5, 4])
             
         } catch {
             
