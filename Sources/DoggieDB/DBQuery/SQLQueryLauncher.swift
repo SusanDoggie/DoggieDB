@@ -216,8 +216,10 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                     
                     switch value {
                     case let .set(value): _update[key] = try dialect.typeCast(value, column_info.type)
-                    case let .inc(value): _update[key] = try dialect.updateOperation(key, column_info.type, .inc(value))
-                    case let .mul(value): _update[key] = try dialect.updateOperation(key, column_info.type, .mul(value))
+                    case let .increment(value): _update[key] = try dialect.updateOperation(key, column_info.type, .increment(value))
+                    case let .decrement(value): _update[key] = try dialect.updateOperation(key, column_info.type, .decrement(value))
+                    case let .multiply(value): _update[key] = try dialect.updateOperation(key, column_info.type, .multiply(value))
+                    case let .divide(value): _update[key] = try dialect.updateOperation(key, column_info.type, .divide(value))
                     case let .min(value): _update[key] = try dialect.updateOperation(key, column_info.type, .min(value))
                     case let .max(value): _update[key] = try dialect.updateOperation(key, column_info.type, .max(value))
                     case let .addToSet(list): _update[key] = try dialect.updateOperation(key, column_info.type, .addToSet(list))

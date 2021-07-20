@@ -57,8 +57,10 @@ struct SQLiteDialect: SQLDialect {
         
         switch operation {
         
-        case let .inc(value): return "\(identifier: column) + \(value)"
-        case let .mul(value): return "\(identifier: column) * \(value)"
+        case let .increment(value): return "\(identifier: column) + \(value)"
+        case let .decrement(value): return "\(identifier: column) - \(value)"
+        case let .multiply(value): return "\(identifier: column) * \(value)"
+        case let .divide(value): return "\(identifier: column) / \(value)"
         case let .min(value): return "MIN(\(identifier: column),\(value))"
         case let .max(value): return "MAX(\(identifier: column),\(value))"
             

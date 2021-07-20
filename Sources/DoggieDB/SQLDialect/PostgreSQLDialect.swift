@@ -59,6 +59,14 @@ struct PostgreSQLDialect: SQLDialect {
             return "CAST(ARRAY(SELECT jsonb_array_elements(\(value))) AS \(literal: columnType))"
         }
         
+        if columnType == "json" {
+            return "to_json(\(value))"
+        }
+        
+        if columnType == "jsonb" {
+            return "to_jsonb(\(value))"
+        }
+        
         return "CAST(\(value) AS \(literal: columnType))"
     }
     
@@ -66,10 +74,12 @@ struct PostgreSQLDialect: SQLDialect {
         
         switch operation {
         
-        case let .inc(value): return "\(identifier: column) + \(value)"
-        case let .mul(value): return "\(identifier: column) * \(value)"
-        case let .min(value): return "LEAST(\(identifier: column),\(value))"
-        case let .max(value): return "GREATEST(\(identifier: column),\(value))"
+        case let .increment(value): return try "\(identifier: column) + \(typeCast(value, columnType))"
+        case let .decrement(value): return try "\(identifier: column) - \(typeCast(value, columnType))"
+        case let .multiply(value): return try "\(identifier: column) * \(typeCast(value, columnType))"
+        case let .divide(value): return try "\(identifier: column) / \(typeCast(value, columnType))"
+        case let .min(value): return try "LEAST(\(identifier: column),\(typeCast(value, columnType)))"
+        case let .max(value): return try "GREATEST(\(identifier: column),\(typeCast(value, columnType)))"
             
         case let .push(list):
             

@@ -27,9 +27,13 @@ public enum DBQueryUpdateOperation {
     
     case set(DBData)
     
-    case inc(DBData)
+    case increment(DBData)
     
-    case mul(DBData)
+    case decrement(DBData)
+    
+    case multiply(DBData)
+    
+    case divide(DBData)
     
     case min(DBData)
     

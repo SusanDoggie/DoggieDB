@@ -41,8 +41,45 @@ extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
                     update[key] = try BSON(value)
                 }
                 
-            case let .inc(value): update["$inc", default: [:]][key] = try BSON(value)
-            case let .mul(value): update["$mul", default: [:]][key] = try BSON(value)
+            case let .increment(value): update["$inc", default: [:]][key] = try BSON(value)
+            case let .decrement(value):
+                
+                switch value.type {
+                case .signed, .unsigned:
+                    
+                    guard let value = value.intValue else { throw Database.Error.unsupportedOperation }
+                    update["$inc", default: [:]][key] = BSON(-value)
+                    
+                case .number:
+                    
+                    guard let value = value.doubleValue else { throw Database.Error.unsupportedOperation }
+                    update["$inc", default: [:]][key] = BSON(-value)
+                    
+                case .decimal:
+                    
+                    guard let value = value.decimalValue else { throw Database.Error.unsupportedOperation }
+                    update["$inc", default: [:]][key] = BSON(-value)
+                    
+                default: throw Database.Error.unsupportedOperation
+                }
+                
+            case let .multiply(value): update["$mul", default: [:]][key] = try BSON(value)
+            case let .divide(value):
+                
+                switch value.type {
+                case .signed, .unsigned, .number:
+                    
+                    guard let value = value.doubleValue else { throw Database.Error.unsupportedOperation }
+                    update["$mul", default: [:]][key] = BSON(1 / value)
+                    
+                case .decimal:
+                    
+                    guard let value = value.decimalValue else { throw Database.Error.unsupportedOperation }
+                    update["$mul", default: [:]][key] = BSON(1 / value)
+                    
+                default: throw Database.Error.unsupportedOperation
+                }
+                
             case let .min(value): update["$min", default: [:]][key] = try BSON(value)
             case let .max(value): update["$max", default: [:]][key] = try BSON(value)
             case let .addToSet(value):

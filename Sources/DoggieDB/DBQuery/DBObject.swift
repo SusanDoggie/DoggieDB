@@ -96,11 +96,19 @@ extension DBObject {
     }
     
     public mutating func increment<T: DBDataConvertible & Numeric>(_ key: String, by amount: T) {
-        _updates[key] = .inc(amount.toDBData())
+        _updates[key] = .increment(amount.toDBData())
+    }
+    
+    public mutating func decrement<T: DBDataConvertible & Numeric>(_ key: String, by amount: T) {
+        _updates[key] = .decrement(amount.toDBData())
     }
     
     public mutating func multiply<T: DBDataConvertible & Numeric>(_ key: String, by amount: T) {
-        _updates[key] = .mul(amount.toDBData())
+        _updates[key] = .multiply(amount.toDBData())
+    }
+    
+    public mutating func divide<T: DBDataConvertible & Numeric>(_ key: String, by amount: T) {
+        _updates[key] = .divide(amount.toDBData())
     }
     
     public mutating func max<T: DBDataConvertible>(_ key: String, by value: T) {
