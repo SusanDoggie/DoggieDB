@@ -210,7 +210,7 @@ class MongoDBTest: XCTestCase {
                 .upsert([
                     "col": .set("text_1")
                 ], setOnInsert: [
-                    "_id": DBData(objectId)
+                    "_id": objectId
                 ]).wait()
             
             XCTAssertEqual(obj?["_id"]?.string, objectId)
@@ -222,7 +222,7 @@ class MongoDBTest: XCTestCase {
                 .upsert([
                     "col": .set("text_2")
                 ], setOnInsert: [
-                    "_id": DBData(objectId)
+                    "_id": objectId
                 ]).wait()
             
             XCTAssertEqual(obj2?["_id"]?.string, objectId)
@@ -235,7 +235,7 @@ class MongoDBTest: XCTestCase {
                 .upsert([
                     "col": .set("text_3")
                 ], setOnInsert: [
-                    "_id": DBData(objectId)
+                    "_id": objectId
                 ]).wait()
             
             XCTAssertEqual(obj3?["_id"]?.string, objectId)
