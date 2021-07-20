@@ -116,17 +116,37 @@ extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
     
 }
 
+extension _DBQuery {
+    
+    var filters: [DBQueryPredicateExpression] {
+        return self["filters"] as! Array
+    }
+    var sort: OrderedDictionary<String, DBQuerySortOrder> {
+        return self["sort"] as! OrderedDictionary
+    }
+    var skip: Int {
+        return self["skip"] as! Int
+    }
+    var limit: Int {
+        return self["limit"] as! Int
+    }
+    var includes: Set<String> {
+        return self["includes"] as! Set
+    }
+    var returning: DBQueryReturning {
+        return self["returning"] as! DBQueryReturning
+    }
+}
+
 struct QueryLauncher: _DBQueryLauncher {
     
     let connection: MongoDBDriver.Connection
     
     func count(_ query: _DBQuery) -> EventLoopFuture<Int> {
         
-        guard let filters = query["filters"] as? [DBQueryPredicateExpression] else { fatalError() }
-        
         do {
             
-            let filter = try filters.map { try MongoPredicateExpression($0).toBSONDocument() }
+            let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
             
             return connection.mongoQuery().collection(query.class).count().filter(filter).execute()
             
@@ -138,28 +158,22 @@ struct QueryLauncher: _DBQueryLauncher {
     
     func _find(_ query: _DBQuery) throws -> DBMongoFindExpression<BSONDocument> {
         
-        guard let filters = query["filters"] as? [DBQueryPredicateExpression] else { fatalError() }
-        guard let sort = query["sort"] as? OrderedDictionary<String, DBQuerySortOrder> else { fatalError() }
-        guard let skip = query["skip"] as? Int else { fatalError() }
-        guard let limit = query["limit"] as? Int else { fatalError() }
-        guard let includes = query["includes"] as? Set<String> else { fatalError() }
-        
-        let filter = try filters.map { try MongoPredicateExpression($0).toBSONDocument() }
+        let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
         
         var mongoQuery = connection.mongoQuery().collection(query.class).find().filter(filter)
         
-        if !sort.isEmpty {
-            mongoQuery = mongoQuery.sort(sort.mapValues(DBMongoSortOrder.init))
+        if !query.sort.isEmpty {
+            mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
         }
-        if skip > 0 {
-            mongoQuery = mongoQuery.skip(skip)
+        if query.skip > 0 {
+            mongoQuery = mongoQuery.skip(query.skip)
         }
-        if limit != .max {
-            mongoQuery = mongoQuery.limit(limit)
+        if query.limit != .max {
+            mongoQuery = mongoQuery.limit(query.limit)
         }
         
-        if !includes.isEmpty {
-            let projection = Dictionary(uniqueKeysWithValues: includes.map { ($0, 1) })
+        if !query.includes.isEmpty {
+            let projection = Dictionary(uniqueKeysWithValues: query.includes.map { ($0, 1) })
             mongoQuery = mongoQuery.projection(BSONDocument(projection))
         }
         
@@ -204,11 +218,9 @@ struct QueryLauncher: _DBQueryLauncher {
     
     func findAndDelete(_ query: _DBQuery) -> EventLoopFuture<Int?> {
         
-        guard let filters = query["filters"] as? [DBQueryPredicateExpression] else { fatalError() }
-        
         do {
             
-            let filter = try filters.map { try MongoPredicateExpression($0).toBSONDocument() }
+            let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
             
             let mongoQuery = connection.mongoQuery().collection(query.class).deleteMany().filter(filter)
             
@@ -222,31 +234,27 @@ struct QueryLauncher: _DBQueryLauncher {
     
     func findOneAndUpdate<Update>(_ query: _DBQuery, _ update: [String: Update]) -> EventLoopFuture<_DBObject?> {
         
-        guard let filters = query["filters"] as? [DBQueryPredicateExpression] else { fatalError() }
-        guard let sort = query["sort"] as? OrderedDictionary<String, DBQuerySortOrder> else { fatalError() }
-        guard let includes = query["includes"] as? Set<String> else { fatalError() }
-        guard let returning = query["returning"] as? DBQueryReturning else { fatalError() }
         guard let update = update as? [String: DBQueryUpdateOperation] else { fatalError() }
         
         do {
             
-            let filter = try filters.map { try MongoPredicateExpression($0).toBSONDocument() }
+            let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
             
             var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter)
             
             mongoQuery = try mongoQuery.update(update.toBSONDocument())
             
-            switch returning {
+            switch query.returning {
             case .before: mongoQuery = mongoQuery.returnDocument(.before)
             case .after: mongoQuery = mongoQuery.returnDocument(.after)
             }
             
-            if !sort.isEmpty {
-                mongoQuery = mongoQuery.sort(sort.mapValues(DBMongoSortOrder.init))
+            if !query.sort.isEmpty {
+                mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
             }
             
-            if !includes.isEmpty {
-                let projection = Dictionary(uniqueKeysWithValues: includes.map { ($0, 1) })
+            if !query.includes.isEmpty {
+                let projection = Dictionary(uniqueKeysWithValues: query.includes.map { ($0, 1) })
                 mongoQuery = mongoQuery.projection(BSONDocument(projection))
             }
             
@@ -260,16 +268,12 @@ struct QueryLauncher: _DBQueryLauncher {
     
     func findOneAndUpsert<Update, Data>(_ query: _DBQuery, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<_DBObject?> {
         
-        guard let filters = query["filters"] as? [DBQueryPredicateExpression] else { fatalError() }
-        guard let sort = query["sort"] as? OrderedDictionary<String, DBQuerySortOrder> else { fatalError() }
-        guard let includes = query["includes"] as? Set<String> else { fatalError() }
-        guard let returning = query["returning"] as? DBQueryReturning else { fatalError() }
         guard let update = update as? [String: DBQueryUpdateOperation] else { fatalError() }
         guard let setOnInsert = setOnInsert as? [String: DBData] else { fatalError() }
         
         do {
             
-            let filter = try filters.map { try MongoPredicateExpression($0).toBSONDocument() }
+            let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
             
             var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter)
             
@@ -282,17 +286,17 @@ struct QueryLauncher: _DBQueryLauncher {
             mongoQuery = mongoQuery.update(_update)
             mongoQuery = mongoQuery.upsert(true)
             
-            switch returning {
+            switch query.returning {
             case .before: mongoQuery = mongoQuery.returnDocument(.before)
             case .after: mongoQuery = mongoQuery.returnDocument(.after)
             }
             
-            if !sort.isEmpty {
-                mongoQuery = mongoQuery.sort(sort.mapValues(DBMongoSortOrder.init))
+            if !query.sort.isEmpty {
+                mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
             }
             
-            if !includes.isEmpty {
-                let projection = Dictionary(uniqueKeysWithValues: includes.map { ($0, 1) })
+            if !query.includes.isEmpty {
+                let projection = Dictionary(uniqueKeysWithValues: query.includes.map { ($0, 1) })
                 mongoQuery = mongoQuery.projection(BSONDocument(projection))
             }
             
@@ -306,22 +310,18 @@ struct QueryLauncher: _DBQueryLauncher {
     
     func findOneAndDelete(_ query: _DBQuery) -> EventLoopFuture<_DBObject?> {
         
-        guard let filters = query["filters"] as? [DBQueryPredicateExpression] else { fatalError() }
-        guard let sort = query["sort"] as? OrderedDictionary<String, DBQuerySortOrder> else { fatalError() }
-        guard let includes = query["includes"] as? Set<String> else { fatalError() }
-        
         do {
             
-            let filter = try filters.map { try MongoPredicateExpression($0).toBSONDocument() }
+            let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
             
             var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndDelete().filter(filter)
             
-            if !sort.isEmpty {
-                mongoQuery = mongoQuery.sort(sort.mapValues(DBMongoSortOrder.init))
+            if !query.sort.isEmpty {
+                mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
             }
             
-            if !includes.isEmpty {
-                let projection = Dictionary(uniqueKeysWithValues: includes.map { ($0, 1) })
+            if !query.includes.isEmpty {
+                let projection = Dictionary(uniqueKeysWithValues: query.includes.map { ($0, 1) })
                 mongoQuery = mongoQuery.projection(BSONDocument(projection))
             }
             
