@@ -261,7 +261,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                         UPDATE \(identifier: query.class)
                         SET \(update.serialize(query.class, columnInfos, dialect).map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
                         FROM (\(self._findOne(query, withData: true))) AS \(identifier: temp)
-                        where \(identifier: query.class).\(identifier: rowId) = \(identifier: temp).\(identifier: rowId)
+                        WHERE \(identifier: query.class).\(identifier: rowId) = \(identifier: temp).\(identifier: rowId)
                         """
                     
                     return connection.primaryKey(of: query.class).map { primaryKeys in
