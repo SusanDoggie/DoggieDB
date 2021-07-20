@@ -510,6 +510,61 @@ class PostgreSQLTest: XCTestCase {
         }
     }
     
+    func testQuery3() throws {
+        
+        do {
+            
+            _ = try connection.execute("""
+                CREATE TABLE testQuery3 (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    col TEXT
+                )
+                """).wait()
+            
+            let obj = try connection.query()
+                .findOne("testQuery3")
+                .filter { $0["id"] == 1 }
+                .upsert([
+                    "col": .set("text_1")
+                ], setOnInsert: [
+                    "id": 1
+                ]).wait()
+            
+            XCTAssertEqual(obj?["id"]?.intValue, 1)
+            XCTAssertEqual(obj?["col"]?.string, "text_1")
+            
+            let obj2 = try connection.query()
+                .findOne("testQuery3")
+                .filter { $0["id"] == 1 }
+                .upsert([
+                    "col": .set("text_2")
+                ], setOnInsert: [
+                    "id": 1
+                ]).wait()
+            
+            XCTAssertEqual(obj2?["id"]?.intValue, 1)
+            XCTAssertEqual(obj2?["col"]?.string, "text_2")
+            
+            let obj3 = try connection.query()
+                .findOne("testQuery3")
+                .filter { $0["id"] == 1 }
+                .returning(.before)
+                .upsert([
+                    "col": .set("text_3")
+                ], setOnInsert: [
+                    "id": 1
+                ]).wait()
+            
+            XCTAssertEqual(obj3?["id"]?.intValue, 1)
+            XCTAssertEqual(obj3?["col"]?.string, "text_2")
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
     func testQueryNumberOperation() throws {
         
         do {

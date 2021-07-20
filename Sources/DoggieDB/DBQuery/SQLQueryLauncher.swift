@@ -235,7 +235,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         return sql + " LIMIT 1"
     }
     
-    func findOneAndUpdate<Update>(_ query: _DBQuery, _ update: [String: Update]) -> EventLoopFuture<_DBObject?> {
+    func _findOneAndUpdate<Update>(_ query: _DBQuery, _ update: [String: Update]) -> EventLoopFuture<(SQLRaw, [String], [DBSQLColumnInfo])> {
         
         guard let update = update as? [String: DBQueryUpdateOperation] else { fatalError() }
         
@@ -243,14 +243,14 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         
         case .before:
             
+            var temp: String
+            var counter = 0
+            repeat {
+                temp = "temp_\(counter)"
+                counter += 1
+            } while temp == query.class
+            
             return connection.columns(of: query.class).flatMap { columnInfos in
-                
-                var temp: String
-                var counter = 0
-                repeat {
-                    temp = "temp_\(counter)"
-                    counter += 1
-                } while temp == query.class
                 
                 do {
                     
@@ -264,12 +264,12 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                         where \(identifier: query.class).\(identifier: rowId) = \(identifier: temp).\(identifier: rowId)
                         """
                     
-                    return connection.primaryKey(of: query.class).flatMap { primaryKeys in
+                    return connection.primaryKey(of: query.class).map { primaryKeys in
                         
                         let includes = query.includes.isEmpty ? Set(columnInfos.map { $0.name }) : query.includes.union(primaryKeys)
-                        sql += " RETURNING \(includes.map { "\(identifier: temp).\(identifier: $0)" as SQLRaw }.joined(separator: ",")) "
+                        sql += " RETURNING \(includes.map { "\(identifier: temp).\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
                         
-                        return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                        return (sql, primaryKeys, columnInfos)
                     }
                     
                 } catch {
@@ -279,7 +279,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             }
             
         case .after:
-        
+            
             return connection.columns(of: query.class).flatMap { columnInfos in
                 
                 do {
@@ -293,16 +293,16 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                         WHERE \(identifier: rowId) IN (\(self._findOne(query, withData: false)))
                         """
                     
-                    return connection.primaryKey(of: query.class).flatMap { primaryKeys in
+                    return connection.primaryKey(of: query.class).map { primaryKeys in
                         
                         if query.includes.isEmpty {
                             sql += " RETURNING *"
                         } else {
                             let includes = query.includes.union(primaryKeys)
-                            sql += " RETURNING \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")) "
+                            sql += " RETURNING \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
                         }
                         
-                        return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                        return (sql, primaryKeys, columnInfos)
                     }
                     
                 } catch {
@@ -313,9 +313,74 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
+    func findOneAndUpdate<Update>(_ query: _DBQuery, _ update: [String: Update]) -> EventLoopFuture<_DBObject?> {
+        
+        return self._findOneAndUpdate(query, update).flatMap { sql, primaryKeys, _ in
+            
+            connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+        }
+    }
+    
     func findOneAndUpsert<Update, Data>(_ query: _DBQuery, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<_DBObject?> {
         
-        return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
+        guard let update = update as? [String: DBQueryUpdateOperation] else { fatalError() }
+        guard let setOnInsert = setOnInsert as? [String: DBData] else { fatalError() }
+        
+        var update_temp: String
+        var counter = 0
+        repeat {
+            update_temp = "temp_\(counter)"
+            counter += 1
+        } while update_temp == query.class
+        
+        var insert_temp: String
+        repeat {
+            insert_temp = "temp_\(counter)"
+            counter += 1
+        } while insert_temp == update_temp || insert_temp == query.class
+        
+        return self._findOneAndUpdate(query, update).flatMap { updateSQL, primaryKeys, columnInfos in
+            
+            do {
+                
+                guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
+                
+                let insert = update.compactMapValues { $0.value }.merging(setOnInsert) { _, rhs in rhs }
+                var _insert: [String: SQLRaw] = [:]
+                
+                for (key, value) in insert {
+                    guard let column_info = columnInfos.first(where: { $0.name == key }) else { throw Database.Error.columnNotExist }
+                    _insert[key] = try dialect.typeCast(value, column_info.type)
+                }
+                
+                let returning: SQLRaw
+                if query.includes.isEmpty {
+                    returning = "*"
+                } else {
+                    let includes = query.includes.union(primaryKeys)
+                    returning = "\(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
+                }
+                
+                let sql: SQLRaw = """
+                    WITH \(identifier: update_temp) AS (\(updateSQL)),
+                    \(identifier: insert_temp) AS (
+                        INSERT INTO \(identifier: query.class)
+                        SELECT \(_insert.map { "\($1) AS \(identifier: $0)" as SQLRaw }.joined(separator: ","))
+                        WHERE NOT EXISTS(SELECT * FROM \(identifier: update_temp))
+                        RETURNING \(returning)
+                    )
+                    SELECT \(returning) FROM \(identifier: update_temp)
+                    UNION
+                    SELECT \(returning) FROM \(identifier: insert_temp)
+                    """
+                
+                return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                
+            } catch {
+                
+                return connection.eventLoopGroup.next().makeFailedFuture(error)
+            }
+        }
     }
     
     func findOneAndDelete(_ query: _DBQuery) -> EventLoopFuture<_DBObject?> {
