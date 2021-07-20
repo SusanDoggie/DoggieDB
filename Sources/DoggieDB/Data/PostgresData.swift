@@ -368,27 +368,9 @@ extension PostgresData {
     }
 }
 
-extension DBData {
-    
-    fileprivate var _elementType: PostgresDataType? {
-        switch self.base {
-        case .boolean: return .bool
-        case .binary: return .bytea
-        case .string: return .text
-        case .signed: return .int8
-        case .unsigned: return .int8
-        case .number: return .float8
-        case .uuid: return .uuid
-        case .array: return .jsonb
-        case .dictionary: return .jsonb
-        default: return nil
-        }
-    }
-}
-
 extension Array where Element == DBData {
     
-    fileprivate var _postgresArray: ([PostgresData], PostgresDataType)? {
+    var _postgresArray: ([PostgresData], PostgresDataType)? {
         guard let array = try? self.map({ try PostgresData($0) }) else { return nil }
         guard let type = array.first?.type else { return nil }
         guard array.dropFirst().allSatisfy({ $0.type == type }) else { return nil }

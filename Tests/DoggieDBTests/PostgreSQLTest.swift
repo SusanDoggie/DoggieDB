@@ -480,14 +480,14 @@ class PostgreSQLTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            obj.push("int_array", with: 1)
+            obj.push("int_array", with: 1 as DBData, 2.0)
             obj.push("json_array", with: 1)
             obj.push("jsonb_array", with: 1)
             
             obj = try obj.save(on: connection).wait()
             
             XCTAssertEqual(obj["id"]?.intValue, 1)
-            XCTAssertEqual(obj["int_array"]?.array, [1])
+            XCTAssertEqual(obj["int_array"]?.array, [1, 2])
             XCTAssertEqual(obj["json_array"]?.array, [1.0])
             XCTAssertEqual(obj["jsonb_array"]?.array, [1.0])
             
