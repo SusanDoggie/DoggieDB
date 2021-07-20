@@ -55,19 +55,17 @@ struct PostgreSQLDialect: SQLDialect {
     
     static func typeCast(_ value: DBData, _ columnType: String) throws -> SQLRaw {
         
-        if columnType.hasSuffix("[]") && value.array?._postgresArray == nil {
-            return "CAST(ARRAY(SELECT jsonb_array_elements(\(value))) AS \(literal: columnType))"
+        switch columnType {
+        case "json": return "to_json(\(value))"
+        case "jsonb": return "to_jsonb(\(value))"
+        default:
+            
+            if columnType.hasSuffix("[]") && value.array?._postgresArray == nil {
+                return "CAST(ARRAY(SELECT jsonb_array_elements(\(value))) AS \(literal: columnType))"
+            }
+            
+            return "CAST(\(value) AS \(literal: columnType))"
         }
-        
-        if columnType == "json" {
-            return "to_json(\(value))"
-        }
-        
-        if columnType == "jsonb" {
-            return "to_jsonb(\(value))"
-        }
-        
-        return "CAST(\(value) AS \(literal: columnType))"
     }
     
     static func updateOperation(_ column: String, _ columnType: String, _ operation: SQLDialectUpdateOperation) throws -> SQLRaw {
@@ -94,6 +92,42 @@ struct PostgreSQLDialect: SQLDialect {
             } else if columnType == "jsonb" {
                 
                 return "\(identifier: column) || array_to_json(\(list))::jsonb"
+                
+            } else {
+                throw Database.Error.unsupportedOperation
+            }
+            
+        case .popFirst:
+            
+            if columnType.hasSuffix("[]") {
+                
+                return "\(identifier: column)[2:]"
+                
+            } else if columnType == "json" {
+                
+                return "(\(identifier: column)::jsonb - 0)::json"
+                
+            } else if columnType == "jsonb" {
+                
+                return "(\(identifier: column) - 0)"
+                
+            } else {
+                throw Database.Error.unsupportedOperation
+            }
+            
+        case .popLast:
+            
+            if columnType.hasSuffix("[]") {
+                
+                return "\(identifier: column)[:array_upper(\(identifier: column), 1) - 1]"
+                
+            } else if columnType == "json" {
+                
+                return "(\(identifier: column)::jsonb - -1)::json"
+                
+            } else if columnType == "jsonb" {
+                
+                return "(\(identifier: column) - -1)"
                 
             } else {
                 throw Database.Error.unsupportedOperation
