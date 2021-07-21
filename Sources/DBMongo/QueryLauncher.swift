@@ -283,8 +283,6 @@ struct QueryLauncher: _DBQueryLauncher {
                 _update["$setOnInsert"] = try BSON(setOnInsert.mapValues { try BSON($0.toDBData()) })
             }
             
-            print(_update)
-            
             mongoQuery = mongoQuery.update(_update)
             mongoQuery = mongoQuery.upsert(true)
             

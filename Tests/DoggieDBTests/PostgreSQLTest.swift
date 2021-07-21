@@ -608,7 +608,7 @@ class PostgreSQLTest: XCTestCase {
                     "id": 2
                 ]).wait()
             
-            XCTAssertEqual(obj2?.keys, ["id", "dummy1", "dummy2"])
+            XCTAssertNil(obj2)
             
             let obj3 = try connection.query()
                 .findOne("testIncludesQuery")
