@@ -27,8 +27,7 @@
 
 extension OrderedDictionary where Key == String, Value == DBQuerySortOrder {
     
-    func serialize() -> SQLRaw {
-        guard !self.isEmpty else { return "" }
+    fileprivate func serialize() -> SQLRaw {
         let list: [SQLRaw] = self.map {
             switch $1 {
             case .ascending: return "\(identifier: $0) ASC"
@@ -41,29 +40,29 @@ extension OrderedDictionary where Key == String, Value == DBQuerySortOrder {
 
 extension _DBQuery {
     
-    var filters: [DBQueryPredicateExpression] {
+    fileprivate var filters: [DBQueryPredicateExpression] {
         return self["filters"] as! Array
     }
-    var sort: OrderedDictionary<String, DBQuerySortOrder> {
+    fileprivate var sort: OrderedDictionary<String, DBQuerySortOrder> {
         return self["sort"] as! OrderedDictionary
     }
-    var skip: Int {
+    fileprivate var skip: Int {
         return self["skip"] as! Int
     }
-    var limit: Int {
+    fileprivate var limit: Int {
         return self["limit"] as! Int
     }
-    var includes: Set<String> {
+    fileprivate var includes: Set<String> {
         return self["includes"] as! Set
     }
-    var returning: DBQueryReturning {
+    fileprivate var returning: DBQueryReturning {
         return self["returning"] as! DBQueryReturning
     }
 }
 
 extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
     
-    func serialize(_ table: String, _ columnInfos: [DBSQLColumnInfo], _ dialect: SQLDialect.Type) throws -> [String: SQLRaw] {
+    fileprivate func serialize(_ table: String, _ columnInfos: [DBSQLColumnInfo], _ dialect: SQLDialect.Type) throws -> [String: SQLRaw] {
         
         var update: [String: SQLRaw] = [:]
         
@@ -88,6 +87,20 @@ extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
         }
         
         return update
+    }
+}
+
+extension _DBObject {
+    
+    fileprivate init(table: String, primaryKeys: [String], object: DBQueryRow) {
+        
+        var _columns: [String: DBData] = [:]
+        for key in object.keys {
+            guard let value = object[key] else { continue }
+            _columns[key] = value
+        }
+        
+        self.init(class: table, primaryKeys: Set(primaryKeys), columns: _columns)
     }
 }
 
@@ -460,19 +473,5 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 return connection.eventLoopGroup.next().makeFailedFuture(error)
             }
         }
-    }
-}
-
-extension _DBObject {
-    
-    init(table: String, primaryKeys: [String], object: DBQueryRow) {
-        
-        var _columns: [String: DBData] = [:]
-        for key in object.keys {
-            guard let value = object[key] else { continue }
-            _columns[key] = value
-        }
-        
-        self.init(class: table, primaryKeys: Set(primaryKeys), columns: _columns)
     }
 }

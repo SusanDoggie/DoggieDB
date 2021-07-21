@@ -27,7 +27,7 @@
 
 extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
     
-    func toBSONDocument() throws -> BSONDocument {
+    fileprivate func toBSONDocument() throws -> BSONDocument {
         
         var update: [String: BSON] = [:]
         
@@ -118,22 +118,22 @@ extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
 
 extension _DBQuery {
     
-    var filters: [DBQueryPredicateExpression] {
+    fileprivate var filters: [DBQueryPredicateExpression] {
         return self["filters"] as! Array
     }
-    var sort: OrderedDictionary<String, DBQuerySortOrder> {
+    fileprivate var sort: OrderedDictionary<String, DBQuerySortOrder> {
         return self["sort"] as! OrderedDictionary
     }
-    var skip: Int {
+    fileprivate var skip: Int {
         return self["skip"] as! Int
     }
-    var limit: Int {
+    fileprivate var limit: Int {
         return self["limit"] as! Int
     }
-    var includes: Set<String> {
+    fileprivate var includes: Set<String> {
         return self["includes"] as! Set
     }
-    var returning: DBQueryReturning {
+    fileprivate var returning: DBQueryReturning {
         return self["returning"] as! DBQueryReturning
     }
 }
@@ -352,7 +352,7 @@ struct QueryLauncher: _DBQueryLauncher {
 
 extension _DBObject {
     
-    init(class: String, object: BSONDocument) {
+    fileprivate init(class: String, object: BSONDocument) {
         
         var _columns: [String: DBData] = [:]
         for (key, value) in object {
@@ -366,7 +366,7 @@ extension _DBObject {
 
 extension MongoPredicateExpression {
     
-    init(_ expression: DBQueryPredicateExpression) throws {
+    fileprivate init(_ expression: DBQueryPredicateExpression) throws {
         switch expression {
         case let .not(expr): self = try .not(MongoPredicateExpression(expr))
         case let .equal(lhs, rhs): self = try .equal(MongoPredicateValue(lhs), MongoPredicateValue(rhs))
@@ -405,7 +405,7 @@ extension MongoPredicateExpression {
 
 extension MongoPredicateValue {
     
-    init(_ value: DBQueryPredicateValue) throws {
+    fileprivate init(_ value: DBQueryPredicateValue) throws {
         switch value {
         case let .key(key): self = .key(key)
         case let .value(value): self = try .value(BSON(value.toDBData()))
@@ -415,7 +415,7 @@ extension MongoPredicateValue {
 
 extension DBMongoSortOrder {
     
-    init(_ order: DBQuerySortOrder) {
+    fileprivate init(_ order: DBQuerySortOrder) {
         switch order {
         case .ascending: self = .ascending
         case .descending: self = .descending
