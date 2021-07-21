@@ -1,5 +1,5 @@
 //
-//  Exported.swift
+//  MySQLDialect.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,17 +23,30 @@
 //  THE SOFTWARE.
 //
 
-@_exported import Vapor
-
-@_exported import DoggieDB
-
-@_exported import DBMongo
-
-@_exported import DBMySQL
-
-@_exported import DBSQLite
-
-@_exported import DBVapor
-
-@_exported import SwiftJS
-
+struct MySQLDialect: SQLDialect {
+    
+    static func identifier(_ str: String) -> String {
+        return "`\(str)`"
+    }
+    
+    static var repeatablePlaceholder: Bool {
+        return false
+    }
+    
+    static func bindPlaceholder(at position: Int) -> String {
+        return "?"
+    }
+    
+    static func nullSafeEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) -> SQLRaw {
+        return "\(lhs) <=> \(rhs)"
+    }
+    
+    static func nullSafeNotEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) -> SQLRaw {
+        return "NOT \(lhs) <=> \(rhs)"
+    }
+    
+    static func literalBoolean(_ value: Bool) -> String {
+        return value ? "1" : "0"
+    }
+    
+}

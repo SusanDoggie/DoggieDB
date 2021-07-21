@@ -1,5 +1,5 @@
 //
-//  Exported.swift
+//  DatabaseDriver.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,17 +23,7 @@
 //  THE SOFTWARE.
 //
 
-@_exported import Vapor
-
-@_exported import DoggieDB
-
-@_exported import DBMongo
-
-@_exported import DBMySQL
-
-@_exported import DBSQLite
-
-@_exported import DBVapor
-
-@_exported import SwiftJS
-
+extension DBDriver {
+    
+    public static let mySQL = DBDriver(rawValue: MySQLDriver.self)
+}

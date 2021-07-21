@@ -23,17 +23,6 @@
 //  THE SOFTWARE.
 //
 
-@_exported import Vapor
+@_exported import DoggieCore
 
 @_exported import DoggieDB
-
-@_exported import DBMongo
-
-@_exported import DBMySQL
-
-@_exported import DBSQLite
-
-@_exported import DBVapor
-
-@_exported import SwiftJS
-

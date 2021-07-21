@@ -46,6 +46,7 @@ let package = Package(
         .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "1.1.0"),
         .package(url: "https://gitlab.com/mordil/RediStack.git", from: "1.0.0"),
         .package(url: "https://github.com/vapor/sqlite-nio.git", from: "1.1.0"),
+        .package(url: "https://github.com/vapor/mysql-nio.git", from: "1.3.0"),
         .package(url: "https://github.com/vapor/postgres-nio.git", from: "1.5.0"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.44.0"),
     ],
@@ -77,6 +78,14 @@ let package = Package(
             ]
         ),
         .target(
+            name: "DBMySQL",
+            dependencies: [
+                .target(name: "Private"),
+                .target(name: "DoggieDB"),
+                .product(name: "MySQLNIO", package: "mysql-nio"),
+            ]
+        ),
+        .target(
             name: "DBSQLite",
             dependencies: [
                 .target(name: "Private"),
@@ -96,6 +105,7 @@ let package = Package(
             dependencies: [
                 .target(name: "DoggieDB"),
                 .target(name: "DBMongo"),
+                .target(name: "DBMySQL"),
                 .target(name: "DBSQLite"),
                 .target(name: "DBVapor"),
                 .product(name: "Vapor", package: "vapor"),
