@@ -292,9 +292,8 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 counter += 1
             } while temp == query.class
             
-            return connection.columns(of: query.class).flatMap { columnInfos in
-                
-                connection.primaryKey(of: query.class).flatMapThrowing { primaryKeys in
+            return connection.columns(of: query.class).and(connection.primaryKey(of: query.class))
+                .flatMapThrowing { (columnInfos, primaryKeys) in
                     
                     guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
                     guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
@@ -311,13 +310,11 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                     
                     return (sql, primaryKeys, columnInfos)
                 }
-            }
             
         case .after:
             
-            return connection.columns(of: query.class).flatMap { columnInfos in
-                
-                connection.primaryKey(of: query.class).flatMapThrowing { primaryKeys in
+            return connection.columns(of: query.class).and(connection.primaryKey(of: query.class))
+                .flatMapThrowing { (columnInfos, primaryKeys) in
                     
                     guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
                     guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
@@ -337,7 +334,6 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                     
                     return (sql, primaryKeys, columnInfos)
                 }
-            }
         }
     }
     
