@@ -346,7 +346,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
                 
                 let insert = update.compactMapValues { $0.value }.merging(setOnInsert) { _, rhs in rhs }
-                var _insert: [String: SQLRaw] = [:]
+                var _insert: OrderedDictionary<String, SQLRaw> = [:]
                 
                 for (key, value) in insert {
                     guard let column_info = columnInfos.first(where: { $0.name == key }) else { throw Database.Error.columnNotExist }
@@ -364,7 +364,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 let sql: SQLRaw = """
                     WITH \(identifier: update_temp) AS (\(updateSQL)),
                     \(identifier: insert_temp) AS (
-                        INSERT INTO \(identifier: query.class)
+                        INSERT INTO \(identifier: query.class)(\(_insert.keys.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")))
                         SELECT \(_insert.map { "\($1) AS \(identifier: $0)" as SQLRaw }.joined(separator: ","))
                         WHERE NOT EXISTS(SELECT * FROM \(identifier: update_temp))
                         RETURNING \(returning)
