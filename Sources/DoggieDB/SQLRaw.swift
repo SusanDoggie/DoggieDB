@@ -233,16 +233,11 @@ extension Collection where Element == SQLRaw {
 }
 
 public func +(lhs: SQLRaw, rhs: SQLRaw) -> SQLRaw {
-    if lhs.last_char?.isWhitespaceOrNewline != true && rhs.first_char?.isWhitespaceOrNewline != true {
-        return SQLRaw(components: lhs.components + [.string(" ")] + rhs.components)
-    }
-    return SQLRaw(components: lhs.components + rhs.components)
+    var result = lhs
+    result.append(rhs)
+    return result
 }
 
 public func +=(lhs: inout SQLRaw, rhs: SQLRaw) {
-    if lhs.last_char?.isWhitespaceOrNewline != true && rhs.first_char?.isWhitespaceOrNewline != true {
-        lhs.components.append(.string(" "))
-    }
-    lhs.components += rhs.components
-    lhs.components = lhs.components.simplify()
+    lhs.append(rhs)
 }
