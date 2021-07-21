@@ -56,11 +56,11 @@ function createDatabase() {
 		}
 		
 		runSQLCommand(sql) {
-			return socket_run({ action: 'runCommand', type: 'sql', command: sql });
+			return socket_run({ action: 'runCommand', command: sql });
 		}
 		
 		runMongoCommand(command) {
-			return socket_run({ action: 'runCommand', type: 'mongo', command: command });
+			return socket_run({ action: 'runCommand', command: command });
 		}
 	}
 	

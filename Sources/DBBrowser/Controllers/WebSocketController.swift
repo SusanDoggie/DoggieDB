@@ -68,9 +68,18 @@ public class WebSocketController: RouteCollection {
 
 extension WebSocketController {
     
+    enum DatabaseType {
+        
+        case sql
+        
+        case mongo
+    }
+    
     private class Session {
         
         var connection: DBConnection?
+        
+        var type: DatabaseType?
     }
 }
 
@@ -97,6 +106,12 @@ extension WebSocketController {
                 switch $0 {
                 case let .success(connection):
                     
+                    if url.scheme == "mongodb" {
+                        session.type = .mongo
+                    } else if connection is DBSQLConnection {
+                        session.type = .sql
+                    }
+                    
                     session.connection = connection
                     self.send(ws, ["success": true, "token": message["token"]])
                     
@@ -104,10 +119,61 @@ extension WebSocketController {
                 }
             }
             
+        case "databases":
+            
+            guard let connection = session.connection else {
+                self.send(ws, ["success": false, "token": message["token"], "error": .string("database not connected")])
+                return
+            }
+            
+            connection.databases().whenComplete {
+                switch $0 {
+                case let .success(result): self.send(ws, ["success": true, "token": message["token"], "databases": BSON(result)])
+                case let .failure(error): self.send(ws, ["success": false, "token": message["token"], "error": .string("\(error)")])
+                }
+            }
+            
+        case "tables":
+            
+            switch session.type {
+            case .sql:
+                
+                guard let connection = session.connection as? DBSQLConnection else {
+                    self.send(ws, ["success": false, "token": message["token"], "error": .string("database not connected")])
+                    return
+                }
+                
+                connection.tables().whenComplete {
+                    switch $0 {
+                    case let .success(tables): self.send(ws, ["success": true, "token": message["token"], "tables": BSON(tables)])
+                    case let .failure(error): self.send(ws, ["success": false, "token": message["token"], "error": .string("\(error)")])
+                    }
+                }
+                
+            case .mongo:
+                
+                guard let connection = session.connection else {
+                    self.send(ws, ["success": false, "token": message["token"], "error": .string("database not connected")])
+                    return
+                }
+                
+                connection.mongoQuery().collections().execute()
+                    .flatMap { $0.toArray() }
+                    .map { $0.map { $0.name } }
+                    .whenComplete {
+                        switch $0 {
+                        case let .success(tables): self.send(ws, ["success": true, "token": message["token"], "tables": BSON(tables)])
+                        case let .failure(error): self.send(ws, ["success": false, "token": message["token"], "error": .string("\(error)")])
+                        }
+                    }
+                
+            default: self.send(ws, ["success": false, "token": message["token"], "error": .string("unknown error")])
+            }
+            
         case "runCommand":
             
-            switch message["type"].stringValue {
-            case "sql":
+            switch session.type {
+            case .sql:
                 
                 guard let connection = session.connection as? DBSQLConnection else {
                     self.send(ws, ["success": false, "token": message["token"], "error": .string("database not connected")])
@@ -137,7 +203,7 @@ extension WebSocketController {
                     }
                 }
                 
-            case "mongo":
+            case .mongo:
                 
                 guard let connection = session.connection else {
                     self.send(ws, ["success": false, "token": message["token"], "error": .string("database not connected")])
@@ -155,7 +221,7 @@ extension WebSocketController {
                     }
                 }
                 
-            default: self.send(ws, ["success": false, "token": message["token"], "error": .string("invalid command type")])
+            default: self.send(ws, ["success": false, "token": message["token"], "error": .string("unknown error")])
             }
             
         default: self.send(ws, ["success": false, "token": message["token"], "error": .string("unknown action")])
