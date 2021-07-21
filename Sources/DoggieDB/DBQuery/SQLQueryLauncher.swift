@@ -353,13 +353,8 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                     _insert[key] = try dialect.typeCast(value.toDBData(), column_info.type)
                 }
                 
-                let returning: SQLRaw
-                if query.includes.isEmpty {
-                    returning = "*"
-                } else {
-                    let includes = query.includes.union(primaryKeys)
-                    returning = "\(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
-                }
+                let includes = query.includes.isEmpty ? Set(columnInfos.map { $0.name }) : query.includes.union(primaryKeys)
+                let _includes: SQLRaw = "\(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
                 
                 let sql: SQLRaw = """
                     WITH \(identifier: update_temp) AS (\(updateSQL)),
@@ -367,11 +362,11 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                         INSERT INTO \(identifier: query.class)(\(_insert.keys.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")))
                         SELECT \(_insert.map { "\($1) AS \(identifier: $0)" as SQLRaw }.joined(separator: ","))
                         WHERE NOT EXISTS(SELECT * FROM \(identifier: update_temp))
-                        RETURNING \(returning)
+                        RETURNING \(_includes)
                     )
-                    SELECT \(returning) FROM \(identifier: update_temp)
+                    SELECT \(_includes) FROM \(identifier: update_temp)
                     UNION
-                    SELECT \(returning) FROM \(identifier: insert_temp)
+                    SELECT \(_includes) FROM \(identifier: insert_temp)
                     """
                 
                 return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
