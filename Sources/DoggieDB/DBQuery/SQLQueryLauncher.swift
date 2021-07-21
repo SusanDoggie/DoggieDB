@@ -357,9 +357,6 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 
                 case .before:
                     
-                    let includes = query.includes.isEmpty ? Set(columnInfos.map { $0.name }) : query.includes.union(primaryKeys)
-                    let _includes: SQLRaw = "\(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
-                    
                     let sql: SQLRaw = """
                     WITH \(identifier: update_temp) AS (\(updateSQL)),
                     \(identifier: insert_temp) AS (
@@ -367,7 +364,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                         SELECT \(_insert.map { "\($1) AS \(identifier: $0)" as SQLRaw }.joined(separator: ","))
                         WHERE NOT EXISTS(SELECT * FROM \(identifier: update_temp))
                     )
-                    SELECT \(_includes) FROM \(identifier: update_temp)
+                    SELECT * FROM \(identifier: update_temp)
                     """
                     
                     return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
