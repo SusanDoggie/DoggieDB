@@ -246,7 +246,7 @@ class MongoDBTest: XCTestCase {
         
         do {
             
-            _ = try connection.mongoQuery().createCollection("testUpsertQuery").execute().wait()
+            _ = try connection.mongoQuery().createCollection("testIncludesQuery").execute().wait()
             
             let obj = try connection.query()
                 .findOne("testIncludesQuery")
