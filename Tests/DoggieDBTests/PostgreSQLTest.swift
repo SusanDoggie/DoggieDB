@@ -459,18 +459,18 @@ class PostgreSQLTest: XCTestCase {
         }
     }
     
-    func testQuery2() throws {
+    func testUpdateQuery() throws {
         
         do {
             
             _ = try connection.execute("""
-                CREATE TABLE testQuery2 (
+                CREATE TABLE testUpdateQuery (
                     id INTEGER NOT NULL PRIMARY KEY,
                     col TEXT
                 )
                 """).wait()
             
-            var obj = DBObject(class: "testQuery2")
+            var obj = DBObject(class: "testUpdateQuery")
             obj["id"] = 1
             
             obj = try obj.save(on: connection).wait()
@@ -483,7 +483,7 @@ class PostgreSQLTest: XCTestCase {
             XCTAssertEqual(obj["col"]?.string, "text_1")
             
             let obj2 = try connection.query()
-                .findOne("testQuery2")
+                .findOne("testUpdateQuery")
                 .filter { $0["id"] == 1 }
                 .update([
                     "col": .set("text_2")
@@ -493,7 +493,7 @@ class PostgreSQLTest: XCTestCase {
             XCTAssertEqual(obj2?["col"]?.string, "text_2")
             
             let obj3 = try connection.query()
-                .findOne("testQuery2")
+                .findOne("testUpdateQuery")
                 .filter { $0["id"] == 1 }
                 .returning(.before)
                 .update([
@@ -510,19 +510,19 @@ class PostgreSQLTest: XCTestCase {
         }
     }
     
-    func testQuery3() throws {
+    func testUpsertQuery() throws {
         
         do {
             
             _ = try connection.execute("""
-                CREATE TABLE testQuery3 (
+                CREATE TABLE testUpsertQuery (
                     id INTEGER NOT NULL PRIMARY KEY,
                     col TEXT
                 )
                 """).wait()
             
             let obj = try connection.query()
-                .findOne("testQuery3")
+                .findOne("testUpsertQuery")
                 .filter { $0["id"] == 1 }
                 .upsert([
                     "col": .set("text_1")
@@ -534,7 +534,7 @@ class PostgreSQLTest: XCTestCase {
             XCTAssertEqual(obj?["col"]?.string, "text_1")
             
             let obj2 = try connection.query()
-                .findOne("testQuery3")
+                .findOne("testUpsertQuery")
                 .filter { $0["id"] == 1 }
                 .upsert([
                     "col": .set("text_2")
@@ -546,7 +546,7 @@ class PostgreSQLTest: XCTestCase {
             XCTAssertEqual(obj2?["col"]?.string, "text_2")
             
             let obj3 = try connection.query()
-                .findOne("testQuery3")
+                .findOne("testUpsertQuery")
                 .filter { $0["id"] == 1 }
                 .returning(.before)
                 .upsert([
@@ -557,6 +557,134 @@ class PostgreSQLTest: XCTestCase {
             
             XCTAssertEqual(obj3?["id"]?.intValue, 1)
             XCTAssertEqual(obj3?["col"]?.string, "text_2")
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testIncludesQuery() throws {
+        
+        do {
+            
+            _ = try connection.execute("""
+                CREATE TABLE testIncludesQuery (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    dummy1 INTEGER,
+                    dummy2 INTEGER,
+                    dummy3 INTEGER,
+                    dummy4 INTEGER
+                )
+                """).wait()
+            
+            let obj = try connection.query()
+                .findOne("testIncludesQuery")
+                .filter { $0["id"] == 1 }
+                .includes(["dummy1", "dummy2"])
+                .upsert([
+                    "dummy1": .set(1),
+                    "dummy2": .set(2),
+                    "dummy3": .set(3),
+                    "dummy4": .set(4),
+                ], setOnInsert: [
+                    "id": 1
+                ]).wait()
+            
+            XCTAssertEqual(obj?.keys, ["id", "dummy1", "dummy2"])
+            
+            let obj2 = try connection.query()
+                .findOne("testIncludesQuery")
+                .filter { $0["id"] == 2 }
+                .includes(["dummy1", "dummy2"])
+                .returning(.before)
+                .upsert([
+                    "dummy1": .set(1),
+                    "dummy2": .set(2),
+                    "dummy3": .set(3),
+                    "dummy4": .set(4),
+                ], setOnInsert: [
+                    "id": 2
+                ]).wait()
+            
+            XCTAssertEqual(obj2?.keys, ["id", "dummy1", "dummy2"])
+            
+            let obj3 = try connection.query()
+                .findOne("testIncludesQuery")
+                .filter { $0["id"] == 1 }
+                .includes(["dummy1", "dummy2"])
+                .upsert([
+                    "dummy1": .set(1),
+                    "dummy2": .set(2),
+                    "dummy3": .set(3),
+                    "dummy4": .set(4),
+                ], setOnInsert: [
+                    "id": 1
+                ]).wait()
+            
+            XCTAssertEqual(obj3?.keys, ["id", "dummy1", "dummy2"])
+            
+            let obj4 = try connection.query()
+                .findOne("testIncludesQuery")
+                .filter { $0["id"] == 2 }
+                .includes(["dummy1", "dummy2"])
+                .returning(.before)
+                .upsert([
+                    "dummy1": .set(1),
+                    "dummy2": .set(2),
+                    "dummy3": .set(3),
+                    "dummy4": .set(4),
+                ], setOnInsert: [
+                    "id": 2
+                ]).wait()
+            
+            XCTAssertEqual(obj4?.keys, ["id", "dummy1", "dummy2"])
+            
+            let obj5 = try connection.query()
+                .findOne("testIncludesQuery")
+                .filter { $0["id"] == 1 }
+                .includes(["dummy1", "dummy2"])
+                .update([
+                    "dummy1": .set(1),
+                    "dummy2": .set(2),
+                    "dummy3": .set(3),
+                    "dummy4": .set(4),
+                ]).wait()
+            
+            XCTAssertEqual(obj5?.keys, ["id", "dummy1", "dummy2"])
+            
+            let obj6 = try connection.query()
+                .findOne("testIncludesQuery")
+                .filter { $0["id"] == 2 }
+                .includes(["dummy1", "dummy2"])
+                .returning(.before)
+                .update([
+                    "dummy1": .set(1),
+                    "dummy2": .set(2),
+                    "dummy3": .set(3),
+                    "dummy4": .set(4),
+                ]).wait()
+            
+            XCTAssertEqual(obj6?.keys, ["id", "dummy1", "dummy2"])
+            
+            let obj7 = try connection.query()
+                .find("testIncludesQuery")
+                .filter { $0["id"] == 1 }
+                .includes(["dummy1", "dummy2"])
+                .first()
+                .wait()
+            
+            XCTAssertEqual(obj7?.keys, ["id", "dummy1", "dummy2"])
+            
+            let obj8 = try connection.query()
+                .findOne("testIncludesQuery")
+                .filter { $0["id"] == 1 }
+                .includes(["dummy1", "dummy2"])
+                .delete()
+                .wait()
+            
+            XCTAssertEqual(obj8?.keys, ["id", "dummy1", "dummy2"])
             
         } catch {
             
