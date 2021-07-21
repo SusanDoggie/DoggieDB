@@ -106,7 +106,7 @@ jobs:
       fail-fast: false
       matrix:
         swift_version: [5.3, 5.4]
-        distro: [xenial, bionic, focal]
+        distro: [bionic, focal]
     steps:
     - uses: actions/checkout@v1
       with:
@@ -221,10 +221,7 @@ jobs:
       fail-fast: false
       matrix:
         swift_version: [5.5, main]
-        distro: [xenial, bionic, focal]
-        exclude:
-          - swift_version: main
-            distro: xenial
+        distro: [bionic, focal]
     steps:
     - uses: actions/checkout@v1
       with:
