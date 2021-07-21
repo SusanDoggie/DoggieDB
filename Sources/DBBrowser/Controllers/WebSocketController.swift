@@ -170,6 +170,49 @@ extension WebSocketController {
             default: self.send(ws, ["success": false, "token": message["token"], "error": .string("unknown error")])
             }
             
+        case "tableInfo":
+            
+            switch session.type {
+            case .sql:
+                
+                guard let connection = session.connection as? DBSQLConnection else {
+                    self.send(ws, ["success": false, "token": message["token"], "error": .string("database not connected")])
+                    return
+                }
+                
+                guard let table = message["table"].stringValue else {
+                    self.send(ws, ["success": false, "token": message["token"], "error": .string("invalid command")])
+                    return
+                }
+                
+                connection.columns(of: table)
+                    .and(connection.primaryKey(of: table))
+                    .whenComplete {
+                        switch $0 {
+                        case let .success((columns, primaryKey)):
+                            
+                            self.send(ws, [
+                                "success": true,
+                                "token": message["token"],
+                                "primaryKey": BSON(primaryKey),
+                                "columns": BSON(columns.map { [
+                                    "name": BSON($0.name),
+                                    "type": BSON($0.type),
+                                    "isOptional": BSON($0.isOptional),
+                                ] }),
+                            ])
+                            
+                        case let .failure(error): self.send(ws, ["success": false, "token": message["token"], "error": .string("\(error)")])
+                        }
+                    }
+                
+            case .mongo:
+                
+                self.send(ws, ["success": false, "token": message["token"], "error": .string("unsupported operation")])
+                
+            default: self.send(ws, ["success": false, "token": message["token"], "error": .string("unknown error")])
+            }
+            
         case "runCommand":
             
             switch session.type {
