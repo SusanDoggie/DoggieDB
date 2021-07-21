@@ -171,7 +171,7 @@ jobs:
       with:
         submodules: recursive
     - name: Prepare		
-      run: yum update -y ${{ matrix.allowerasing }}
+      run: yum update -y ${{ matrix.allowerasing }} && yum install -y libstdc++-static
     - name: Install libmongoc
       run: yum install -y mongo-c-driver openssl-devel
     - name: Install sqlite3
@@ -290,7 +290,7 @@ jobs:
       with:
         submodules: recursive
     - name: Prepare		
-      run: yum update -y ${{ matrix.allowerasing }}
+      run: yum update -y ${{ matrix.allowerasing }} && yum install -y libstdc++-static
     - name: Install libmongoc
       run: yum install -y mongo-c-driver openssl-devel
     - name: Install sqlite3
