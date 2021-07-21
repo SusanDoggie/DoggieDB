@@ -154,6 +154,26 @@ extension DBObject {
 
 extension DBObject {
     
+    public func fetch<S: Sequence>(_ keys: S, on connection: DBConnection) -> EventLoopFuture<DBObject> where S.Element == String {
+        
+        let objectId = self._columns.filter { primaryKeys.contains($0.key) }
+        
+        if objectId.count == primaryKeys.count {
+            
+            return connection.query().find(self.class)
+                .filter { object in .and(objectId.map { object[$0] == $1 }) }
+                .includes(primaryKeys.union(keys))
+                .first()
+                .flatMapThrowing { object in
+                    guard let object = object else { throw Database.Error.objectNotFound }
+                    return object
+                }
+            
+        } else {
+            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidObjectId)
+        }
+    }
+    
     public func fetch(on connection: DBConnection) -> EventLoopFuture<DBObject> {
         
         let objectId = self._columns.filter { primaryKeys.contains($0.key) }
