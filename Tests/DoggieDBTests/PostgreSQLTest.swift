@@ -484,7 +484,7 @@ class PostgreSQLTest: XCTestCase {
             
             let obj2 = try connection.query()
                 .findOne("testUpdateQuery")
-                .filter { $0["id"] == 1 }
+                .filter { $0.objectId == 1 }
                 .update([
                     "col": .set("text_2")
                 ]).wait()
@@ -494,7 +494,7 @@ class PostgreSQLTest: XCTestCase {
             
             let obj3 = try connection.query()
                 .findOne("testUpdateQuery")
-                .filter { $0["id"] == 1 }
+                .filter { $0.objectId == 1 }
                 .returning(.before)
                 .update([
                     "col": .set("text_3")
@@ -523,7 +523,7 @@ class PostgreSQLTest: XCTestCase {
             
             let obj = try connection.query()
                 .findOne("testUpsertQuery")
-                .filter { $0["id"] == 1 }
+                .filter { $0.objectId == 1 }
                 .upsert([
                     "col": .set("text_1")
                 ], setOnInsert: [
@@ -535,7 +535,7 @@ class PostgreSQLTest: XCTestCase {
             
             let obj2 = try connection.query()
                 .findOne("testUpsertQuery")
-                .filter { $0["id"] == 1 }
+                .filter { $0.objectId == 1 }
                 .upsert([
                     "col": .set("text_2")
                 ], setOnInsert: [
@@ -547,7 +547,7 @@ class PostgreSQLTest: XCTestCase {
             
             let obj3 = try connection.query()
                 .findOne("testUpsertQuery")
-                .filter { $0["id"] == 1 }
+                .filter { $0.objectId == 1 }
                 .returning(.before)
                 .upsert([
                     "col": .set("text_3")
@@ -581,7 +581,7 @@ class PostgreSQLTest: XCTestCase {
             
             let obj = try connection.query()
                 .findOne("testIncludesQuery")
-                .filter { $0["id"] == 1 }
+                .filter { $0.objectId == 1 }
                 .includes(["dummy1", "dummy2"])
                 .upsert([
                     "dummy1": .set(1),
@@ -596,7 +596,7 @@ class PostgreSQLTest: XCTestCase {
             
             let obj2 = try connection.query()
                 .findOne("testIncludesQuery")
-                .filter { $0["id"] == 2 }
+                .filter { $0.objectId == 2 }
                 .includes(["dummy1", "dummy2"])
                 .returning(.before)
                 .upsert([
@@ -612,7 +612,7 @@ class PostgreSQLTest: XCTestCase {
             
             let obj3 = try connection.query()
                 .findOne("testIncludesQuery")
-                .filter { $0["id"] == 1 }
+                .filter { $0.objectId == 1 }
                 .includes(["dummy1", "dummy2"])
                 .upsert([
                     "dummy1": .set(1),
@@ -627,7 +627,7 @@ class PostgreSQLTest: XCTestCase {
             
             let obj4 = try connection.query()
                 .findOne("testIncludesQuery")
-                .filter { $0["id"] == 2 }
+                .filter { $0.objectId == 2 }
                 .includes(["dummy1", "dummy2"])
                 .returning(.before)
                 .upsert([
@@ -643,7 +643,7 @@ class PostgreSQLTest: XCTestCase {
             
             let obj5 = try connection.query()
                 .findOne("testIncludesQuery")
-                .filter { $0["id"] == 1 }
+                .filter { $0.objectId == 1 }
                 .includes(["dummy1", "dummy2"])
                 .update([
                     "dummy1": .set(1),
@@ -656,7 +656,7 @@ class PostgreSQLTest: XCTestCase {
             
             let obj6 = try connection.query()
                 .findOne("testIncludesQuery")
-                .filter { $0["id"] == 2 }
+                .filter { $0.objectId == 2 }
                 .includes(["dummy1", "dummy2"])
                 .returning(.before)
                 .update([
@@ -670,7 +670,7 @@ class PostgreSQLTest: XCTestCase {
             
             let obj7 = try connection.query()
                 .find("testIncludesQuery")
-                .filter { $0["id"] == 1 }
+                .filter { $0.objectId == 1 }
                 .includes(["dummy1", "dummy2"])
                 .first()
                 .wait()
@@ -679,7 +679,7 @@ class PostgreSQLTest: XCTestCase {
             
             let obj8 = try connection.query()
                 .findOne("testIncludesQuery")
-                .filter { $0["id"] == 1 }
+                .filter { $0.objectId == 1 }
                 .includes(["dummy1", "dummy2"])
                 .delete()
                 .wait()

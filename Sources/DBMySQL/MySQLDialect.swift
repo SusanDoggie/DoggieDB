@@ -37,12 +37,12 @@ struct MySQLDialect: SQLDialect {
         return "?"
     }
     
-    static func nullSafeEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) -> SQLRaw {
-        return "\(lhs) <=> \(rhs)"
+    static func nullSafeEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) throws -> SQLRaw {
+        return try "\(lhs.serialize()) <=> \(rhs.serialize())"
     }
     
-    static func nullSafeNotEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) -> SQLRaw {
-        return "NOT \(lhs) <=> \(rhs)"
+    static func nullSafeNotEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) throws -> SQLRaw {
+        return try "NOT \(lhs.serialize()) <=> \(rhs.serialize())"
     }
     
     static func literalBoolean(_ value: Bool) -> String {

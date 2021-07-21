@@ -59,9 +59,9 @@ public protocol SQLDialect {
     
     static func bindPlaceholder(at position: Int) -> String
     
-    static func nullSafeEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) -> SQLRaw
+    static func nullSafeEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) throws -> SQLRaw
     
-    static func nullSafeNotEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) -> SQLRaw
+    static func nullSafeNotEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) throws -> SQLRaw
     
     static var literalNull: String { get }
     

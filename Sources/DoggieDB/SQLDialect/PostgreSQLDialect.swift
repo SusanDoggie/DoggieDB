@@ -41,12 +41,12 @@ struct PostgreSQLDialect: SQLDialect {
         return "$\(position)"
     }
     
-    static func nullSafeEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) -> SQLRaw {
-        return "\(lhs) IS NOT DISTINCT FROM \(rhs)"
+    static func nullSafeEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) throws -> SQLRaw {
+        return try "\(lhs.serialize()) IS NOT DISTINCT FROM \(rhs.serialize())"
     }
     
-    static func nullSafeNotEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) -> SQLRaw {
-        return "\(lhs) IS DISTINCT FROM \(rhs)"
+    static func nullSafeNotEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) throws -> SQLRaw {
+        return try "\(lhs.serialize()) IS DISTINCT FROM \(rhs.serialize())"
     }
     
     static func literalBoolean(_ value: Bool) -> String {

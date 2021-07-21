@@ -30,18 +30,13 @@ public struct DBQueryPredicateBuilder {
     }
 }
 
-public struct DBQueryPredicateKey {
-    
-    public var key: String
-    
-    public init(key: String) {
-        self.key = key
-    }
-}
-
 extension DBQueryPredicateBuilder {
     
-    public subscript(_ key: String) -> DBQueryPredicateKey {
-        return DBQueryPredicateKey(key: key)
+    public var objectId: DBQueryPredicateValue {
+        return .objectId
+    }
+    
+    public subscript(_ key: String) -> DBQueryPredicateValue {
+        return .key(key)
     }
 }

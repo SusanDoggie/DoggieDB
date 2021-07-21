@@ -407,6 +407,7 @@ extension MongoPredicateValue {
     
     fileprivate init(_ value: DBQueryPredicateValue) throws {
         switch value {
+        case .objectId: self = .key("_id")
         case let .key(key): self = .key(key)
         case let .value(value): self = try .value(BSON(value.toDBData()))
         }
