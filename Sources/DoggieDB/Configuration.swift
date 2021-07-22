@@ -236,7 +236,7 @@ extension Database.Configuration {
             default: certificateVerification = .fullVerification
             }
             
-            tlsConfiguration = TLSConfiguration.makeClientConfiguration()
+            tlsConfiguration = TLSConfiguration.clientDefault
             tlsConfiguration?.certificateVerification = certificateVerification
             
         } else {
@@ -277,7 +277,7 @@ extension Database.Configuration {
             default: certificateVerification = .fullVerification
             }
             
-            tlsConfiguration = TLSConfiguration.makeClientConfiguration()
+            tlsConfiguration = TLSConfiguration.clientDefault
             tlsConfiguration?.certificateVerification = certificateVerification
             
         } else {
