@@ -34,13 +34,12 @@ let package = Package(
     products: [
         .library(name: "DoggieDB", targets: ["DoggieDB"]),
         .library(name: "DBMongo", targets: ["DBMongo"]),
+        .library(name: "DBMySQL", targets: ["DBMySQL"]),
         .library(name: "DBSQLite", targets: ["DBSQLite"]),
         .library(name: "DBVapor", targets: ["DBVapor"]),
-        .executable(name: "DBBrowser", targets: ["DBBrowser"]),
     ],
     dependencies: [
         .package(url: "https://github.com/SusanDoggie/Doggie.git", from: "6.4.0"),
-        .package(url: "https://github.com/SusanDoggie/SwiftJS.git", from: "1.2.2"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.27.0"),
         .package(url: "https://github.com/mongodb/swift-bson.git", from: "3.0.0"),
         .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "1.1.0"),
@@ -98,28 +97,6 @@ let package = Package(
             dependencies: [
                 .target(name: "DoggieDB"),
                 .product(name: "Vapor", package: "vapor"),
-            ]
-        ),
-        .target(
-            name: "DBBrowser",
-            dependencies: [
-                .target(name: "DoggieDB"),
-                .target(name: "DBMongo"),
-                .target(name: "DBMySQL"),
-                .target(name: "DBSQLite"),
-                .target(name: "DBVapor"),
-                .product(name: "Vapor", package: "vapor"),
-                .product(name: "SwiftJS", package: "SwiftJS"),
-            ],
-            exclude: [
-                "js",
-                "asserts",
-            ],
-            resources: [
-                .copy("Public"),
-            ],
-            swiftSettings: [
-                .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
             ]
         ),
         .testTarget(

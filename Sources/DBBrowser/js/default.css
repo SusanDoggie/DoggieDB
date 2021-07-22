@@ -1,8 +1,0 @@
-
-input, textarea {
-	outline-style: none;
-}
-
-.CodeMirror, .ReactCodeMirror {
-    height: 100%;
-}
