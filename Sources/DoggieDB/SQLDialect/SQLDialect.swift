@@ -69,6 +69,8 @@ public protocol SQLDialect {
     
     static func typeCast(_ value: DBData, _ columnType: String) throws -> SQLRaw
     
+    static func updateLock() throws -> SQLRaw
+    
     static func updateOperation(_ column: String, _ columnType: String, _ operation: SQLDialectUpdateOperation) throws -> SQLRaw
     
 }
@@ -84,6 +86,10 @@ extension SQLDialect {
     }
     
     public static func typeCast(_ value: DBData, _ columnType: String) throws -> SQLRaw {
+        throw Database.Error.unsupportedOperation
+    }
+    
+    public static func updateLock() throws -> SQLRaw {
         throw Database.Error.unsupportedOperation
     }
     

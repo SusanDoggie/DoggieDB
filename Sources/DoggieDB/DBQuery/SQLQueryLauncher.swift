@@ -274,7 +274,10 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             sql += "ORDER BY \(query.sort.serialize())"
         }
         
-        return sql + "LIMIT 1"
+        sql += "LIMIT 1"
+        sql += try dialect.updateLock()
+        
+        return sql
     }
     
     func _findOneAndUpdate<Update>(_ query: _DBQuery, _ update: [String: Update]) -> EventLoopFuture<(SQLRaw, [String], [DBSQLColumnInfo])> {

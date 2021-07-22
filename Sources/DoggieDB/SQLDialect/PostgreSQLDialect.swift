@@ -68,6 +68,10 @@ struct PostgreSQLDialect: SQLDialect {
         }
     }
     
+    static func updateLock() throws -> SQLRaw {
+        return "FOR UPDATE"
+    }
+    
     static func updateOperation(_ column: String, _ columnType: String, _ operation: SQLDialectUpdateOperation) throws -> SQLRaw {
         
         switch operation {
