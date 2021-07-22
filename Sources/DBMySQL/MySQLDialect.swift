@@ -25,6 +25,10 @@
 
 struct MySQLDialect: SQLDialect {
     
+    static var rowId: String? {
+        return "ROWID"
+    }
+    
     static func identifier(_ str: String) -> String {
         return "`\(str)`"
     }
@@ -51,6 +55,21 @@ struct MySQLDialect: SQLDialect {
     
     static func updateLock() throws -> SQLRaw {
         return "FOR UPDATE"
+    }
+    
+    static func updateOperation(_ column: String, _ columnType: String, _ operation: SQLDialectUpdateOperation) throws -> SQLRaw {
+        
+        switch operation {
+        
+        case let .increment(value): return "\(identifier: column) + \(value)"
+        case let .decrement(value): return "\(identifier: column) - \(value)"
+        case let .multiply(value): return "\(identifier: column) * \(value)"
+        case let .divide(value): return "\(identifier: column) / \(value)"
+        case let .min(value): return "LEAST(\(identifier: column),\(value))"
+        case let .max(value): return "GREATEST(\(identifier: column),\(value))"
+            
+        default: throw Database.Error.unsupportedOperation
+        }
     }
     
 }
