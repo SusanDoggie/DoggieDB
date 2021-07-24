@@ -129,15 +129,15 @@ class MongoDBTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["_id"]?.string, "1")
-            XCTAssertEqual(obj["last_name"]?.string, "Susan")
+            XCTAssertEqual(obj["_id"].string, "1")
+            XCTAssertEqual(obj["last_name"].string, "Susan")
             
             let list = try connection.query().find("testQuery").toArray().wait()
             
             XCTAssertEqual(list.count, 1)
             
-            XCTAssertEqual(list[0]["_id"]?.string, "1")
-            XCTAssertEqual(list[0]["last_name"]?.string, "Susan")
+            XCTAssertEqual(list[0]["_id"].string, "1")
+            XCTAssertEqual(list[0]["last_name"].string, "Susan")
             
         } catch {
             
@@ -161,8 +161,8 @@ class MongoDBTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["_id"]?.string, "1")
-            XCTAssertEqual(obj["col"]?.string, "text_1")
+            XCTAssertEqual(obj["_id"].string, "1")
+            XCTAssertEqual(obj["col"].string, "text_1")
             
             let obj2 = try connection.query()
                 .findOne("testUpdateQuery")
@@ -171,8 +171,8 @@ class MongoDBTest: XCTestCase {
                     "col": .set("text_2")
                 ]).wait()
             
-            XCTAssertEqual(obj2?["_id"]?.string, "1")
-            XCTAssertEqual(obj2?["col"]?.string, "text_2")
+            XCTAssertEqual(obj2?["_id"].string, "1")
+            XCTAssertEqual(obj2?["col"].string, "text_2")
             
             let obj3 = try connection.query()
                 .findOne("testUpdateQuery")
@@ -182,8 +182,8 @@ class MongoDBTest: XCTestCase {
                     "col": .set("text_3")
                 ]).wait()
             
-            XCTAssertEqual(obj3?["_id"]?.string, "1")
-            XCTAssertEqual(obj3?["col"]?.string, "text_2")
+            XCTAssertEqual(obj3?["_id"].string, "1")
+            XCTAssertEqual(obj3?["col"].string, "text_2")
             
         } catch {
             
@@ -207,8 +207,8 @@ class MongoDBTest: XCTestCase {
                     "_id": "1"
                 ]).wait()
             
-            XCTAssertEqual(obj?["_id"]?.string, "1")
-            XCTAssertEqual(obj?["col"]?.string, "text_1")
+            XCTAssertEqual(obj?["_id"].string, "1")
+            XCTAssertEqual(obj?["col"].string, "text_1")
             
             let obj2 = try connection.query()
                 .findOne("testUpsertQuery")
@@ -219,8 +219,8 @@ class MongoDBTest: XCTestCase {
                     "_id": "1"
                 ]).wait()
             
-            XCTAssertEqual(obj2?["_id"]?.string, "1")
-            XCTAssertEqual(obj2?["col"]?.string, "text_2")
+            XCTAssertEqual(obj2?["_id"].string, "1")
+            XCTAssertEqual(obj2?["col"].string, "text_2")
             
             let obj3 = try connection.query()
                 .findOne("testUpsertQuery")
@@ -232,8 +232,8 @@ class MongoDBTest: XCTestCase {
                     "_id": "1"
                 ]).wait()
             
-            XCTAssertEqual(obj3?["_id"]?.string, "1")
-            XCTAssertEqual(obj3?["col"]?.string, "text_2")
+            XCTAssertEqual(obj3?["_id"].string, "1")
+            XCTAssertEqual(obj3?["col"].string, "text_2")
             
         } catch {
             
@@ -384,11 +384,11 @@ class MongoDBTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["_id"]?.string, "1")
-            XCTAssertEqual(obj["col_1"]?.intValue, 3)
-            XCTAssertEqual(obj["col_2"]?.intValue, -1)
-            XCTAssertEqual(obj["col_3"]?.intValue, 2)
-            XCTAssertEqual(obj["col_4"]?.doubleValue, 0.5)
+            XCTAssertEqual(obj["_id"].string, "1")
+            XCTAssertEqual(obj["col_1"].intValue, 3)
+            XCTAssertEqual(obj["col_2"].intValue, -1)
+            XCTAssertEqual(obj["col_3"].intValue, 2)
+            XCTAssertEqual(obj["col_4"].doubleValue, 0.5)
             
         } catch {
             
@@ -413,20 +413,20 @@ class MongoDBTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["_id"]?.string, "1")
-            XCTAssertEqual(obj["int_array"]?.array, [1, 2.0, 3])
+            XCTAssertEqual(obj["_id"].string, "1")
+            XCTAssertEqual(obj["int_array"].array, [1, 2.0, 3])
             
             obj.popFirst(for: "int_array")
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["int_array"]?.array, [2.0, 3])
+            XCTAssertEqual(obj["int_array"].array, [2.0, 3])
             
             obj.popLast(for: "int_array")
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["int_array"]?.array, [2.0])
+            XCTAssertEqual(obj["int_array"].array, [2.0])
             
         } catch {
             
@@ -451,15 +451,15 @@ class MongoDBTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["_id"]?.string, "1")
-            XCTAssertEqual(obj["int_array"]?.array, [1, 2, 2, 3, 5, 5, 4])
+            XCTAssertEqual(obj["_id"].string, "1")
+            XCTAssertEqual(obj["int_array"].array, [1, 2, 2, 3, 5, 5, 4])
             
             obj.removeAll("int_array", values: [2, 3])
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["_id"]?.string, "1")
-            XCTAssertEqual(obj["int_array"]?.array, [1, 5, 5, 4])
+            XCTAssertEqual(obj["_id"].string, "1")
+            XCTAssertEqual(obj["int_array"].array, [1, 5, 5, 4])
             
         } catch {
             

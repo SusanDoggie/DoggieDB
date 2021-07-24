@@ -442,15 +442,15 @@ class PostgreSQLTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["id"]?.intValue, 1)
-            XCTAssertEqual(obj["last_name"]?.string, "Susan")
+            XCTAssertEqual(obj["id"].intValue, 1)
+            XCTAssertEqual(obj["last_name"].string, "Susan")
             
             let list = try connection.query().find("testQuery").toArray().wait()
             
             XCTAssertEqual(list.count, 1)
             
-            XCTAssertEqual(list[0]["id"]?.intValue, 1)
-            XCTAssertEqual(list[0]["last_name"]?.string, "Susan")
+            XCTAssertEqual(list[0]["id"].intValue, 1)
+            XCTAssertEqual(list[0]["last_name"].string, "Susan")
             
         } catch {
             
@@ -479,8 +479,8 @@ class PostgreSQLTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["id"]?.intValue, 1)
-            XCTAssertEqual(obj["col"]?.string, "text_1")
+            XCTAssertEqual(obj["id"].intValue, 1)
+            XCTAssertEqual(obj["col"].string, "text_1")
             
             let obj2 = try connection.query()
                 .findOne("testUpdateQuery")
@@ -489,8 +489,8 @@ class PostgreSQLTest: XCTestCase {
                     "col": .set("text_2")
                 ]).wait()
             
-            XCTAssertEqual(obj2?["id"]?.intValue, 1)
-            XCTAssertEqual(obj2?["col"]?.string, "text_2")
+            XCTAssertEqual(obj2?["id"].intValue, 1)
+            XCTAssertEqual(obj2?["col"].string, "text_2")
             
             let obj3 = try connection.query()
                 .findOne("testUpdateQuery")
@@ -500,8 +500,8 @@ class PostgreSQLTest: XCTestCase {
                     "col": .set("text_3")
                 ]).wait()
             
-            XCTAssertEqual(obj3?["id"]?.intValue, 1)
-            XCTAssertEqual(obj3?["col"]?.string, "text_2")
+            XCTAssertEqual(obj3?["id"].intValue, 1)
+            XCTAssertEqual(obj3?["col"].string, "text_2")
             
         } catch {
             
@@ -530,8 +530,8 @@ class PostgreSQLTest: XCTestCase {
                     "id": 1
                 ]).wait()
             
-            XCTAssertEqual(obj?["id"]?.intValue, 1)
-            XCTAssertEqual(obj?["col"]?.string, "text_1")
+            XCTAssertEqual(obj?["id"].intValue, 1)
+            XCTAssertEqual(obj?["col"].string, "text_1")
             
             let obj2 = try connection.query()
                 .findOne("testUpsertQuery")
@@ -542,8 +542,8 @@ class PostgreSQLTest: XCTestCase {
                     "id": 1
                 ]).wait()
             
-            XCTAssertEqual(obj2?["id"]?.intValue, 1)
-            XCTAssertEqual(obj2?["col"]?.string, "text_2")
+            XCTAssertEqual(obj2?["id"].intValue, 1)
+            XCTAssertEqual(obj2?["col"].string, "text_2")
             
             let obj3 = try connection.query()
                 .findOne("testUpsertQuery")
@@ -555,8 +555,8 @@ class PostgreSQLTest: XCTestCase {
                     "id": 1
                 ]).wait()
             
-            XCTAssertEqual(obj3?["id"]?.intValue, 1)
-            XCTAssertEqual(obj3?["col"]?.string, "text_2")
+            XCTAssertEqual(obj3?["id"].intValue, 1)
+            XCTAssertEqual(obj3?["col"].string, "text_2")
             
         } catch {
             
@@ -720,10 +720,10 @@ class PostgreSQLTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["id"]?.intValue, 1)
-            XCTAssertEqual(obj["col_1"]?.intValue, 3)
-            XCTAssertEqual(obj["col_2"]?.intValue, 3)
-            XCTAssertEqual(obj["col_3"]?.intValue, 3)
+            XCTAssertEqual(obj["id"].intValue, 1)
+            XCTAssertEqual(obj["col_1"].intValue, 3)
+            XCTAssertEqual(obj["col_2"].intValue, 3)
+            XCTAssertEqual(obj["col_3"].intValue, 3)
             
         } catch {
             
@@ -759,10 +759,10 @@ class PostgreSQLTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["id"]?.intValue, 1)
-            XCTAssertEqual(obj["int_array"]?.array, [1, 2, 3])
-            XCTAssertEqual(obj["json_array"]?.array, [1.0, 2.0, 3.0])
-            XCTAssertEqual(obj["jsonb_array"]?.array, [1.0, 2.0, 3.0])
+            XCTAssertEqual(obj["id"].intValue, 1)
+            XCTAssertEqual(obj["int_array"].array, [1, 2, 3])
+            XCTAssertEqual(obj["json_array"].array, [1.0, 2.0, 3.0])
+            XCTAssertEqual(obj["jsonb_array"].array, [1.0, 2.0, 3.0])
             
             obj.popFirst(for: "int_array")
             obj.popFirst(for: "json_array")
@@ -770,9 +770,9 @@ class PostgreSQLTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["int_array"]?.array, [2, 3])
-            XCTAssertEqual(obj["json_array"]?.array, [2.0, 3.0])
-            XCTAssertEqual(obj["jsonb_array"]?.array, [2.0, 3.0])
+            XCTAssertEqual(obj["int_array"].array, [2, 3])
+            XCTAssertEqual(obj["json_array"].array, [2.0, 3.0])
+            XCTAssertEqual(obj["jsonb_array"].array, [2.0, 3.0])
             
             obj.popLast(for: "int_array")
             obj.popLast(for: "json_array")
@@ -780,9 +780,9 @@ class PostgreSQLTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["int_array"]?.array, [2])
-            XCTAssertEqual(obj["json_array"]?.array, [2.0])
-            XCTAssertEqual(obj["jsonb_array"]?.array, [2.0])
+            XCTAssertEqual(obj["int_array"].array, [2])
+            XCTAssertEqual(obj["json_array"].array, [2.0])
+            XCTAssertEqual(obj["jsonb_array"].array, [2.0])
             
         } catch {
             
@@ -818,9 +818,9 @@ class PostgreSQLTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["int_array"]?.array ?? [], [])
-            XCTAssertEqual(obj["json_array"]?.array, [])
-            XCTAssertEqual(obj["jsonb_array"]?.array, [])
+            XCTAssertEqual(obj["int_array"].array ?? [], [])
+            XCTAssertEqual(obj["json_array"].array, [])
+            XCTAssertEqual(obj["jsonb_array"].array, [])
             
             obj.popLast(for: "int_array")
             obj.popLast(for: "json_array")
@@ -828,9 +828,9 @@ class PostgreSQLTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["int_array"]?.array ?? [], [])
-            XCTAssertEqual(obj["json_array"]?.array, [])
-            XCTAssertEqual(obj["jsonb_array"]?.array, [])
+            XCTAssertEqual(obj["int_array"].array ?? [], [])
+            XCTAssertEqual(obj["json_array"].array, [])
+            XCTAssertEqual(obj["jsonb_array"].array, [])
             
         } catch {
             
@@ -860,15 +860,15 @@ class PostgreSQLTest: XCTestCase {
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["id"]?.intValue, 1)
-            XCTAssertEqual(obj["int_array"]?.array, [1, 2, 2, 3, 5, 5, 4])
+            XCTAssertEqual(obj["id"].intValue, 1)
+            XCTAssertEqual(obj["int_array"].array, [1, 2, 2, 3, 5, 5, 4])
             
             obj.removeAll("int_array", values: [2, 3])
             
             obj = try obj.save(on: connection).wait()
             
-            XCTAssertEqual(obj["id"]?.intValue, 1)
-            XCTAssertEqual(obj["int_array"]?.array, [1, 5, 4])
+            XCTAssertEqual(obj["id"].intValue, 1)
+            XCTAssertEqual(obj["int_array"].array, [1, 5, 4])
             
         } catch {
             

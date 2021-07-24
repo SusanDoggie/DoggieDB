@@ -72,19 +72,16 @@ extension DBObject {
         return Set(_columns.keys).union(_updates.keys)
     }
     
-    public subscript(column: String) -> DBData? {
+    public subscript(column: String) -> DBData {
         get {
             if primaryKeys.contains(column) {
-                return _columns[column]
+                return _columns[column] ?? nil
             }
-            if let value = _updates[column]?.value {
-                return value == nil ? nil : value
-            }
-            return _columns[column]
+            return _updates[column]?.value ?? _columns[column] ?? nil
         }
         set {
             guard !primaryKeys.contains(column) else { return }
-            _updates[column] = .set(newValue ?? nil)
+            _updates[column] = .set(newValue)
         }
     }
 }
