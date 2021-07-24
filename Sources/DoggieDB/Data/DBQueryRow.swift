@@ -82,8 +82,7 @@ extension BSONDocument {
     public init(_ row: DBQueryRow) throws {
         self.init()
         for key in row.keys {
-            guard let value = row[key] else { continue }
-            self[key] = try BSON(value)
+            self[key] = try row[key].map { try BSON($0) } ?? .undefined
         }
     }
 }
@@ -93,8 +92,7 @@ extension DBData {
     public init(_ row: DBQueryRow) {
         var dict: [String: DBData] = [:]
         for key in row.keys {
-            guard let value = row[key] else { continue }
-            dict[key] = value
+            dict[key] = row[key] ?? DBData(nilLiteral: ())
         }
         self.init(dict)
     }
