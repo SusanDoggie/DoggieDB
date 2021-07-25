@@ -224,8 +224,6 @@ jobs:
       run: apt-get install -y libmongoc-1.0-0 libssl-dev
     - name: Install sqlite3
       run: apt-get install -y libsqlite3-dev
-    - name: Install JavaScriptCore
-      run: apt-get install -y libjavascriptcoregtk-4.0-dev
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
