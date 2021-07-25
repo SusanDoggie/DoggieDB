@@ -24,9 +24,6 @@ jobs:
             enable_codecov: true
           - name: macOS(SwiftPM)
             use_xcodebuild: false
-          - username: root
-          - formula: mariadb
-            username: runner
     env:
       use_xcodebuild: ${{ matrix.use_xcodebuild }}
       schemes: DoggieDB-Package
