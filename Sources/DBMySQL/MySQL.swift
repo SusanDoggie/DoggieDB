@@ -113,9 +113,9 @@ extension MySQLDriver.Connection {
         return self.execute("SHOW COLUMNS FROM \(identifier: table)").map {
             $0.map {
                 DBSQLColumnInfo(
-                    name: $0["field"]?.string ?? "",
-                    type: $0["type"]?.string ?? "",
-                    isOptional: $0["null"]?.boolValue == true
+                    name: $0["Field"]?.string ?? "",
+                    type: $0["Type"]?.string ?? "",
+                    isOptional: $0["Null"]?.string == "YES"
                 )
             }
         }
