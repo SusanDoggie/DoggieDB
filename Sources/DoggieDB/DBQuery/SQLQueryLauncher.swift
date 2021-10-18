@@ -113,7 +113,7 @@ extension DBSQLConnection {
             return self.eventLoopGroup.next().makeSucceededFuture(columnInfoHook(self, table))
         }
         
-        return self._columns(of: table)
+        return self.columns(of: table)
     }
     
     fileprivate func _primaryKey(of table: String) -> EventLoopFuture<[String]> {
