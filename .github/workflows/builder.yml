@@ -71,7 +71,7 @@ jobs:
         POSTGRES_HOST: localhost
         REDIS_HOST: localhost
         MONGO_HOST: localhost
-    - uses: codecov/codecov-action@v1
+    - uses: codecov/codecov-action@v2
       if: ${{ matrix.enable_codecov }}
   ubuntu_swift:
     name: ${{ matrix.swift_version }}-${{ matrix.distro }}
