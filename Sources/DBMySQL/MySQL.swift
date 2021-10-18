@@ -44,6 +44,10 @@ extension MySQLDriver {
         
         var eventLoopGroup: EventLoopGroup { connection.eventLoop }
         
+        var columnInfoHook: ((DBSQLConnection, String) -> [DBSQLColumnInfo])?
+        
+        var primaryKeyHook: ((DBSQLConnection, String) -> [String])?
+        
         init(_ connection: MySQLConnection) {
             self.connection = connection
         }

@@ -104,6 +104,29 @@ extension _DBObject {
     }
 }
 
+extension DBSQLConnection {
+    
+    fileprivate func _columns(of table: String) -> EventLoopFuture<[DBSQLColumnInfo]> {
+        
+        if let columnInfoHook = self.columnInfoHook {
+            
+            return self.eventLoopGroup.next().makeSucceededFuture(columnInfoHook(self, table))
+        }
+        
+        return self._columns(of: table)
+    }
+    
+    fileprivate func _primaryKey(of table: String) -> EventLoopFuture<[String]> {
+        
+        if let primaryKeyHook = self.primaryKeyHook {
+            
+            return self.eventLoopGroup.next().makeSucceededFuture(primaryKeyHook(self, table))
+        }
+        
+        return self.primaryKey(of: table)
+    }
+}
+
 struct SQLQueryLauncher: _DBQueryLauncher {
     
     let connection: DBSQLConnection
@@ -131,7 +154,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         
         if query.filters.requiredPrimaryKeys {
             
-            return connection.primaryKey(of: query.class).flatMap { primaryKeys in
+            return connection._primaryKey(of: query.class).flatMap { primaryKeys in
                 
                 self._count(query, primaryKeys)
             }
@@ -148,7 +171,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             
             guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
             
-            return connection.primaryKey(of: query.class).flatMapThrowing { primaryKeys in
+            return connection._primaryKey(of: query.class).flatMapThrowing { primaryKeys in
                 
                 var sql: SQLRaw = ""
                 
@@ -242,7 +265,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         
         if query.filters.requiredPrimaryKeys {
             
-            return connection.primaryKey(of: query.class).flatMap { primaryKeys in
+            return connection._primaryKey(of: query.class).flatMap { primaryKeys in
                 
                 self._findAndDelete(query, primaryKeys)
             }
@@ -295,7 +318,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 counter += 1
             } while temp == query.class
             
-            return connection.columns(of: query.class).and(connection.primaryKey(of: query.class))
+            return connection._columns(of: query.class).and(connection._primaryKey(of: query.class))
                 .flatMapThrowing { (columnInfos, primaryKeys) in
                     
                     guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
@@ -316,7 +339,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             
         case .after:
             
-            return connection.columns(of: query.class).and(connection.primaryKey(of: query.class))
+            return connection._columns(of: query.class).and(connection._primaryKey(of: query.class))
                 .flatMapThrowing { (columnInfos, primaryKeys) in
                     
                     guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
@@ -426,7 +449,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
     
     func findOneAndDelete(_ query: _DBQuery) -> EventLoopFuture<_DBObject?> {
         
-        return connection.primaryKey(of: query.class).flatMap { primaryKeys in
+        return connection._primaryKey(of: query.class).flatMap { primaryKeys in
             
             do {
                 
@@ -457,7 +480,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         
         guard let data = data as? [String: DBData] else { fatalError() }
         
-        return connection.columns(of: `class`).flatMap { columnInfos in
+        return connection._columns(of: `class`).flatMap { columnInfos in
             
             do {
                 
@@ -479,7 +502,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                     RETURNING *
                     """
                 
-                return connection.primaryKey(of: `class`).flatMap { primaryKeys in
+                return connection._primaryKey(of: `class`).flatMap { primaryKeys in
                     connection.execute(sql).map { $0.first.map { (_DBObject(table: `class`, primaryKeys: primaryKeys, object: $0), true) } }
                 }
                 

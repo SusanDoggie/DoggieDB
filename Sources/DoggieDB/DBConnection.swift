@@ -104,6 +104,10 @@ public struct DBSQLColumnInfo {
 
 public protocol DBSQLConnection: DBConnection {
     
+    var columnInfoHook: ((DBSQLConnection, String) -> [DBSQLColumnInfo])? { get set }
+    
+    var primaryKeyHook: ((DBSQLConnection, String) -> [String])? { get set }
+    
     func tables() -> EventLoopFuture<[String]>
     
     func views() -> EventLoopFuture<[String]>
