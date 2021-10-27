@@ -1,5 +1,5 @@
 //
-//  DBConnectionAsync.swift
+//  DBPostgresPubSubAsync.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -26,20 +26,30 @@
 #if compiler(>=5.5) && canImport(_Concurrency)
 
 @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
-extension DBConnection {
+extension DBPostgresPubSub {
     
-    public func close() async throws {
-        try await self.close().get()
+    public func publish(
+        _ message: String,
+        to channel: String
+    ) async throws {
+        
+        try await self.publish(message, to: channel).get()
     }
     
-    public func version() async throws -> String {
-        return try await self.version().get()
+    public func subscribe(
+        channel: String,
+        handler: @escaping (_ channel: String, _ message: String) -> Void
+    ) async throws {
+        
+        try await self.subscribe(channel: channel, handler: handler).get()
     }
     
-    public func databases() async throws -> [String] {
-        return try await self.databases().get()
+    public func unsubscribe(
+        channel: String
+    ) async throws {
+        
+        try await self.unsubscribe(channel: channel).get()
     }
-
 }
 
 #endif

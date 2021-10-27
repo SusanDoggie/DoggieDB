@@ -28,42 +28,42 @@
 @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
 extension DBSQLConnection {
     
-    func tables() async throws -> [String] {
+    public func tables() async throws -> [String] {
         return try await self.tables().get()
     }
     
-    func views() async throws -> [String] {
+    public func views() async throws -> [String] {
         return try await self.views().get()
     }
     
-    func materializedViews() async throws -> [String] {
+    public func materializedViews() async throws -> [String] {
         return try await self.materializedViews().get()
     }
     
-    func columns(of table: String) async throws -> [DBSQLColumnInfo] {
+    public func columns(of table: String) async throws -> [DBSQLColumnInfo] {
         return try await self.columns(of: table).get()
     }
     
-    func primaryKey(of table: String) async throws -> [String] {
+    public func primaryKey(of table: String) async throws -> [String] {
         return try await self.primaryKey(of: table).get()
     }
     
-    func indices(of table: String) async throws -> [DBQueryRow] {
+    public func indices(of table: String) async throws -> [DBQueryRow] {
         return try await self.indices(of: table).get()
     }
     
-    func foreignKeys(of table: String) async throws -> [DBQueryRow] {
+    public func foreignKeys(of table: String) async throws -> [DBQueryRow] {
         return try await self.foreignKeys(of: table).get()
     }
     
-    func execute(
+    public func execute(
         _ sql: SQLRaw
     ) async throws -> [DBQueryRow] {
         
         return try await self.execute(sql).get()
     }
     
-    func execute(
+    public func execute(
         _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) -> Void
     ) async throws -> DBQueryMetadata {
@@ -71,7 +71,7 @@ extension DBSQLConnection {
         return try await self.execute(sql, onRow: onRow).get()
     }
     
-    func execute(
+    public func execute(
         _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) throws -> Void
     ) async throws -> DBQueryMetadata {
