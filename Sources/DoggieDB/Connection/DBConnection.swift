@@ -1,5 +1,5 @@
 //
-//  DatabaseConnection.swift
+//  DBConnection.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -79,84 +79,6 @@ extension DBConnection {
     }
     
     public func databases() -> EventLoopFuture<[String]> {
-        return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
-    }
-}
-
-public struct DBSQLColumnInfo {
-    
-    public var name: String
-    
-    public var type: String
-    
-    public var isOptional: Bool
-    
-    public init(
-        name: String,
-        type: String,
-        isOptional: Bool
-    ) {
-        self.name = name
-        self.type = type
-        self.isOptional = isOptional
-    }
-}
-
-public protocol DBSQLConnection: DBConnection {
-    
-    var columnInfoHook: ((DBSQLConnection, String) -> [DBSQLColumnInfo])? { get set }
-    
-    var primaryKeyHook: ((DBSQLConnection, String) -> [String])? { get set }
-    
-    func tables() -> EventLoopFuture<[String]>
-    
-    func views() -> EventLoopFuture<[String]>
-    
-    func materializedViews() -> EventLoopFuture<[String]>
-    
-    func columns(of table: String) -> EventLoopFuture<[DBSQLColumnInfo]>
-    
-    func primaryKey(of table: String) -> EventLoopFuture<[String]>
-    
-    func indices(of table: String) -> EventLoopFuture<[DBQueryRow]>
-    
-    func foreignKeys(of table: String) -> EventLoopFuture<[DBQueryRow]>
-    
-    func execute(
-        _ sql: SQLRaw
-    ) -> EventLoopFuture<[DBQueryRow]>
-    
-    func execute(
-        _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) -> Void
-    ) -> EventLoopFuture<DBQueryMetadata>
-    
-    func execute(
-        _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) throws -> Void
-    ) -> EventLoopFuture<DBQueryMetadata>
-    
-}
-
-extension DBSQLConnection {
-    
-    public func execute(
-        _ sql: SQLRaw
-    ) -> EventLoopFuture<[DBQueryRow]> {
-        return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
-    }
-    
-    public func execute(
-        _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) -> Void
-    ) -> EventLoopFuture<DBQueryMetadata> {
-        return self.execute(sql, onRow: onRow as (DBQueryRow) throws -> Void)
-    }
-    
-    public func execute(
-        _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) throws -> Void
-    ) -> EventLoopFuture<DBQueryMetadata> {
         return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
     }
 }
