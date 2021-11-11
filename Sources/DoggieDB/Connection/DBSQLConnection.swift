@@ -44,9 +44,9 @@ public struct DBSQLColumnInfo {
 
 public protocol DBSQLConnection: DBConnection {
     
-    var columnInfoHook: ((DBSQLConnection, String) -> [DBSQLColumnInfo])? { get set }
+    var columnInfoHook: ((DBSQLConnection, String) -> EventLoopFuture<[DBSQLColumnInfo]>)? { get set }
     
-    var primaryKeyHook: ((DBSQLConnection, String) -> [String])? { get set }
+    var primaryKeyHook: ((DBSQLConnection, String) -> EventLoopFuture<[String]>)? { get set }
     
     func tables() -> EventLoopFuture<[String]>
     

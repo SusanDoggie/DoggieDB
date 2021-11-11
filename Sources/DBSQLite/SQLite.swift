@@ -44,9 +44,9 @@ extension SQLiteDriver {
         
         var eventLoopGroup: EventLoopGroup { connection.eventLoop }
         
-        var columnInfoHook: ((DBSQLConnection, String) -> [DBSQLColumnInfo])?
+        var columnInfoHook: ((DBSQLConnection, String) -> EventLoopFuture<[DBSQLColumnInfo]>)?
         
-        var primaryKeyHook: ((DBSQLConnection, String) -> [String])?
+        var primaryKeyHook: ((DBSQLConnection, String) -> EventLoopFuture<[String]>)?
         
         init(_ connection: SQLiteConnection) {
             self.connection = connection

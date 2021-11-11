@@ -46,9 +46,9 @@ extension PostgreSQLDriver {
         
         var subscribers: [String: [PostgresListenContext]] = [:]
         
-        var columnInfoHook: ((DBSQLConnection, String) -> [DBSQLColumnInfo])?
+        var columnInfoHook: ((DBSQLConnection, String) -> EventLoopFuture<[DBSQLColumnInfo]>)?
         
-        var primaryKeyHook: ((DBSQLConnection, String) -> [String])?
+        var primaryKeyHook: ((DBSQLConnection, String) -> EventLoopFuture<[String]>)?
         
         init(_ connection: PostgresConnection) {
             self.connection = connection

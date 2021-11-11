@@ -107,23 +107,11 @@ extension _DBObject {
 extension DBSQLConnection {
     
     fileprivate func _columns(of table: String) -> EventLoopFuture<[DBSQLColumnInfo]> {
-        
-        if let columnInfoHook = self.columnInfoHook {
-            
-            return self.eventLoopGroup.next().makeSucceededFuture(columnInfoHook(self, table))
-        }
-        
-        return self.columns(of: table)
+        return self.columnInfoHook?(self, table).hop(to: self.eventLoopGroup.next()) ?? self.columns(of: table)
     }
     
     fileprivate func _primaryKey(of table: String) -> EventLoopFuture<[String]> {
-        
-        if let primaryKeyHook = self.primaryKeyHook {
-            
-            return self.eventLoopGroup.next().makeSucceededFuture(primaryKeyHook(self, table))
-        }
-        
-        return self.primaryKey(of: table)
+        return self.primaryKeyHook?(self, table).hop(to: self.eventLoopGroup.next()) ?? self.primaryKey(of: table)
     }
 }
 
