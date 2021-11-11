@@ -30,13 +30,20 @@ public struct DBQueryPredicateBuilder {
     }
 }
 
+public enum DBQueryPredicateKey {
+    
+    case objectId
+    
+    case key(String)
+}
+
 extension DBQueryPredicateBuilder {
     
-    public var objectId: DBQueryPredicateValue {
+    public var objectId: DBQueryPredicateKey {
         return .objectId
     }
     
-    public subscript(_ key: String) -> DBQueryPredicateValue {
+    public subscript(_ key: String) -> DBQueryPredicateKey {
         return .key(key)
     }
 }
