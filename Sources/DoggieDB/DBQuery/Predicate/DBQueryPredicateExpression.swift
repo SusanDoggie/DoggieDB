@@ -344,7 +344,7 @@ public func ~= <C: Collection>(lhs: C, rhs: DBQueryPredicateKey) -> DBQueryPredi
 }
 
 public func ~= <T: DBDataConvertible>(lhs: Range<T>, rhs: DBQueryPredicateKey) -> DBQueryPredicateExpression {
-    return .between(.key(rhs), .value(lhs.lowerBound.toDBData()), .value(lhs.upperBound.toDBData()))
+    return .between(.key(rhs), .value(lhs.lowerBound), .value(lhs.upperBound))
 }
 
 public func ~= <T: DBDataConvertible>(lhs: ClosedRange<T>, rhs: DBQueryPredicateKey) -> DBQueryPredicateExpression {
