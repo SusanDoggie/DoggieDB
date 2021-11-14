@@ -117,6 +117,18 @@ extension DBQueryFindExpression {
 
 extension DBQueryFindExpression {
     
+    public func filter(_ filter: DBQueryPredicateExpression) -> Self {
+        var result = self
+        result.filters.append(filter)
+        return result
+    }
+    
+    public func filter(_ filter: [DBQueryPredicateExpression]) -> Self {
+        var result = self
+        result.filters.append(contentsOf: filter)
+        return result
+    }
+    
     public func filter(_ predicate: (DBQueryPredicateBuilder) -> DBQueryPredicateExpression) -> Self {
         var result = self
         result.filters.append(predicate(DBQueryPredicateBuilder()))
