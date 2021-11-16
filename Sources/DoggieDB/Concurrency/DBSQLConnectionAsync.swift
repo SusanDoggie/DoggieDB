@@ -56,10 +56,21 @@ extension DBSQLConnection {
         return try await self.foreignKeys(of: table).get()
     }
     
+    public func startTransaction() async throws {
+        try await self.startTransaction().get()
+    }
+    
+    public func commitTransaction() async throws {
+        try await self.commitTransaction().get()
+    }
+    
+    public func abortTransaction() async throws {
+        try await self.abortTransaction().get()
+    }
+    
     public func execute(
         _ sql: SQLRaw
     ) async throws -> [DBQueryRow] {
-        
         return try await self.execute(sql).get()
     }
     
@@ -67,7 +78,6 @@ extension DBSQLConnection {
         _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) -> Void
     ) async throws -> DBQueryMetadata {
-        
         return try await self.execute(sql, onRow: onRow).get()
     }
     
@@ -75,10 +85,23 @@ extension DBSQLConnection {
         _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) throws -> Void
     ) async throws -> DBQueryMetadata {
-        
         return try await self.execute(sql, onRow: onRow).get()
     }
     
+    public func withTransaction<T>(
+        _ transactionBody: @escaping (DBSQLConnection) async throws -> T
+    ) async throws -> T {
+        
+        let promise = self.eventLoopGroup.next().makePromise(of: T.self)
+        
+        return try await self.withTransaction { connection in
+            
+            promise.completeWithTask { try await transactionBody(connection) }
+            
+            return promise.futureResult
+            
+        }.get()
+    }
 }
 
 #endif

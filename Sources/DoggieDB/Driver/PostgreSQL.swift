@@ -292,6 +292,21 @@ extension PostgreSQLDriver.Connection {
 
 extension PostgreSQLDriver.Connection {
     
+    func startTransaction() -> EventLoopFuture<Void> {
+        return self.execute("BEGIN").map { _ in }
+    }
+    
+    func commitTransaction() -> EventLoopFuture<Void> {
+        return self.execute("COMMIT").map { _ in }
+    }
+    
+    func abortTransaction() -> EventLoopFuture<Void> {
+        return self.execute("ROLLBACK").map { _ in }
+    }
+}
+
+extension PostgreSQLDriver.Connection {
+    
     func execute(
         _ sql: SQLRaw
     ) -> EventLoopFuture<[DBQueryRow]> {

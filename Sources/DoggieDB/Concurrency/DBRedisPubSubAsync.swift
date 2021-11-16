@@ -31,21 +31,18 @@ extension DBRedisPubSub {
     public func activeChannels(
         matching match: String? = nil
     ) async throws -> [String] {
-        
         return try await self.activeChannels(matching: match).get()
     }
     
     public func publish(
         _ message: String, to channel: String
     ) async throws -> Int {
-        
         return try await self.publish(message, to: channel).get()
     }
     
     public func subscriberCount(
         forChannels channels: [String]
     ) async throws -> [String : Int] {
-        
         return try await self.subscriberCount(forChannels: channels).get()
     }
     
@@ -55,14 +52,12 @@ extension DBRedisPubSub {
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) async throws {
-        
         try await self.subscribe(toChannels: channels, messageReceiver: receiver, onSubscribe: subscribeHandler, onUnsubscribe: unsubscribeHandler).get()
     }
     
     public func unsubscribe(
         fromChannels channels: [String]
     ) async throws {
-        
         try await self.unsubscribe(fromChannels: channels).get()
     }
     
@@ -72,14 +67,12 @@ extension DBRedisPubSub {
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) async throws {
-        
         try await self.subscribe(toPatterns: patterns, messageReceiver: receiver, onSubscribe: subscribeHandler, onUnsubscribe: unsubscribeHandler).get()
     }
     
     public func unsubscribe(
         fromPatterns patterns: [String]
     ) async throws {
-        
         try await self.unsubscribe(fromPatterns: patterns).get()
     }
 }

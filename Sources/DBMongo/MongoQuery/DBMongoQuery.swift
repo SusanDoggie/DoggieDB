@@ -42,11 +42,11 @@ extension DBMongoQuery {
 extension ClientSession {
     
     public func withTransaction<T>(
-        options: ClientSessionOptions? = nil,
+        options: TransactionOptions? = nil,
         _ transactionBody: @escaping () throws -> EventLoopFuture<T>
     ) -> EventLoopFuture<T> {
         
-        let transaction = self.startTransaction()
+        let transaction = self.startTransaction(options: options)
         let promise = transaction.eventLoop.makePromise(of: T.self)
         
         return transaction.flatMap {

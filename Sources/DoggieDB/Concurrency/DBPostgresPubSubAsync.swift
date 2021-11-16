@@ -32,7 +32,6 @@ extension DBPostgresPubSub {
         _ message: String,
         to channel: String
     ) async throws {
-        
         try await self.publish(message, to: channel).get()
     }
     
@@ -40,14 +39,12 @@ extension DBPostgresPubSub {
         channel: String,
         handler: @escaping (_ channel: String, _ message: String) -> Void
     ) async throws {
-        
         try await self.subscribe(channel: channel, handler: handler).get()
     }
     
     public func unsubscribe(
         channel: String
     ) async throws {
-        
         try await self.unsubscribe(channel: channel).get()
     }
 }

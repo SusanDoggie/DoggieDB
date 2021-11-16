@@ -29,22 +29,18 @@
 extension DBObject {
     
     public mutating func fetch<S: Sequence>(_ keys: S, on connection: DBConnection) async throws where S.Element == String {
-        
         self = try await self.fetch(keys, on: connection).get()
     }
     
     public mutating func fetch(on connection: DBConnection) async throws {
-        
         self = try await self.fetch(on: connection).get()
     }
     
     public mutating func save(on connection: DBConnection) async throws {
-        
         self = try await self.save(on: connection).get()
     }
     
     public mutating func delete(on connection: DBConnection) async throws {
-        
         self = try await self.delete(on: connection).get()
     }
 }

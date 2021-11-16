@@ -62,6 +62,12 @@ public protocol DBSQLConnection: DBConnection {
     
     func foreignKeys(of table: String) -> EventLoopFuture<[DBQueryRow]>
     
+    func startTransaction() -> EventLoopFuture<Void>
+    
+    func commitTransaction() -> EventLoopFuture<Void>
+    
+    func abortTransaction() -> EventLoopFuture<Void>
+    
     func execute(
         _ sql: SQLRaw
     ) -> EventLoopFuture<[DBQueryRow]>
@@ -75,7 +81,6 @@ public protocol DBSQLConnection: DBConnection {
         _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) throws -> Void
     ) -> EventLoopFuture<DBQueryMetadata>
-    
 }
 
 extension DBSQLConnection {
@@ -98,5 +103,40 @@ extension DBSQLConnection {
         onRow: @escaping (DBQueryRow) throws -> Void
     ) -> EventLoopFuture<DBQueryMetadata> {
         return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
+    }
+}
+
+extension DBSQLConnection {
+    
+    public func withTransaction<T>(
+        _ transactionBody: @escaping (DBSQLConnection) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        
+        let transaction = self.startTransaction()
+        let promise = transaction.eventLoop.makePromise(of: T.self)
+        
+        return transaction.flatMap {
+            
+            do {
+                
+                let bodyFuture = try transactionBody(self)
+                
+                bodyFuture.flatMap { _ in
+                    self.commitTransaction()
+                }.flatMapError { _ in
+                    self.abortTransaction()
+                }.whenComplete { _ in
+                    promise.completeWith(bodyFuture)
+                }
+                
+            } catch {
+                
+                self.abortTransaction().whenComplete { _ in
+                    promise.fail(error)
+                }
+            }
+            
+            return promise.futureResult
+        }
     }
 }

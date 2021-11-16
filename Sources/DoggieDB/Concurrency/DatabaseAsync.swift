@@ -34,7 +34,6 @@ extension Database {
         driver: DBDriver,
         on eventLoopGroup: EventLoopGroup
     ) async throws -> DBConnection {
-        
         return try await self.connect(config: config, logger: logger, driver: driver, on: eventLoopGroup).get()
     }
     
@@ -43,7 +42,6 @@ extension Database {
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
         on eventLoopGroup: EventLoopGroup
     ) async throws -> DBConnection {
-        
         return try await self.connect(url: url, logger: logger, on: eventLoopGroup).get()
     }
     
@@ -52,7 +50,6 @@ extension Database {
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
         on eventLoopGroup: EventLoopGroup
     ) async throws -> DBConnection {
-        
         return try await self.connect(url: url, logger: logger, on: eventLoopGroup).get()
     }
 }
