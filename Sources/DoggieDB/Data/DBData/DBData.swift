@@ -367,6 +367,7 @@ extension DBData {
         case .signed: return true
         case .unsigned: return true
         case .number: return true
+        case .decimal: return true
         default: return false
         }
     }
