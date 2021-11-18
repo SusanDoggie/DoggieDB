@@ -112,8 +112,6 @@ jobs:
       run: apt-get update
     - name: Install libmongoc
       run: apt-get install -y libmongoc-1.0-0 libssl-dev
-    - name: Install sqlite3
-      run: apt-get install -y libsqlite3-dev
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
@@ -168,8 +166,6 @@ jobs:
       run: yum update -y ${{ matrix.allowerasing }}
     - name: Install libmongoc
       run: yum install -y mongo-c-driver openssl-devel
-    - name: Install sqlite3
-      run: yum install -y sqlite-devel
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
@@ -222,8 +218,6 @@ jobs:
       run: apt-get update
     - name: Install libmongoc
       run: apt-get install -y libmongoc-1.0-0 libssl-dev
-    - name: Install sqlite3
-      run: apt-get install -y libsqlite3-dev
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
@@ -279,8 +273,6 @@ jobs:
       run: yum update -y ${{ matrix.allowerasing }}
     - name: Install libmongoc
       run: yum install -y mongo-c-driver openssl-devel
-    - name: Install sqlite3
-      run: yum install -y sqlite-devel
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
