@@ -74,11 +74,6 @@ public protocol DBSQLConnection: DBConnection {
     
     func execute(
         _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) -> Void
-    ) -> EventLoopFuture<DBQueryMetadata>
-    
-    func execute(
-        _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) throws -> Void
     ) -> EventLoopFuture<DBQueryMetadata>
 }
@@ -89,13 +84,6 @@ extension DBSQLConnection {
         _ sql: SQLRaw
     ) -> EventLoopFuture<[DBQueryRow]> {
         return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
-    }
-    
-    public func execute(
-        _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) -> Void
-    ) -> EventLoopFuture<DBQueryMetadata> {
-        return self.execute(sql, onRow: onRow as (DBQueryRow) throws -> Void)
     }
     
     public func execute(

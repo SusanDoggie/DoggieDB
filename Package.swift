@@ -35,7 +35,6 @@ let package = Package(
         .library(name: "DoggieDB", targets: ["DoggieDB"]),
         .library(name: "DBMongo", targets: ["DBMongo"]),
         .library(name: "DBMySQL", targets: ["DBMySQL"]),
-        .library(name: "DBSQLite", targets: ["DBSQLite"]),
         .library(name: "DBVapor", targets: ["DBVapor"]),
     ],
     dependencies: [
@@ -44,7 +43,6 @@ let package = Package(
         .package(url: "https://github.com/mongodb/swift-bson.git", from: "3.0.0"),
         .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "1.1.0"),
         .package(url: "https://gitlab.com/mordil/RediStack.git", from: "1.2.0"),
-        .package(url: "https://github.com/vapor/sqlite-nio.git", from: "1.1.0"),
         .package(url: "https://github.com/vapor/mysql-nio.git", from: "1.3.0"),
         .package(url: "https://github.com/vapor/postgres-nio.git", from: "1.6.0"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.50.0"),
@@ -85,14 +83,6 @@ let package = Package(
             ]
         ),
         .target(
-            name: "DBSQLite",
-            dependencies: [
-                .target(name: "Private"),
-                .target(name: "DoggieDB"),
-                .product(name: "SQLiteNIO", package: "sqlite-nio"),
-            ]
-        ),
-        .target(
             name: "DBVapor",
             dependencies: [
                 .target(name: "DoggieDB"),
@@ -104,7 +94,6 @@ let package = Package(
             dependencies: [
                 .target(name: "DoggieDB"),
                 .target(name: "DBMongo"),
-                .target(name: "DBSQLite"),
             ]
         ),
     ]

@@ -84,13 +84,6 @@ extension DBSQLConnection {
     
     public func execute(
         _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) -> Void
-    ) async throws -> DBQueryMetadata {
-        return try await self.execute(sql, onRow: onRow).get()
-    }
-    
-    public func execute(
-        _ sql: SQLRaw,
         onRow: @escaping (DBQueryRow) throws -> Void
     ) async throws -> DBQueryMetadata {
         return try await self.execute(sql, onRow: onRow).get()

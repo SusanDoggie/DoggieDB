@@ -40,10 +40,6 @@ extension DBQueryFindExpression {
         return try await self.toArray().get()
     }
     
-    public func forEach(_ body: @escaping (DBObject) -> Void) async throws {
-        return try await self.forEach(body).get()
-    }
-    
     public func forEach(_ body: @escaping (DBObject) throws -> Void) async throws {
         return try await self.forEach(body).get()
     }
