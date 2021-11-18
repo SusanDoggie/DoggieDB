@@ -19,16 +19,16 @@ For linux platforms, you need to install some of database drivers.
 
 #### MongoDB
 
-    apt-get -y install libmongoc-1.0-0 libbson-1.0-0 libssl-dev
+    apt-get -y install libmongoc-1.0-0 libssl-dev
 
 ### CentOS 8
 
 #### MongoDB
 
-    yum -y install mongo-c-driver libbson openssl-devel
+    yum -y install mongo-c-driver openssl-devel
 
 ### Amazon Linux 2
 
 #### MongoDB
 
-    yum -y install mongo-c-driver libbson openssl-devel
+    yum -y install mongo-c-driver openssl-devel
