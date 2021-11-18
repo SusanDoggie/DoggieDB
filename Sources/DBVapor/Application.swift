@@ -28,11 +28,9 @@ extension Application {
     final class Storage {
         
         let databases: Databases
-        let migrations: Migrations
         
         init(threadPool: NIOThreadPool, logger: Logger, on eventLoopGroup: EventLoopGroup) {
             self.databases = Databases(threadPool: threadPool, logger: logger, on: eventLoopGroup)
-            self.migrations = Migrations()
         }
     }
     
@@ -41,27 +39,10 @@ extension Application {
         typealias Value = Storage
     }
     
-    struct Signature: CommandSignature {
-        
-        @Flag(name: "auto-migrate", help: "If true, Fluent will automatically migrate your database on boot")
-        var autoMigrate: Bool
-        
-        @Flag(name: "auto-revert", help: "If true, Fluent will automatically revert your database on boot")
-        var autoRevert: Bool
-        
-    }
-    
     struct Lifecycle: LifecycleHandler {
         
         func willBoot(_ application: Application) throws {
             
-            let signature = try Signature(from: &application.environment.commandInput)
-            if signature.autoRevert {
-                try application.autoRevert().wait()
-            }
-            if signature.autoMigrate {
-                try application.autoMigrate().wait()
-            }
         }
         
         func shutdown(_ application: Application) {
@@ -87,7 +68,6 @@ extension Application {
         if self.storage[Key.self] == nil {
             self.storage[Key.self] = Storage(threadPool: self.threadPool, logger: self.logger, on: self.eventLoopGroup)
             self.lifecycle.use(Lifecycle())
-            self.commands.use(MigrateCommand(), as: "migrate")
         }
         return self.storage[Key.self]!
     }
@@ -98,34 +78,5 @@ extension Application {
     
     public var databases: Databases {
         return self._storage.databases
-    }
-    
-    public var migrations: Migrations {
-        return self._storage.migrations
-    }
-    
-    public var migrator: Migrator {
-        return Migrator(
-            databases: self.databases,
-            migrations: self.migrations,
-            logger: self.logger,
-            on: self.eventLoopGroup.next()
-        )
-    }
-    
-    /// Automatically runs forward migrations without confirmation.
-    /// This can be triggered by passing `--auto-migrate` flag.
-    public func autoMigrate() -> EventLoopFuture<Void> {
-        self.migrator.setupIfNeeded().flatMap {
-            self.migrator.prepareBatch()
-        }
-    }
-    
-    /// Automatically runs reverse migrations without confirmation.
-    /// This can be triggered by passing `--auto-revert` during boot.
-    public func autoRevert() -> EventLoopFuture<Void> {
-        self.migrator.setupIfNeeded().flatMap {
-            self.migrator.revertAllBatches()
-        }
     }
 }

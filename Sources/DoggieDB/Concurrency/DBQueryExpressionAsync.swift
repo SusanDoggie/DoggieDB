@@ -48,6 +48,19 @@ extension DBQueryFindExpression {
         return try await self.forEach(body).get()
     }
     
+    public func toStream() -> AsyncThrowingStream<DBObject, Error> {
+        
+        return AsyncThrowingStream { continuation in
+            
+            self.forEach { continuation.yield($0) }.whenComplete { result in
+                switch result {
+                case .success: continuation.finish()
+                case let .failure(error): continuation.finish(throwing: error)
+                }
+            }
+        }
+    }
+    
     public func first() async throws -> DBObject? {
         return try await self.first().get()
     }

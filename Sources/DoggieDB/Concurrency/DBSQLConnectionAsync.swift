@@ -55,6 +55,10 @@ extension DBSQLConnection {
     public func foreignKeys(of table: String) async throws -> [DBQueryRow] {
         return try await self.foreignKeys(of: table).get()
     }
+}
+
+@available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
+extension DBSQLConnection {
     
     public func startTransaction() async throws {
         try await self.startTransaction().get()
@@ -67,6 +71,10 @@ extension DBSQLConnection {
     public func abortTransaction() async throws {
         try await self.abortTransaction().get()
     }
+}
+
+@available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
+extension DBSQLConnection {
     
     public func execute(
         _ sql: SQLRaw
@@ -87,6 +95,25 @@ extension DBSQLConnection {
     ) async throws -> DBQueryMetadata {
         return try await self.execute(sql, onRow: onRow).get()
     }
+    
+    public func execute(
+        _ sql: SQLRaw
+    ) -> AsyncThrowingStream<DBQueryRow, Error> {
+        
+        return AsyncThrowingStream { continuation in
+            
+            self.execute(sql) { continuation.yield($0) }.whenComplete { result in
+                switch result {
+                case .success: continuation.finish()
+                case let .failure(error): continuation.finish(throwing: error)
+                }
+            }
+        }
+    }
+}
+
+@available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
+extension DBSQLConnection {
     
     public func withTransaction<T>(
         _ transactionBody: @escaping (DBSQLConnection) async throws -> T
