@@ -50,3 +50,24 @@ extension DBConnection {
         return DBQuery(connection: self)
     }
 }
+
+extension DBQuery {
+    
+    public func insert(_ class: String, _ data: [String: DBData]) -> EventLoopFuture<DBObject> {
+        
+        guard let launcher = connection.launcher else {
+            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
+        }
+        
+        return launcher.insert(`class`, data).flatMap {
+            
+            guard let (object, is_complete) = $0 else { return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unknown) }
+            
+            if is_complete {
+                return connection.eventLoopGroup.next().makeSucceededFuture(DBObject(object))
+            }
+            
+            return DBObject(object).fetch(on: connection)
+        }
+    }
+}

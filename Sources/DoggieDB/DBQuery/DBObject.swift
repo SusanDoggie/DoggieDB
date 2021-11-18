@@ -195,23 +195,7 @@ extension DBObject {
         let objectId = self._columns.filter { primaryKeys.contains($0.key) }
         
         if objectId.isEmpty {
-            
-            guard let launcher = connection.launcher else {
-                return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
-            }
-            
-            let result = launcher.insert(self.class, _updates.compactMapValues { $0.value })
-            
-            return result.flatMap {
-                
-                guard let (object, is_complete) = $0 else { return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unknown) }
-                
-                if is_complete {
-                    return connection.eventLoopGroup.next().makeSucceededFuture(DBObject(object))
-                }
-                
-                return DBObject(object).fetch(on: connection)
-            }
+            return connection.query().insert(self.class, _updates.compactMapValues { $0.value })
         }
         
         if objectId.count == primaryKeys.count {

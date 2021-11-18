@@ -63,6 +63,15 @@ extension DBQueryFindExpression {
 }
 
 @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
+extension DBQuery {
+    
+    @discardableResult
+    public func insert(_ class: String, _ data: [String: DBData]) async throws -> DBObject {
+        return try await self.insert(`class`, data).get()
+    }
+}
+
+@available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
 extension DBQueryFindExpression {
     
     @discardableResult
