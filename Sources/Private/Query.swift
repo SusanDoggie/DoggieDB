@@ -64,8 +64,6 @@ public protocol _DBQueryLauncher {
     
     func find(_ query: _DBQuery) -> EventLoopFuture<[_DBObject]>
     
-    func find(_ query: _DBQuery, forEach: @escaping (_DBObject) -> Void) -> EventLoopFuture<Void>
-    
     func find(_ query: _DBQuery, forEach: @escaping (_DBObject) throws -> Void) -> EventLoopFuture<Void>
     
     func findAndDelete(_ query: _DBQuery) -> EventLoopFuture<Int?>

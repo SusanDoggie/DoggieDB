@@ -203,18 +203,6 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func find(_ query: _DBQuery, forEach: @escaping (_DBObject) -> Void) -> EventLoopFuture<Void> {
-        
-        return self._find(query).flatMap { sql, primaryKeys in
-            
-            connection.execute(sql) {
-                
-                forEach(_DBObject(table: query.class, primaryKeys: primaryKeys, object: $0))
-                
-            }.map { _ in }
-        }
-    }
-    
     func find(_ query: _DBQuery, forEach: @escaping (_DBObject) throws -> Void) -> EventLoopFuture<Void> {
         
         return self._find(query).flatMap { sql, primaryKeys in

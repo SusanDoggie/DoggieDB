@@ -192,18 +192,6 @@ struct QueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func find(_ query: _DBQuery, forEach: @escaping (_DBObject) -> Void) -> EventLoopFuture<Void> {
-        
-        do {
-            
-            return try self._find(query).execute().flatMap { $0.forEach { forEach(_DBObject(class: query.class, object: $0)) } }
-            
-        } catch {
-            
-            return connection.eventLoopGroup.next().makeFailedFuture(error)
-        }
-    }
-    
     func find(_ query: _DBQuery, forEach: @escaping (_DBObject) throws -> Void) -> EventLoopFuture<Void> {
         
         do {
