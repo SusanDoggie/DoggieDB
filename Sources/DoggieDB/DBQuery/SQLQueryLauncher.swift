@@ -452,7 +452,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<(_DBObject, Bool)?> {
+    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<_DBObject?> {
         
         guard let data = data as? [String: DBData] else { fatalError() }
         
@@ -479,7 +479,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                     """
                 
                 return connection._primaryKey(of: `class`).flatMap { primaryKeys in
-                    connection.execute(sql).map { $0.first.map { (_DBObject(table: `class`, primaryKeys: primaryKeys, object: $0), true) } }
+                    connection.execute(sql).map { $0.first.map { _DBObject(table: `class`, primaryKeys: primaryKeys, object: $0) } }
                 }
                 
             } catch {

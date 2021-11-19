@@ -59,15 +59,11 @@ extension DBQuery {
             return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
         
-        return launcher.insert(`class`, data).flatMap {
+        return launcher.insert(`class`, data).flatMapThrowing {
             
-            guard let (object, is_complete) = $0 else { return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unknown) }
+            guard let object = $0 else { throw Database.Error.unknown }
             
-            if is_complete {
-                return connection.eventLoopGroup.next().makeSucceededFuture(DBObject(object))
-            }
-            
-            return DBObject(object).fetch(on: connection)
+            return DBObject(object)
         }
     }
 }

@@ -74,5 +74,5 @@ public protocol _DBQueryLauncher {
     
     func findOneAndDelete(_ query: _DBQuery) -> EventLoopFuture<_DBObject?>
     
-    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<(_DBObject, Bool)?>
+    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<_DBObject?>
 }
