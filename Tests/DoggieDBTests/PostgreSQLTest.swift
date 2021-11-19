@@ -459,6 +459,37 @@ class PostgreSQLTest: XCTestCase {
         }
     }
     
+    func testExtendedJSON() throws {
+        
+        do {
+            
+            _ = try connection.execute("""
+                CREATE TABLE testExtendedJSON (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    col JSONB
+                )
+                """).wait()
+            
+            let json: DBData = [
+                "boolean": true,
+                "string": "",
+                "number": 1.0,
+                "array": [],
+                "dictionary": [:],
+            ]
+            
+            let obj1 = try connection.query().insert("testExtendedJSON", ["id": 1, "col": json]).wait()
+            
+            XCTAssertEqual(obj1["id"].intValue, 1)
+            XCTAssertEqual(obj1["col"].dictionary.map(Dictionary.init), json.dictionary.map(Dictionary.init))
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
     func testPatternMatchingQuery() throws {
         
         do {

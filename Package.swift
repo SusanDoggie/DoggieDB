@@ -38,7 +38,7 @@ let package = Package(
         .library(name: "DBVapor", targets: ["DBVapor"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/SusanDoggie/Doggie.git", from: "6.5.0"),
+        .package(url: "https://github.com/SusanDoggie/Doggie.git", from: "6.6.1"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.33.0"),
         .package(url: "https://github.com/mongodb/swift-bson.git", from: "3.0.0"),
         .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "1.1.0"),
