@@ -250,12 +250,22 @@ extension MongoPredicateExpression {
         case let .equal(.key(key), .value(value)),
              let .equal(.value(value), .key(key)):
             
-            return [key: ["$eq": value.toBSON()]]
+            let value = value.toBSON()
+            
+            switch value {
+            case .undefined: return [key: ["$exists": false]]
+            default: return [key: ["$eq": value]]
+            }
             
         case let .notEqual(.key(key), .value(value)),
              let .notEqual(.value(value), .key(key)):
             
-            return [key: ["$ne": value.toBSON()]]
+            let value = value.toBSON()
+            
+            switch value {
+            case .undefined: return [key: ["$exists": true]]
+            default: return [key: ["$ne": value]]
+            }
             
         case let .lessThan(.key(key), .value(value)),
              let .greaterThan(.value(value), .key(key)):
