@@ -360,7 +360,7 @@ extension PostgresData {
             
         case let .dictionary(value):
             
-            guard let json = try? PostgresData(jsonb: Dictionary(value)) else { throw Database.Error.unsupportedType }
+            guard let json = try? PostgresData(jsonb: value) else { throw Database.Error.unsupportedType }
             self = json
             
         default: throw Database.Error.unsupportedType

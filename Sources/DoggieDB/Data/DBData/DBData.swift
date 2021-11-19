@@ -61,7 +61,7 @@ public struct DBData: Hashable {
         case uuid(UUID)
         case objectID(BSONObjectID)
         case array([DBData])
-        case dictionary(OrderedDictionary<String, DBData>)
+        case dictionary([String: DBData])
     }
     
     public let base: Base
@@ -139,11 +139,11 @@ public struct DBData: Hashable {
     }
     
     public init<Value: DBDataConvertible>(_ elements: [String: Value]) {
-        self.base = .dictionary(OrderedDictionary(uniqueKeysWithValues: elements.mapValues { $0.toDBData() }))
+        self.base = .dictionary(elements.mapValues { $0.toDBData() })
     }
     
     public init<Value: DBDataConvertible>(_ elements: OrderedDictionary<String, Value>) {
-        self.base = .dictionary(elements.mapValues { $0.toDBData() })
+        self.base = .dictionary(Dictionary(elements.mapValues { $0.toDBData() }))
     }
 }
 
@@ -196,7 +196,7 @@ extension DBData: ExpressibleByArrayLiteral {
 extension DBData: ExpressibleByDictionaryLiteral {
     
     public init(dictionaryLiteral elements: (String, DBData) ...) {
-        self.init(OrderedDictionary(uniqueKeysWithValues: elements))
+        self.init(Dictionary(uniqueKeysWithValues: elements))
     }
 }
 
@@ -586,7 +586,7 @@ extension DBData {
         }
     }
     
-    public var dictionary: OrderedDictionary<String, DBData>? {
+    public var dictionary: Dictionary<String, DBData>? {
         switch self.base {
         case let .dictionary(value): return value
         default: return nil
@@ -627,10 +627,10 @@ extension DBData {
         }
     }
     
-    public var keys: OrderedSet<String> {
+    public var keys: Dictionary<String, DBData>.Keys {
         switch self.base {
         case let .dictionary(value): return value.keys
-        default: return []
+        default: return [:].keys
         }
     }
     

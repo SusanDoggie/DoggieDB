@@ -113,13 +113,13 @@ extension DBData {
     
     struct _KeyedDecodingContainer<Key: Swift.CodingKey> {
         
-        let value: OrderedDictionary<String, DBData>
+        let value: [String: DBData]
         
         let codingPath: [Swift.CodingKey]
         
         let options: DecoderOptions
         
-        init(dictionary: OrderedDictionary<String, DBData>, codingPath: [Swift.CodingKey], options: DecoderOptions) {
+        init(dictionary: [String: DBData], codingPath: [Swift.CodingKey], options: DecoderOptions) {
             self.value = dictionary
             self.codingPath = codingPath
             self.options = options

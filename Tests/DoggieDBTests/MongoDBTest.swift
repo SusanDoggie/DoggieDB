@@ -163,7 +163,7 @@ class MongoDBTest: XCTestCase {
             let obj1 = try connection.query().insert("testExtendedJSON", ["id": 1, "col": json]).wait()
             
             XCTAssertEqual(obj1["id"].intValue, 1)
-            XCTAssertEqual(obj1["col"].dictionary.map(Dictionary.init), json.dictionary.map(Dictionary.init))
+            XCTAssertEqual(obj1["col"], json)
             
         } catch {
             
