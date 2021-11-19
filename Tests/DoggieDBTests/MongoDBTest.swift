@@ -154,27 +154,30 @@ class MongoDBTest: XCTestCase {
             
             _ = try connection.query().insert("testPatternMatchingQuery", ["id": 1, "col": "text to be search"]).wait()
             _ = try connection.query().insert("testPatternMatchingQuery", ["id": 2, "col": "long long' string%"]).wait()
+            _ = try connection.query().insert("testPatternMatchingQuery", ["id": 3, "col": "long long' string%, hello"]).wait()
             
-            let obj1 = try connection.query()
+            let res1 = try connection.query()
                 .find("testPatternMatchingQuery")
                 .filter { .startsWith($0["col"], "text to ") }
-                .first().wait()
+                .toArray().wait()
             
-            XCTAssertEqual(obj1?["id"].intValue, 1)
+            XCTAssertEqual(res1.count, 1)
+            XCTAssertEqual(res1.first?["id"].intValue, 1)
             
-            let obj2 = try connection.query()
+            let res2 = try connection.query()
                 .find("testPatternMatchingQuery")
                 .filter { .endsWith($0["col"], "ong' string%") }
-                .first().wait()
+                .toArray().wait()
             
-            XCTAssertEqual(obj2?["id"].intValue, 2)
+            XCTAssertEqual(res2.count, 1)
+            XCTAssertEqual(res2.first?["id"].intValue, 2)
             
-            let obj3 = try connection.query()
+            let res3 = try connection.query()
                 .find("testPatternMatchingQuery")
                 .filter { .contains($0["col"], "long' s") }
-                .first().wait()
+                .toArray().wait()
             
-            XCTAssertEqual(obj3?["id"].intValue, 2)
+            XCTAssertEqual(res3.count, 2)
             
         } catch {
             
