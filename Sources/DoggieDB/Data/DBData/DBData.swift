@@ -139,7 +139,7 @@ public struct DBData: Hashable {
     }
     
     public init<Value: DBDataConvertible>(_ elements: [String: Value]) {
-        self.base = .dictionary(OrderedDictionary(uniqueKeysWithValues: elements.lazy.map { ($0.key, $0.value.toDBData()) }))
+        self.base = .dictionary(OrderedDictionary(uniqueKeysWithValues: elements.mapValues { $0.toDBData() }))
     }
     
     public init<Value: DBDataConvertible>(_ elements: OrderedDictionary<String, Value>) {
