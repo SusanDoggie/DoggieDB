@@ -80,22 +80,15 @@ extension DBQueryFindOneExpression {
 
 extension DBQueryFindOneExpression {
     
-    public func upsert(_ update: [String: DBDataConvertible], setOnInsert: [String: DBDataConvertible] = [:]) -> EventLoopFuture<DBObject> {
+    public func upsert(_ update: [String: DBDataConvertible], setOnInsert: [String: DBDataConvertible] = [:]) -> EventLoopFuture<DBObject?> {
         return self.upsert(update.mapValues { .set($0) }, setOnInsert: setOnInsert)
     }
     
-    public func upsert(_ update: [String: DBQueryUpdateOperation], setOnInsert: [String: DBDataConvertible] = [:]) -> EventLoopFuture<DBObject> {
-        
+    public func upsert(_ update: [String: DBQueryUpdateOperation], setOnInsert: [String: DBDataConvertible] = [:]) -> EventLoopFuture<DBObject?> {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        
-        return launcher.findOneAndUpsert(_DBQuery(self), update, setOnInsert).flatMapThrowing {
-            
-            guard let object = $0 else { throw Database.Error.unknown }
-            
-            return DBObject(object)
-        }
+        return launcher.findOneAndUpsert(_DBQuery(self), update, setOnInsert).map { $0.map(DBObject.init) }
     }
 }
 

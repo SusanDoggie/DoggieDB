@@ -207,8 +207,8 @@ class MongoDBTest: XCTestCase {
                     "_id": "1"
                 ]).wait()
             
-            XCTAssertEqual(obj["_id"].string, "1")
-            XCTAssertEqual(obj["col"].string, "text_1")
+            XCTAssertEqual(obj?["_id"].string, "1")
+            XCTAssertEqual(obj?["col"].string, "text_1")
             
             let obj2 = try connection.query()
                 .findOne("testUpsertQuery")
@@ -219,8 +219,8 @@ class MongoDBTest: XCTestCase {
                     "_id": "1"
                 ]).wait()
             
-            XCTAssertEqual(obj2["_id"].string, "1")
-            XCTAssertEqual(obj2["col"].string, "text_2")
+            XCTAssertEqual(obj2?["_id"].string, "1")
+            XCTAssertEqual(obj2?["col"].string, "text_2")
             
             let obj3 = try connection.query()
                 .findOne("testUpsertQuery")
@@ -232,8 +232,8 @@ class MongoDBTest: XCTestCase {
                     "_id": "1"
                 ]).wait()
             
-            XCTAssertEqual(obj3["_id"].string, "1")
-            XCTAssertEqual(obj3["col"].string, "text_2")
+            XCTAssertEqual(obj3?["_id"].string, "1")
+            XCTAssertEqual(obj3?["col"].string, "text_2")
             
         } catch {
             
@@ -261,7 +261,7 @@ class MongoDBTest: XCTestCase {
                     "_id": "1"
                 ]).wait()
             
-            XCTAssertEqual(obj.keys, ["_id", "dummy1", "dummy2"])
+            XCTAssertEqual(obj?.keys, ["_id", "dummy1", "dummy2"])
             
             let obj2 = try connection.query()
                 .findOne("testIncludesQuery")
@@ -292,7 +292,7 @@ class MongoDBTest: XCTestCase {
                     "_id": "1"
                 ]).wait()
             
-            XCTAssertEqual(obj3.keys, ["_id", "dummy1", "dummy2"])
+            XCTAssertEqual(obj3?.keys, ["_id", "dummy1", "dummy2"])
             
             let obj4 = try connection.query()
                 .findOne("testIncludesQuery")
@@ -308,7 +308,7 @@ class MongoDBTest: XCTestCase {
                     "_id": "2"
                 ]).wait()
             
-            XCTAssertEqual(obj4.keys, ["_id", "dummy1", "dummy2"])
+            XCTAssertEqual(obj4?.keys, ["_id", "dummy1", "dummy2"])
             
             let obj5 = try connection.query()
                 .findOne("testIncludesQuery")
