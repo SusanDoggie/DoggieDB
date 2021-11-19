@@ -51,26 +51,35 @@ struct PostgreSQLDialect: SQLDialect {
     
     public static func matching(_ column: String, _ pattern: SQLDialectPatternMatching) throws -> SQLRaw {
         
+        func escape(_ pattern: String) -> String {
+            var _pattern = ""
+            for char in pattern {
+                switch char {
+                case "\\", "%", "_": _pattern.append("\\")
+                default: break
+                }
+                _pattern.append(char)
+            }
+            return _pattern
+        }
+        
         switch pattern {
             
         case let .startsWith(pattern):
             
-            var _pattern = pattern.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "%", with: "\\%")
-            _pattern = "\(_pattern)%"
+            let _pattern = "\(escape(pattern))%"
             
             return "\(identifier: column) LIKE \(_pattern)"
             
         case let .endsWith(pattern):
             
-            var _pattern = pattern.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "%", with: "\\%")
-            _pattern = "%\(_pattern)"
+            let _pattern = "%\(escape(pattern))"
             
             return "\(identifier: column) LIKE \(_pattern)"
             
         case let .contains(pattern):
             
-            var _pattern = pattern.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "%", with: "\\%")
-            _pattern = "%\(_pattern)%"
+            let _pattern = "%\(escape(pattern))%"
             
             return "\(identifier: column) LIKE \(_pattern)"
         }
