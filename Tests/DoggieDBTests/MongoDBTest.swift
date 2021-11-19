@@ -146,11 +146,11 @@ class MongoDBTest: XCTestCase {
         }
     }
     
-    func testExtendedJSON() throws {
+    func testJSON() throws {
         
         do {
             
-            _ = try connection.mongoQuery().createCollection("testExtendedJSON").execute().wait()
+            _ = try connection.mongoQuery().createCollection("testJSON").execute().wait()
             
             let json: DBData = [
                 "boolean": true,
@@ -160,7 +160,7 @@ class MongoDBTest: XCTestCase {
                 "dictionary": [:],
             ]
             
-            let obj1 = try connection.query().insert("testExtendedJSON", ["id": 1, "col": json]).wait()
+            let obj1 = try connection.query().insert("testJSON", ["id": 1, "col": json]).wait()
             
             XCTAssertEqual(obj1["id"].intValue, 1)
             XCTAssertEqual(obj1["col"], json)
