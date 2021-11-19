@@ -44,9 +44,9 @@ public enum DBDataType: Hashable {
     case dictionary
 }
 
-public struct DBData {
+public struct DBData: Hashable {
     
-    public enum Base {
+    public enum Base: Hashable {
         case null
         case boolean(Bool)
         case string(String)
@@ -221,51 +221,6 @@ extension DBData: CustomStringConvertible {
         case let .objectID(value): return "\(value)"
         case let .array(value): return "\(value)"
         case let .dictionary(value): return "\(value)"
-        }
-    }
-}
-
-extension DBData: Hashable {
-    
-    public static func == (lhs: DBData, rhs: DBData) -> Bool {
-        switch (lhs.base, rhs.base) {
-        case (.null, .null): return true
-        case let (.boolean(lhs), .boolean(rhs)): return lhs == rhs
-        case let (.string(lhs), .string(rhs)): return lhs == rhs
-        case let (.regex(lhs), .regex(rhs)): return lhs == rhs
-        case let (.signed(lhs), .signed(rhs)): return lhs == rhs
-        case let (.unsigned(lhs), .unsigned(rhs)): return lhs == rhs
-        case let (.number(lhs), .number(rhs)): return lhs == rhs
-        case let (.decimal(lhs), .decimal(rhs)): return lhs == rhs
-        case let (.timestamp(lhs), .timestamp(rhs)): return lhs == rhs
-        case let (.date(lhs), .date(rhs)): return lhs == rhs
-        case let (.binary(lhs), .binary(rhs)): return lhs == rhs
-        case let (.uuid(lhs), .uuid(rhs)): return lhs == rhs
-        case let (.objectID(lhs), .objectID(rhs)): return lhs == rhs
-        case let (.array(lhs), .array(rhs)): return lhs == rhs
-        case let (.dictionary(lhs), .dictionary(rhs)): return lhs == rhs
-        default: return false
-        }
-    }
-    
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(type)
-        switch self.base {
-        case let .boolean(value): hasher.combine(value)
-        case let .string(value): hasher.combine(value)
-        case let .regex(value): hasher.combine(value)
-        case let .signed(value): hasher.combine(value)
-        case let .unsigned(value): hasher.combine(value)
-        case let .number(value): hasher.combine(value)
-        case let .decimal(value): hasher.combine(value)
-        case let .timestamp(value): hasher.combine(value)
-        case let .date(value): hasher.combine(value)
-        case let .binary(value): hasher.combine(value)
-        case let .uuid(value): hasher.combine(value)
-        case let .objectID(value): hasher.combine(value)
-        case let .array(value): hasher.combine(value)
-        case let .dictionary(value): hasher.combine(value)
-        default: break
         }
     }
 }
