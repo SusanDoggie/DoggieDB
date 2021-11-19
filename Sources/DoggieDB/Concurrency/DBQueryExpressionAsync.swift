@@ -98,12 +98,12 @@ extension DBQueryFindOneExpression {
 extension DBQueryFindOneExpression {
     
     @discardableResult
-    public func upsert(_ update: [String : DBDataConvertible], setOnInsert: [String : DBDataConvertible] = [:]) async throws -> DBObject? {
+    public func upsert(_ update: [String : DBDataConvertible], setOnInsert: [String : DBDataConvertible] = [:]) async throws -> DBObject {
         return try await self.upsert(update, setOnInsert: setOnInsert).get()
     }
     
     @discardableResult
-    public func upsert(_ update: [String : DBQueryUpdateOperation], setOnInsert: [String : DBDataConvertible] = [:]) async throws -> DBObject? {
+    public func upsert(_ update: [String : DBQueryUpdateOperation], setOnInsert: [String : DBDataConvertible] = [:]) async throws -> DBObject {
         return try await self.upsert(update, setOnInsert: setOnInsert).get()
     }
 }

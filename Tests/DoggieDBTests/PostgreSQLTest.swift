@@ -530,8 +530,8 @@ class PostgreSQLTest: XCTestCase {
                     "id": 1
                 ]).wait()
             
-            XCTAssertEqual(obj?["id"].intValue, 1)
-            XCTAssertEqual(obj?["col"].string, "text_1")
+            XCTAssertEqual(obj["id"].intValue, 1)
+            XCTAssertEqual(obj["col"].string, "text_1")
             
             let obj2 = try connection.query()
                 .findOne("testUpsertQuery")
@@ -542,8 +542,8 @@ class PostgreSQLTest: XCTestCase {
                     "id": 1
                 ]).wait()
             
-            XCTAssertEqual(obj2?["id"].intValue, 1)
-            XCTAssertEqual(obj2?["col"].string, "text_2")
+            XCTAssertEqual(obj2["id"].intValue, 1)
+            XCTAssertEqual(obj2["col"].string, "text_2")
             
             let obj3 = try connection.query()
                 .findOne("testUpsertQuery")
@@ -555,8 +555,8 @@ class PostgreSQLTest: XCTestCase {
                     "id": 1
                 ]).wait()
             
-            XCTAssertEqual(obj3?["id"].intValue, 1)
-            XCTAssertEqual(obj3?["col"].string, "text_2")
+            XCTAssertEqual(obj3["id"].intValue, 1)
+            XCTAssertEqual(obj3["col"].string, "text_2")
             
         } catch {
             
@@ -592,7 +592,7 @@ class PostgreSQLTest: XCTestCase {
                     "id": 1
                 ]).wait()
             
-            XCTAssertEqual(obj?.keys, ["id", "dummy1", "dummy2"])
+            XCTAssertEqual(obj.keys, ["id", "dummy1", "dummy2"])
             
             let obj2 = try connection.query()
                 .findOne("testIncludesQuery")
@@ -623,7 +623,7 @@ class PostgreSQLTest: XCTestCase {
                     "id": 1
                 ]).wait()
             
-            XCTAssertEqual(obj3?.keys, ["id", "dummy1", "dummy2"])
+            XCTAssertEqual(obj3.keys, ["id", "dummy1", "dummy2"])
             
             let obj4 = try connection.query()
                 .findOne("testIncludesQuery")
@@ -639,7 +639,7 @@ class PostgreSQLTest: XCTestCase {
                     "id": 2
                 ]).wait()
             
-            XCTAssertEqual(obj4?.keys, ["id", "dummy1", "dummy2"])
+            XCTAssertEqual(obj4.keys, ["id", "dummy1", "dummy2"])
             
             let obj5 = try connection.query()
                 .findOne("testIncludesQuery")
