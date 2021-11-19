@@ -43,13 +43,13 @@ public indirect enum MongoPredicateExpression {
     
     case notContainsIn(MongoPredicateValue, MongoPredicateValue)
     
-    case matching(MongoPredicateValue, MongoPredicateValue)
+    case matching(MongoPredicateKey, MongoPredicateValue)
     
-    case startsWith(MongoPredicateValue, String, options: NSRegularExpression.Options = [])
+    case startsWith(MongoPredicateKey, String, options: NSRegularExpression.Options = [])
     
-    case endsWith(MongoPredicateValue, String, options: NSRegularExpression.Options = [])
+    case endsWith(MongoPredicateKey, String, options: NSRegularExpression.Options = [])
     
-    case contains(MongoPredicateValue, String, options: NSRegularExpression.Options = [])
+    case contains(MongoPredicateKey, String, options: NSRegularExpression.Options = [])
     
     case and([MongoPredicateExpression])
     
@@ -192,29 +192,25 @@ extension MongoPredicateExpression {
             
             return ["$not": [["$in": ["$\(key)".toBSON(), value.toBSON()]]]]
             
-        case let .matching(.key(lhs), .key(rhs)):
+        case let .matching(lhs, .key(rhs)):
             
-            return ["$regexMatch": ["input": "$\(lhs)".toBSON(), "regex": "$\(rhs)".toBSON()]]
+            return ["$regexMatch": ["input": "$\(lhs.key)".toBSON(), "regex": "$\(rhs)".toBSON()]]
             
-        case let .matching(.value(value), .key(key)):
+        case let .matching(lhs, .value(value)):
             
-            return ["$regexMatch": ["input": value.toBSON(), "regex": "$\(key)".toBSON()]]
+            return ["$regexMatch": ["input": "$\(lhs.key)".toBSON(), "regex": value.toBSON()]]
             
-        case let .matching(.key(key), .value(value)):
+        case let .startsWith(lhs, str, options):
             
-            return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": value.toBSON()]]
+            return ["$regexMatch": ["input": "$\(lhs.key)".toBSON(), "regex": "^\(quote(str))".toBSON(), "options": options.stringOptions.toBSON()]]
             
-        case let .startsWith(.key(key), str, options):
+        case let .endsWith(lhs, str, options):
             
-            return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": "^\(quote(str))".toBSON(), "options": options.stringOptions.toBSON()]]
+            return ["$regexMatch": ["input": "$\(lhs.key)".toBSON(), "regex": "\(quote(str))$".toBSON(), "options": options.stringOptions.toBSON()]]
             
-        case let .endsWith(.key(key), str, options):
+        case let .contains(lhs, str, options):
             
-            return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": "\(quote(str))$".toBSON(), "options": options.stringOptions.toBSON()]]
-            
-        case let .contains(.key(key), str, options):
-            
-            return ["$regexMatch": ["input": "$\(key)".toBSON(), "regex": quote(str).toBSON(), "options": options.stringOptions.toBSON()]]
+            return ["$regexMatch": ["input": "$\(lhs.key)".toBSON(), "regex": quote(str).toBSON(), "options": options.stringOptions.toBSON()]]
             
         case let .and(list):
             
@@ -303,21 +299,21 @@ extension MongoPredicateExpression {
             
             return [key: ["$nin": value.toBSON()]]
             
-        case let .matching(.key(key), .value(value)):
+        case let .matching(lhs, .value(value)):
             
-            return [key: ["$regex": value.toBSON()]]
+            return [lhs.key: ["$regex": value.toBSON()]]
             
-        case let .startsWith(.key(key), str, options):
+        case let .startsWith(lhs, str, options):
             
-            return [key: ["$regex": "^\(quote(str))".toBSON(), "$options": options.stringOptions.toBSON()]]
+            return [lhs.key: ["$regex": "^\(quote(str))".toBSON(), "$options": options.stringOptions.toBSON()]]
             
-        case let .endsWith(.key(key), str, options):
+        case let .endsWith(lhs, str, options):
             
-            return [key: ["$regex": "\(quote(str))$".toBSON(), "$options": options.stringOptions.toBSON()]]
+            return [lhs.key: ["$regex": "\(quote(str))$".toBSON(), "$options": options.stringOptions.toBSON()]]
             
-        case let .contains(.key(key), str, options):
+        case let .contains(lhs, str, options):
             
-            return [key: ["$regex": quote(str).toBSON(), "$options": options.stringOptions.toBSON()]]
+            return [lhs.key: ["$regex": quote(str).toBSON(), "$options": options.stringOptions.toBSON()]]
             
         case let .and(list):
             
@@ -433,11 +429,11 @@ public func >= <T: BSONConvertible>(lhs: T, rhs: MongoPredicateKey) -> MongoPred
 }
 
 public func ~= (lhs: NSRegularExpression, rhs: MongoPredicateKey) -> MongoPredicateExpression {
-    return .matching(.key(rhs), .value(lhs))
+    return .matching(rhs, .value(lhs))
 }
 
 public func ~= (lhs: Regex, rhs: MongoPredicateKey) -> MongoPredicateExpression {
-    return .matching(.key(rhs), .value(lhs))
+    return .matching(rhs, .value(lhs))
 }
 
 public func ~= (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
@@ -473,11 +469,11 @@ public func ~= <T: BSONConvertible>(lhs: PartialRangeThrough<T>, rhs: MongoPredi
 }
 
 public func =~ (lhs: MongoPredicateKey, rhs: NSRegularExpression) -> MongoPredicateExpression {
-    return .matching(.key(lhs), .value(rhs))
+    return .matching(lhs, .value(rhs))
 }
 
 public func =~ (lhs: MongoPredicateKey, rhs: Regex) -> MongoPredicateExpression {
-    return .matching(.key(lhs), .value(rhs))
+    return .matching(lhs, .value(rhs))
 }
 
 public func =~ (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {

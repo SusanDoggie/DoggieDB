@@ -459,6 +459,48 @@ class PostgreSQLTest: XCTestCase {
         }
     }
     
+    func testPatternMatchingQuery() throws {
+        
+        do {
+            
+            _ = try connection.execute("""
+                CREATE TABLE testPatternMatchingQuery (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    col TEXT
+                )
+                """).wait()
+            
+            _ = try connection.query().insert("testPatternMatchingQuery", ["id": 1, "col": "text to be search"]).wait()
+            _ = try connection.query().insert("testPatternMatchingQuery", ["id": 2, "col": "long long' string%"]).wait()
+            
+            let obj1 = try connection.query()
+                .find("testPatternMatchingQuery")
+                .filter { .startsWith($0["col"], "text to ") }
+                .first().wait()
+            
+            XCTAssertEqual(obj1?["id"].intValue, 1)
+            
+            let obj2 = try connection.query()
+                .find("testPatternMatchingQuery")
+                .filter { .endsWith($0["col"], "ong' string%") }
+                .first().wait()
+            
+            XCTAssertEqual(obj2?["id"].intValue, 2)
+            
+            let obj3 = try connection.query()
+                .find("testPatternMatchingQuery")
+                .filter { .contains($0["col"], "long' s") }
+                .first().wait()
+            
+            XCTAssertEqual(obj3?["id"].intValue, 2)
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
     func testUpdateQuery() throws {
         
         do {

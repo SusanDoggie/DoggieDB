@@ -49,6 +49,16 @@ public enum SQLDialectUpdateOperation {
     
 }
 
+public enum SQLDialectPatternMatching {
+    
+    case startsWith(String)
+    
+    case endsWith(String)
+    
+    case contains(String)
+    
+}
+
 public protocol SQLDialect {
     
     static var rowId: String? { get }
@@ -62,6 +72,8 @@ public protocol SQLDialect {
     static func nullSafeEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) throws -> SQLRaw
     
     static func nullSafeNotEqual(_ lhs: DBQueryPredicateValue, _ rhs: DBQueryPredicateValue) throws -> SQLRaw
+    
+    static func matching(_ column: String, _ pattern: SQLDialectPatternMatching) throws -> SQLRaw
     
     static var literalNull: String { get }
     

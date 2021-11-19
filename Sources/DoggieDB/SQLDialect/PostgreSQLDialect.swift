@@ -49,6 +49,33 @@ struct PostgreSQLDialect: SQLDialect {
         return try "\(lhs.serialize()) IS DISTINCT FROM \(rhs.serialize())"
     }
     
+    public static func matching(_ column: String, _ pattern: SQLDialectPatternMatching) throws -> SQLRaw {
+        
+        switch pattern {
+            
+        case let .startsWith(pattern):
+            
+            var _pattern = pattern.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "%", with: "\\%")
+            _pattern = "\(_pattern)%"
+            
+            return "\(identifier: column) LIKE \(_pattern)"
+            
+        case let .endsWith(pattern):
+            
+            var _pattern = pattern.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "%", with: "\\%")
+            _pattern = "%\(_pattern)"
+            
+            return "\(identifier: column) LIKE \(_pattern)"
+            
+        case let .contains(pattern):
+            
+            var _pattern = pattern.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "%", with: "\\%")
+            _pattern = "%\(_pattern)%"
+            
+            return "\(identifier: column) LIKE \(_pattern)"
+        }
+    }
+    
     static func literalBoolean(_ value: Bool) -> String {
         return value ? "true" : "false"
     }

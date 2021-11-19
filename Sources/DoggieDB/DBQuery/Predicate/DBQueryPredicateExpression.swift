@@ -47,17 +47,13 @@ public indirect enum DBQueryPredicateExpression {
     
     case notBetween(DBQueryPredicateValue, DBQueryPredicateValue, DBQueryPredicateValue)
     
-    case like(DBQueryPredicateValue, String)
+    case matching(DBQueryPredicateKey, DBQueryPredicateValue)
     
-    case notLike(DBQueryPredicateValue, String)
+    case startsWith(DBQueryPredicateKey, String)
     
-    case matching(DBQueryPredicateValue, DBQueryPredicateValue)
+    case endsWith(DBQueryPredicateKey, String)
     
-    case startsWith(DBQueryPredicateValue, String, options: NSRegularExpression.Options = [])
-    
-    case endsWith(DBQueryPredicateValue, String, options: NSRegularExpression.Options = [])
-    
-    case contains(DBQueryPredicateValue, String, options: NSRegularExpression.Options = [])
+    case contains(DBQueryPredicateKey, String)
     
     case and([DBQueryPredicateExpression])
     
@@ -122,22 +118,9 @@ extension DBQueryPredicateExpression {
         case let .not(x): return x.requiredPrimaryKeys
         case let .equal(lhs, rhs): return lhs.isObjectId || rhs.isObjectId
         case let .notEqual(lhs, rhs): return lhs.isObjectId || rhs.isObjectId
-        case let .lessThan(lhs, rhs): return lhs.isObjectId || rhs.isObjectId
-        case let .greaterThan(lhs, rhs): return lhs.isObjectId || rhs.isObjectId
-        case let .lessThanOrEqualTo(lhs, rhs): return lhs.isObjectId || rhs.isObjectId
-        case let .greaterThanOrEqualTo(lhs, rhs): return lhs.isObjectId || rhs.isObjectId
-        case let .containsIn(lhs, rhs): return lhs.isObjectId || rhs.isObjectId
-        case let .notContainsIn(lhs, rhs): return lhs.isObjectId || rhs.isObjectId
-        case let .between(x, from, to): return x.isObjectId || from.isObjectId || to.isObjectId
-        case let .notBetween(x, from, to): return x.isObjectId || from.isObjectId || to.isObjectId
-        case let .like(x, _): return x.isObjectId
-        case let .notLike(x, _): return x.isObjectId
-        case let .matching(lhs, rhs): return lhs.isObjectId || rhs.isObjectId
-        case let .startsWith(x, _, _): return x.isObjectId
-        case let .endsWith(x, _, _): return x.isObjectId
-        case let .contains(x, _, _): return x.isObjectId
         case let .and(list): return list.contains { $0.requiredPrimaryKeys }
         case let .or(list): return list.contains { $0.requiredPrimaryKeys }
+        default: return false
         }
     }
     
@@ -183,6 +166,9 @@ extension DBQueryPredicateExpression {
         case let .greaterThanOrEqualTo(lhs, rhs): return try "\(lhs.serialize()) >= \(rhs.serialize())"
         case let .between(x, from, to): return try "\(x.serialize()) BETWEEN \(from.serialize()) AND \(to.serialize())"
         case let .notBetween(x, from, to): return try "\(x.serialize()) NOT BETWEEN \(from.serialize()) AND \(to.serialize())"
+        case let .startsWith(.key(key), str): return try dialect.matching(key, .startsWith(str))
+        case let .endsWith(.key(key), str): return try dialect.matching(key, .endsWith(str))
+        case let .contains(.key(key), str): return try dialect.matching(key, .contains(str))
         case let .containsIn(x, .value(list)):
             
             guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
@@ -193,8 +179,6 @@ extension DBQueryPredicateExpression {
             guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
             return try "\(x.serialize()) NOT IN (\(array.map { "\($0)" as SQLRaw }.joined(separator: ",")))"
             
-        case let .like(x, pattern): return try "\(x.serialize()) LIKE \(pattern)"
-        case let .notLike(x, pattern): return try "\(x.serialize()) NOT LIKE \(pattern)"
         case let .and(list):
             
             let list = list.flatMap { $0._andList ?? [$0] }
@@ -319,16 +303,12 @@ public func >= <T: DBDataConvertible>(lhs: T, rhs: DBQueryPredicateKey) -> DBQue
     return .greaterThanOrEqualTo(.value(lhs), .key(rhs))
 }
 
-public func ~= (lhs: String, rhs: DBQueryPredicateKey) -> DBQueryPredicateExpression {
-    return .like(.key(rhs), lhs)
-}
-
 public func ~= (lhs: NSRegularExpression, rhs: DBQueryPredicateKey) -> DBQueryPredicateExpression {
-    return .matching(.key(rhs), .value(lhs))
+    return .matching(rhs, .value(lhs))
 }
 
 public func ~= (lhs: Regex, rhs: DBQueryPredicateKey) -> DBQueryPredicateExpression {
-    return .matching(.key(rhs), .value(lhs))
+    return .matching(rhs, .value(lhs))
 }
 
 public func ~= (lhs: DBQueryPredicateKey, rhs: DBQueryPredicateKey) -> DBQueryPredicateExpression {
@@ -363,16 +343,12 @@ public func ~= <T: DBDataConvertible>(lhs: PartialRangeThrough<T>, rhs: DBQueryP
     return rhs <= lhs.upperBound
 }
 
-public func =~ (lhs: DBQueryPredicateKey, rhs: String) -> DBQueryPredicateExpression {
-    return .like(.key(lhs), rhs)
-}
-
 public func =~ (lhs: DBQueryPredicateKey, rhs: NSRegularExpression) -> DBQueryPredicateExpression {
-    return .matching(.key(lhs), .value(rhs))
+    return .matching(lhs, .value(rhs))
 }
 
 public func =~ (lhs: DBQueryPredicateKey, rhs: Regex) -> DBQueryPredicateExpression {
-    return .matching(.key(lhs), .value(rhs))
+    return .matching(lhs, .value(rhs))
 }
 
 public func =~ (lhs: DBQueryPredicateKey, rhs: DBQueryPredicateKey) -> DBQueryPredicateExpression {

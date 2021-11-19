@@ -380,13 +380,12 @@ extension MongoPredicateExpression {
                 .greaterThan(MongoPredicateValue(to), MongoPredicateValue(x)),
             ])
             
-        case let .matching(lhs, rhs): self = try .matching(MongoPredicateValue(lhs), MongoPredicateValue(rhs))
-        case let .startsWith(value, pattern, options): self = try .startsWith(MongoPredicateValue(value), pattern, options: options)
-        case let .endsWith(value, pattern, options): self = try .endsWith(MongoPredicateValue(value), pattern, options: options)
-        case let .contains(value, pattern, options): self = try .contains(MongoPredicateValue(value), pattern, options: options)
+        case let .matching(lhs, rhs): self = try .matching(MongoPredicateKey(lhs), MongoPredicateValue(rhs))
+        case let .startsWith(value, pattern): self = .startsWith(MongoPredicateKey(value), pattern)
+        case let .endsWith(value, pattern): self = .endsWith(MongoPredicateKey(value), pattern)
+        case let .contains(value, pattern): self = .contains(MongoPredicateKey(value), pattern)
         case let .and(list): self = try .and(list.map(MongoPredicateExpression.init))
         case let .or(list): self = try .or(list.map(MongoPredicateExpression.init))
-        default: throw Database.Error.invalidExpression
         }
     }
 }
@@ -398,6 +397,16 @@ extension MongoPredicateValue {
         case .objectId: self = .key("_id")
         case let .key(key): self = .key(key)
         case let .value(value): self = try .value(BSON(value.toDBData()))
+        }
+    }
+}
+
+extension MongoPredicateKey {
+    
+    fileprivate init(_ value: DBQueryPredicateKey) {
+        switch value {
+        case .objectId: self.init(key: "_id")
+        case let .key(key): self.init(key: key)
         }
     }
 }

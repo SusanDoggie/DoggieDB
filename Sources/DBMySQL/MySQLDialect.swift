@@ -49,6 +49,10 @@ struct MySQLDialect: SQLDialect {
         return try "NOT \(lhs.serialize()) <=> \(rhs.serialize())"
     }
     
+    public static func matching(_ column: String, _ pattern: SQLDialectPatternMatching) throws -> SQLRaw {
+        throw Database.Error.unsupportedOperation
+    }
+    
     static func literalBoolean(_ value: Bool) -> String {
         return value ? "1" : "0"
     }
