@@ -49,7 +49,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Private",
+            name: "DBPrivate",
             dependencies: [
                 .product(name: "DoggieCore", package: "Doggie"),
                 .product(name: "NIO", package: "swift-nio"),
@@ -58,7 +58,7 @@ let package = Package(
         .target(
             name: "DoggieDB",
             dependencies: [
-                .target(name: "Private"),
+                .target(name: "DBPrivate"),
                 .product(name: "NIO", package: "swift-nio"),
                 .product(name: "NIOFoundationCompat", package: "swift-nio"),
                 .product(name: "DoggieCore", package: "Doggie"),
@@ -77,7 +77,7 @@ let package = Package(
         .target(
             name: "DBMySQL",
             dependencies: [
-                .target(name: "Private"),
+                .target(name: "DBPrivate"),
                 .target(name: "DoggieDB"),
                 .product(name: "MySQLNIO", package: "mysql-nio"),
             ]

@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-@_implementationOnly import Private
+@_implementationOnly import DBPrivate
 
 public struct DBObject {
     

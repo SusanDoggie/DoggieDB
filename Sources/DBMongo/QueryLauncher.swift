@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-@_implementationOnly import Private
+@_implementationOnly import DBPrivate
 
 extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
     
