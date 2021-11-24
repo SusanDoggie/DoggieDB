@@ -128,7 +128,6 @@ extension DBData {
             self.init(regex)
             
         case let .datetime(value): self.init(value)
-        case let .timestamp(value): self.init(Date(timeIntervalSince1970: TimeInterval(value.timestamp + value.increment)))
         default: throw Database.Error.unsupportedType
         }
     }
