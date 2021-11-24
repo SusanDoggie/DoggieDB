@@ -93,6 +93,10 @@ extension PostgreSQLDriver {
 
 extension PostgreSQLDriver.Connection {
     
+    var logger: Logger {
+        return self.connection.logger
+    }
+    
     var isClosed: Bool {
         return self.connection.isClosed
     }

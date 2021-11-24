@@ -38,10 +38,13 @@ extension RedisDriver {
         
         let client: RedisConnection
         
+        let logger: Logger
+        
         var eventLoopGroup: EventLoopGroup { client.eventLoop }
         
-        init(_ client: RedisConnection) {
+        init(_ client: RedisConnection, _ logger: Logger) {
             self.client = client
+            self.logger = logger
         }
         
         func close() -> EventLoopFuture<Void> {
@@ -70,7 +73,7 @@ extension RedisDriver {
             return RedisConnection.make(
                 configuration: _config,
                 boundEventLoop: eventLoopGroup.next()
-            ).map(Connection.init)
+            ).map { Connection($0, logger) }
             
         } catch {
             

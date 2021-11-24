@@ -27,6 +27,8 @@ public protocol DBConnection: AnyObject {
     
     var driver: DBDriver { get }
     
+    var logger: Logger { get }
+    
     var eventLoopGroup: EventLoopGroup { get }
     
     var isClosed: Bool { get }

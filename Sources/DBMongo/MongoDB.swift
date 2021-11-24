@@ -43,11 +43,14 @@ extension MongoDBDriver {
         let client: MongoClient
         let database: String?
         
+        let logger: Logger
+        
         let eventLoopGroup: EventLoopGroup
         
-        init(client: MongoClient, database: String?, eventLoopGroup: EventLoopGroup) {
+        init(client: MongoClient, database: String?, logger: Logger, eventLoopGroup: EventLoopGroup) {
             self.client = client
             self.database = database
+            self.logger = logger
             self.eventLoopGroup = eventLoopGroup
         }
         
@@ -122,6 +125,7 @@ extension MongoDBDriver {
                 Connection(
                     client: client,
                     database: config.database,
+                    logger: logger,
                     eventLoopGroup: eventLoopGroup
                 )
             )

@@ -59,6 +59,10 @@ extension DBMongoEventLoopBoundConnection {
         return connection.driver
     }
     
+    var logger: Logger {
+        return connection.logger
+    }
+    
     var database: String? {
         return connection.database
     }
