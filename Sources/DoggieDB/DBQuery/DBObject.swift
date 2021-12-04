@@ -159,7 +159,7 @@ extension DBObject {
             
             return connection.query().find(self.class)
                 .filter { object in .and(objectId.map { object[$0] == $1 }) }
-                .includes(keys)
+                .includes(Set(keys))
                 .first()
                 .flatMapThrowing { object in
                     guard let object = object else { throw Database.Error.objectNotFound }
