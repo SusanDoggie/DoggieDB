@@ -233,7 +233,15 @@ extension MySQLDriver.Connection {
             
             let _binds = try binds.map(MySQLData.init)
             
-            return self.connection.query(raw, _binds).map { $0.map(DBQueryRow.init) }
+            let result = self.connection.query(raw, _binds).map { $0.map(DBQueryRow.init) }
+            
+            #if DEBUG
+            
+            result.whenFailure { error in self.logger.debug("SQL execute error: \(error)\n\(sql)") }
+            
+            #endif
+            
+            return result
             
         } catch {
             
@@ -255,12 +263,20 @@ extension MySQLDriver.Connection {
             var metadata: MySQLQueryMetadata?
             let _binds = try binds.map(MySQLData.init)
             
-            return self.connection.query(
+            let result = self.connection.query(
                 raw,
                 _binds,
                 onRow: { try onRow(DBQueryRow($0)) },
                 onMetadata: { metadata = $0 }
             ).map { metadata.map(DBQueryMetadata.init) ?? DBQueryMetadata() }
+            
+            #if DEBUG
+            
+            result.whenFailure { error in self.logger.debug("SQL execute error: \(error)\n\(sql)") }
+            
+            #endif
+            
+            return result
             
         } catch {
             

@@ -178,6 +178,30 @@ extension SQLRaw: ExpressibleByStringInterpolation {
     }
 }
 
+extension SQLRaw: CustomStringConvertible {
+    
+    public var description: String {
+        
+        var result = ""
+        
+        for component in components {
+            switch component {
+            case let .identifier(value): result.append("\"\(value)\"")
+            case let .string(value): result.append(value)
+            case .null: result.append("NULL")
+            case let .boolean(value): result.append(value ? "TRUE" : "FALSE")
+            case let .signed(value): result.append("\(value)")
+            case let .unsigned(value): result.append("\(value)")
+            case let .number(value): result.append("\(value)")
+            case let .decimal(value): result.append("\(value)")
+            case let .bind(value): result.append("${\(value)}")
+            }
+        }
+        
+        return result
+    }
+}
+
 extension SQLRaw {
     
     public var isEmpty: Bool {
