@@ -159,7 +159,7 @@ extension DBObject {
             
             return connection.query().find(self.class)
                 .filter { object in .and(objectId.map { object[$0] == $1 }) }
-                .includes(primaryKeys.union(keys))
+                .includes(keys)
                 .first()
                 .flatMapThrowing { object in
                     guard let object = object else { throw Database.Error.objectNotFound }
@@ -202,6 +202,7 @@ extension DBObject {
             
             return connection.query().findOne(self.class)
                 .filter { object in .and(objectId.map { object[$0] == $1 }) }
+                .includes(self.keys)
                 .update(_updates)
                 .flatMapThrowing { object in
                     guard let object = object else { throw Database.Error.objectNotFound }
@@ -225,6 +226,7 @@ extension DBObject {
             
             return connection.query().findOne(self.class)
                 .filter { object in .and(objectId.map { object[$0] == $1 }) }
+                .includes(self.keys)
                 .delete()
                 .flatMapThrowing { object in
                     guard let object = object else { throw Database.Error.objectNotFound }
