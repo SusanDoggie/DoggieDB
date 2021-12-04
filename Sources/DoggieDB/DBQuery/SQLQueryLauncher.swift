@@ -68,21 +68,34 @@ extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
         
         for (key, value) in self {
             
-            guard let column_info = columnInfos.first(where: { $0.name == key }) else { throw Database.Error.columnNotExist }
-            
-            switch value {
-            case let .set(value): update[key] = try dialect.typeCast(value.toDBData(), column_info.type)
-            case let .increment(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .increment(value.toDBData()))
-            case let .decrement(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .decrement(value.toDBData()))
-            case let .multiply(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .multiply(value.toDBData()))
-            case let .divide(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .divide(value.toDBData()))
-            case let .min(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .min(value.toDBData()))
-            case let .max(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .max(value.toDBData()))
-            case let .addToSet(list): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .addToSet(list.map { $0.toDBData() }))
-            case let .push(list): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .push(list.map { $0.toDBData() }))
-            case let .removeAll(list): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .removeAll(list.map { $0.toDBData() }))
-            case .popFirst: update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .popFirst)
-            case .popLast: update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .popLast)
+            if let column_info = columnInfos.first(where: { $0.name == key }) {
+                
+                switch value {
+                case let .set(value): update[key] = try dialect.typeCast(value.toDBData(), column_info.type)
+                case let .increment(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .increment(value.toDBData()))
+                case let .decrement(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .decrement(value.toDBData()))
+                case let .multiply(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .multiply(value.toDBData()))
+                case let .divide(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .divide(value.toDBData()))
+                case let .min(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .min(value.toDBData()))
+                case let .max(value): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .max(value.toDBData()))
+                case let .addToSet(list): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .addToSet(list.map { $0.toDBData() }))
+                case let .push(list): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .push(list.map { $0.toDBData() }))
+                case let .removeAll(list): update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .removeAll(list.map { $0.toDBData() }))
+                case .popFirst: update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .popFirst)
+                case .popLast: update[key] = try dialect.updateOperation("\(table).\(key)", column_info.type, .popLast)
+                }
+                
+            } else {
+                
+                switch value {
+                case let .set(value):
+                    
+                    if !value.toDBData().isNil {
+                        throw Database.Error.columnNotExist
+                    }
+                    
+                default: throw Database.Error.columnNotExist
+                }
             }
         }
         
@@ -375,8 +388,15 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 var _insert: OrderedDictionary<String, SQLRaw> = [:]
                 
                 for (key, value) in insert {
-                    guard let column_info = columnInfos.first(where: { $0.name == key }) else { throw Database.Error.columnNotExist }
-                    _insert[key] = try dialect.typeCast(value.toDBData(), column_info.type)
+                    
+                    if let column_info = columnInfos.first(where: { $0.name == key }) {
+                        
+                        _insert[key] = try dialect.typeCast(value.toDBData(), column_info.type)
+                        
+                    } else if !value.toDBData().isNil {
+                        
+                        throw Database.Error.columnNotExist
+                    }
                 }
                 
                 switch query.returning {
@@ -466,9 +486,16 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                 var values: [SQLRaw] = []
                 
                 for (key, value) in data {
-                    guard let column_info = columnInfos.first(where: { $0.name == key }) else { throw Database.Error.columnNotExist }
-                    columns.append(key)
-                    try values.append(dialect.typeCast(value, column_info.type))
+                    
+                    if let column_info = columnInfos.first(where: { $0.name == key }) {
+                        
+                        columns.append(key)
+                        try values.append(dialect.typeCast(value, column_info.type))
+                        
+                    } else if !value.isNil {
+                        
+                        throw Database.Error.columnNotExist
+                    }
                 }
                 
                 let sql: SQLRaw = """
