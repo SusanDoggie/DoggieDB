@@ -51,7 +51,10 @@ class PostgreSQLTest: XCTestCase {
                 ]
             }
             
-            self.connection = try Database.connect(url: url, on: eventLoopGroup).wait() as? DBSQLConnection
+            var logger = Logger(label: "com.SusanDoggie.DoggieDB")
+            logger.logLevel = .debug
+            
+            self.connection = try Database.connect(url: url, logger: logger, on: eventLoopGroup).wait() as? DBSQLConnection
             
             print("POSTGRES:", try connection.version().wait())
             

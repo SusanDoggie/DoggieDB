@@ -68,7 +68,10 @@ class MongoDBTest: XCTestCase {
             
             url.queryItems = queryItems.isEmpty ? nil : queryItems
             
-            self.connection = try Database.connect(url: url, on: eventLoopGroup).wait()
+            var logger = Logger(label: "com.SusanDoggie.DoggieDB")
+            logger.logLevel = .debug
+            
+            self.connection = try Database.connect(url: url, logger: logger, on: eventLoopGroup).wait()
             
             print("MONGO:", try connection.version().wait())
             

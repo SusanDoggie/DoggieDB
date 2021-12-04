@@ -52,8 +52,11 @@ class RedisPubSubTest: XCTestCase {
                 ]
             }
             
-            self.connection = try Database.connect(url: url, on: eventLoopGroup).wait()
-            self.connection2 = try Database.connect(url: url, on: eventLoopGroup.next()).wait()
+            var logger = Logger(label: "com.SusanDoggie.DoggieDB")
+            logger.logLevel = .debug
+            
+            self.connection = try Database.connect(url: url, logger: logger, on: eventLoopGroup).wait()
+            self.connection2 = try Database.connect(url: url, logger: logger, on: eventLoopGroup.next()).wait()
             
         } catch {
             

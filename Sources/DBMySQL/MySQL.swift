@@ -235,11 +235,7 @@ extension MySQLDriver.Connection {
             
             let result = self.connection.query(raw, _binds).map { $0.map(DBQueryRow.init) }
             
-            #if DEBUG
-            
-            result.whenFailure { error in self.logger.debug("SQL execute error: \(error)\n\(sql)") }
-            
-            #endif
+            result.whenFailure { error in self.logger.debug("SQL execution error: \(error)\n\(sql)") }
             
             return result
             
@@ -270,11 +266,7 @@ extension MySQLDriver.Connection {
                 onMetadata: { metadata = $0 }
             ).map { metadata.map(DBQueryMetadata.init) ?? DBQueryMetadata() }
             
-            #if DEBUG
-            
-            result.whenFailure { error in self.logger.debug("SQL execute error: \(error)\n\(sql)") }
-            
-            #endif
+            result.whenFailure { error in self.logger.debug("SQL execution error: \(error)\n\(sql)") }
             
             return result
             
