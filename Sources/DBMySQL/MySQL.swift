@@ -228,7 +228,11 @@ extension MySQLDriver.Connection {
             
             if binds.isEmpty {
                 
-                return self.connection.simpleQuery(raw).map { $0.map(DBQueryRow.init) }
+                let result = self.connection.simpleQuery(raw).map { $0.map(DBQueryRow.init) }
+                
+                result.whenFailure { error in self.logger.debug("SQL execution error: \(error)\n\(sql)") }
+                
+                return result
             }
             
             let _binds = try binds.map(MySQLData.init)
