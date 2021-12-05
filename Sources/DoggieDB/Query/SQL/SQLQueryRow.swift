@@ -1,5 +1,5 @@
 //
-//  QueryRow.swift
+//  SQLQueryRow.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -34,7 +34,7 @@ public protocol DBRowConvertable {
     func value(_ column: String) -> DBData?
 }
 
-public struct DBQueryRow {
+public struct SQLQueryRow {
     
     let row: DBRowConvertable
     
@@ -43,7 +43,7 @@ public struct DBQueryRow {
     }
 }
 
-extension DBQueryRow: CustomStringConvertible {
+extension SQLQueryRow: CustomStringConvertible {
     
     public var description: String {
         var dict: [String: DBData] = [:]
@@ -54,7 +54,7 @@ extension DBQueryRow: CustomStringConvertible {
     }
 }
 
-extension DBQueryRow {
+extension SQLQueryRow {
     
     public var count: Int {
         return self.row.count
@@ -79,7 +79,7 @@ extension DBQueryRow {
 
 extension BSONDocument {
     
-    public init(_ row: DBQueryRow) throws {
+    public init(_ row: SQLQueryRow) throws {
         self.init()
         for key in row.keys {
             self[key] = try row[key].map { try BSON($0) } ?? .undefined
@@ -89,7 +89,7 @@ extension BSONDocument {
 
 extension DBData {
     
-    public init(_ row: DBQueryRow) {
+    public init(_ row: SQLQueryRow) {
         var dict: [String: DBData] = [:]
         for key in row.keys {
             dict[key] = row[key] ?? DBData(nilLiteral: ())

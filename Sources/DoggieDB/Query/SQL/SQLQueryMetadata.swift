@@ -1,5 +1,5 @@
 //
-//  QueryMetadata.swift
+//  SQLQueryMetadata.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public struct DBQueryMetadata {
+public struct SQLQueryMetadata {
     
     let metadata: [String: DBData]
     
@@ -32,7 +32,7 @@ public struct DBQueryMetadata {
     }
 }
 
-extension DBQueryMetadata {
+extension SQLQueryMetadata {
     
     public var count: Int {
         return self.metadata.count

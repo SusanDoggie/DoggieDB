@@ -158,7 +158,7 @@ extension MySQLDriver.Connection {
         }
     }
     
-    func indices(of table: String) -> EventLoopFuture<[DBQueryRow]> {
+    func indices(of table: String) -> EventLoopFuture<[SQLQueryRow]> {
         
         var sql: SQLRaw = "SELECT * FROM INFORMATION_SCHEMA.STATISTICS"
         
@@ -177,7 +177,7 @@ extension MySQLDriver.Connection {
         return self.execute(sql)
     }
     
-    func foreignKeys(of table: String) -> EventLoopFuture<[DBQueryRow]> {
+    func foreignKeys(of table: String) -> EventLoopFuture<[SQLQueryRow]> {
         
         var sql: SQLRaw = "SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE"
         
@@ -218,7 +218,7 @@ extension MySQLDriver.Connection {
     
     func execute(
         _ sql: SQLRaw
-    ) -> EventLoopFuture<[DBQueryRow]> {
+    ) -> EventLoopFuture<[SQLQueryRow]> {
         
         do {
             
@@ -228,7 +228,7 @@ extension MySQLDriver.Connection {
             
             if binds.isEmpty {
                 
-                let result = self.connection.simpleQuery(raw).map { $0.map(DBQueryRow.init) }
+                let result = self.connection.simpleQuery(raw).map { $0.map(SQLQueryRow.init) }
                 
                 result.whenFailure { error in self.logger.debug("SQL execution error: \(error)\n\(sql)") }
                 
@@ -237,7 +237,7 @@ extension MySQLDriver.Connection {
             
             let _binds = try binds.map(MySQLData.init)
             
-            let result = self.connection.query(raw, _binds).map { $0.map(DBQueryRow.init) }
+            let result = self.connection.query(raw, _binds).map { $0.map(SQLQueryRow.init) }
             
             result.whenFailure { error in self.logger.debug("SQL execution error: \(error)\n\(sql)") }
             
@@ -251,8 +251,8 @@ extension MySQLDriver.Connection {
     
     func execute(
         _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) throws -> Void
-    ) -> EventLoopFuture<DBQueryMetadata> {
+        onRow: @escaping (SQLQueryRow) throws -> Void
+    ) -> EventLoopFuture<SQLQueryMetadata> {
         
         do {
             
@@ -266,9 +266,9 @@ extension MySQLDriver.Connection {
             let result = self.connection.query(
                 raw,
                 _binds,
-                onRow: { try onRow(DBQueryRow($0)) },
+                onRow: { try onRow(SQLQueryRow($0)) },
                 onMetadata: { metadata = $0 }
-            ).map { metadata.map(DBQueryMetadata.init) ?? DBQueryMetadata() }
+            ).map { metadata.map(SQLQueryMetadata.init) ?? SQLQueryMetadata() }
             
             result.whenFailure { error in self.logger.debug("SQL execution error: \(error)\n\(sql)") }
             
@@ -281,7 +281,7 @@ extension MySQLDriver.Connection {
     }
 }
 
-extension DBQueryMetadata {
+extension SQLQueryMetadata {
     
     init(_ metadata: MySQLQueryMetadata) {
         self.init([

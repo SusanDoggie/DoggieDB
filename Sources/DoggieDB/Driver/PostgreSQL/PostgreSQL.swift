@@ -206,7 +206,7 @@ extension PostgreSQLDriver.Connection {
         }
     }
     
-    func indices(of table: String) -> EventLoopFuture<[DBQueryRow]> {
+    func indices(of table: String) -> EventLoopFuture<[SQLQueryRow]> {
         
         let table = table.lowercased()
         
@@ -250,7 +250,7 @@ extension PostgreSQLDriver.Connection {
         return self.execute(sql)
     }
     
-    func foreignKeys(of table: String) -> EventLoopFuture<[DBQueryRow]> {
+    func foreignKeys(of table: String) -> EventLoopFuture<[SQLQueryRow]> {
         
         let table = table.lowercased()
         
@@ -313,7 +313,7 @@ extension PostgreSQLDriver.Connection {
     
     func execute(
         _ sql: SQLRaw
-    ) -> EventLoopFuture<[DBQueryRow]> {
+    ) -> EventLoopFuture<[SQLQueryRow]> {
         
         do {
             
@@ -323,7 +323,7 @@ extension PostgreSQLDriver.Connection {
             
             if binds.isEmpty {
                 
-                let result = self.connection.simpleQuery(raw).map { $0.map(DBQueryRow.init) }
+                let result = self.connection.simpleQuery(raw).map { $0.map(SQLQueryRow.init) }
                 
                 result.whenFailure { error in self.logger.debug("SQL execution error: \(error)\n\(sql)") }
                 
@@ -332,7 +332,7 @@ extension PostgreSQLDriver.Connection {
             
             let _binds = try binds.map(PostgresData.init)
             
-            let result = self.connection.query(raw, _binds).map { $0.rows.map(DBQueryRow.init) }
+            let result = self.connection.query(raw, _binds).map { $0.rows.map(SQLQueryRow.init) }
             
             result.whenFailure { error in self.logger.debug("SQL execution error: \(error)\n\(sql)") }
             
@@ -346,8 +346,8 @@ extension PostgreSQLDriver.Connection {
     
     func execute(
         _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) throws -> Void
-    ) -> EventLoopFuture<DBQueryMetadata> {
+        onRow: @escaping (SQLQueryRow) throws -> Void
+    ) -> EventLoopFuture<SQLQueryMetadata> {
         
         do {
             
@@ -362,8 +362,8 @@ extension PostgreSQLDriver.Connection {
                 raw,
                 _binds,
                 onMetadata: { metadata = $0 },
-                onRow: { try onRow(DBQueryRow($0)) }
-            ).map { metadata.map(DBQueryMetadata.init) ?? DBQueryMetadata() }
+                onRow: { try onRow(SQLQueryRow($0)) }
+            ).map { metadata.map(SQLQueryMetadata.init) ?? SQLQueryMetadata() }
             
             result.whenFailure { error in self.logger.debug("SQL execution error: \(error)\n\(sql)") }
             
@@ -376,7 +376,7 @@ extension PostgreSQLDriver.Connection {
     }
 }
 
-extension DBQueryMetadata {
+extension SQLQueryMetadata {
     
     init(_ metadata: PostgresQueryMetadata) {
         self.init([

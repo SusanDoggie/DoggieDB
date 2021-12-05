@@ -58,9 +58,9 @@ public protocol DBSQLConnection: DBConnection {
     
     func primaryKey(of table: String) -> EventLoopFuture<[String]>
     
-    func indices(of table: String) -> EventLoopFuture<[DBQueryRow]>
+    func indices(of table: String) -> EventLoopFuture<[SQLQueryRow]>
     
-    func foreignKeys(of table: String) -> EventLoopFuture<[DBQueryRow]>
+    func foreignKeys(of table: String) -> EventLoopFuture<[SQLQueryRow]>
     
     func startTransaction() -> EventLoopFuture<Void>
     
@@ -70,26 +70,26 @@ public protocol DBSQLConnection: DBConnection {
     
     func execute(
         _ sql: SQLRaw
-    ) -> EventLoopFuture<[DBQueryRow]>
+    ) -> EventLoopFuture<[SQLQueryRow]>
     
     func execute(
         _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) throws -> Void
-    ) -> EventLoopFuture<DBQueryMetadata>
+        onRow: @escaping (SQLQueryRow) throws -> Void
+    ) -> EventLoopFuture<SQLQueryMetadata>
 }
 
 extension DBSQLConnection {
     
     public func execute(
         _ sql: SQLRaw
-    ) -> EventLoopFuture<[DBQueryRow]> {
+    ) -> EventLoopFuture<[SQLQueryRow]> {
         return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
     }
     
     public func execute(
         _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) throws -> Void
-    ) -> EventLoopFuture<DBQueryMetadata> {
+        onRow: @escaping (SQLQueryRow) throws -> Void
+    ) -> EventLoopFuture<SQLQueryMetadata> {
         return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
     }
 }

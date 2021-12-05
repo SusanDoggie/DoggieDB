@@ -48,11 +48,11 @@ extension DBSQLConnection {
         return try await self.primaryKey(of: table).get()
     }
     
-    public func indices(of table: String) async throws -> [DBQueryRow] {
+    public func indices(of table: String) async throws -> [SQLQueryRow] {
         return try await self.indices(of: table).get()
     }
     
-    public func foreignKeys(of table: String) async throws -> [DBQueryRow] {
+    public func foreignKeys(of table: String) async throws -> [SQLQueryRow] {
         return try await self.foreignKeys(of: table).get()
     }
 }
@@ -78,20 +78,20 @@ extension DBSQLConnection {
     
     public func execute(
         _ sql: SQLRaw
-    ) async throws -> [DBQueryRow] {
+    ) async throws -> [SQLQueryRow] {
         return try await self.execute(sql).get()
     }
     
     public func execute(
         _ sql: SQLRaw,
-        onRow: @escaping (DBQueryRow) throws -> Void
-    ) async throws -> DBQueryMetadata {
+        onRow: @escaping (SQLQueryRow) throws -> Void
+    ) async throws -> SQLQueryMetadata {
         return try await self.execute(sql, onRow: onRow).get()
     }
     
     public func execute(
         _ sql: SQLRaw
-    ) -> AsyncThrowingStream<DBQueryRow, Error> {
+    ) -> AsyncThrowingStream<SQLQueryRow, Error> {
         
         return AsyncThrowingStream { continuation in
             

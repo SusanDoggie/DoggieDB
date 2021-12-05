@@ -105,7 +105,7 @@ extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
 
 extension _DBObject {
     
-    fileprivate init(table: String, primaryKeys: [String], object: DBQueryRow) {
+    fileprivate init(table: String, primaryKeys: [String], object: SQLQueryRow) {
         
         var _columns: [String: DBData] = [:]
         for key in object.keys {
