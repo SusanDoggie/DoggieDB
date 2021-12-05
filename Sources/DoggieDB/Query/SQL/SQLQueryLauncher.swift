@@ -23,8 +23,6 @@
 //  THE SOFTWARE.
 //
 
-@_implementationOnly import DBPrivate
-
 extension OrderedDictionary where Key == String, Value == DBSortOrderOption {
     
     fileprivate func serialize() -> SQLRaw {
@@ -35,28 +33,6 @@ extension OrderedDictionary where Key == String, Value == DBSortOrderOption {
             }
         }
         return list.joined(separator: ",")
-    }
-}
-
-extension _DBQuery {
-    
-    fileprivate var filters: [DBPredicateExpression] {
-        return self["filters"] as! Array
-    }
-    fileprivate var sort: OrderedDictionary<String, DBSortOrderOption> {
-        return self["sort"] as! OrderedDictionary
-    }
-    fileprivate var skip: Int {
-        return self["skip"] as! Int
-    }
-    fileprivate var limit: Int {
-        return self["limit"] as! Int
-    }
-    fileprivate var includes: Set<String> {
-        return self["includes"] as! Set
-    }
-    fileprivate var returning: DBReturningOption {
-        return self["returning"] as! DBReturningOption
     }
 }
 
@@ -103,16 +79,14 @@ extension Dictionary where Key == String, Value == DBUpdateOption {
     }
 }
 
-extension _DBObject {
+extension DBObject {
     
     fileprivate init(table: String, primaryKeys: [String], object: SQLQueryRow) {
-        
         var _columns: [String: DBData] = [:]
         for key in object.keys {
             guard let value = object[key] else { continue }
             _columns[key] = value
         }
-        
         self.init(class: table, primaryKeys: Set(primaryKeys), columns: _columns)
     }
 }
@@ -128,11 +102,11 @@ extension DBSQLConnection {
     }
 }
 
-struct SQLQueryLauncher: _DBQueryLauncher {
+struct SQLQueryLauncher: DBQueryLauncher {
     
     let connection: DBSQLConnection
     
-    func _count(_ query: _DBQuery, _ primaryKeys: [String]) -> EventLoopFuture<Int> {
+    func _count(_ query: DBFindExpression, _ primaryKeys: [String]) -> EventLoopFuture<Int> {
         
         do {
             
@@ -151,7 +125,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
             return connection.eventLoopGroup.next().makeFailedFuture(error)
         }
     }
-    func count(_ query: _DBQuery) -> EventLoopFuture<Int> {
+    func count(_ query: DBFindExpression) -> EventLoopFuture<Int> {
         
         if query.filters.requiredPrimaryKeys {
             
@@ -166,7 +140,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func _find(_ query: _DBQuery) -> EventLoopFuture<(SQLRaw, [String])> {
+    func _find(_ query: DBFindExpression) -> EventLoopFuture<(SQLRaw, [String])> {
         
         do {
             
@@ -209,26 +183,26 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func find(_ query: _DBQuery) -> EventLoopFuture<[_DBObject]> {
+    func find(_ query: DBFindExpression) -> EventLoopFuture<[DBObject]> {
         
         return self._find(query).flatMap { sql, primaryKeys in
-            connection.execute(sql).map { $0.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+            connection.execute(sql).map { $0.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
         }
     }
     
-    func find(_ query: _DBQuery, forEach: @escaping (_DBObject) throws -> Void) -> EventLoopFuture<Void> {
+    func find(_ query: DBFindExpression, forEach: @escaping (DBObject) throws -> Void) -> EventLoopFuture<Void> {
         
         return self._find(query).flatMap { sql, primaryKeys in
             
             connection.execute(sql) {
                 
-                try forEach(_DBObject(table: query.class, primaryKeys: primaryKeys, object: $0))
+                try forEach(DBObject(table: query.class, primaryKeys: primaryKeys, object: $0))
                 
             }.map { _ in }
         }
     }
     
-    func _findAndDelete(_ query: _DBQuery, _ primaryKeys: [String]) -> EventLoopFuture<Int?> {
+    func _findAndDelete(_ query: DBFindExpression, _ primaryKeys: [String]) -> EventLoopFuture<Int?> {
         
         do {
             
@@ -250,7 +224,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func findAndDelete(_ query: _DBQuery) -> EventLoopFuture<Int?> {
+    func findAndDelete(_ query: DBFindExpression) -> EventLoopFuture<Int?> {
         
         if query.filters.requiredPrimaryKeys {
             
@@ -265,7 +239,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func _findOne(_ query: _DBQuery, _ primaryKeys: [String], withData: Bool) throws -> SQLRaw {
+    func _findOne(_ query: DBFindOneExpression, _ primaryKeys: [String], withData: Bool) throws -> SQLRaw {
         
         guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
         guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
@@ -292,7 +266,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         return sql
     }
     
-    func _findOneAndUpdate<Update>(_ query: _DBQuery, _ update: [String: Update]) -> EventLoopFuture<(SQLRaw, [String], [DBSQLColumnInfo])> {
+    func _findOneAndUpdate<Update>(_ query: DBFindOneExpression, _ update: [String: Update]) -> EventLoopFuture<(SQLRaw, [String], [DBSQLColumnInfo])> {
         
         guard let update = update as? [String: DBUpdateOption] else { fatalError() }
         
@@ -352,15 +326,15 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func findOneAndUpdate<Update>(_ query: _DBQuery, _ update: [String: Update]) -> EventLoopFuture<_DBObject?> {
+    func findOneAndUpdate<Update>(_ query: DBFindOneExpression, _ update: [String: Update]) -> EventLoopFuture<DBObject?> {
         
         return self._findOneAndUpdate(query, update).flatMap { sql, primaryKeys, _ in
             
-            connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+            connection.execute(sql).map { $0.first.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
         }
     }
     
-    func findOneAndUpsert<Update, Data>(_ query: _DBQuery, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<_DBObject?> {
+    func findOneAndUpsert<Update, Data>(_ query: DBFindOneExpression, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<DBObject?> {
         
         guard let update = update as? [String: DBUpdateOption] else { fatalError() }
         guard let setOnInsert = setOnInsert as? [String: DBDataConvertible] else { fatalError() }
@@ -413,7 +387,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                         SELECT * FROM \(identifier: update_temp)
                         """
                     
-                    return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                    return connection.execute(sql).map { $0.first.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
                     
                 case .after:
                     
@@ -433,7 +407,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                         SELECT \(_includes) FROM \(identifier: insert_temp)
                         """
                     
-                    return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                    return connection.execute(sql).map { $0.first.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
                 }
                 
             } catch {
@@ -443,7 +417,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func findOneAndDelete(_ query: _DBQuery) -> EventLoopFuture<_DBObject?> {
+    func findOneAndDelete(_ query: DBFindOneExpression) -> EventLoopFuture<DBObject?> {
         
         return connection._primaryKey(of: query.class).flatMap { primaryKeys in
             
@@ -463,7 +437,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                     sql += "RETURNING \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
                 }
                 
-                return connection.execute(sql).map { $0.first.map { _DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                return connection.execute(sql).map { $0.first.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
                 
             } catch {
                 
@@ -472,7 +446,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<_DBObject?> {
+    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<DBObject?> {
         
         guard let data = data as? [String: DBData] else { fatalError() }
         
@@ -506,7 +480,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
                     """
                 
                 return connection._primaryKey(of: `class`).flatMap { primaryKeys in
-                    connection.execute(sql).map { $0.first.map { _DBObject(table: `class`, primaryKeys: primaryKeys, object: $0) } }
+                    connection.execute(sql).map { $0.first.map { DBObject(table: `class`, primaryKeys: primaryKeys, object: $0) } }
                 }
                 
             } catch {

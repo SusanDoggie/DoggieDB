@@ -1,5 +1,5 @@
 //
-//  utils.swift
+//  EventLoopFuture.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,7 +25,7 @@
 
 extension Dictionary {
     
-    public func flatten<_Value>(
+    func flatten<_Value>(
         on eventLoop: EventLoop
     ) -> EventLoopFuture<[Key: _Value]> where Value == EventLoopFuture<_Value> {
         return eventLoop.flatten(self)
@@ -34,7 +34,7 @@ extension Dictionary {
 
 extension EventLoop {
     
-    public func flatten<Key: Hashable, Value>(
+    func flatten<Key: Hashable, Value>(
         _ futures: [Key: EventLoopFuture<Value>]
     ) -> EventLoopFuture<[Key: Value]> {
         return EventLoopFuture<Value>.whenAllSucceed(futures, on: self)
@@ -43,7 +43,7 @@ extension EventLoop {
 
 extension EventLoopFuture {
     
-    public static func whenAllSucceed<Key: Hashable>(
+    static func whenAllSucceed<Key: Hashable>(
         _ futures: [Key: EventLoopFuture<Value>],
         on eventLoop: EventLoop
     ) -> EventLoopFuture<[Key: Value]> {
@@ -52,7 +52,7 @@ extension EventLoopFuture {
         return promise.futureResult
     }
     
-    public static func whenAllSucceed<Key: Hashable>(
+    static func whenAllSucceed<Key: Hashable>(
         _ futures: [Key: EventLoopFuture<Value>],
         promise: EventLoopPromise<[Key: Value]>
     ) {

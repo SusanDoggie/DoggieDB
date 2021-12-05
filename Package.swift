@@ -33,8 +33,6 @@ let package = Package(
     ],
     products: [
         .library(name: "DoggieDB", targets: ["DoggieDB"]),
-        .library(name: "DBMongo", targets: ["DBMongo"]),
-        .library(name: "DBMySQL", targets: ["DBMySQL"]),
         .library(name: "DBVapor", targets: ["DBVapor"]),
     ],
     dependencies: [
@@ -43,43 +41,20 @@ let package = Package(
         .package(url: "https://github.com/mongodb/swift-bson.git", from: "3.0.2"),
         .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "1.2.0"),
         .package(url: "https://gitlab.com/mordil/RediStack.git", from: "1.2.0"),
-        .package(url: "https://github.com/vapor/mysql-nio.git", from: "1.3.5"),
         .package(url: "https://github.com/vapor/postgres-nio.git", from: "1.7.0"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.53.0"),
     ],
     targets: [
         .target(
-            name: "DBPrivate",
-            dependencies: [
-                .product(name: "DoggieCore", package: "Doggie"),
-                .product(name: "NIO", package: "swift-nio"),
-            ]
-        ),
-        .target(
             name: "DoggieDB",
             dependencies: [
-                .target(name: "DBPrivate"),
                 .product(name: "NIO", package: "swift-nio"),
                 .product(name: "NIOFoundationCompat", package: "swift-nio"),
                 .product(name: "DoggieCore", package: "Doggie"),
                 .product(name: "SwiftBSON", package: "swift-bson"),
                 .product(name: "RediStack", package: "RediStack"),
                 .product(name: "PostgresNIO", package: "postgres-nio"),
-            ]
-        ),
-        .target(
-            name: "DBMongo",
-            dependencies: [
-                .target(name: "DoggieDB"),
                 .product(name: "MongoSwift", package: "mongo-swift-driver"),
-            ]
-        ),
-        .target(
-            name: "DBMySQL",
-            dependencies: [
-                .target(name: "DBPrivate"),
-                .target(name: "DoggieDB"),
-                .product(name: "MySQLNIO", package: "mysql-nio"),
             ]
         ),
         .target(
@@ -93,7 +68,6 @@ let package = Package(
             name: "DoggieDBTests",
             dependencies: [
                 .target(name: "DoggieDB"),
-                .target(name: "DBMongo"),
             ]
         ),
     ]

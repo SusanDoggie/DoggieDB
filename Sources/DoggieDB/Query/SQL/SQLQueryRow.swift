@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBRowConvertable {
+protocol DBRowConvertable {
     
     var count: Int { get }
     
@@ -38,7 +38,7 @@ public struct SQLQueryRow {
     
     let row: DBRowConvertable
     
-    public init<C: DBRowConvertable>(_ row: C) {
+    init<C: DBRowConvertable>(_ row: C) {
         self.row = row
     }
 }
@@ -79,7 +79,7 @@ extension SQLQueryRow {
 
 extension BSONDocument {
     
-    public init(_ row: SQLQueryRow) throws {
+    init(_ row: SQLQueryRow) throws {
         self.init()
         for key in row.keys {
             self[key] = try row[key].map { try BSON($0) } ?? .undefined
@@ -89,7 +89,7 @@ extension BSONDocument {
 
 extension DBData {
     
-    public init(_ row: SQLQueryRow) {
+    init(_ row: SQLQueryRow) {
         var dict: [String: DBData] = [:]
         for key in row.keys {
             dict[key] = row[key] ?? DBData(nilLiteral: ())

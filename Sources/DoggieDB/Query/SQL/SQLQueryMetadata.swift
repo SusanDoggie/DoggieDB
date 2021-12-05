@@ -27,7 +27,7 @@ public struct SQLQueryMetadata {
     
     let metadata: [String: DBData]
     
-    public init(_ metadata: [String: DBData] = [:]) {
+    init(_ metadata: [String: DBData] = [:]) {
         self.metadata = metadata
     }
 }

@@ -23,8 +23,6 @@
 //  THE SOFTWARE.
 //
 
-@_implementationOnly import DBPrivate
-
 public enum DBDataType: Hashable {
     
     case null

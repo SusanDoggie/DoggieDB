@@ -23,19 +23,31 @@
 //  THE SOFTWARE.
 //
 
-@_implementationOnly import DBPrivate
-
-public protocol DBQueryLauncherProvider {
+protocol DBQueryLauncher {
     
-    var _launcher: Any { get }
+    func count(_ query: DBFindExpression) -> EventLoopFuture<Int>
+    
+    func find(_ query: DBFindExpression) -> EventLoopFuture<[DBObject]>
+    
+    func find(_ query: DBFindExpression, forEach: @escaping (DBObject) throws -> Void) -> EventLoopFuture<Void>
+    
+    func findAndDelete(_ query: DBFindExpression) -> EventLoopFuture<Int?>
+    
+    func findOneAndUpdate<Update>(_ query: DBFindOneExpression, _ update: [String: Update]) -> EventLoopFuture<DBObject?>
+    
+    func findOneAndUpsert<Update, Data>(_ query: DBFindOneExpression, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<DBObject?>
+    
+    func findOneAndDelete(_ query: DBFindOneExpression) -> EventLoopFuture<DBObject?>
+    
+    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<DBObject?>
 }
 
 extension DBConnection {
     
-    var launcher: _DBQueryLauncher? {
+    var launcher: DBQueryLauncher? {
         
-        if let provider = self as? DBQueryLauncherProvider {
-            return provider._launcher as? _DBQueryLauncher
+        if let connection = self as? MongoDBDriver.Connection {
+            return MongoQueryLauncher(connection: connection)
         }
         
         if let connection = self as? DBSQLConnection {

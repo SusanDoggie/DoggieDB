@@ -127,12 +127,7 @@ extension URL {
         switch scheme {
         case "redis": return .redis
         case "postgres": return .postgreSQL
-        case "mysql":
-            guard let driver = _typeByName("7DBMySQL11MySQLDriverV") as? DBDriverProtocol.Type else { throw Database.Error.invalidURL }
-            return DBDriver(rawValue: driver)
-        case "mongodb":
-            guard let driver = _typeByName("7DBMongo13MongoDBDriverV") as? DBDriverProtocol.Type else { throw Database.Error.invalidURL }
-            return DBDriver(rawValue: driver)
+        case "mongodb": return .mongoDB
         default: throw Database.Error.invalidURL
         }
     }
@@ -144,12 +139,7 @@ extension URLComponents {
         switch scheme {
         case "redis": return .redis
         case "postgres": return .postgreSQL
-        case "mysql":
-            guard let driver = _typeByName("7DBMySQL11MySQLDriverV") as? DBDriverProtocol.Type else { throw Database.Error.invalidURL }
-            return DBDriver(rawValue: driver)
-        case "mongodb":
-            guard let driver = _typeByName("7DBMongo13MongoDBDriverV") as? DBDriverProtocol.Type else { throw Database.Error.invalidURL }
-            return DBDriver(rawValue: driver)
+        case "mongodb": return .mongoDB
         default: throw Database.Error.invalidURL
         }
     }

@@ -92,5 +92,7 @@ extension DBDriver {
     
     public static let postgreSQL = DBDriver(rawValue: PostgreSQLDriver.self)
     
+    public static let mongoDB = DBDriver(rawValue: MongoDBDriver.self)
+    
     public static let redis = DBDriver(rawValue: RedisDriver.self)
 }

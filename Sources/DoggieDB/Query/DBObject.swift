@@ -23,8 +23,6 @@
 //  THE SOFTWARE.
 //
 
-@_implementationOnly import DBPrivate
-
 public struct DBObject {
     
     public let `class`: String
@@ -45,10 +43,14 @@ extension DBObject {
         self._updates = [:]
     }
     
-    init(_ object: _DBObject) {
-        self.class = object.class
-        self.primaryKeys = object.primaryKeys
-        self._columns = object.columns as? [String: DBData] ?? [:]
+    init(
+        class: String,
+        primaryKeys: Set<String>,
+        columns: [String: DBData]
+    ) {
+        self.class = `class`
+        self.primaryKeys = primaryKeys
+        self._columns = columns
         self._updates = [:]
     }
 }

@@ -1,5 +1,5 @@
 //
-//  Decimal.swift
+//  Calendar.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,50 +23,59 @@
 //  THE SOFTWARE.
 //
 
-extension Decimal {
+extension Calendar {
     
-    public init?(exactly value: Double) {
-        self.init(value)
-        guard self.doubleValue == value else { return nil }
-    }
+    static let iso8601: Calendar = {
+        var calendar = Calendar(identifier: .iso8601)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        return calendar
+    }()
 }
 
-extension Decimal {
+extension Calendar {
     
-    public init?(exactly value: String) {
-        self.init(string: value)
-        guard self.description == value else { return nil }
+    static var componentsOfDate: Set<Calendar.Component> {
+        return [
+            .era,
+            .year,
+            .month,
+            .day,
+            .weekday,
+            .weekdayOrdinal,
+            .quarter,
+            .weekOfMonth,
+            .weekOfYear,
+            .yearForWeekOfYear,
+        ]
     }
-}
-
-extension Double {
     
-    public init?(exactly value: Decimal) {
-        self = NSDecimalNumber(decimal: value).doubleValue
-        guard Decimal(self) == value else { return nil }
+    static var componentsOfTime: Set<Calendar.Component> {
+        return [
+            .hour,
+            .minute,
+            .second,
+            .nanosecond,
+            .timeZone,
+        ]
     }
-}
-
-extension UInt64 {
     
-    public init?(exactly value: Decimal) {
-        self = NSDecimalNumber(decimal: value).uint64Value
-        guard Decimal(self) == value else { return nil }
-    }
-}
-
-extension Int64 {
-    
-    public init?(exactly value: Decimal) {
-        self = NSDecimalNumber(decimal: value).int64Value
-        guard Decimal(self) == value else { return nil }
-    }
-}
-
-extension Int {
-    
-    public init?(exactly value: Decimal) {
-        self = NSDecimalNumber(decimal: value).intValue
-        guard Decimal(self) == value else { return nil }
+    static var componentsOfTimestamp: Set<Calendar.Component> {
+        return [
+            .era,
+            .year,
+            .month,
+            .day,
+            .hour,
+            .minute,
+            .second,
+            .nanosecond,
+            .weekday,
+            .weekdayOrdinal,
+            .quarter,
+            .weekOfMonth,
+            .weekOfYear,
+            .yearForWeekOfYear,
+            .timeZone,
+        ]
     }
 }

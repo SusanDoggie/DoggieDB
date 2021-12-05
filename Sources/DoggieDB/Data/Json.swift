@@ -23,8 +23,6 @@
 //  THE SOFTWARE.
 //
 
-@_implementationOnly import DBPrivate
-
 extension DBData {
     
     public init(_ json: Json) {

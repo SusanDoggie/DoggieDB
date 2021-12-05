@@ -23,8 +23,6 @@
 //  THE SOFTWARE.
 //
 
-@_implementationOnly import DBPrivate
-
 extension DBData {
     
     /// The strategy to use for decoding `Date` values.

@@ -1,5 +1,5 @@
 //
-//  QueryLauncher.swift
+//  MongoQueryLauncher.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -22,8 +22,6 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 //
-
-@_implementationOnly import DBPrivate
 
 extension Dictionary where Key == String, Value == DBUpdateOption {
     
@@ -113,36 +111,13 @@ extension Dictionary where Key == String, Value == DBUpdateOption {
         
         return BSONDocument(update)
     }
-    
 }
 
-extension _DBQuery {
-    
-    fileprivate var filters: [DBPredicateExpression] {
-        return self["filters"] as! Array
-    }
-    fileprivate var sort: OrderedDictionary<String, DBSortOrderOption> {
-        return self["sort"] as! OrderedDictionary
-    }
-    fileprivate var skip: Int {
-        return self["skip"] as! Int
-    }
-    fileprivate var limit: Int {
-        return self["limit"] as! Int
-    }
-    fileprivate var includes: Set<String> {
-        return self["includes"] as! Set
-    }
-    fileprivate var returning: DBReturningOption {
-        return self["returning"] as! DBReturningOption
-    }
-}
-
-struct QueryLauncher: _DBQueryLauncher {
+struct MongoQueryLauncher: DBQueryLauncher {
     
     let connection: MongoDBDriver.Connection
     
-    func count(_ query: _DBQuery) -> EventLoopFuture<Int> {
+    func count(_ query: DBFindExpression) -> EventLoopFuture<Int> {
         
         do {
             
@@ -156,7 +131,7 @@ struct QueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func _find(_ query: _DBQuery) throws -> DBMongoFindExpression<BSONDocument> {
+    func _find(_ query: DBFindExpression) throws -> DBMongoFindExpression<BSONDocument> {
         
         let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
         
@@ -180,11 +155,11 @@ struct QueryLauncher: _DBQueryLauncher {
         return mongoQuery
     }
     
-    func find(_ query: _DBQuery) -> EventLoopFuture<[_DBObject]> {
+    func find(_ query: DBFindExpression) -> EventLoopFuture<[DBObject]> {
         
         do {
             
-            return try self._find(query).execute().flatMap { $0.toArray() }.map { $0.map { _DBObject(class: query.class, object: $0) } }
+            return try self._find(query).execute().flatMap { $0.toArray() }.map { $0.map { DBObject(class: query.class, object: $0) } }
             
         } catch {
             
@@ -192,11 +167,11 @@ struct QueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func find(_ query: _DBQuery, forEach: @escaping (_DBObject) throws -> Void) -> EventLoopFuture<Void> {
+    func find(_ query: DBFindExpression, forEach: @escaping (DBObject) throws -> Void) -> EventLoopFuture<Void> {
         
         do {
             
-            return try self._find(query).execute().flatMap { $0.forEach { try forEach(_DBObject(class: query.class, object: $0)) } }
+            return try self._find(query).execute().flatMap { $0.forEach { try forEach(DBObject(class: query.class, object: $0)) } }
             
         } catch {
             
@@ -204,7 +179,7 @@ struct QueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func findAndDelete(_ query: _DBQuery) -> EventLoopFuture<Int?> {
+    func findAndDelete(_ query: DBFindExpression) -> EventLoopFuture<Int?> {
         
         do {
             
@@ -220,7 +195,7 @@ struct QueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func findOneAndUpdate<Update>(_ query: _DBQuery, _ update: [String: Update]) -> EventLoopFuture<_DBObject?> {
+    func findOneAndUpdate<Update>(_ query: DBFindOneExpression, _ update: [String: Update]) -> EventLoopFuture<DBObject?> {
         
         guard let update = update as? [String: DBUpdateOption] else { fatalError() }
         
@@ -246,7 +221,7 @@ struct QueryLauncher: _DBQueryLauncher {
                 mongoQuery = mongoQuery.projection(BSONDocument(projection))
             }
             
-            return mongoQuery.execute().map { $0.map { _DBObject(class: query.class, object: $0) } }
+            return mongoQuery.execute().map { $0.map { DBObject(class: query.class, object: $0) } }
             
         } catch {
             
@@ -254,7 +229,7 @@ struct QueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func findOneAndUpsert<Update, Data>(_ query: _DBQuery, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<_DBObject?> {
+    func findOneAndUpsert<Update, Data>(_ query: DBFindOneExpression, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<DBObject?> {
         
         guard let update = update as? [String: DBUpdateOption] else { fatalError() }
         guard let setOnInsert = setOnInsert as? [String: DBDataConvertible] else { fatalError() }
@@ -288,7 +263,7 @@ struct QueryLauncher: _DBQueryLauncher {
                 mongoQuery = mongoQuery.projection(BSONDocument(projection))
             }
             
-            return mongoQuery.execute().map { $0.map { _DBObject(class: query.class, object: $0) } }
+            return mongoQuery.execute().map { $0.map { DBObject(class: query.class, object: $0) } }
             
         } catch {
             
@@ -296,7 +271,7 @@ struct QueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func findOneAndDelete(_ query: _DBQuery) -> EventLoopFuture<_DBObject?> {
+    func findOneAndDelete(_ query: DBFindOneExpression) -> EventLoopFuture<DBObject?> {
         
         do {
             
@@ -313,7 +288,7 @@ struct QueryLauncher: _DBQueryLauncher {
                 mongoQuery = mongoQuery.projection(BSONDocument(projection))
             }
             
-            return mongoQuery.execute().map { $0.map { _DBObject(class: query.class, object: $0) } }
+            return mongoQuery.execute().map { $0.map { DBObject(class: query.class, object: $0) } }
             
         } catch {
             
@@ -321,7 +296,7 @@ struct QueryLauncher: _DBQueryLauncher {
         }
     }
     
-    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<_DBObject?> {
+    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<DBObject?> {
         
         guard let data = data as? [String: DBData] else { fatalError() }
         
@@ -339,7 +314,7 @@ struct QueryLauncher: _DBQueryLauncher {
                     var values = values
                     values["_id"] = id
                     
-                    return _DBObject(class: `class`, object: values)
+                    return DBObject(class: `class`, object: values)
                 }
             
         } catch {
@@ -349,16 +324,14 @@ struct QueryLauncher: _DBQueryLauncher {
     }
 }
 
-extension _DBObject {
+extension DBObject {
     
     fileprivate init(class: String, object: BSONDocument) {
-        
         var _columns: [String: DBData] = [:]
         for (key, value) in object {
             guard let value = try? DBData(value) else { continue }
             _columns[key] = value
         }
-        
         self.init(class: `class`, primaryKeys: ["_id"], columns: _columns)
     }
 }
@@ -429,12 +402,5 @@ extension DBMongoSortOrder {
         case .ascending: self = .ascending
         case .descending: self = .descending
         }
-    }
-}
-
-extension MongoDBDriver.Connection: DBQueryLauncherProvider {
-    
-    var _launcher: Any {
-        return QueryLauncher(connection: self)
     }
 }

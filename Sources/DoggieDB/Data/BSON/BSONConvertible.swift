@@ -23,8 +23,6 @@
 //  THE SOFTWARE.
 //
 
-@_implementationOnly import DBPrivate
-
 public protocol BSONConvertible {
     
     func toBSON() -> BSON

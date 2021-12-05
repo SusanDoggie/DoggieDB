@@ -24,7 +24,6 @@
 //
 
 import DoggieDB
-import DBMongo
 import XCTest
 
 class MongoDBTest: XCTestCase {

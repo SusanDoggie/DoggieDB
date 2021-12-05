@@ -23,8 +23,6 @@
 //  THE SOFTWARE.
 //
 
-@_implementationOnly import DBPrivate
-
 public struct DBFindOneExpression: DBExpressionProtocol {
     
     public let connection: DBConnection
@@ -52,18 +50,6 @@ extension DBQuery {
     }
 }
 
-extension _DBQuery {
-    
-    init(_ query: DBFindOneExpression) {
-        self.init(class: query.class, query: [
-            "filters": query.filters,
-            "sort": query.sort,
-            "includes": query.includes,
-            "returning": query.returning,
-        ])
-    }
-}
-
 extension DBFindOneExpression {
     
     public func update(_ update: [String: DBDataConvertible]) -> EventLoopFuture<DBObject?> {
@@ -74,7 +60,7 @@ extension DBFindOneExpression {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.findOneAndUpdate(_DBQuery(self), update).map { $0.map(DBObject.init) }
+        return launcher.findOneAndUpdate(self, update)
     }
 }
 
@@ -88,7 +74,7 @@ extension DBFindOneExpression {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.findOneAndUpsert(_DBQuery(self), update, setOnInsert).map { $0.map(DBObject.init) }
+        return launcher.findOneAndUpsert(self, update, setOnInsert)
     }
 }
 
@@ -98,7 +84,7 @@ extension DBFindOneExpression {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.findOneAndDelete(_DBQuery(self)).map { $0.map(DBObject.init) }
+        return launcher.findOneAndDelete(self)
     }
 }
 

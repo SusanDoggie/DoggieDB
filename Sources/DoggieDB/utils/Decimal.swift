@@ -1,5 +1,5 @@
 //
-//  Exported.swift
+//  Decimal.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,6 +23,50 @@
 //  THE SOFTWARE.
 //
 
-@_exported import DoggieCore
+extension Decimal {
+    
+    init?(exactly value: Double) {
+        self.init(value)
+        guard self.doubleValue == value else { return nil }
+    }
+}
 
-@_exported import DoggieDB
+extension Decimal {
+    
+    init?(exactly value: String) {
+        self.init(string: value)
+        guard self.description == value else { return nil }
+    }
+}
+
+extension Double {
+    
+    init?(exactly value: Decimal) {
+        self = NSDecimalNumber(decimal: value).doubleValue
+        guard Decimal(self) == value else { return nil }
+    }
+}
+
+extension UInt64 {
+    
+    init?(exactly value: Decimal) {
+        self = NSDecimalNumber(decimal: value).uint64Value
+        guard Decimal(self) == value else { return nil }
+    }
+}
+
+extension Int64 {
+    
+    init?(exactly value: Decimal) {
+        self = NSDecimalNumber(decimal: value).int64Value
+        guard Decimal(self) == value else { return nil }
+    }
+}
+
+extension Int {
+    
+    init?(exactly value: Decimal) {
+        self = NSDecimalNumber(decimal: value).intValue
+        guard Decimal(self) == value else { return nil }
+    }
+}

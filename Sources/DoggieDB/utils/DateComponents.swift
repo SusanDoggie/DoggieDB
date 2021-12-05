@@ -1,5 +1,5 @@
 //
-//  DatabaseDriver.swift
+//  DateComponents.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,7 +23,13 @@
 //  THE SOFTWARE.
 //
 
-extension DBDriver {
+extension DateComponents {
     
-    public static let mongoDB = DBDriver(rawValue: MongoDBDriver.self)
+    func containsDate() -> Bool {
+        return year != nil && month != nil && day != nil
+    }
+    
+    func containsTime() -> Bool {
+        return hour != nil && minute != nil && second != nil
+    }
 }

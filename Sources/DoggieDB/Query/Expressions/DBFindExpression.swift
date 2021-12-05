@@ -23,8 +23,6 @@
 //  THE SOFTWARE.
 //
 
-@_implementationOnly import DBPrivate
-
 public struct DBFindExpression: DBExpressionProtocol {
     
     public let connection: DBConnection
@@ -54,26 +52,13 @@ extension DBQuery {
     }
 }
 
-extension _DBQuery {
-    
-    init(_ query: DBFindExpression) {
-        self.init(class: query.class, query: [
-            "filters": query.filters,
-            "skip": query.skip,
-            "limit": query.limit,
-            "sort": query.sort,
-            "includes": query.includes,
-        ])
-    }
-}
-
 extension DBFindExpression {
     
     public func count() -> EventLoopFuture<Int> {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.count(_DBQuery(self))
+        return launcher.count(self)
     }
 }
 
@@ -83,14 +68,14 @@ extension DBFindExpression {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.find(_DBQuery(self)).map { $0.map(DBObject.init) }
+        return launcher.find(self)
     }
     
     public func forEach(_ body: @escaping (DBObject) throws -> Void) -> EventLoopFuture<Void> {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.find(_DBQuery(self)) { try body(DBObject($0)) }
+        return launcher.find(self) { try body($0) }
     }
     
     public func first() -> EventLoopFuture<DBObject?> {
@@ -104,7 +89,7 @@ extension DBFindExpression {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.findAndDelete(_DBQuery(self))
+        return launcher.findAndDelete(self)
     }
 }
 

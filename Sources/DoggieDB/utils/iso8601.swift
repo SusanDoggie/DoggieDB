@@ -1,5 +1,5 @@
 //
-//  Exported.swift
+//  iso8601.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,6 +23,19 @@
 //  THE SOFTWARE.
 //
 
-@_exported import DoggieCore
-
-@_exported import DoggieDB
+extension String {
+    
+    var iso8601: Date? {
+        
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = .withInternetDateTime
+        
+        if let date = formatter.date(from: self) {
+            return date
+        }
+        
+        formatter.formatOptions.formUnion(.withFractionalSeconds)
+        
+        return formatter.date(from: self)
+    }
+}

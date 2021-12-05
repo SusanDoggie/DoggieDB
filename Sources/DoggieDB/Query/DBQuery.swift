@@ -51,7 +51,7 @@ extension DBQuery {
             
             guard let object = $0 else { throw Database.Error.unknown }
             
-            return DBObject(object)
+            return object
         }
     }
 }

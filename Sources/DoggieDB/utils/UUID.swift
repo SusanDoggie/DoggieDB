@@ -1,5 +1,5 @@
 //
-//  DatabaseConnection.swift
+//  UUID.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,10 +23,26 @@
 //  THE SOFTWARE.
 //
 
-extension DBConnection {
+extension UUID {
     
-    public func mongoQuery() -> DBMongoQuery {
-        guard let connection = self as? DBMongoConnectionProtocol else { fatalError("unsupported operation") }
-        return DBMongoQuery(connection: connection, session: nil)
+    init?(hexString: String) {
+        
+        guard hexString.count == 32 else { return nil }
+        
+        var hex = hexString[...]
+        
+        var uuidString = ""
+        uuidString.append(contentsOf: hex.popFirst(8))
+        uuidString.append("-")
+        uuidString.append(contentsOf: hex.popFirst(4))
+        uuidString.append("-")
+        uuidString.append(contentsOf: hex.popFirst(4))
+        uuidString.append("-")
+        uuidString.append(contentsOf: hex.popFirst(4))
+        uuidString.append("-")
+        uuidString.append(contentsOf: hex)
+        
+        self.init(uuidString: uuidString)
     }
 }
+
