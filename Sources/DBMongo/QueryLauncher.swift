@@ -25,7 +25,7 @@
 
 @_implementationOnly import DBPrivate
 
-extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
+extension Dictionary where Key == String, Value == DBUpdateOption {
     
     fileprivate func toBSONDocument() throws -> BSONDocument {
         
@@ -118,10 +118,10 @@ extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
 
 extension _DBQuery {
     
-    fileprivate var filters: [DBQueryPredicateExpression] {
+    fileprivate var filters: [DBPredicateExpression] {
         return self["filters"] as! Array
     }
-    fileprivate var sort: OrderedDictionary<String, DBQuerySortOrder> {
+    fileprivate var sort: OrderedDictionary<String, DBSortOrderOption> {
         return self["sort"] as! OrderedDictionary
     }
     fileprivate var skip: Int {
@@ -133,8 +133,8 @@ extension _DBQuery {
     fileprivate var includes: Set<String> {
         return self["includes"] as! Set
     }
-    fileprivate var returning: DBQueryReturning {
-        return self["returning"] as! DBQueryReturning
+    fileprivate var returning: DBReturningOption {
+        return self["returning"] as! DBReturningOption
     }
 }
 
@@ -222,7 +222,7 @@ struct QueryLauncher: _DBQueryLauncher {
     
     func findOneAndUpdate<Update>(_ query: _DBQuery, _ update: [String: Update]) -> EventLoopFuture<_DBObject?> {
         
-        guard let update = update as? [String: DBQueryUpdateOperation] else { fatalError() }
+        guard let update = update as? [String: DBUpdateOption] else { fatalError() }
         
         do {
             
@@ -256,7 +256,7 @@ struct QueryLauncher: _DBQueryLauncher {
     
     func findOneAndUpsert<Update, Data>(_ query: _DBQuery, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<_DBObject?> {
         
-        guard let update = update as? [String: DBQueryUpdateOperation] else { fatalError() }
+        guard let update = update as? [String: DBUpdateOption] else { fatalError() }
         guard let setOnInsert = setOnInsert as? [String: DBDataConvertible] else { fatalError() }
         
         do {
@@ -365,7 +365,7 @@ extension _DBObject {
 
 extension MongoPredicateExpression {
     
-    fileprivate init(_ expression: DBQueryPredicateExpression) throws {
+    fileprivate init(_ expression: DBPredicateExpression) throws {
         switch expression {
         case let .not(expr): self = try .not(MongoPredicateExpression(expr))
         case let .equal(lhs, rhs): self = try .equal(MongoPredicateValue(lhs), MongoPredicateValue(rhs))
@@ -403,7 +403,7 @@ extension MongoPredicateExpression {
 
 extension MongoPredicateValue {
     
-    fileprivate init(_ value: DBQueryPredicateValue) throws {
+    fileprivate init(_ value: DBPredicateValue) throws {
         switch value {
         case .objectId: self = .key("_id")
         case let .key(key): self = .key(key)
@@ -414,7 +414,7 @@ extension MongoPredicateValue {
 
 extension MongoPredicateKey {
     
-    fileprivate init(_ value: DBQueryPredicateKey) {
+    fileprivate init(_ value: DBPredicateKey) {
         switch value {
         case .objectId: self.init(key: "_id")
         case let .key(key): self.init(key: key)
@@ -424,7 +424,7 @@ extension MongoPredicateKey {
 
 extension DBMongoSortOrder {
     
-    fileprivate init(_ order: DBQuerySortOrder) {
+    fileprivate init(_ order: DBSortOrderOption) {
         switch order {
         case .ascending: self = .ascending
         case .descending: self = .descending

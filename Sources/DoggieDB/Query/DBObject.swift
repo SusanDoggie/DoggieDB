@@ -33,7 +33,7 @@ public struct DBObject {
     
     private let _columns: [String: DBData]
     
-    private var _updates: [String: DBQueryUpdateOperation]
+    private var _updates: [String: DBUpdateOption]
 }
 
 extension DBObject {

@@ -1,5 +1,5 @@
 //
-//  DBQueryUpdateOperation.swift
+//  DBExpressionProtocol.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,40 +23,14 @@
 //  THE SOFTWARE.
 //
 
-public enum DBQueryUpdateOperation {
+public protocol DBExpressionProtocol {
     
-    case set(DBDataConvertible)
-    
-    case increment(DBDataConvertible)
-    
-    case decrement(DBDataConvertible)
-    
-    case multiply(DBDataConvertible)
-    
-    case divide(DBDataConvertible)
-    
-    case min(DBDataConvertible)
-    
-    case max(DBDataConvertible)
-    
-    case addToSet([DBDataConvertible])
-    
-    case push([DBDataConvertible])
-    
-    case removeAll([DBDataConvertible])
-    
-    case popFirst
-    
-    case popLast
-    
+    var connection: DBConnection { get }
 }
 
-extension DBQueryUpdateOperation {
+extension DBExpressionProtocol {
     
-    var value: DBData? {
-        switch self {
-        case let .set(value): return value.toDBData()
-        default: return nil
-        }
+    public var eventLoopGroup: EventLoopGroup {
+        return connection.eventLoopGroup
     }
 }

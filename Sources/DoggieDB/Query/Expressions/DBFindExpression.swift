@@ -1,5 +1,5 @@
 //
-//  DBQueryFindExpression.swift
+//  DBFindExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,19 +25,19 @@
 
 @_implementationOnly import DBPrivate
 
-public struct DBQueryFindExpression: DBQueryProtocol {
+public struct DBFindExpression: DBExpressionProtocol {
     
     public let connection: DBConnection
     
     public let `class`: String
     
-    var filters: [DBQueryPredicateExpression] = []
+    var filters: [DBPredicateExpression] = []
     
     var skip: Int = 0
     
     var limit: Int = .max
     
-    var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
+    var sort: OrderedDictionary<String, DBSortOrderOption> = [:]
     
     var includes: Set<String> = []
     
@@ -49,14 +49,14 @@ public struct DBQueryFindExpression: DBQueryProtocol {
 
 extension DBQuery {
     
-    public func find(_ class: String) -> DBQueryFindExpression {
-        return DBQueryFindExpression(connection: connection, class: `class`)
+    public func find(_ class: String) -> DBFindExpression {
+        return DBFindExpression(connection: connection, class: `class`)
     }
 }
 
 extension _DBQuery {
     
-    init(_ query: DBQueryFindExpression) {
+    init(_ query: DBFindExpression) {
         self.init(class: query.class, query: [
             "filters": query.filters,
             "skip": query.skip,
@@ -67,7 +67,7 @@ extension _DBQuery {
     }
 }
 
-extension DBQueryFindExpression {
+extension DBFindExpression {
     
     public func count() -> EventLoopFuture<Int> {
         guard let launcher = self.connection.launcher else {
@@ -77,7 +77,7 @@ extension DBQueryFindExpression {
     }
 }
 
-extension DBQueryFindExpression {
+extension DBFindExpression {
     
     public func toArray() -> EventLoopFuture<[DBObject]> {
         guard let launcher = self.connection.launcher else {
@@ -98,7 +98,7 @@ extension DBQueryFindExpression {
     }
 }
 
-extension DBQueryFindExpression {
+extension DBFindExpression {
     
     public func delete() -> EventLoopFuture<Int?> {
         guard let launcher = self.connection.launcher else {
@@ -108,23 +108,23 @@ extension DBQueryFindExpression {
     }
 }
 
-extension DBQueryFindExpression {
+extension DBFindExpression {
     
-    public func filter(_ filter: DBQueryPredicateExpression) -> Self {
+    public func filter(_ filter: DBPredicateExpression) -> Self {
         var result = self
         result.filters.append(filter)
         return result
     }
     
-    public func filter(_ filter: [DBQueryPredicateExpression]) -> Self {
+    public func filter(_ filter: [DBPredicateExpression]) -> Self {
         var result = self
         result.filters.append(contentsOf: filter)
         return result
     }
     
-    public func filter(_ predicate: (DBQueryPredicateBuilder) -> DBQueryPredicateExpression) -> Self {
+    public func filter(_ predicate: (DBPredicateBuilder) -> DBPredicateExpression) -> Self {
         var result = self
-        result.filters.append(predicate(DBQueryPredicateBuilder()))
+        result.filters.append(predicate(DBPredicateBuilder()))
         return result
     }
     
@@ -140,7 +140,7 @@ extension DBQueryFindExpression {
         return result
     }
     
-    public func sort(_ sort: OrderedDictionary<String, DBQuerySortOrder>) -> Self {
+    public func sort(_ sort: OrderedDictionary<String, DBSortOrderOption>) -> Self {
         var result = self
         result.sort = sort
         return result

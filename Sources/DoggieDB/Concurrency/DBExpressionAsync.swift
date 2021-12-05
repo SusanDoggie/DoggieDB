@@ -1,5 +1,5 @@
 //
-//  DBQueryExpressionAsync.swift
+//  DBExpressionAsync.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -26,7 +26,7 @@
 #if compiler(>=5.5) && canImport(_Concurrency)
 
 @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
-extension DBQueryFindExpression {
+extension DBFindExpression {
     
     public func count() async throws -> Int {
         return try await self.count().get()
@@ -34,7 +34,7 @@ extension DBQueryFindExpression {
 }
 
 @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
-extension DBQueryFindExpression {
+extension DBFindExpression {
     
     public func toArray() async throws -> [DBObject] {
         return try await self.toArray().get()
@@ -72,7 +72,7 @@ extension DBQuery {
 }
 
 @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
-extension DBQueryFindExpression {
+extension DBFindExpression {
     
     @discardableResult
     public func delete() async throws -> Int? {
@@ -81,7 +81,7 @@ extension DBQueryFindExpression {
 }
 
 @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
-extension DBQueryFindOneExpression {
+extension DBFindOneExpression {
     
     @discardableResult
     public func update(_ update: [String : DBDataConvertible]) async throws -> DBObject? {
@@ -89,13 +89,13 @@ extension DBQueryFindOneExpression {
     }
     
     @discardableResult
-    public func update(_ update: [String : DBQueryUpdateOperation]) async throws -> DBObject? {
+    public func update(_ update: [String : DBUpdateOption]) async throws -> DBObject? {
         return try await self.update(update).get()
     }
 }
 
 @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
-extension DBQueryFindOneExpression {
+extension DBFindOneExpression {
     
     @discardableResult
     public func upsert(_ update: [String : DBDataConvertible], setOnInsert: [String : DBDataConvertible] = [:]) async throws -> DBObject? {
@@ -103,13 +103,13 @@ extension DBQueryFindOneExpression {
     }
     
     @discardableResult
-    public func upsert(_ update: [String : DBQueryUpdateOperation], setOnInsert: [String : DBDataConvertible] = [:]) async throws -> DBObject? {
+    public func upsert(_ update: [String : DBUpdateOption], setOnInsert: [String : DBDataConvertible] = [:]) async throws -> DBObject? {
         return try await self.upsert(update, setOnInsert: setOnInsert).get()
     }
 }
 
 @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
-extension DBQueryFindOneExpression {
+extension DBFindOneExpression {
     
     @discardableResult
     public func delete() async throws -> DBObject? {

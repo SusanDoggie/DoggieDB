@@ -1,5 +1,5 @@
 //
-//  DBQueryFindOneExpression.swift
+//  DBFindOneExpression.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -25,19 +25,19 @@
 
 @_implementationOnly import DBPrivate
 
-public struct DBQueryFindOneExpression: DBQueryProtocol {
+public struct DBFindOneExpression: DBExpressionProtocol {
     
     public let connection: DBConnection
     
     public let `class`: String
     
-    var filters: [DBQueryPredicateExpression] = []
+    var filters: [DBPredicateExpression] = []
     
-    var sort: OrderedDictionary<String, DBQuerySortOrder> = [:]
+    var sort: OrderedDictionary<String, DBSortOrderOption> = [:]
     
     var includes: Set<String> = []
     
-    var returning: DBQueryReturning = .after
+    var returning: DBReturningOption = .after
     
     init(connection: DBConnection, class: String) {
         self.connection = connection
@@ -47,14 +47,14 @@ public struct DBQueryFindOneExpression: DBQueryProtocol {
 
 extension DBQuery {
     
-    public func findOne(_ class: String) -> DBQueryFindOneExpression {
-        return DBQueryFindOneExpression(connection: connection, class: `class`)
+    public func findOne(_ class: String) -> DBFindOneExpression {
+        return DBFindOneExpression(connection: connection, class: `class`)
     }
 }
 
 extension _DBQuery {
     
-    init(_ query: DBQueryFindOneExpression) {
+    init(_ query: DBFindOneExpression) {
         self.init(class: query.class, query: [
             "filters": query.filters,
             "sort": query.sort,
@@ -64,13 +64,13 @@ extension _DBQuery {
     }
 }
 
-extension DBQueryFindOneExpression {
+extension DBFindOneExpression {
     
     public func update(_ update: [String: DBDataConvertible]) -> EventLoopFuture<DBObject?> {
         return self.update(update.mapValues { .set($0) })
     }
     
-    public func update(_ update: [String: DBQueryUpdateOperation]) -> EventLoopFuture<DBObject?> {
+    public func update(_ update: [String: DBUpdateOption]) -> EventLoopFuture<DBObject?> {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
@@ -78,13 +78,13 @@ extension DBQueryFindOneExpression {
     }
 }
 
-extension DBQueryFindOneExpression {
+extension DBFindOneExpression {
     
     public func upsert(_ update: [String: DBDataConvertible], setOnInsert: [String: DBDataConvertible] = [:]) -> EventLoopFuture<DBObject?> {
         return self.upsert(update.mapValues { .set($0) }, setOnInsert: setOnInsert)
     }
     
-    public func upsert(_ update: [String: DBQueryUpdateOperation], setOnInsert: [String: DBDataConvertible] = [:]) -> EventLoopFuture<DBObject?> {
+    public func upsert(_ update: [String: DBUpdateOption], setOnInsert: [String: DBDataConvertible] = [:]) -> EventLoopFuture<DBObject?> {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
@@ -92,7 +92,7 @@ extension DBQueryFindOneExpression {
     }
 }
 
-extension DBQueryFindOneExpression {
+extension DBFindOneExpression {
     
     public func delete() -> EventLoopFuture<DBObject?> {
         guard let launcher = self.connection.launcher else {
@@ -102,27 +102,27 @@ extension DBQueryFindOneExpression {
     }
 }
 
-extension DBQueryFindOneExpression {
+extension DBFindOneExpression {
     
-    public func filter(_ filter: DBQueryPredicateExpression) -> Self {
+    public func filter(_ filter: DBPredicateExpression) -> Self {
         var result = self
         result.filters.append(filter)
         return result
     }
     
-    public func filter(_ filter: [DBQueryPredicateExpression]) -> Self {
+    public func filter(_ filter: [DBPredicateExpression]) -> Self {
         var result = self
         result.filters.append(contentsOf: filter)
         return result
     }
     
-    public func filter(_ predicate: (DBQueryPredicateBuilder) -> DBQueryPredicateExpression) -> Self {
+    public func filter(_ predicate: (DBPredicateBuilder) -> DBPredicateExpression) -> Self {
         var result = self
-        result.filters.append(predicate(DBQueryPredicateBuilder()))
+        result.filters.append(predicate(DBPredicateBuilder()))
         return result
     }
     
-    public func sort(_ sort: OrderedDictionary<String, DBQuerySortOrder>) -> Self {
+    public func sort(_ sort: OrderedDictionary<String, DBSortOrderOption>) -> Self {
         var result = self
         result.sort = sort
         return result
@@ -140,7 +140,7 @@ extension DBQueryFindOneExpression {
         return result
     }
     
-    public func returning(_ returning: DBQueryReturning) -> Self {
+    public func returning(_ returning: DBReturningOption) -> Self {
         var result = self
         result.returning = returning
         return result

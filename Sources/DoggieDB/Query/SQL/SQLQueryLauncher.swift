@@ -25,7 +25,7 @@
 
 @_implementationOnly import DBPrivate
 
-extension OrderedDictionary where Key == String, Value == DBQuerySortOrder {
+extension OrderedDictionary where Key == String, Value == DBSortOrderOption {
     
     fileprivate func serialize() -> SQLRaw {
         let list: [SQLRaw] = self.map {
@@ -40,10 +40,10 @@ extension OrderedDictionary where Key == String, Value == DBQuerySortOrder {
 
 extension _DBQuery {
     
-    fileprivate var filters: [DBQueryPredicateExpression] {
+    fileprivate var filters: [DBPredicateExpression] {
         return self["filters"] as! Array
     }
-    fileprivate var sort: OrderedDictionary<String, DBQuerySortOrder> {
+    fileprivate var sort: OrderedDictionary<String, DBSortOrderOption> {
         return self["sort"] as! OrderedDictionary
     }
     fileprivate var skip: Int {
@@ -55,12 +55,12 @@ extension _DBQuery {
     fileprivate var includes: Set<String> {
         return self["includes"] as! Set
     }
-    fileprivate var returning: DBQueryReturning {
-        return self["returning"] as! DBQueryReturning
+    fileprivate var returning: DBReturningOption {
+        return self["returning"] as! DBReturningOption
     }
 }
 
-extension Dictionary where Key == String, Value == DBQueryUpdateOperation {
+extension Dictionary where Key == String, Value == DBUpdateOption {
     
     fileprivate func serialize(_ table: String, _ columnInfos: [DBSQLColumnInfo], _ dialect: SQLDialect.Type) throws -> [String: SQLRaw] {
         
@@ -294,7 +294,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
     
     func _findOneAndUpdate<Update>(_ query: _DBQuery, _ update: [String: Update]) -> EventLoopFuture<(SQLRaw, [String], [DBSQLColumnInfo])> {
         
-        guard let update = update as? [String: DBQueryUpdateOperation] else { fatalError() }
+        guard let update = update as? [String: DBUpdateOption] else { fatalError() }
         
         switch query.returning {
         
@@ -362,7 +362,7 @@ struct SQLQueryLauncher: _DBQueryLauncher {
     
     func findOneAndUpsert<Update, Data>(_ query: _DBQuery, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<_DBObject?> {
         
-        guard let update = update as? [String: DBQueryUpdateOperation] else { fatalError() }
+        guard let update = update as? [String: DBUpdateOption] else { fatalError() }
         guard let setOnInsert = setOnInsert as? [String: DBDataConvertible] else { fatalError() }
         
         var update_temp: String

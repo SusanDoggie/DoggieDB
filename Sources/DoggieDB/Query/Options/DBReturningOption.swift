@@ -1,5 +1,5 @@
 //
-//  DBQuery.swift
+//  DBReturningOption.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,35 +23,15 @@
 //  THE SOFTWARE.
 //
 
-public struct DBQuery {
+public enum DBReturningOption {
     
-    public let connection: DBConnection
+    case before
     
-    init(connection: DBConnection) {
-        self.connection = connection
-    }
+    case after
 }
 
-extension DBConnection {
+public protocol DBReturningOptionOption {
     
-    public func query() -> DBQuery {
-        return DBQuery(connection: self)
-    }
-}
-
-extension DBQuery {
+    var returning: DBReturningOption { get set }
     
-    public func insert(_ class: String, _ data: [String: DBData]) -> EventLoopFuture<DBObject> {
-        
-        guard let launcher = connection.launcher else {
-            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
-        }
-        
-        return launcher.insert(`class`, data).flatMapThrowing {
-            
-            guard let object = $0 else { throw Database.Error.unknown }
-            
-            return DBObject(object)
-        }
-    }
 }

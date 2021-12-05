@@ -1,5 +1,5 @@
 //
-//  DBQueryPredicateBuilder.swift
+//  DBSortOrderOption.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,27 +23,15 @@
 //  THE SOFTWARE.
 //
 
-public struct DBQueryPredicateBuilder {
+public enum DBSortOrderOption {
     
-    public init() {
-        
-    }
+    case ascending
+    
+    case descending
 }
 
-public enum DBQueryPredicateKey {
+public protocol DBQuerySortOption {
     
-    case objectId
+    var sort: OrderedDictionary<String, DBSortOrderOption> { get set }
     
-    case key(String)
-}
-
-extension DBQueryPredicateBuilder {
-    
-    public var objectId: DBQueryPredicateKey {
-        return .objectId
-    }
-    
-    public subscript(_ key: String) -> DBQueryPredicateKey {
-        return .key(key)
-    }
 }

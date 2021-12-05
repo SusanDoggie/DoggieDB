@@ -1,5 +1,5 @@
 //
-//  DBQueryReturning.swift
+//  DBUpdateOption.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -23,15 +23,40 @@
 //  THE SOFTWARE.
 //
 
-public enum DBQueryReturning {
+public enum DBUpdateOption {
     
-    case before
+    case set(DBDataConvertible)
     
-    case after
+    case increment(DBDataConvertible)
+    
+    case decrement(DBDataConvertible)
+    
+    case multiply(DBDataConvertible)
+    
+    case divide(DBDataConvertible)
+    
+    case min(DBDataConvertible)
+    
+    case max(DBDataConvertible)
+    
+    case addToSet([DBDataConvertible])
+    
+    case push([DBDataConvertible])
+    
+    case removeAll([DBDataConvertible])
+    
+    case popFirst
+    
+    case popLast
+    
 }
 
-public protocol DBQueryReturningOption {
+extension DBUpdateOption {
     
-    var returning: DBQueryReturning { get set }
-    
+    var value: DBData? {
+        switch self {
+        case let .set(value): return value.toDBData()
+        default: return nil
+        }
+    }
 }
