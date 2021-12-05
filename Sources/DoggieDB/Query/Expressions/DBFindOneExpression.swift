@@ -66,11 +66,11 @@ extension DBFindOneExpression {
 
 extension DBFindOneExpression {
     
-    public func upsert(_ update: [String: DBDataConvertible], setOnInsert: [String: DBDataConvertible] = [:]) -> EventLoopFuture<DBObject?> {
+    public func upsert(_ update: [String: DBDataConvertible], setOnInsert: [String: DBDataConvertible]) -> EventLoopFuture<DBObject?> {
         return self.upsert(update.mapValues { .set($0) }, setOnInsert: setOnInsert)
     }
     
-    public func upsert(_ update: [String: DBUpdateOption], setOnInsert: [String: DBDataConvertible] = [:]) -> EventLoopFuture<DBObject?> {
+    public func upsert(_ update: [String: DBUpdateOption] = [:], setOnInsert: [String: DBDataConvertible] = [:]) -> EventLoopFuture<DBObject?> {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
