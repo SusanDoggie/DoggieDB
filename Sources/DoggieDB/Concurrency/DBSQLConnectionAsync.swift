@@ -82,6 +82,7 @@ extension DBSQLConnection {
         return try await self.execute(sql).get()
     }
     
+    @discardableResult
     public func execute(
         _ sql: SQLRaw,
         onRow: @escaping (SQLQueryRow) throws -> Void
