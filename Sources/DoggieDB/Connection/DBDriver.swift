@@ -49,7 +49,7 @@ extension DBDriverProtocol {
     }
 }
 
-public struct DBDriver: Hashable {
+public struct DBDriver: RawRepresentable, Hashable {
     
     public var rawValue: DBDriverProtocol.Type
     
