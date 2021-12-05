@@ -146,9 +146,15 @@ extension DBQueryFindExpression {
         return result
     }
     
-    public func includes(_ includes: Set<String>) -> Self {
+    public func includes(_ keys: String ...) -> Self {
         var result = self
-        result.includes = includes
+        result.includes = includes.union(keys)
+        return result
+    }
+    
+    public func includes<S: Sequence>(_ keys: S) -> Self where S.Element == String {
+        var result = self
+        result.includes = includes.union(keys)
         return result
     }
 }
