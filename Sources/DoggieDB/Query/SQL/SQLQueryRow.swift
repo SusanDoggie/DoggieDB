@@ -79,7 +79,7 @@ extension SQLQueryRow {
 
 extension BSONDocument {
     
-    init(_ row: SQLQueryRow) throws {
+    public init(_ row: SQLQueryRow) throws {
         self.init()
         for key in row.keys {
             self[key] = try row[key].map { try BSON($0) } ?? .undefined
@@ -89,7 +89,7 @@ extension BSONDocument {
 
 extension DBData {
     
-    init(_ row: SQLQueryRow) {
+    public init(_ row: SQLQueryRow) {
         var dict: [String: DBData] = [:]
         for key in row.keys {
             dict[key] = row[key] ?? DBData(nilLiteral: ())
