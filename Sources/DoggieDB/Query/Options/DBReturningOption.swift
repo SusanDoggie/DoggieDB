@@ -29,9 +29,3 @@ public enum DBReturningOption {
     
     case after
 }
-
-public protocol DBReturningOptionOption {
-    
-    var returning: DBReturningOption { get set }
-    
-}

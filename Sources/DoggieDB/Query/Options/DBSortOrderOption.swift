@@ -29,9 +29,3 @@ public enum DBSortOrderOption {
     
     case descending
 }
-
-public protocol DBQuerySortOption {
-    
-    var sort: OrderedDictionary<String, DBSortOrderOption> { get set }
-    
-}
