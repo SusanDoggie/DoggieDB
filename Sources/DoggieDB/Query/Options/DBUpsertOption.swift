@@ -79,11 +79,4 @@ extension DBUpsertOption {
         default: return nil
         }
     }
-    
-    var value: DBData? {
-        switch self {
-        case let .set(value): return value.toDBData()
-        default: return nil
-        }
-    }
 }
