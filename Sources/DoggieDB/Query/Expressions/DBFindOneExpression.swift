@@ -66,15 +66,15 @@ extension DBFindOneExpression {
 
 extension DBFindOneExpression {
     
-    public func upsert(_ update: [String: DBDataConvertible], setOnInsert: [String: DBDataConvertible]) -> EventLoopFuture<DBObject?> {
-        return self.upsert(update.mapValues { .set($0) }, setOnInsert: setOnInsert)
+    public func upsert(_ upsert: [String: DBDataConvertible]) -> EventLoopFuture<DBObject?> {
+        return self.upsert(upsert.mapValues { .set($0) })
     }
     
-    public func upsert(_ update: [String: DBUpdateOption] = [:], setOnInsert: [String: DBDataConvertible] = [:]) -> EventLoopFuture<DBObject?> {
+    public func upsert(_ upsert: [String: DBUpsertOption]) -> EventLoopFuture<DBObject?> {
         guard let launcher = self.connection.launcher else {
             return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
         }
-        return launcher.findOneAndUpsert(self, update, setOnInsert)
+        return launcher.findOneAndUpsert(self, upsert)
     }
 }
 

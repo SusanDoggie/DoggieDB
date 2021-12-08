@@ -33,9 +33,9 @@ protocol DBQueryLauncher {
     
     func findAndDelete(_ query: DBFindExpression) -> EventLoopFuture<Int?>
     
-    func findOneAndUpdate<Update>(_ query: DBFindOneExpression, _ update: [String: Update]) -> EventLoopFuture<DBObject?>
+    func findOneAndUpdate(_ query: DBFindOneExpression, _ update: [String: DBUpdateOption]) -> EventLoopFuture<DBObject?>
     
-    func findOneAndUpsert<Update, Data>(_ query: DBFindOneExpression, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<DBObject?>
+    func findOneAndUpsert(_ query: DBFindOneExpression, _ upsert: [String: DBUpsertOption]) -> EventLoopFuture<DBObject?>
     
     func findOneAndDelete(_ query: DBFindOneExpression) -> EventLoopFuture<DBObject?>
     

@@ -266,9 +266,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
         return sql
     }
     
-    func _findOneAndUpdate<Update>(_ query: DBFindOneExpression, _ update: [String: Update]) -> EventLoopFuture<(SQLRaw, [String], [DBSQLColumnInfo])> {
-        
-        guard let update = update as? [String: DBUpdateOption] else { fatalError() }
+    func _findOneAndUpdate(_ query: DBFindOneExpression, _ update: [String: DBUpdateOption]) -> EventLoopFuture<(SQLRaw, [String], [DBSQLColumnInfo])> {
         
         switch query.returning {
         
@@ -326,7 +324,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
         }
     }
     
-    func findOneAndUpdate<Update>(_ query: DBFindOneExpression, _ update: [String: Update]) -> EventLoopFuture<DBObject?> {
+    func findOneAndUpdate(_ query: DBFindOneExpression, _ update: [String: DBUpdateOption]) -> EventLoopFuture<DBObject?> {
         
         return self._findOneAndUpdate(query, update).flatMap { sql, primaryKeys, _ in
             
@@ -334,10 +332,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
         }
     }
     
-    func findOneAndUpsert<Update, Data>(_ query: DBFindOneExpression, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<DBObject?> {
-        
-        guard let update = update as? [String: DBUpdateOption] else { fatalError() }
-        guard let setOnInsert = setOnInsert as? [String: DBDataConvertible] else { fatalError() }
+    func findOneAndUpsert(_ query: DBFindOneExpression, _ upsert: [String: DBUpsertOption]) -> EventLoopFuture<DBObject?> {
         
         var update_temp: String
         var counter = 0
@@ -351,6 +346,9 @@ struct SQLQueryLauncher: DBQueryLauncher {
             insert_temp = "temp_\(counter)"
             counter += 1
         } while insert_temp == update_temp || insert_temp == query.class
+        
+        let update = upsert.compactMapValues { $0.update }
+        let setOnInsert = upsert.compactMapValues { $0.setOnInsert }
         
         return self._findOneAndUpdate(query, update).flatMap { updateSQL, primaryKeys, columnInfos in
             

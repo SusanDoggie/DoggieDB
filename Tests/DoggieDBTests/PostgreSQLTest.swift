@@ -604,9 +604,8 @@ class PostgreSQLTest: XCTestCase {
                 .findOne("testUpsertQuery")
                 .filter { $0.objectId == 1 }
                 .upsert([
-                    "col": .set("text_1")
-                ], setOnInsert: [
-                    "id": 1
+                    "id": .setOnInsert(1),
+                    "col": .set("text_1"),
                 ]).wait()
             
             XCTAssertEqual(obj?["id"].intValue, 1)
@@ -616,9 +615,8 @@ class PostgreSQLTest: XCTestCase {
                 .findOne("testUpsertQuery")
                 .filter { $0.objectId == 1 }
                 .upsert([
-                    "col": .set("text_2")
-                ], setOnInsert: [
-                    "id": 1
+                    "id": .setOnInsert(1),
+                    "col": .set("text_2"),
                 ]).wait()
             
             XCTAssertEqual(obj2?["id"].intValue, 1)
@@ -629,9 +627,8 @@ class PostgreSQLTest: XCTestCase {
                 .filter { $0.objectId == 1 }
                 .returning(.before)
                 .upsert([
-                    "col": .set("text_3")
-                ], setOnInsert: [
-                    "id": 1
+                    "id": .setOnInsert(1),
+                    "col": .set("text_3"),
                 ]).wait()
             
             XCTAssertEqual(obj3?["id"].intValue, 1)
@@ -663,12 +660,11 @@ class PostgreSQLTest: XCTestCase {
                 .filter { $0.objectId == 1 }
                 .includes(["dummy1", "dummy2"])
                 .upsert([
+                    "id": .setOnInsert(1),
                     "dummy1": .set(1),
                     "dummy2": .set(2),
                     "dummy3": .set(3),
                     "dummy4": .set(4),
-                ], setOnInsert: [
-                    "id": 1
                 ]).wait()
             
             XCTAssertEqual(obj?.keys, ["id", "dummy1", "dummy2"])
@@ -679,12 +675,11 @@ class PostgreSQLTest: XCTestCase {
                 .includes(["dummy1", "dummy2"])
                 .returning(.before)
                 .upsert([
+                    "id": .setOnInsert(2),
                     "dummy1": .set(1),
                     "dummy2": .set(2),
                     "dummy3": .set(3),
                     "dummy4": .set(4),
-                ], setOnInsert: [
-                    "id": 2
                 ]).wait()
             
             XCTAssertNil(obj2)
@@ -694,12 +689,11 @@ class PostgreSQLTest: XCTestCase {
                 .filter { $0.objectId == 1 }
                 .includes(["dummy1", "dummy2"])
                 .upsert([
+                    "id": .setOnInsert(1),
                     "dummy1": .set(1),
                     "dummy2": .set(2),
                     "dummy3": .set(3),
                     "dummy4": .set(4),
-                ], setOnInsert: [
-                    "id": 1
                 ]).wait()
             
             XCTAssertEqual(obj3?.keys, ["id", "dummy1", "dummy2"])
@@ -710,12 +704,11 @@ class PostgreSQLTest: XCTestCase {
                 .includes(["dummy1", "dummy2"])
                 .returning(.before)
                 .upsert([
+                    "id": .setOnInsert(2),
                     "dummy1": .set(1),
                     "dummy2": .set(2),
                     "dummy3": .set(3),
                     "dummy4": .set(4),
-                ], setOnInsert: [
-                    "id": 2
                 ]).wait()
             
             XCTAssertEqual(obj4?.keys, ["id", "dummy1", "dummy2"])

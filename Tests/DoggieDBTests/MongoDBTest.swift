@@ -270,9 +270,8 @@ class MongoDBTest: XCTestCase {
                 .findOne("testUpsertQuery")
                 .filter { $0.objectId ==  "1" }
                 .upsert([
-                    "col": .set("text_1")
-                ], setOnInsert: [
-                    "_id": "1"
+                    "_id": .setOnInsert("1"),
+                    "col": .set("text_1"),
                 ]).wait()
             
             XCTAssertEqual(obj?["_id"].string, "1")
@@ -282,9 +281,8 @@ class MongoDBTest: XCTestCase {
                 .findOne("testUpsertQuery")
                 .filter { $0.objectId ==  "1" }
                 .upsert([
-                    "col": .set("text_2")
-                ], setOnInsert: [
-                    "_id": "1"
+                    "_id": .setOnInsert("1"),
+                    "col": .set("text_2"),
                 ]).wait()
             
             XCTAssertEqual(obj2?["_id"].string, "1")
@@ -295,9 +293,8 @@ class MongoDBTest: XCTestCase {
                 .filter { $0.objectId ==  "1" }
                 .returning(.before)
                 .upsert([
-                    "col": .set("text_3")
-                ], setOnInsert: [
-                    "_id": "1"
+                    "_id": .setOnInsert("1"),
+                    "col": .set("text_3"),
                 ]).wait()
             
             XCTAssertEqual(obj3?["_id"].string, "1")
@@ -321,12 +318,11 @@ class MongoDBTest: XCTestCase {
                 .filter { $0.objectId ==  "1" }
                 .includes(["dummy1", "dummy2"])
                 .upsert([
+                    "_id": .setOnInsert("1"),
                     "dummy1": .set(1),
                     "dummy2": .set(2),
                     "dummy3": .set(3),
                     "dummy4": .set(4),
-                ], setOnInsert: [
-                    "_id": "1"
                 ]).wait()
             
             XCTAssertEqual(obj?.keys, ["_id", "dummy1", "dummy2"])
@@ -337,12 +333,11 @@ class MongoDBTest: XCTestCase {
                 .includes(["dummy1", "dummy2"])
                 .returning(.before)
                 .upsert([
+                    "_id": .setOnInsert("2"),
                     "dummy1": .set(1),
                     "dummy2": .set(2),
                     "dummy3": .set(3),
                     "dummy4": .set(4),
-                ], setOnInsert: [
-                    "_id": "2"
                 ]).wait()
             
             XCTAssertNil(obj2)
@@ -352,12 +347,11 @@ class MongoDBTest: XCTestCase {
                 .filter { $0.objectId ==  "1" }
                 .includes(["dummy1", "dummy2"])
                 .upsert([
+                    "_id": .setOnInsert("1"),
                     "dummy1": .set(1),
                     "dummy2": .set(2),
                     "dummy3": .set(3),
                     "dummy4": .set(4),
-                ], setOnInsert: [
-                    "_id": "1"
                 ]).wait()
             
             XCTAssertEqual(obj3?.keys, ["_id", "dummy1", "dummy2"])
@@ -368,12 +362,11 @@ class MongoDBTest: XCTestCase {
                 .includes(["dummy1", "dummy2"])
                 .returning(.before)
                 .upsert([
+                    "_id": .setOnInsert("2"),
                     "dummy1": .set(1),
                     "dummy2": .set(2),
                     "dummy3": .set(3),
                     "dummy4": .set(4),
-                ], setOnInsert: [
-                    "_id": "2"
                 ]).wait()
             
             XCTAssertEqual(obj4?.keys, ["_id", "dummy1", "dummy2"])

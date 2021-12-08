@@ -25,7 +25,7 @@
 
 extension Dictionary where Key == String, Value == DBUpdateOption {
     
-    fileprivate func toBSONDocument() throws -> BSONDocument {
+    fileprivate func toBSONDictionary() throws -> [String: BSON] {
         
         var update: [String: BSON] = [:]
         
@@ -107,6 +107,25 @@ extension Dictionary where Key == String, Value == DBUpdateOption {
             case .popFirst: update["$pop", default: [:]][key] = -1
             case .popLast: update["$pop", default: [:]][key] = 1
             }
+        }
+        
+        return update
+    }
+    
+    fileprivate func toBSONDocument() throws -> BSONDocument {
+        return try BSONDocument(self.toBSONDictionary())
+    }
+}
+
+extension Dictionary where Key == String, Value == DBUpsertOption {
+    
+    fileprivate func toBSONDocument() throws -> BSONDocument {
+        
+        var update = try self.compactMapValues { $0.update }.toBSONDictionary()
+        
+        for case let (key, .setOnInsert(value)) in self where value.toDBData() != nil {
+            
+            update["$setOnInsert", default: [:]][key] = try BSON(value.toDBData())
         }
         
         return BSONDocument(update)
@@ -195,9 +214,7 @@ struct MongoQueryLauncher: DBQueryLauncher {
         }
     }
     
-    func findOneAndUpdate<Update>(_ query: DBFindOneExpression, _ update: [String: Update]) -> EventLoopFuture<DBObject?> {
-        
-        guard let update = update as? [String: DBUpdateOption] else { fatalError() }
+    func findOneAndUpdate(_ query: DBFindOneExpression, _ update: [String: DBUpdateOption]) -> EventLoopFuture<DBObject?> {
         
         do {
             
@@ -229,10 +246,7 @@ struct MongoQueryLauncher: DBQueryLauncher {
         }
     }
     
-    func findOneAndUpsert<Update, Data>(_ query: DBFindOneExpression, _ update: [String: Update], _ setOnInsert: [String: Data]) -> EventLoopFuture<DBObject?> {
-        
-        guard let update = update as? [String: DBUpdateOption] else { fatalError() }
-        guard let setOnInsert = setOnInsert as? [String: DBDataConvertible] else { fatalError() }
+    func findOneAndUpsert(_ query: DBFindOneExpression, _ upsert: [String: DBUpsertOption]) -> EventLoopFuture<DBObject?> {
         
         do {
             
@@ -240,13 +254,7 @@ struct MongoQueryLauncher: DBQueryLauncher {
             
             var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter)
             
-            var _update = try update.toBSONDocument()
-            
-            if !setOnInsert.isEmpty {
-                _update["$setOnInsert"] = try BSON(setOnInsert.mapValues { try BSON($0.toDBData()) })
-            }
-            
-            mongoQuery = mongoQuery.update(_update)
+            mongoQuery = try mongoQuery.update(upsert.toBSONDocument())
             mongoQuery = mongoQuery.upsert(true)
             
             switch query.returning {
