@@ -128,26 +128,26 @@ extension DBData: Decodable {
         if let double = try? container.decode(Double.self) {
             
             if let uint64 = try? container.decode(UInt64.self), Double(uint64) == double {
-                return DBData(uint64)
+                return .unsigned(uint64)
             } else if let int64 = try? container.decode(Int64.self), Double(int64) == double {
-                return DBData(int64)
+                return .signed(int64)
             } else if let decimal = try? container.decode(Decimal.self), decimal.doubleValue == double {
-                return DBData(decimal)
+                return .decimal(decimal)
             } else {
-                return DBData(double)
+                return .number(double)
             }
         }
         
         if let uint64 = try? container.decode(UInt64.self) {
-            return DBData(uint64)
+            return .unsigned(uint64)
         }
         
         if let int64 = try? container.decode(Int64.self) {
-            return DBData(int64)
+            return .signed(int64)
         }
         
         if let decimal = try? container.decode(Decimal.self) {
-            return DBData(decimal)
+            return .decimal(decimal)
         }
         
         return nil
@@ -158,12 +158,12 @@ extension DBData: Decodable {
         let container = try decoder.singleValueContainer()
         
         if container.decodeNil() {
-            self.init(nilLiteral: ())
+            self = .null
             return
         }
         
         if let bool = try? container.decode(Bool.self) {
-            self.init(bool)
+            self = .boolean(bool)
             return
         }
         
@@ -173,37 +173,37 @@ extension DBData: Decodable {
         }
         
         if let string = try? container.decode(String.self) {
-            self.init(string)
+            self = .string(string)
             return
         }
         
         if let timestamp = try? container.decode(Date.self) {
-            self.init(timestamp)
+            self = .timestamp(timestamp)
             return
         }
         
         if let data = try? container.decode(Data.self) {
-            self.init(data)
+            self = .binary(data)
             return
         }
         
         if let uuid = try? container.decode(UUID.self) {
-            self.init(uuid)
+            self = .uuid(uuid)
             return
         }
         
         if let objectID = try? container.decode(BSONObjectID.self) {
-            self.init(objectID)
+            self = .objectID(objectID)
             return
         }
         
         if let array = try? container.decode([DBData].self) {
-            self.init(array)
+            self = .array(array)
             return
         }
         
         if let object = try? container.decode([String: DBData].self) {
-            self.init(object)
+            self = .dictionary(object)
             return
         }
         
