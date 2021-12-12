@@ -533,7 +533,7 @@ extension DBData {
         }
     }
     
-    public var dictionary: Dictionary<String, DBData>? {
+    public var dictionary: [String: DBData]? {
         switch self {
         case let .dictionary(value): return value
         default: return nil
