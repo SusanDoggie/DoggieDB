@@ -26,7 +26,7 @@
 extension DBData {
     
     public init(_ json: Json) {
-        switch json.type {
+        switch json {
         case .null: self = nil
         case .boolean: self = json.boolValue.map { DBData($0) } ?? nil
         case .string: self = json.stringValue.map { DBData($0) } ?? nil
