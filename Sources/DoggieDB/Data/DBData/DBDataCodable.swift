@@ -1,5 +1,5 @@
 //
-//  Encodable.swift
+//  DBDataCodable.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
@@ -118,5 +118,98 @@ extension DBData: Encodable {
                 try container.encode(value, forKey: CodingKey(stringValue: key))
             }
         }
+    }
+}
+
+extension DBData: Decodable {
+    
+    private static func _decode_number(_ container: SingleValueDecodingContainer) -> DBData? {
+        
+        if let double = try? container.decode(Double.self) {
+            
+            if let uint64 = try? container.decode(UInt64.self), Double(uint64) == double {
+                return DBData(uint64)
+            } else if let int64 = try? container.decode(Int64.self), Double(int64) == double {
+                return DBData(int64)
+            } else if let decimal = try? container.decode(Decimal.self), decimal.doubleValue == double {
+                return DBData(decimal)
+            } else {
+                return DBData(double)
+            }
+        }
+        
+        if let uint64 = try? container.decode(UInt64.self) {
+            return DBData(uint64)
+        }
+        
+        if let int64 = try? container.decode(Int64.self) {
+            return DBData(int64)
+        }
+        
+        if let decimal = try? container.decode(Decimal.self) {
+            return DBData(decimal)
+        }
+        
+        return nil
+    }
+    
+    public init(from decoder: Decoder) throws {
+        
+        let container = try decoder.singleValueContainer()
+        
+        if container.decodeNil() {
+            self.init(nilLiteral: ())
+            return
+        }
+        
+        if let bool = try? container.decode(Bool.self) {
+            self.init(bool)
+            return
+        }
+        
+        if let number = DBData._decode_number(container) {
+            self = number
+            return
+        }
+        
+        if let string = try? container.decode(String.self) {
+            self.init(string)
+            return
+        }
+        
+        if let timestamp = try? container.decode(Date.self) {
+            self.init(timestamp)
+            return
+        }
+        
+        if let data = try? container.decode(Data.self) {
+            self.init(data)
+            return
+        }
+        
+        if let uuid = try? container.decode(UUID.self) {
+            self.init(uuid)
+            return
+        }
+        
+        if let objectID = try? container.decode(BSONObjectID.self) {
+            self.init(objectID)
+            return
+        }
+        
+        if let array = try? container.decode([DBData].self) {
+            self.init(array)
+            return
+        }
+        
+        if let object = try? container.decode([String: DBData].self) {
+            self.init(object)
+            return
+        }
+        
+        throw DecodingError.dataCorrupted(DecodingError.Context(
+            codingPath: decoder.codingPath,
+            debugDescription: "Attempted to decode DBData from unknown structure.")
+        )
     }
 }

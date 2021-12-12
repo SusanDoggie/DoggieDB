@@ -1,5 +1,5 @@
 //
-//  Decodable.swift
+//  DBDataDecoder.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2021 Susan Cheng. All rights reserved.
