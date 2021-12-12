@@ -120,11 +120,6 @@ extension DBData {
             }
         case let .bool(value): self.init(value)
         case let .objectID(value): self.init(value)
-        case let .regex(value):
-            
-            guard let regex = try? value.toNSRegularExpression() else { throw Database.Error.unsupportedType }
-            self.init(regex)
-            
         case let .datetime(value): self.init(value)
         default: throw Database.Error.unsupportedType
         }
@@ -134,11 +129,10 @@ extension DBData {
 extension BSON {
     
     public init(_ value: DBData) throws {
-        switch value.base {
+        switch value {
         case .null: self = .null
         case let .boolean(value): self = .bool(value)
         case let .string(value): self = .string(value)
-        case let .regex(value): self = .regex(BSONRegularExpression(from: value.nsRegex))
         case let .signed(value): self = .int64(value)
         case let .unsigned(value):
             

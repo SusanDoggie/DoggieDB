@@ -51,7 +51,7 @@ extension DBData {
 extension RESPValue {
     
     init(_ value: DBData) throws {
-        switch value.base {
+        switch value {
         case .null: self = .null
         case let .boolean(value): self = .integer(value ? 1 : 0)
         case let .string(value): self = value.convertedToRESPValue()

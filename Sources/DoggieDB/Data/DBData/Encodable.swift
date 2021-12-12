@@ -44,7 +44,7 @@ extension DBData: Encodable {
     
     public func encode(to encoder: Encoder) throws {
         
-        switch self.base {
+        switch self {
         case .null:
             
             var container = encoder.singleValueContainer()
@@ -117,8 +117,6 @@ extension DBData: Encodable {
             for (key, value) in value {
                 try container.encode(value, forKey: CodingKey(stringValue: key))
             }
-            
-        default: throw Database.Error.unsupportedType
         }
     }
 }

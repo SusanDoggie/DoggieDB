@@ -47,8 +47,6 @@ public indirect enum DBPredicateExpression {
     
     case notBetween(DBPredicateValue, DBPredicateValue, DBPredicateValue)
     
-    case matching(DBPredicateKey, DBPredicateValue)
-    
     case startsWith(DBPredicateKey, String)
     
     case endsWith(DBPredicateKey, String)
@@ -303,14 +301,6 @@ public func >= <T: DBDataConvertible>(lhs: T, rhs: DBPredicateKey) -> DBPredicat
     return .greaterThanOrEqualTo(.value(lhs), .key(rhs))
 }
 
-public func ~= (lhs: NSRegularExpression, rhs: DBPredicateKey) -> DBPredicateExpression {
-    return .matching(rhs, .value(lhs))
-}
-
-public func ~= (lhs: Regex, rhs: DBPredicateKey) -> DBPredicateExpression {
-    return .matching(rhs, .value(lhs))
-}
-
 public func ~= (lhs: DBPredicateKey, rhs: DBPredicateKey) -> DBPredicateExpression {
     return .containsIn(.key(rhs), .key(lhs))
 }
@@ -341,14 +331,6 @@ public func ~= <T: DBDataConvertible>(lhs: PartialRangeUpTo<T>, rhs: DBPredicate
 
 public func ~= <T: DBDataConvertible>(lhs: PartialRangeThrough<T>, rhs: DBPredicateKey) -> DBPredicateExpression {
     return rhs <= lhs.upperBound
-}
-
-public func =~ (lhs: DBPredicateKey, rhs: NSRegularExpression) -> DBPredicateExpression {
-    return .matching(lhs, .value(rhs))
-}
-
-public func =~ (lhs: DBPredicateKey, rhs: Regex) -> DBPredicateExpression {
-    return .matching(lhs, .value(rhs))
 }
 
 public func =~ (lhs: DBPredicateKey, rhs: DBPredicateKey) -> DBPredicateExpression {

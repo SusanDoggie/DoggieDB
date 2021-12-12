@@ -287,7 +287,7 @@ extension DBData {
 extension PostgresData {
     
     init(_ value: DBData) throws {
-        switch value.base {
+        switch value {
         case .null: self = .null
         case let .boolean(value): self.init(bool: value)
         case let .string(value): self.init(string: value)
@@ -360,8 +360,6 @@ extension PostgresData {
             
             guard let json = try? PostgresData(jsonb: value) else { throw Database.Error.unsupportedType }
             self = json
-            
-        default: throw Database.Error.unsupportedType
         }
     }
 }

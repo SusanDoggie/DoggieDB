@@ -90,7 +90,7 @@ extension DBData {
         func container<Key: Swift.CodingKey>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
             
             guard !value.isNil else { throw Database.Error.valueNotFound }
-            guard case let .dictionary(dictionary) = value.base else { throw Database.Error.unsupportedType }
+            guard case let .dictionary(dictionary) = value else { throw Database.Error.unsupportedType }
             
             let container = _KeyedDecodingContainer<Key>(dictionary: dictionary, codingPath: codingPath, options: options)
             return KeyedDecodingContainer(container)
@@ -99,7 +99,7 @@ extension DBData {
         func unkeyedContainer() throws -> UnkeyedDecodingContainer {
             
             guard !value.isNil else { throw Database.Error.valueNotFound }
-            guard case let .array(array) = value.base else { throw Database.Error.unsupportedType }
+            guard case let .array(array) = value else { throw Database.Error.unsupportedType }
             
             return _UnkeyedDecodingContainer(array: array, codingPath: codingPath, options: options)
         }
@@ -153,7 +153,7 @@ extension DBData._Decoder: SingleValueDecodingContainer {
     }
     
     func _decode(_ type: Bool.Type) throws -> Bool {
-        switch value.base {
+        switch value {
         case .null: throw Database.Error.valueNotFound
             
         case let .boolean(value): return value
@@ -171,7 +171,7 @@ extension DBData._Decoder: SingleValueDecodingContainer {
     }
     
     func _decode<T: BinaryFloatingPoint>(_ type: T.Type) throws -> T {
-        switch value.base {
+        switch value {
         case .null: throw Database.Error.valueNotFound
             
         case let .signed(value):
@@ -206,7 +206,7 @@ extension DBData._Decoder: SingleValueDecodingContainer {
     }
     
     func _decode<T: FixedWidthInteger>(_ type: T.Type) throws -> T {
-        switch value.base {
+        switch value {
         case .null: throw Database.Error.valueNotFound
             
         case let .signed(value):
@@ -240,7 +240,7 @@ extension DBData._Decoder: SingleValueDecodingContainer {
     }
     
     func _decode(_ type: Decimal.Type) throws -> Decimal {
-        switch value.base {
+        switch value {
         case .null: throw Database.Error.valueNotFound
             
         case let .signed(value): return Decimal(value)
@@ -258,7 +258,7 @@ extension DBData._Decoder: SingleValueDecodingContainer {
     }
     
     func _decode(_ type: String.Type) throws -> String {
-        switch value.base {
+        switch value {
         case .null: throw Database.Error.valueNotFound
         case let .string(string): return string
         case let .binary(data):
@@ -271,7 +271,7 @@ extension DBData._Decoder: SingleValueDecodingContainer {
     }
     
     func _decode(_ type: UUID.Type) throws -> UUID {
-        switch value.base {
+        switch value {
         case .null: throw Database.Error.valueNotFound
             
         case let .uuid(uuid): return uuid
@@ -291,7 +291,7 @@ extension DBData._Decoder: SingleValueDecodingContainer {
     }
     
     func _decode(_ type: BSONObjectID.Type) throws -> BSONObjectID {
-        switch value.base {
+        switch value {
         case .null: throw Database.Error.valueNotFound
         case let .objectID(objectID): return objectID
         case let .string(string): return try BSONObjectID(string)
@@ -300,7 +300,7 @@ extension DBData._Decoder: SingleValueDecodingContainer {
     }
     
     func _decode(_ type: Date.Type) throws -> Date {
-        switch value.base {
+        switch value {
         case .null: throw Database.Error.valueNotFound
             
         case let .timestamp(date):
@@ -372,7 +372,7 @@ extension DBData._Decoder: SingleValueDecodingContainer {
     }
     
     func _decode(_ type: DateComponents.Type) throws -> DateComponents {
-        switch value.base {
+        switch value {
         case .null: throw Database.Error.valueNotFound
         case let .timestamp(date): return Calendar.iso8601.dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: date)
         case let .date(date): return date
@@ -381,7 +381,7 @@ extension DBData._Decoder: SingleValueDecodingContainer {
     }
     
     func _decode(_ type: Data.Type) throws -> Data {
-        switch value.base {
+        switch value {
         case .null: throw Database.Error.valueNotFound
         case let .binary(data): return data
         default: throw Database.Error.unsupportedType
@@ -389,7 +389,7 @@ extension DBData._Decoder: SingleValueDecodingContainer {
     }
     
     func _decode(_ type: ByteBuffer.Type) throws -> ByteBuffer {
-        switch value.base {
+        switch value {
         case .null: throw Database.Error.valueNotFound
         case let .binary(data): return ByteBuffer(data: data)
         default: throw Database.Error.unsupportedType
@@ -397,7 +397,7 @@ extension DBData._Decoder: SingleValueDecodingContainer {
     }
     
     func _decode(_ type: ByteBufferView.Type) throws -> ByteBufferView {
-        switch value.base {
+        switch value {
         case .null: throw Database.Error.valueNotFound
         case let .binary(data): return ByteBufferView(data)
         default: throw Database.Error.unsupportedType
@@ -460,7 +460,7 @@ extension DBData._KeyedDecodingContainer: KeyedDecodingContainerProtocol {
     func nestedContainer<NestedKey: CodingKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> {
         
         guard let entry = self.value[key.stringValue] else { throw Database.Error.valueNotFound }
-        guard case let .dictionary(dictionary) = entry.base else { throw Database.Error.unsupportedType }
+        guard case let .dictionary(dictionary) = entry else { throw Database.Error.unsupportedType }
         
         var codingPath = self.codingPath
         codingPath.append(key)
@@ -472,7 +472,7 @@ extension DBData._KeyedDecodingContainer: KeyedDecodingContainerProtocol {
     func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
         
         guard let entry = self.value[key.stringValue] else { throw Database.Error.valueNotFound }
-        guard case let .array(array) = entry.base else { throw Database.Error.unsupportedType }
+        guard case let .array(array) = entry else { throw Database.Error.unsupportedType }
         
         var codingPath = self.codingPath
         codingPath.append(key)
@@ -537,7 +537,7 @@ extension DBData._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         
         guard !self.isAtEnd else { throw Database.Error.valueNotFound }
         
-        guard case let .dictionary(dictionary) = self.value[self.currentIndex].base else { throw Database.Error.unsupportedType }
+        guard case let .dictionary(dictionary) = self.value[self.currentIndex] else { throw Database.Error.unsupportedType }
         
         var codingPath = self.codingPath
         codingPath.append(DBData.CodingKey(intValue: self.currentIndex))
@@ -552,7 +552,7 @@ extension DBData._UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         
         guard !self.isAtEnd else { throw Database.Error.valueNotFound }
         
-        guard case let .array(array) = self.value[self.currentIndex].base else { throw Database.Error.unsupportedType }
+        guard case let .array(array) = self.value[self.currentIndex] else { throw Database.Error.unsupportedType }
         
         var codingPath = self.codingPath
         codingPath.append(DBData.CodingKey(intValue: self.currentIndex))

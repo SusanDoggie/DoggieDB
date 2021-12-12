@@ -42,7 +42,7 @@ extension Dictionary where Key == String, Value == DBUpdateOption {
             case let .increment(value): update["$inc", default: [:]][key] = try BSON(value.toDBData())
             case let .decrement(value):
                 
-                switch value.toDBData().type {
+                switch value.toDBData() {
                 case .signed, .unsigned:
                     
                     guard let value = value.toDBData().intValue else { throw Database.Error.unsupportedOperation }
@@ -64,7 +64,7 @@ extension Dictionary where Key == String, Value == DBUpdateOption {
             case let .multiply(value): update["$mul", default: [:]][key] = try BSON(value.toDBData())
             case let .divide(value):
                 
-                switch value.toDBData().type {
+                switch value.toDBData() {
                 case .signed, .unsigned, .number:
                     
                     guard let value = value.toDBData().doubleValue else { throw Database.Error.unsupportedOperation }
@@ -372,7 +372,6 @@ extension MongoPredicateExpression {
                 .greaterThan(MongoPredicateValue(to), MongoPredicateValue(x)),
             ])
             
-        case let .matching(lhs, rhs): self = try .matching(MongoPredicateKey(lhs), MongoPredicateValue(rhs))
         case let .startsWith(value, pattern): self = .startsWith(MongoPredicateKey(value), pattern)
         case let .endsWith(value, pattern): self = .endsWith(MongoPredicateKey(value), pattern)
         case let .contains(value, pattern): self = .contains(MongoPredicateKey(value), pattern)

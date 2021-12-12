@@ -164,20 +164,6 @@ extension BSONObjectID: DBDataConvertible {
     }
 }
 
-extension NSRegularExpression: DBDataConvertible {
-    
-    public func toDBData() -> DBData {
-        return DBData(self)
-    }
-}
-
-extension Regex: DBDataConvertible {
-    
-    public func toDBData() -> DBData {
-        return DBData(self)
-    }
-}
-
 extension Array: DBDataConvertible where Element: DBDataConvertible {
     
     public func toDBData() -> DBData {
