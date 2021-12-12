@@ -332,7 +332,7 @@ extension DBData {
         case let .signed(value): return Int8(exactly: value)
         case let .unsigned(value): return Int8(exactly: value)
         case let .number(value): return Int8(exactly: value)
-        case let .decimal(value): return Int64(exactly: value).flatMap { Int8(exactly: $0) }
+        case let .decimal(value): return Int8(exactly: value)
         case let .string(string): return Int8(string)
         default: return nil
         }
@@ -343,7 +343,7 @@ extension DBData {
         case let .signed(value): return UInt8(exactly: value)
         case let .unsigned(value): return UInt8(exactly: value)
         case let .number(value): return UInt8(exactly: value)
-        case let .decimal(value): return UInt64(exactly: value).flatMap { UInt8(exactly: $0) }
+        case let .decimal(value): return UInt8(exactly: value)
         case let .string(string): return UInt8(string)
         default: return nil
         }
@@ -354,7 +354,7 @@ extension DBData {
         case let .signed(value): return Int16(exactly: value)
         case let .unsigned(value): return Int16(exactly: value)
         case let .number(value): return Int16(exactly: value)
-        case let .decimal(value): return Int64(exactly: value).flatMap { Int16(exactly: $0) }
+        case let .decimal(value): return Int16(exactly: value)
         case let .string(string): return Int16(string)
         default: return nil
         }
@@ -365,7 +365,7 @@ extension DBData {
         case let .signed(value): return UInt16(exactly: value)
         case let .unsigned(value): return UInt16(exactly: value)
         case let .number(value): return UInt16(exactly: value)
-        case let .decimal(value): return UInt64(exactly: value).flatMap { UInt16(exactly: $0) }
+        case let .decimal(value): return UInt16(exactly: value)
         case let .string(string): return UInt16(string)
         default: return nil
         }
@@ -376,7 +376,7 @@ extension DBData {
         case let .signed(value): return Int32(exactly: value)
         case let .unsigned(value): return Int32(exactly: value)
         case let .number(value): return Int32(exactly: value)
-        case let .decimal(value): return Int64(exactly: value).flatMap { Int32(exactly: $0) }
+        case let .decimal(value): return Int32(exactly: value)
         case let .string(string): return Int32(string)
         default: return nil
         }
@@ -387,7 +387,7 @@ extension DBData {
         case let .signed(value): return UInt32(exactly: value)
         case let .unsigned(value): return UInt32(exactly: value)
         case let .number(value): return UInt32(exactly: value)
-        case let .decimal(value): return UInt64(exactly: value).flatMap { UInt32(exactly: $0) }
+        case let .decimal(value): return UInt32(exactly: value)
         case let .string(string): return UInt32(string)
         default: return nil
         }
@@ -420,7 +420,7 @@ extension DBData {
         case let .signed(value): return Int(exactly: value)
         case let .unsigned(value): return Int(exactly: value)
         case let .number(value): return Int(exactly: value)
-        case let .decimal(value): return Int64(exactly: value).flatMap { Int(exactly: $0) }
+        case let .decimal(value): return Int(exactly: value)
         case let .string(string): return Int(string)
         default: return nil
         }
@@ -431,7 +431,7 @@ extension DBData {
         case let .signed(value): return UInt(exactly: value)
         case let .unsigned(value): return UInt(exactly: value)
         case let .number(value): return UInt(exactly: value)
-        case let .decimal(value): return UInt64(exactly: value).flatMap { UInt(exactly: $0) }
+        case let .decimal(value): return UInt(exactly: value)
         case let .string(string): return UInt(string)
         default: return nil
         }
@@ -442,7 +442,7 @@ extension DBData {
         case let .signed(value): return Float(exactly: value)
         case let .unsigned(value): return Float(exactly: value)
         case let .number(value): return Float(value)
-        case let .decimal(value): return Double(exactly: value).flatMap { Float(exactly: $0) }
+        case let .decimal(value): return Float(exactly: value)
         case let .string(string): return Float(string)
         default: return nil
         }
