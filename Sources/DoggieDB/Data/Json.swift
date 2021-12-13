@@ -30,10 +30,7 @@ extension DBData {
         case .null: self = nil
         case let .boolean(value): self = DBData(value)
         case let .string(value): self = DBData(value)
-        case let .signed(value): self = DBData(value)
-        case let .unsigned(value): self = DBData(value)
-        case let .number(value): self = DBData(value)
-        case let .decimal(value): self = DBData(value)
+        case let .number(value): self = DBData(value.doubleValue)
         case let .array(value): self = DBData(value.map { DBData($0) })
         case let .dictionary(value): self = DBData(value.mapValues { DBData($0) })
         }
