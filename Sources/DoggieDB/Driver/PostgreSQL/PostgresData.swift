@@ -111,9 +111,9 @@ extension DBData {
             
             
         case .name,
-             .bpchar,
-             .varchar,
-             .text:
+                .bpchar,
+                .varchar,
+                .text:
             
             guard let string = value.string else { throw Database.Error.unsupportedType }
             self = DBData(string)
@@ -129,7 +129,7 @@ extension DBData {
             self = DBData(double)
             
         case .money,
-             .numeric:
+                .numeric:
             
             guard let decimal = value.decimal else { throw Database.Error.unsupportedType }
             self = DBData(decimal)
@@ -242,20 +242,20 @@ extension DBData {
             self = DBData(uuid)
             
         case .boolArray,
-             .byteaArray,
-             .charArray,
-             .nameArray,
-             .int2Array,
-             .int4Array,
-             .textArray,
-             .varcharArray,
-             .int8Array,
-             .pointArray,
-             .float4Array,
-             .float8Array,
-             .aclitemArray,
-             .uuidArray,
-             .jsonbArray:
+                .byteaArray,
+                .charArray,
+                .nameArray,
+                .int2Array,
+                .int4Array,
+                .textArray,
+                .varcharArray,
+                .int8Array,
+                .pointArray,
+                .float4Array,
+                .float8Array,
+                .aclitemArray,
+                .uuidArray,
+                .jsonbArray:
             
             guard let array = value.array else { throw Database.Error.unsupportedType }
             self = try DBData(array.map { try DBData($0) })
@@ -286,11 +286,8 @@ extension DBData {
 
 extension PostgresData {
     
-    init(_ value: DBData) throws {
+    init(_ value: DBData.Number) throws {
         switch value {
-        case .null: self = .null
-        case let .boolean(value): self.init(bool: value)
-        case let .string(value): self.init(string: value)
         case let .signed(value): self.init(int64: value)
         case let .unsigned(value):
             
@@ -299,6 +296,15 @@ extension PostgresData {
             
         case let .number(value): self.init(double: value)
         case let .decimal(value): self.init(decimal: value)
+        }
+    }
+    
+    init(_ value: DBData) throws {
+        switch value {
+        case .null: self = .null
+        case let .boolean(value): self.init(bool: value)
+        case let .string(value): self.init(string: value)
+        case let .number(value): try self.init(value)
         case let .timestamp(value): self.init(date: value)
         case let .date(value):
             

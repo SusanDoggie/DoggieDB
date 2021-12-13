@@ -42,40 +42,38 @@ extension Dictionary where Key == String, Value == DBUpdateOption {
             case let .increment(value): update["$inc", default: [:]][key] = try BSON(value.toDBData())
             case let .decrement(value):
                 
-                switch value.toDBData() {
+                guard case let .number(value) = value.toDBData() else { throw Database.Error.unsupportedOperation }
+                
+                switch value {
                 case .signed, .unsigned:
                     
-                    guard let value = value.toDBData().intValue else { throw Database.Error.unsupportedOperation }
+                    guard let value = value.intValue else { throw Database.Error.unsupportedOperation }
                     update["$inc", default: [:]][key] = BSON(-value)
                     
                 case .number:
                     
-                    guard let value = value.toDBData().doubleValue else { throw Database.Error.unsupportedOperation }
-                    update["$inc", default: [:]][key] = BSON(-value)
+                    update["$inc", default: [:]][key] = BSON(-value.doubleValue)
                     
                 case .decimal:
                     
-                    guard let value = value.toDBData().decimalValue else { throw Database.Error.unsupportedOperation }
+                    guard let value = value.decimalValue else { throw Database.Error.unsupportedOperation }
                     update["$inc", default: [:]][key] = BSON(-value)
-                    
-                default: throw Database.Error.unsupportedOperation
                 }
                 
             case let .multiply(value): update["$mul", default: [:]][key] = try BSON(value.toDBData())
             case let .divide(value):
                 
-                switch value.toDBData() {
+                guard case let .number(value) = value.toDBData() else { throw Database.Error.unsupportedOperation }
+                
+                switch value {
                 case .signed, .unsigned, .number:
                     
-                    guard let value = value.toDBData().doubleValue else { throw Database.Error.unsupportedOperation }
-                    update["$mul", default: [:]][key] = BSON(1 / value)
+                    update["$mul", default: [:]][key] = BSON(1 / value.doubleValue)
                     
                 case .decimal:
                     
-                    guard let value = value.toDBData().decimalValue else { throw Database.Error.unsupportedOperation }
+                    guard let value = value.decimalValue else { throw Database.Error.unsupportedOperation }
                     update["$mul", default: [:]][key] = BSON(1 / value)
-                    
-                default: throw Database.Error.unsupportedOperation
                 }
                 
             case let .min(value): update["$min", default: [:]][key] = try BSON(value.toDBData())

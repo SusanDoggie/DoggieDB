@@ -23,16 +23,43 @@
 //  THE SOFTWARE.
 //
 
+extension DBData.Number {
+    
+    @inlinable
+    public init(_ json: Json.Number) {
+        switch json {
+        case let .signed(value): self.init(value)
+        case let .unsigned(value): self.init(value)
+        case let .number(value): self.init(value)
+        case let .decimal(value): self.init(value)
+        }
+    }
+}
+
+extension Json.Number {
+    
+    @inlinable
+    public init(_ json: DBData.Number) {
+        switch json {
+        case let .signed(value): self.init(value)
+        case let .unsigned(value): self.init(value)
+        case let .number(value): self.init(value)
+        case let .decimal(value): self.init(value)
+        }
+    }
+}
+
 extension DBData {
     
+    @inlinable
     public init(_ json: Json) {
         switch json {
         case .null: self = nil
-        case let .boolean(value): self = DBData(value)
-        case let .string(value): self = DBData(value)
-        case let .number(value): self = DBData(value.doubleValue)
-        case let .array(value): self = DBData(value.map { DBData($0) })
-        case let .dictionary(value): self = DBData(value.mapValues { DBData($0) })
+        case let .boolean(value): self.init(value)
+        case let .string(value): self.init(value)
+        case let .number(value): self = .number(Number(value))
+        case let .array(value): self.init(value.map { DBData($0) })
+        case let .dictionary(value): self.init(value.mapValues { DBData($0) })
         }
     }
 }
@@ -44,10 +71,7 @@ extension Json {
         case .null: self = nil
         case let .boolean(value): self.init(value)
         case let .string(value): self.init(value)
-        case let .signed(value): self.init(value)
-        case let .unsigned(value): self.init(value)
-        case let .number(value): self.init(value)
-        case let .decimal(value): self.init(value)
+        case let .number(value): self = .number(Number(value))
         case let .date(value):
             
             let formatter = ISO8601DateFormatter()

@@ -128,11 +128,8 @@ extension DBData {
 
 extension BSON {
     
-    public init(_ value: DBData) throws {
+    public init(_ value: DBData.Number) throws {
         switch value {
-        case .null: self = .null
-        case let .boolean(value): self = .bool(value)
-        case let .string(value): self = .string(value)
         case let .signed(value): self = .int64(value)
         case let .unsigned(value):
             
@@ -145,7 +142,15 @@ extension BSON {
             
             guard let decimal = try? BSONDecimal128("\(value)") else { throw Database.Error.unsupportedType }
             self = .decimal128(decimal)
-            
+        }
+    }
+    
+    public init(_ value: DBData) throws {
+        switch value {
+        case .null: self = .null
+        case let .boolean(value): self = .bool(value)
+        case let .string(value): self = .string(value)
+        case let .number(value): try self.init(value)
         case let .timestamp(value): self = .datetime(value)
         case let .date(value):
             

@@ -60,25 +60,29 @@ extension DBData: Encodable {
             var container = encoder.singleValueContainer()
             try container.encode(value)
             
-        case let .signed(value):
+        case let .number(number):
             
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-            
-        case let .unsigned(value):
-            
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-            
-        case let .number(value):
-            
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-            
-        case let .decimal(value):
-            
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
+            switch number {
+            case let .signed(number):
+                
+                var container = encoder.singleValueContainer()
+                try container.encode(number)
+                
+            case let .unsigned(number):
+                
+                var container = encoder.singleValueContainer()
+                try container.encode(number)
+                
+            case let .number(number):
+                
+                var container = encoder.singleValueContainer()
+                try container.encode(number)
+                
+            case let .decimal(number):
+                
+                var container = encoder.singleValueContainer()
+                try container.encode(number)
+            }
             
         case let .timestamp(value):
             
@@ -123,7 +127,7 @@ extension DBData: Encodable {
 
 extension DBData: Decodable {
     
-    private static func _decode_number(_ container: SingleValueDecodingContainer) -> DBData? {
+    private static func _decode_number(_ container: SingleValueDecodingContainer) -> Number? {
         
         if let double = try? container.decode(Double.self) {
             
@@ -168,7 +172,7 @@ extension DBData: Decodable {
         }
         
         if let number = DBData._decode_number(container) {
-            self = number
+            self = .number(number)
             return
         }
         

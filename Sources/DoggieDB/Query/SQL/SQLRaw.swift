@@ -46,14 +46,20 @@ enum SQLRawComponent: Hashable {
 
 extension SQLRawComponent {
     
-    init(_ value: DBData) {
+    init(_ value: DBData.Number) {
         switch value {
-        case .null: self = .null
-        case let .boolean(value): self = .boolean(value)
         case let .signed(value): self = .signed(value)
         case let .unsigned(value): self = .unsigned(value)
         case let .number(value): self = value.isFinite ? .number(value) : .bind(DBData(value))
         case let .decimal(value): self = value.isFinite ? .decimal(value) : .bind(DBData(value))
+        }
+    }
+    
+    init(_ value: DBData) {
+        switch value {
+        case .null: self = .null
+        case let .boolean(value): self = .boolean(value)
+        case let .number(value): self.init(value)
         default: self = .bind(value)
         }
     }

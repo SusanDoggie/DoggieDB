@@ -50,15 +50,21 @@ extension DBData {
 
 extension RESPValue {
     
+    init(_ value: DBData.Number) {
+        switch value {
+        case let .signed(value): self = value.convertedToRESPValue()
+        case let .unsigned(value): self = value.convertedToRESPValue()
+        case let .number(value): self = value.convertedToRESPValue()
+        case let .decimal(value): self = "\(value)".convertedToRESPValue()
+        }
+    }
+    
     init(_ value: DBData) throws {
         switch value {
         case .null: self = .null
         case let .boolean(value): self = .integer(value ? 1 : 0)
         case let .string(value): self = value.convertedToRESPValue()
-        case let .signed(value): self = value.convertedToRESPValue()
-        case let .unsigned(value): self = value.convertedToRESPValue()
-        case let .number(value): self = value.convertedToRESPValue()
-        case let .decimal(value): self = "\(value)".convertedToRESPValue()
+        case let .number(value): self.init(value)
         case let .timestamp(value):
             
             let formatter = ISO8601DateFormatter()
