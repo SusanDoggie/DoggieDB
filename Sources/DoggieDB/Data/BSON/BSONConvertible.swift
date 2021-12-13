@@ -30,6 +30,7 @@ public protocol BSONConvertible {
 
 extension BSON: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return self
     }
@@ -37,6 +38,7 @@ extension BSON: BSONConvertible {
 
 extension BSONDocument: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return BSON(self)
     }
@@ -44,6 +46,7 @@ extension BSONDocument: BSONConvertible {
 
 extension Optional: BSONConvertible where Wrapped: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return self?.toBSON() ?? .null
     }
@@ -51,6 +54,7 @@ extension Optional: BSONConvertible where Wrapped: BSONConvertible {
 
 extension Bool: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return .bool(self)
     }
@@ -58,6 +62,7 @@ extension Bool: BSONConvertible {
 
 extension SignedInteger where Self: FixedWidthInteger {
     
+    @inlinable
     public func toBSON() -> BSON {
         return MemoryLayout<Self>.size > 4 ? .int64(Int64(self)) : .int32(Int32(self))
     }
@@ -65,6 +70,7 @@ extension SignedInteger where Self: FixedWidthInteger {
 
 extension UnsignedInteger where Self: FixedWidthInteger {
     
+    @inlinable
     public func toBSON() -> BSON {
         return MemoryLayout<Self>.size < 4 ? .int32(Int32(self)) : .int64(Int64(self))
     }
@@ -83,6 +89,7 @@ extension Int64: BSONConvertible { }
 
 extension BinaryFloatingPoint {
     
+    @inlinable
     public func toBSON() -> BSON {
         return .double(Double(self))
     }
@@ -101,6 +108,7 @@ extension Double: BSONConvertible { }
 
 extension Decimal: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return try! .decimal128(BSONDecimal128("\(self)"))
     }
@@ -108,6 +116,7 @@ extension Decimal: BSONConvertible {
 
 extension StringProtocol {
     
+    @inlinable
     public func toBSON() -> BSON {
         return .string(String(self))
     }
@@ -115,6 +124,7 @@ extension StringProtocol {
 
 extension String: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return .string(self)
     }
@@ -124,6 +134,7 @@ extension Substring: BSONConvertible { }
 
 extension Date: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return .datetime(self)
     }
@@ -131,6 +142,7 @@ extension Date: BSONConvertible {
 
 extension Data: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return try! .binary(BSONBinary(data: self, subtype: .generic))
     }
@@ -138,6 +150,7 @@ extension Data: BSONConvertible {
 
 extension ByteBuffer: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return try! .binary(BSONBinary(data: self.data, subtype: .generic))
     }
@@ -145,6 +158,7 @@ extension ByteBuffer: BSONConvertible {
 
 extension ByteBufferView: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return try! .binary(BSONBinary(data: Data(self), subtype: .generic))
     }
@@ -152,6 +166,7 @@ extension ByteBufferView: BSONConvertible {
 
 extension DateComponents: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return .datetime(Calendar.iso8601.date(from: self)!)
     }
@@ -159,6 +174,7 @@ extension DateComponents: BSONConvertible {
 
 extension UUID: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return try! .binary(BSONBinary(from: self))
     }
@@ -166,6 +182,7 @@ extension UUID: BSONConvertible {
 
 extension BSONObjectID: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return .objectID(self)
     }
@@ -173,6 +190,7 @@ extension BSONObjectID: BSONConvertible {
 
 extension NSRegularExpression: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return .regex(BSONRegularExpression(from: self))
     }
@@ -180,6 +198,7 @@ extension NSRegularExpression: BSONConvertible {
 
 extension Regex: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return .regex(BSONRegularExpression(from: self.nsRegex))
     }
@@ -187,6 +206,7 @@ extension Regex: BSONConvertible {
 
 extension Array: BSONConvertible where Element: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return .array(self.map { $0.toBSON() })
     }
@@ -194,6 +214,7 @@ extension Array: BSONConvertible where Element: BSONConvertible {
 
 extension Dictionary: BSONConvertible where Key == String, Value: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return .document(BSONDocument(self.mapValues { $0.toBSON() }))
     }
@@ -201,6 +222,7 @@ extension Dictionary: BSONConvertible where Key == String, Value: BSONConvertibl
 
 extension OrderedDictionary: BSONConvertible where Key == String, Value: BSONConvertible {
     
+    @inlinable
     public func toBSON() -> BSON {
         return .document(BSONDocument(self.mapValues { $0.toBSON() }))
     }

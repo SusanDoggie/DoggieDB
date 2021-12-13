@@ -30,6 +30,7 @@ public protocol DBDataConvertible {
 
 extension DBData: DBDataConvertible {
     
+    @inlinable
     public func toDBData() -> DBData {
         return self
     }
@@ -37,6 +38,7 @@ extension DBData: DBDataConvertible {
 
 extension Optional: DBDataConvertible where Wrapped: DBDataConvertible {
     
+    @inlinable
     public func toDBData() -> DBData {
         return self?.toDBData() ?? nil
     }
@@ -44,6 +46,7 @@ extension Optional: DBDataConvertible where Wrapped: DBDataConvertible {
 
 extension Bool: DBDataConvertible {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }
@@ -51,6 +54,7 @@ extension Bool: DBDataConvertible {
 
 extension SignedInteger where Self: FixedWidthInteger {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }
@@ -58,6 +62,7 @@ extension SignedInteger where Self: FixedWidthInteger {
 
 extension UnsignedInteger where Self: FixedWidthInteger {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }
@@ -76,6 +81,7 @@ extension Int64: DBDataConvertible { }
 
 extension BinaryFloatingPoint {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }
@@ -94,6 +100,7 @@ extension Double: DBDataConvertible { }
 
 extension Decimal: DBDataConvertible {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }
@@ -101,6 +108,7 @@ extension Decimal: DBDataConvertible {
 
 extension StringProtocol {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(String(self))
     }
@@ -108,6 +116,7 @@ extension StringProtocol {
 
 extension String: DBDataConvertible {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }
@@ -117,6 +126,7 @@ extension Substring: DBDataConvertible { }
 
 extension Date: DBDataConvertible {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }
@@ -124,6 +134,7 @@ extension Date: DBDataConvertible {
 
 extension Data: DBDataConvertible {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }
@@ -131,6 +142,7 @@ extension Data: DBDataConvertible {
 
 extension ByteBuffer: DBDataConvertible {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }
@@ -138,6 +150,7 @@ extension ByteBuffer: DBDataConvertible {
 
 extension ByteBufferView: DBDataConvertible {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }
@@ -145,6 +158,7 @@ extension ByteBufferView: DBDataConvertible {
 
 extension DateComponents: DBDataConvertible {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }
@@ -152,6 +166,7 @@ extension DateComponents: DBDataConvertible {
 
 extension UUID: DBDataConvertible {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }
@@ -159,6 +174,7 @@ extension UUID: DBDataConvertible {
 
 extension BSONObjectID: DBDataConvertible {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }
@@ -166,6 +182,7 @@ extension BSONObjectID: DBDataConvertible {
 
 extension Array: DBDataConvertible where Element: DBDataConvertible {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }
@@ -173,6 +190,7 @@ extension Array: DBDataConvertible where Element: DBDataConvertible {
 
 extension Dictionary: DBDataConvertible where Key == String, Value: DBDataConvertible {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }
@@ -180,6 +198,7 @@ extension Dictionary: DBDataConvertible where Key == String, Value: DBDataConver
 
 extension OrderedDictionary: DBDataConvertible where Key == String, Value: DBDataConvertible {
     
+    @inlinable
     public func toDBData() -> DBData {
         return DBData(self)
     }

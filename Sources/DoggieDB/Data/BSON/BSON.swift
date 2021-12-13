@@ -25,6 +25,7 @@
 
 extension Dictionary where Key == String, Value == DBData {
     
+    @inlinable
     init(_ document: BSONDocument) throws {
         self.init()
         for (key, value) in document {
@@ -35,6 +36,7 @@ extension Dictionary where Key == String, Value == DBData {
 
 extension OrderedDictionary where Key == String, Value == DBData {
     
+    @inlinable
     init(_ document: BSONDocument) throws {
         self.init()
         for (key, value) in document {
@@ -45,6 +47,7 @@ extension OrderedDictionary where Key == String, Value == DBData {
 
 extension BSONDocument {
     
+    @inlinable
     public init<Value: BSONConvertible>(_ dictionary: [String: Value]) {
         self.init()
         for (key, value) in dictionary {
@@ -52,6 +55,7 @@ extension BSONDocument {
         }
     }
     
+    @inlinable
     public init<Value: BSONConvertible>(_ dictionary: OrderedDictionary<String, Value>) {
         self.init()
         for (key, value) in dictionary {
@@ -59,10 +63,12 @@ extension BSONDocument {
         }
     }
     
+    @inlinable
     public init(_ dictionary: [String: DBData]) throws {
         try self.init(dictionary.mapValues(BSON.init))
     }
     
+    @inlinable
     public init(_ dictionary: OrderedDictionary<String, DBData>) throws {
         try self.init(dictionary.mapValues(BSON.init))
     }
@@ -70,14 +76,17 @@ extension BSONDocument {
 
 extension BSON {
     
+    @inlinable
     public init(_ document: BSONDocument) {
         self = .document(document)
     }
     
+    @inlinable
     public init<Wrapped: BSONConvertible>(_ value: Wrapped?) {
         self = value.toBSON()
     }
     
+    @inlinable
     public init<S: Sequence>(_ elements: S) where S.Element: BSONConvertible {
         self = .array(elements.map { $0.toBSON() })
     }
@@ -85,6 +94,7 @@ extension BSON {
 
 extension DBData {
     
+    @inlinable
     public init(_ value: BSON) throws {
         switch value {
         case .null: self = nil
@@ -128,6 +138,7 @@ extension DBData {
 
 extension BSON {
     
+    @inlinable
     public init(_ value: DBData.Number) throws {
         switch value {
         case let .signed(value): self = .int64(value)
@@ -145,6 +156,7 @@ extension BSON {
         }
     }
     
+    @inlinable
     public init(_ value: DBData) throws {
         switch value {
         case .null: self = .null
@@ -168,6 +180,7 @@ extension BSON {
 
 extension BSON {
     
+    @inlinable
     public var count: Int {
         switch self {
         case let .array(value): return value.count
@@ -176,6 +189,7 @@ extension BSON {
         }
     }
     
+    @inlinable
     public subscript(index: Int) -> BSON {
         get {
             guard 0..<count ~= index else { return .undefined }
@@ -199,6 +213,7 @@ extension BSON {
         }
     }
     
+    @inlinable
     public var keys: [String] {
         switch self {
         case let .document(value): return value.keys
@@ -206,6 +221,7 @@ extension BSON {
         }
     }
     
+    @inlinable
     public func hasKey(_ key: String) -> Bool {
         switch self {
         case let .document(value): return value.hasKey(key)
@@ -213,6 +229,7 @@ extension BSON {
         }
     }
     
+    @inlinable
     public subscript(key: String) -> BSON {
         get {
             switch self {

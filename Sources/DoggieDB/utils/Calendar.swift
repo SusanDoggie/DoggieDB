@@ -25,6 +25,7 @@
 
 extension Calendar {
     
+    @usableFromInline
     static let iso8601: Calendar = {
         var calendar = Calendar(identifier: .iso8601)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!

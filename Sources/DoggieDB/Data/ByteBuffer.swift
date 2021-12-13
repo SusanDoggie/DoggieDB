@@ -25,6 +25,7 @@
 
 extension ByteBuffer {
     
+    @inlinable
     var data: Data {
         return self.getData(at: self.readerIndex, length: self.readableBytes) ?? Data()
     }
