@@ -45,19 +45,10 @@ extension Dictionary where Key == String, Value == DBUpdateOption {
                 guard case let .number(value) = value.toDBData() else { throw Database.Error.unsupportedOperation }
                 
                 switch value {
-                case .signed, .unsigned:
-                    
-                    guard let value = value.intValue else { throw Database.Error.unsupportedOperation }
-                    update["$inc", default: [:]][key] = BSON(-value)
-                    
-                case .number:
-                    
-                    update["$inc", default: [:]][key] = BSON(-value.doubleValue)
-                    
-                case .decimal:
-                    
-                    guard let value = value.decimalValue else { throw Database.Error.unsupportedOperation }
-                    update["$inc", default: [:]][key] = BSON(-value)
+                case let .signed(value): update["$inc", default: [:]][key] = BSON(-value)
+                case let .unsigned(value): update["$inc", default: [:]][key] = BSON(-Int64(value))
+                case let .number(value): update["$inc", default: [:]][key] = BSON(-value)
+                case let .decimal(value): update["$inc", default: [:]][key] = BSON(-value)
                 }
                 
             case let .multiply(value): update["$mul", default: [:]][key] = try BSON(value.toDBData())
@@ -66,14 +57,10 @@ extension Dictionary where Key == String, Value == DBUpdateOption {
                 guard case let .number(value) = value.toDBData() else { throw Database.Error.unsupportedOperation }
                 
                 switch value {
-                case .signed, .unsigned, .number:
-                    
-                    update["$mul", default: [:]][key] = BSON(1 / value.doubleValue)
-                    
-                case .decimal:
-                    
-                    guard let value = value.decimalValue else { throw Database.Error.unsupportedOperation }
-                    update["$mul", default: [:]][key] = BSON(1 / value)
+                case let .signed(value): update["$mul", default: [:]][key] = BSON(1 / Double(value))
+                case let .unsigned(value): update["$mul", default: [:]][key] = BSON(1 / Double(value))
+                case let .number(value): update["$mul", default: [:]][key] = BSON(1 / value)
+                case let .decimal(value): update["$mul", default: [:]][key] = BSON(1 / value)
                 }
                 
             case let .min(value): update["$min", default: [:]][key] = try BSON(value.toDBData())
