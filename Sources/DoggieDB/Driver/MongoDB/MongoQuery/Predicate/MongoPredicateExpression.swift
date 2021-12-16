@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 //
 
+@frozen
 public indirect enum MongoPredicateExpression {
     
     case not(MongoPredicateExpression)
@@ -56,6 +57,7 @@ public indirect enum MongoPredicateExpression {
     case or([MongoPredicateExpression])
 }
 
+@frozen
 public enum MongoPredicateValue {
     
     case key(String)
@@ -65,6 +67,7 @@ public enum MongoPredicateValue {
 
 extension MongoPredicateValue {
     
+    @inlinable
     static func key(_ key: MongoPredicateKey) -> MongoPredicateValue {
         return .key(key.key)
     }
@@ -340,182 +343,227 @@ extension MongoPredicateExpression {
     }
 }
 
+@inlinable
 public func == (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .equal(.key(lhs), .key(rhs))
 }
 
+@inlinable
 public func != (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .notEqual(.key(lhs), .key(rhs))
 }
 
+@inlinable
 public func < (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .lessThan(.key(lhs), .key(rhs))
 }
 
+@inlinable
 public func > (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .greaterThan(.key(lhs), .key(rhs))
 }
 
+@inlinable
 public func <= (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .lessThanOrEqualTo(.key(lhs), .key(rhs))
 }
 
+@inlinable
 public func >= (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .greaterThanOrEqualTo(.key(lhs), .key(rhs))
 }
 
+@inlinable
 public func == (lhs: MongoPredicateKey, rhs: _OptionalNilComparisonType) -> MongoPredicateExpression {
     return .equal(.key(lhs), .value(BSON.null))
 }
 
+@inlinable
 public func != (lhs: MongoPredicateKey, rhs: _OptionalNilComparisonType) -> MongoPredicateExpression {
     return .notEqual(.key(lhs), .value(BSON.null))
 }
 
+@inlinable
 public func == <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: T) -> MongoPredicateExpression {
     return .equal(.key(lhs), .value(rhs))
 }
 
+@inlinable
 public func != <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: T) -> MongoPredicateExpression {
     return .notEqual(.key(lhs), .value(rhs))
 }
 
+@inlinable
 public func < <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: T) -> MongoPredicateExpression {
     return .lessThan(.key(lhs), .value(rhs))
 }
 
+@inlinable
 public func > <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: T) -> MongoPredicateExpression {
     return .greaterThan(.key(lhs), .value(rhs))
 }
 
+@inlinable
 public func <= <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: T) -> MongoPredicateExpression {
     return .lessThanOrEqualTo(.key(lhs), .value(rhs))
 }
 
+@inlinable
 public func >= <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: T) -> MongoPredicateExpression {
     return .greaterThanOrEqualTo(.key(lhs), .value(rhs))
 }
 
+@inlinable
 public func == (lhs: _OptionalNilComparisonType, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .equal(.value(BSON.null), .key(rhs))
 }
 
+@inlinable
 public func != (lhs: _OptionalNilComparisonType, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .notEqual(.value(BSON.null), .key(rhs))
 }
 
+@inlinable
 public func == <T: BSONConvertible>(lhs: T, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .equal(.value(lhs), .key(rhs))
 }
 
+@inlinable
 public func != <T: BSONConvertible>(lhs: T, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .notEqual(.value(lhs), .key(rhs))
 }
 
+@inlinable
 public func < <T: BSONConvertible>(lhs: T, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .lessThan(.value(lhs), .key(rhs))
 }
 
+@inlinable
 public func > <T: BSONConvertible>(lhs: T, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .greaterThan(.value(lhs), .key(rhs))
 }
 
+@inlinable
 public func <= <T: BSONConvertible>(lhs: T, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .lessThanOrEqualTo(.value(lhs), .key(rhs))
 }
 
+@inlinable
 public func >= <T: BSONConvertible>(lhs: T, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .greaterThanOrEqualTo(.value(lhs), .key(rhs))
 }
 
+@inlinable
 public func ~= (lhs: NSRegularExpression, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .matching(rhs, .value(lhs))
 }
 
+@inlinable
 public func ~= (lhs: Regex, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .matching(rhs, .value(lhs))
 }
 
+@inlinable
 public func ~= (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .containsIn(.key(rhs), .key(lhs))
 }
 
+@inlinable
 public func ~= <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: T) -> MongoPredicateExpression {
     return .containsIn(.value(rhs), .key(lhs))
 }
 
+@inlinable
 public func ~= <C: Collection>(lhs: C, rhs: MongoPredicateKey) -> MongoPredicateExpression where C.Element: BSONConvertible {
     return .containsIn(.key(rhs), .value(Array(lhs)))
 }
 
+@inlinable
 public func ~= <T: BSONConvertible>(lhs: Range<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return lhs.lowerBound <= rhs && rhs < lhs.upperBound
 }
 
+@inlinable
 public func ~= <T: BSONConvertible>(lhs: ClosedRange<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return lhs.lowerBound <= rhs && rhs <= lhs.upperBound
 }
 
+@inlinable
 public func ~= <T: BSONConvertible>(lhs: PartialRangeFrom<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return lhs.lowerBound <= rhs
 }
 
+@inlinable
 public func ~= <T: BSONConvertible>(lhs: PartialRangeUpTo<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return rhs < lhs.upperBound
 }
 
+@inlinable
 public func ~= <T: BSONConvertible>(lhs: PartialRangeThrough<T>, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return rhs <= lhs.upperBound
 }
 
+@inlinable
 public func =~ (lhs: MongoPredicateKey, rhs: NSRegularExpression) -> MongoPredicateExpression {
     return .matching(lhs, .value(rhs))
 }
 
+@inlinable
 public func =~ (lhs: MongoPredicateKey, rhs: Regex) -> MongoPredicateExpression {
     return .matching(lhs, .value(rhs))
 }
 
+@inlinable
 public func =~ (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .containsIn(.key(lhs), .key(rhs))
 }
 
+@inlinable
 public func =~ <T: BSONConvertible>(lhs: T, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .containsIn(.value(lhs), .key(rhs))
 }
 
+@inlinable
 public func =~ <C: Collection>(lhs: MongoPredicateKey, rhs: C) -> MongoPredicateExpression where C.Element: BSONConvertible {
     return .containsIn(.key(lhs), .value(Array(rhs)))
 }
 
+@inlinable
 public func =~ <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: Range<T>) -> MongoPredicateExpression {
     return rhs.lowerBound <= lhs && lhs < rhs.upperBound
 }
 
+@inlinable
 public func =~ <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: ClosedRange<T>) -> MongoPredicateExpression {
     return rhs.lowerBound <= lhs && lhs <= rhs.upperBound
 }
 
+@inlinable
 public func =~ <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: PartialRangeFrom<T>) -> MongoPredicateExpression {
     return rhs.lowerBound <= lhs
 }
 
+@inlinable
 public func =~ <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: PartialRangeUpTo<T>) -> MongoPredicateExpression {
     return lhs < rhs.upperBound
 }
 
+@inlinable
 public func =~ <T: BSONConvertible>(lhs: MongoPredicateKey, rhs: PartialRangeThrough<T>) -> MongoPredicateExpression {
     return lhs <= rhs.upperBound
 }
 
+@inlinable
 public prefix func !(x: MongoPredicateExpression) -> MongoPredicateExpression {
     return .not(x)
 }
 
+@inlinable
 public func && (lhs: MongoPredicateExpression, rhs: MongoPredicateExpression) -> MongoPredicateExpression {
     return .and([lhs, rhs])
 }
 
+@inlinable
 public func || (lhs: MongoPredicateExpression, rhs: MongoPredicateExpression) -> MongoPredicateExpression {
     return .or([lhs, rhs])
 }

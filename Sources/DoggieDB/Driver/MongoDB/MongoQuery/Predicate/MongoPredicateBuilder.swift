@@ -23,17 +23,21 @@
 //  THE SOFTWARE.
 //
 
+@frozen
 public struct MongoPredicateBuilder {
     
+    @inlinable
     public init() {
         
     }
 }
 
+@frozen
 public struct MongoPredicateKey {
     
     public var key: String
     
+    @inlinable
     public init(key: String) {
         self.key = key
     }
@@ -41,10 +45,12 @@ public struct MongoPredicateKey {
 
 extension MongoPredicateBuilder {
     
+    @inlinable
     public var id: MongoPredicateKey {
         return MongoPredicateKey(key: "_id")
     }
     
+    @inlinable
     public subscript(_ key: String) -> MongoPredicateKey {
         return MongoPredicateKey(key: key)
     }

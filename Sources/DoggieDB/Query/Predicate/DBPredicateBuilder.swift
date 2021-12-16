@@ -23,13 +23,16 @@
 //  THE SOFTWARE.
 //
 
+@frozen
 public struct DBPredicateBuilder {
     
+    @inlinable
     public init() {
         
     }
 }
 
+@frozen
 public enum DBPredicateKey {
     
     case objectId
@@ -39,10 +42,12 @@ public enum DBPredicateKey {
 
 extension DBPredicateBuilder {
     
+    @inlinable
     public var objectId: DBPredicateKey {
         return .objectId
     }
     
+    @inlinable
     public subscript(_ key: String) -> DBPredicateKey {
         return .key(key)
     }

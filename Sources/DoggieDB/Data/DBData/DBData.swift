@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 //
 
+@frozen
 public enum DBData: Hashable {
     
     case null
