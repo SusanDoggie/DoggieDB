@@ -144,7 +144,7 @@ extension ByteBuffer: DBDataConvertible {
     
     @inlinable
     public func toDBData() -> DBData {
-        self = .binary(self.data)
+        return .binary(self.data)
     }
 }
 
@@ -152,7 +152,7 @@ extension ByteBufferView: DBDataConvertible {
     
     @inlinable
     public func toDBData() -> DBData {
-        self = .binary(Data(self))
+        return .binary(Data(self))
     }
 }
 
