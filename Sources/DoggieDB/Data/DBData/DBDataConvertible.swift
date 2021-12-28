@@ -48,7 +48,7 @@ extension Bool: DBDataConvertible {
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        return .boolean(self)
     }
 }
 
@@ -56,7 +56,7 @@ extension SignedInteger where Self: FixedWidthInteger {
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        return .number(DBData.Number(self))
     }
 }
 
@@ -64,7 +64,7 @@ extension UnsignedInteger where Self: FixedWidthInteger {
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        return .number(DBData.Number(self))
     }
 }
 
@@ -83,7 +83,7 @@ extension BinaryFloatingPoint {
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        return .number(DBData.Number(self))
     }
 }
 
@@ -102,7 +102,7 @@ extension Decimal: DBDataConvertible {
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        return .number(.decimal(self))
     }
 }
 
@@ -110,7 +110,7 @@ extension StringProtocol {
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(String(self))
+        return .string(String(self))
     }
 }
 
@@ -118,7 +118,7 @@ extension String: DBDataConvertible {
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        return .string(self)
     }
 }
 
@@ -128,7 +128,7 @@ extension Date: DBDataConvertible {
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        return .timestamp(self)
     }
 }
 
@@ -136,7 +136,7 @@ extension Data: DBDataConvertible {
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        return .binary(self)
     }
 }
 
@@ -144,7 +144,7 @@ extension ByteBuffer: DBDataConvertible {
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        self = .binary(self.data)
     }
 }
 
@@ -152,7 +152,7 @@ extension ByteBufferView: DBDataConvertible {
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        self = .binary(Data(self))
     }
 }
 
@@ -160,7 +160,7 @@ extension DateComponents: DBDataConvertible {
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        return .date(self)
     }
 }
 
@@ -168,7 +168,7 @@ extension UUID: DBDataConvertible {
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        return .uuid(self)
     }
 }
 
@@ -176,7 +176,7 @@ extension BSONObjectID: DBDataConvertible {
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        return .objectID(self)
     }
 }
 
@@ -184,7 +184,7 @@ extension Array: DBDataConvertible where Element: DBDataConvertible {
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        return .array(self.map { $0.toDBData() })
     }
 }
 
@@ -192,7 +192,7 @@ extension Dictionary: DBDataConvertible where Key == String, Value: DBDataConver
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        return .dictionary(self.mapValues { $0.toDBData() })
     }
 }
 
@@ -200,6 +200,6 @@ extension OrderedDictionary: DBDataConvertible where Key == String, Value: DBDat
     
     @inlinable
     public func toDBData() -> DBData {
-        return DBData(self)
+        return .dictionary(Dictionary(self.mapValues { $0.toDBData() }))
     }
 }
