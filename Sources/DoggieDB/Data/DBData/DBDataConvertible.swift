@@ -40,7 +40,7 @@ extension Optional: DBDataConvertible where Wrapped: DBDataConvertible {
     
     @inlinable
     public func toDBData() -> DBData {
-        return self?.toDBData() ?? nil
+        return self?.toDBData() ?? .null
     }
 }
 
