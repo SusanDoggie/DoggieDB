@@ -100,6 +100,10 @@ extension DBSQLConnection {
     fileprivate func _primaryKey(of table: String) -> EventLoopFuture<[String]> {
         return self.primaryKeyHook?(self, table).hop(to: self.eventLoopGroup.next()) ?? self.primaryKey(of: table)
     }
+    
+    fileprivate func _columnsAndPrimaryKey(of table: String) -> EventLoopFuture<([DBSQLColumnInfo], [String])> {
+        return self._columns(of: table).and(self._primaryKey(of: table))
+    }
 }
 
 struct SQLQueryLauncher: DBQueryLauncher {
@@ -146,16 +150,27 @@ struct SQLQueryLauncher: DBQueryLauncher {
             
             guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
             
-            return connection._primaryKey(of: query.class).flatMapThrowing { primaryKeys in
+            let _query: EventLoopFuture<(SQLRaw, [String])>
+            
+            if let includes = query.includes {
                 
-                var sql: SQLRaw = ""
-                
-                if query.includes.isEmpty {
-                    sql += "SELECT *"
-                } else {
-                    let includes = query.includes.union(primaryKeys)
-                    sql += "SELECT \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
+                _query = connection._columnsAndPrimaryKey(of: query.class).map { (columnInfos, primaryKeys) in
+                    
+                    let _includes = includes.intersection(columnInfos.map { $0.name }).union(primaryKeys)
+                    
+                    let sql: SQLRaw = "SELECT \(_includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
+                    
+                    return (sql, primaryKeys)
                 }
+                
+            } else {
+                
+                _query = connection._primaryKey(of: query.class).map { primaryKeys in ("SELECT *", primaryKeys) }
+            }
+            
+            return _query.flatMapThrowing { sql, primaryKeys in
+                
+                var sql = sql
                 
                 sql += "FROM \(identifier: query.class)"
                 
@@ -269,7 +284,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
     func _findOneAndUpdate(_ query: DBFindOneExpression, _ update: [String: DBUpdateOption]) -> EventLoopFuture<(SQLRaw, [String], [DBSQLColumnInfo])> {
         
         switch query.returning {
-        
+            
         case .before:
             
             var temp: String
@@ -279,48 +294,46 @@ struct SQLQueryLauncher: DBQueryLauncher {
                 counter += 1
             } while temp == query.class
             
-            return connection._columns(of: query.class).and(connection._primaryKey(of: query.class))
-                .flatMapThrowing { (columnInfos, primaryKeys) in
-                    
-                    guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
-                    guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
-                    
-                    var sql: SQLRaw = try """
-                        UPDATE \(identifier: query.class)
-                        SET \(update.serialize(query.class, columnInfos, dialect).map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
-                        FROM (\(self._findOne(query, primaryKeys, withData: true))) AS \(identifier: temp)
-                        WHERE \(identifier: query.class).\(identifier: rowId) = \(identifier: temp).\(identifier: rowId)
-                        """
-                    
-                    let includes = query.includes.isEmpty ? Set(columnInfos.map { $0.name }) : query.includes.union(primaryKeys)
-                    sql += "RETURNING \(includes.map { "\(identifier: temp).\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
-                    
-                    return (sql, primaryKeys, columnInfos)
-                }
+            return connection._columnsAndPrimaryKey(of: query.class).flatMapThrowing { (columnInfos, primaryKeys) in
+                
+                guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
+                guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
+                
+                var sql: SQLRaw = try """
+                    UPDATE \(identifier: query.class)
+                    SET \(update.serialize(query.class, columnInfos, dialect).map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
+                    FROM (\(self._findOne(query, primaryKeys, withData: true))) AS \(identifier: temp)
+                    WHERE \(identifier: query.class).\(identifier: rowId) = \(identifier: temp).\(identifier: rowId)
+                    """
+                
+                let includes = query.includes?.intersection(columnInfos.map { $0.name }).union(primaryKeys) ?? Set(columnInfos.map { $0.name })
+                sql += "RETURNING \(includes.map { "\(identifier: temp).\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
+                
+                return (sql, primaryKeys, columnInfos)
+            }
             
         case .after:
             
-            return connection._columns(of: query.class).and(connection._primaryKey(of: query.class))
-                .flatMapThrowing { (columnInfos, primaryKeys) in
-                    
-                    guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
-                    guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
-                    
-                    var sql: SQLRaw = try """
-                        UPDATE \(identifier: query.class)
-                        SET \(update.serialize(query.class, columnInfos, dialect).map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
-                        WHERE \(identifier: rowId) IN (\(self._findOne(query, primaryKeys, withData: false)))
-                        """
-                    
-                    if query.includes.isEmpty {
-                        sql += "RETURNING *"
-                    } else {
-                        let includes = query.includes.union(primaryKeys)
-                        sql += "RETURNING \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
-                    }
-                    
-                    return (sql, primaryKeys, columnInfos)
+            return connection._columnsAndPrimaryKey(of: query.class).flatMapThrowing { (columnInfos, primaryKeys) in
+                
+                guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
+                guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
+                
+                var sql: SQLRaw = try """
+                    UPDATE \(identifier: query.class)
+                    SET \(update.serialize(query.class, columnInfos, dialect).map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
+                    WHERE \(identifier: rowId) IN (\(self._findOne(query, primaryKeys, withData: false)))
+                    """
+                
+                if let includes = query.includes {
+                    let _includes = includes.intersection(columnInfos.map { $0.name }).union(primaryKeys)
+                    sql += "RETURNING \(_includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
+                } else {
+                    sql += "RETURNING *"
                 }
+                
+                return (sql, primaryKeys, columnInfos)
+            }
         }
     }
     
@@ -372,7 +385,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
                 }
                 
                 switch query.returning {
-                
+                    
                 case .before:
                     
                     let sql: SQLRaw = """
@@ -389,7 +402,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
                     
                 case .after:
                     
-                    let includes = query.includes.isEmpty ? Set(columnInfos.map { $0.name }) : query.includes.union(primaryKeys)
+                    let includes = query.includes?.intersection(columnInfos.map { $0.name }).union(primaryKeys) ?? Set(columnInfos.map { $0.name })
                     let _includes: SQLRaw = "\(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
                     
                     let sql: SQLRaw = """
@@ -417,29 +430,49 @@ struct SQLQueryLauncher: DBQueryLauncher {
     
     func findOneAndDelete(_ query: DBFindOneExpression) -> EventLoopFuture<DBObject?> {
         
-        return connection._primaryKey(of: query.class).flatMap { primaryKeys in
+        if let includes = query.includes {
             
-            do {
+            return connection._columnsAndPrimaryKey(of: query.class).flatMap { (columnInfos, primaryKeys) in
                 
-                guard let rowId = connection.driver.sqlDialect?.rowId else { throw Database.Error.unsupportedOperation }
-                
-                var sql: SQLRaw = try """
-                    DELETE FROM \(identifier: query.class)
-                    WHERE \(identifier: rowId) IN (\(self._findOne(query, primaryKeys, withData: false)))
-                    """
-                
-                if query.includes.isEmpty {
-                    sql += "RETURNING *"
-                } else {
-                    let includes = query.includes.union(primaryKeys)
-                    sql += "RETURNING \(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
+                do {
+                    
+                    guard let rowId = connection.driver.sqlDialect?.rowId else { throw Database.Error.unsupportedOperation }
+                    
+                    var sql: SQLRaw = try """
+                        DELETE FROM \(identifier: query.class)
+                        WHERE \(identifier: rowId) IN (\(self._findOne(query, primaryKeys, withData: false)))
+                        """
+                    
+                    let _includes = includes.intersection(columnInfos.map { $0.name }).union(primaryKeys)
+                    sql += "RETURNING \(_includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
+                    
+                    return connection.execute(sql).map { $0.first.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                    
+                } catch {
+                    
+                    return connection.eventLoopGroup.next().makeFailedFuture(error)
                 }
+            }
+        } else {
+            
+            return connection._primaryKey(of: query.class).flatMap { primaryKeys in
                 
-                return connection.execute(sql).map { $0.first.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
-                
-            } catch {
-                
-                return connection.eventLoopGroup.next().makeFailedFuture(error)
+                do {
+                    
+                    guard let rowId = connection.driver.sqlDialect?.rowId else { throw Database.Error.unsupportedOperation }
+                    
+                    let sql: SQLRaw = try """
+                        DELETE FROM \(identifier: query.class)
+                        WHERE \(identifier: rowId) IN (\(self._findOne(query, primaryKeys, withData: false)))
+                        RETURNING *
+                        """
+                    
+                    return connection.execute(sql).map { $0.first.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                    
+                } catch {
+                    
+                    return connection.eventLoopGroup.next().makeFailedFuture(error)
+                }
             }
         }
     }

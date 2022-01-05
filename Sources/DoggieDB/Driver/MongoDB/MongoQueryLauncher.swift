@@ -151,8 +151,8 @@ struct MongoQueryLauncher: DBQueryLauncher {
             mongoQuery = mongoQuery.limit(query.limit)
         }
         
-        if !query.includes.isEmpty {
-            let projection = Dictionary(uniqueKeysWithValues: query.includes.map { ($0, 1) })
+        if let includes = query.includes {
+            let projection = Dictionary(uniqueKeysWithValues: includes.map { ($0, 1) })
             mongoQuery = mongoQuery.projection(BSONDocument(projection))
         }
         
@@ -218,8 +218,8 @@ struct MongoQueryLauncher: DBQueryLauncher {
                 mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
             }
             
-            if !query.includes.isEmpty {
-                let projection = Dictionary(uniqueKeysWithValues: query.includes.map { ($0, 1) })
+            if let includes = query.includes {
+                let projection = Dictionary(uniqueKeysWithValues: includes.map { ($0, 1) })
                 mongoQuery = mongoQuery.projection(BSONDocument(projection))
             }
             
@@ -251,8 +251,8 @@ struct MongoQueryLauncher: DBQueryLauncher {
                 mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
             }
             
-            if !query.includes.isEmpty {
-                let projection = Dictionary(uniqueKeysWithValues: query.includes.map { ($0, 1) })
+            if let includes = query.includes {
+                let projection = Dictionary(uniqueKeysWithValues: includes.map { ($0, 1) })
                 mongoQuery = mongoQuery.projection(BSONDocument(projection))
             }
             
@@ -276,8 +276,8 @@ struct MongoQueryLauncher: DBQueryLauncher {
                 mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
             }
             
-            if !query.includes.isEmpty {
-                let projection = Dictionary(uniqueKeysWithValues: query.includes.map { ($0, 1) })
+            if let includes = query.includes {
+                let projection = Dictionary(uniqueKeysWithValues: includes.map { ($0, 1) })
                 mongoQuery = mongoQuery.projection(BSONDocument(projection))
             }
             

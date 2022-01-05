@@ -37,7 +37,7 @@ public struct DBFindExpression: DBExpressionProtocol {
     
     var sort: OrderedDictionary<String, DBSortOrderOption> = [:]
     
-    var includes: Set<String> = []
+    var includes: Set<String>?
     
     init(connection: DBConnection, class: String) {
         self.connection = connection
@@ -133,13 +133,13 @@ extension DBFindExpression {
     
     public func includes(_ keys: String ...) -> Self {
         var result = self
-        result.includes = includes.union(keys)
+        result.includes = includes?.union(keys) ?? Set(keys)
         return result
     }
     
     public func includes<S: Sequence>(_ keys: S) -> Self where S.Element == String {
         var result = self
-        result.includes = includes.union(keys)
+        result.includes = includes?.union(keys) ?? Set(keys)
         return result
     }
 }
