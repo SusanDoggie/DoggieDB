@@ -163,7 +163,7 @@ jobs:
     - name: Prepare		
       run: apt-get update
     - name: Install libmongoc
-      run: apt-get install -y libmongoc-1.0-0 libssl-dev
+      run: apt-get install -y libmongoc-1.0-0 libbson-1.0 libssl-dev
     - name: Build
       uses: SusanDoggie/swift-action@main
       with:
