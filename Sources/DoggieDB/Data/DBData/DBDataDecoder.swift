@@ -447,9 +447,6 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         case is Data.Type: return try self._decode(Data.self) as! T
         case is ByteBuffer.Type: return try self._decode(ByteBuffer.self) as! T
         case is ByteBufferView.Type: return try self._decode(ByteBufferView.self) as! T
-        case is Json.Type:
-            guard let json = Json(value) else { throw Database.Error.unsupportedType }
-            return json as! T
         default: throw Database.Error.unsupportedType
         }
     }

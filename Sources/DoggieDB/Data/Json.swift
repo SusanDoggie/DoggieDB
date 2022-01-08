@@ -36,19 +36,6 @@ extension DBData.Number {
     }
 }
 
-extension Json.Number {
-    
-    @inlinable
-    public init(_ json: DBData.Number) {
-        switch json {
-        case let .signed(value): self.init(value)
-        case let .unsigned(value): self.init(value)
-        case let .number(value): self.init(value)
-        case let .decimal(value): self.init(value)
-        }
-    }
-}
-
 extension DBData {
     
     @inlinable
@@ -60,42 +47,6 @@ extension DBData {
         case let .number(value): self = .number(Number(value))
         case let .array(value): self.init(value.map { DBData($0) })
         case let .dictionary(value): self.init(value.mapValues { DBData($0) })
-        }
-    }
-}
-
-extension Json {
-    
-    public init?(_ value: DBData) {
-        switch value {
-        case .null: self = nil
-        case let .boolean(value): self.init(value)
-        case let .string(value): self.init(value)
-        case let .number(value): self = .number(Number(value))
-        case let .date(value):
-            
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = .withInternetDateTime
-            
-            let calendar = value.calendar ?? Calendar.iso8601
-            guard let date = calendar.date(from: value) else { return nil }
-            
-            self.init(formatter.string(from: date))
-            
-        case let .uuid(value): self.init(value.uuidString)
-        case let .array(value):
-            
-            let array = value.compactMap(Json.init)
-            guard array.count == value.count else { return nil }
-            self.init(array)
-            
-        case let .dictionary(value):
-            
-            let dictionary = value.compactMapValues(Json.init)
-            guard dictionary.count == value.count else { return nil }
-            self.init(dictionary)
-            
-        default: return nil
         }
     }
 }
