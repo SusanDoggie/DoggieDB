@@ -528,16 +528,35 @@ struct SQLQueryLauncher: DBQueryLauncher {
         
         guard let data = data as? [String: DBData] else { fatalError() }
         
-        return connection._columns(of: `class`).flatMap { columnInfos in
+        return connection._columnsAndPrimaryKey(of: `class`).flatMap { (columnInfos, primaryKeys) in
             
             do {
                 
                 guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
                 
+                var duplicate_check_temp: String
+                var counter = 0
+                repeat {
+                    counter += 1
+                    duplicate_check_temp = "temp_\(counter)"
+                } while duplicate_check_temp == `class`
+                
+                var insert_temp: String
+                repeat {
+                    counter += 1
+                    insert_temp = "temp_\(counter)"
+                } while insert_temp == `class`
+                
                 var columns: [String] = []
                 var values: [SQLRaw] = []
                 
+                var _primaryKeys: [String: DBData] = [:]
+                
                 for (key, value) in data {
+                    
+                    if primaryKeys.contains(key) {
+                        _primaryKeys[key] = value
+                    }
                     
                     if let column_info = columnInfos.first(where: { $0.name == key }) {
                         
@@ -550,16 +569,39 @@ struct SQLQueryLauncher: DBQueryLauncher {
                     }
                 }
                 
-                let sql: SQLRaw = """
-                    INSERT INTO \(identifier: `class`)
-                    (\(columns.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")))
-                    VALUES (\(values.joined(separator: ",")))
-                    RETURNING *
+                let _primaryKeysFilter: DBPredicateExpression = .equal(.objectId, .value(primaryKeys.count == 1 ? _primaryKeys[primaryKeys[0]] : _primaryKeys))
+                
+                var is_duplicated: String
+                repeat {
+                    counter += 1
+                    is_duplicated = "is_duplicated_\(counter)"
+                } while columnInfos.contains(where: { $0.name == is_duplicated })
+                
+                let _includes: SQLRaw = "\(columnInfos.map { "\(identifier: $0.name)" as SQLRaw }.joined(separator: ","))"
+                
+                let sql: SQLRaw = try """
+                    WITH \(identifier: duplicate_check_temp) AS (
+                        SELECT \(_includes) FROM \(identifier: `class`)
+                        WHERE \(_primaryKeysFilter.serialize(dialect.self, primaryKeys))
+                    ),
+                    \(identifier: insert_temp) AS (
+                        INSERT INTO \(identifier: `class`)
+                        (\(columns.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")))
+                        SELECT \(zip(columns, values).map { "\($1) AS \(identifier: $0)" as SQLRaw }.joined(separator: ","))
+                        WHERE NOT EXISTS(SELECT * FROM \(identifier: duplicate_check_temp))
+                        RETURNING \(_includes)
+                    )
+                    SELECT \(_includes), \(DBData.boolean(true)) AS \(identifier: is_duplicated) FROM \(identifier: duplicate_check_temp)
+                    UNION
+                    SELECT \(_includes), \(DBData.null) AS \(identifier: is_duplicated) FROM \(identifier: insert_temp)
                     """
                 
-                return connection._primaryKey(of: `class`).flatMap { primaryKeys in
-                    connection.execute(sql).map { $0.first.map { DBObject(table: `class`, primaryKeys: primaryKeys, object: $0) } }
-                }
+                return connection.execute(sql)
+                    .map { $0.first.map { DBObject(table: `class`, primaryKeys: primaryKeys, object: $0) } }
+                    .flatMapThrowing { obj in
+                        guard obj?[is_duplicated] != true else { throw Database.Error.duplicatedPrimaryKey }
+                        return obj
+                    }
                 
             } catch {
                 

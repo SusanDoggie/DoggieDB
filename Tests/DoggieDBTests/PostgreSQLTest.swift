@@ -812,7 +812,6 @@ class PostgreSQLTest: XCTestCase {
                 CREATE TABLE testQueryArrayOperation (
                     id INTEGER NOT NULL PRIMARY KEY,
                     int_array INTEGER[],
-                    json_array JSON,
                     jsonb_array JSONB
                 )
                 """).wait()
@@ -820,40 +819,33 @@ class PostgreSQLTest: XCTestCase {
             var obj = DBObject(class: "testQueryArrayOperation")
             obj["id"] = 1
             obj["int_array"] = []
-            obj["json_array"] = []
             obj["jsonb_array"] = []
             
             obj = try obj.save(on: connection).wait()
             
             obj.push("int_array", values: [1 as DBData, 2.0, 3])
-            obj.push("json_array", values: [1, 2.0, 3])
             obj.push("jsonb_array", values: [1, 2.0, 3])
             
             obj = try obj.save(on: connection).wait()
             
             XCTAssertEqual(obj["id"].intValue, 1)
             XCTAssertEqual(obj["int_array"].array, [1, 2, 3])
-            XCTAssertEqual(obj["json_array"].array, [1.0, 2.0, 3.0])
             XCTAssertEqual(obj["jsonb_array"].array, [1.0, 2.0, 3.0])
             
             obj.popFirst(for: "int_array")
-            obj.popFirst(for: "json_array")
             obj.popFirst(for: "jsonb_array")
             
             obj = try obj.save(on: connection).wait()
             
             XCTAssertEqual(obj["int_array"].array, [2, 3])
-            XCTAssertEqual(obj["json_array"].array, [2.0, 3.0])
             XCTAssertEqual(obj["jsonb_array"].array, [2.0, 3.0])
             
             obj.popLast(for: "int_array")
-            obj.popLast(for: "json_array")
             obj.popLast(for: "jsonb_array")
             
             obj = try obj.save(on: connection).wait()
             
             XCTAssertEqual(obj["int_array"].array, [2])
-            XCTAssertEqual(obj["json_array"].array, [2.0])
             XCTAssertEqual(obj["jsonb_array"].array, [2.0])
             
         } catch {
@@ -871,7 +863,6 @@ class PostgreSQLTest: XCTestCase {
                 CREATE TABLE testQueryArrayOperation2 (
                     id INTEGER NOT NULL PRIMARY KEY,
                     int_array INTEGER[],
-                    json_array JSON,
                     jsonb_array JSONB
                 )
                 """).wait()
@@ -879,29 +870,24 @@ class PostgreSQLTest: XCTestCase {
             var obj = DBObject(class: "testQueryArrayOperation2")
             obj["id"] = 1
             obj["int_array"] = []
-            obj["json_array"] = []
             obj["jsonb_array"] = []
             
             obj = try obj.save(on: connection).wait()
             
             obj.popFirst(for: "int_array")
-            obj.popFirst(for: "json_array")
             obj.popFirst(for: "jsonb_array")
             
             obj = try obj.save(on: connection).wait()
             
             XCTAssertEqual(obj["int_array"].array ?? [], [])
-            XCTAssertEqual(obj["json_array"].array, [])
             XCTAssertEqual(obj["jsonb_array"].array, [])
             
             obj.popLast(for: "int_array")
-            obj.popLast(for: "json_array")
             obj.popLast(for: "jsonb_array")
             
             obj = try obj.save(on: connection).wait()
             
             XCTAssertEqual(obj["int_array"].array ?? [], [])
-            XCTAssertEqual(obj["json_array"].array, [])
             XCTAssertEqual(obj["jsonb_array"].array, [])
             
         } catch {
