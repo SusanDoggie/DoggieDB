@@ -425,9 +425,9 @@ struct SQLQueryLauncher: DBQueryLauncher {
                             SELECT \(_insert.map { "\($1) AS \(identifier: $0)" as SQLRaw }.joined(separator: ","))
                             WHERE NOT EXISTS(SELECT * FROM \(identifier: update_temp))
                         )
-                        SELECT \(_includes), \(DBData.null) AS \(identifier: is_duplicated) FROM \(identifier: update_temp)
+                        SELECT \(_includes), \(nil) AS \(identifier: is_duplicated) FROM \(identifier: update_temp)
                         UNION
-                        SELECT \(_includes), \(DBData.boolean(true)) AS \(identifier: is_duplicated) FROM \(identifier: duplicate_check_temp)
+                        SELECT \(_includes), \(true) AS \(identifier: is_duplicated) FROM \(identifier: duplicate_check_temp)
                         """
                     
                     return connection.execute(sql)
@@ -453,11 +453,11 @@ struct SQLQueryLauncher: DBQueryLauncher {
                             AND NOT EXISTS(SELECT * FROM \(identifier: duplicate_check_temp))
                             RETURNING \(_includes)
                         )
-                        SELECT \(_includes), \(DBData.null) AS \(identifier: is_duplicated) FROM \(identifier: update_temp)
+                        SELECT \(_includes), \(nil) AS \(identifier: is_duplicated) FROM \(identifier: update_temp)
                         UNION
-                        SELECT \(_includes), \(DBData.boolean(true)) AS \(identifier: is_duplicated) FROM \(identifier: duplicate_check_temp)
+                        SELECT \(_includes), \(true) AS \(identifier: is_duplicated) FROM \(identifier: duplicate_check_temp)
                         UNION
-                        SELECT \(_includes), \(DBData.null) AS \(identifier: is_duplicated) FROM \(identifier: insert_temp)
+                        SELECT \(_includes), \(nil) AS \(identifier: is_duplicated) FROM \(identifier: insert_temp)
                         """
                     
                     return connection.execute(sql)
@@ -591,9 +591,9 @@ struct SQLQueryLauncher: DBQueryLauncher {
                         WHERE NOT EXISTS(SELECT * FROM \(identifier: duplicate_check_temp))
                         RETURNING \(_includes)
                     )
-                    SELECT \(_includes), \(DBData.boolean(true)) AS \(identifier: is_duplicated) FROM \(identifier: duplicate_check_temp)
+                    SELECT \(_includes), \(true) AS \(identifier: is_duplicated) FROM \(identifier: duplicate_check_temp)
                     UNION
-                    SELECT \(_includes), \(DBData.null) AS \(identifier: is_duplicated) FROM \(identifier: insert_temp)
+                    SELECT \(_includes), \(nil) AS \(identifier: is_duplicated) FROM \(identifier: insert_temp)
                     """
                 
                 return connection.execute(sql)
