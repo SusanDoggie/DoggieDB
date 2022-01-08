@@ -25,7 +25,7 @@
 
 extension Database {
     
-    public enum Error: Swift.Error {
+    public enum Error: Swift.Error, Hashable {
         
         case invalidURL
         
@@ -46,6 +46,8 @@ extension Database {
         case objectNotFound
         
         case columnNotExist
+        
+        case duplicatedPrimaryKey
         
         case unknown
         

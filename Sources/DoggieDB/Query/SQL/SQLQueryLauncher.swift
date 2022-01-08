@@ -290,8 +290,8 @@ struct SQLQueryLauncher: DBQueryLauncher {
             var temp: String
             var counter = 0
             repeat {
-                temp = "temp_\(counter)"
                 counter += 1
+                temp = "temp_\(counter)"
             } while temp == query.class
             
             return connection._columnsAndPrimaryKey(of: query.class).flatMapThrowing { (columnInfos, primaryKeys) in
@@ -350,15 +350,21 @@ struct SQLQueryLauncher: DBQueryLauncher {
         var update_temp: String
         var counter = 0
         repeat {
-            update_temp = "temp_\(counter)"
             counter += 1
+            update_temp = "temp_\(counter)"
         } while update_temp == query.class
+        
+        var duplicate_check_temp: String
+        repeat {
+            counter += 1
+            duplicate_check_temp = "temp_\(counter)"
+        } while duplicate_check_temp == query.class
         
         var insert_temp: String
         repeat {
-            insert_temp = "temp_\(counter)"
             counter += 1
-        } while insert_temp == update_temp || insert_temp == query.class
+            insert_temp = "temp_\(counter)"
+        } while insert_temp == query.class
         
         let update = upsert.compactMapValues { $0.update }
         let setOnInsert = upsert.compactMapValues { $0.setOnInsert }
@@ -372,53 +378,94 @@ struct SQLQueryLauncher: DBQueryLauncher {
                 let insert = update.compactMapValues { $0.value }.merging(setOnInsert) { _, rhs in rhs }
                 var _insert: OrderedDictionary<String, SQLRaw> = [:]
                 
+                var _primaryKeys: [String: DBData] = [:]
+                
                 for (key, value) in insert {
+                    
+                    let value = value.toDBData()
+                    
+                    if primaryKeys.contains(key) {
+                        _primaryKeys[key] = value
+                    }
                     
                     if let column_info = columnInfos.first(where: { $0.name == key }) {
                         
-                        _insert[key] = try dialect.typeCast(value.toDBData(), column_info.type)
+                        _insert[key] = try dialect.typeCast(value, column_info.type)
                         
-                    } else if !value.toDBData().isNil {
+                    } else if !value.isNil {
                         
                         throw Database.Error.columnNotExist
                     }
                 }
                 
+                let _primaryKeysFilter: DBPredicateExpression = .equal(.objectId, .value(primaryKeys.count == 1 ? _primaryKeys[primaryKeys[0]] : _primaryKeys))
+                
+                var is_duplicated: String
+                repeat {
+                    counter += 1
+                    is_duplicated = "is_duplicated_\(counter)"
+                } while columnInfos.contains(where: { $0.name == is_duplicated })
+                
+                let includes = query.includes?.intersection(columnInfos.map { $0.name }).union(primaryKeys) ?? Set(columnInfos.map { $0.name })
+                let _includes: SQLRaw = "\(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
+                
                 switch query.returning {
                     
                 case .before:
                     
-                    let sql: SQLRaw = """
+                    let sql: SQLRaw = try """
                         WITH \(identifier: update_temp) AS (\(updateSQL)),
+                        \(identifier: duplicate_check_temp) AS (
+                            SELECT \(_includes) FROM \(identifier: query.class)
+                            WHERE \(_primaryKeysFilter.serialize(dialect.self, primaryKeys))
+                            AND NOT EXISTS(SELECT * FROM \(identifier: update_temp))
+                        ),
                         \(identifier: insert_temp) AS (
                             INSERT INTO \(identifier: query.class)(\(_insert.keys.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")))
                             SELECT \(_insert.map { "\($1) AS \(identifier: $0)" as SQLRaw }.joined(separator: ","))
                             WHERE NOT EXISTS(SELECT * FROM \(identifier: update_temp))
                         )
-                        SELECT * FROM \(identifier: update_temp)
+                        SELECT \(_includes), \(DBData.null) AS \(identifier: is_duplicated) FROM \(identifier: update_temp)
+                        UNION
+                        SELECT \(_includes), \(DBData.boolean(true)) AS \(identifier: is_duplicated) FROM \(identifier: duplicate_check_temp)
                         """
                     
-                    return connection.execute(sql).map { $0.first.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                    return connection.execute(sql)
+                        .map { $0.first.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                        .flatMapThrowing { obj in
+                            guard obj?[is_duplicated] != true else { throw Database.Error.duplicatedPrimaryKey }
+                            return obj
+                        }
                     
                 case .after:
                     
-                    let includes = query.includes?.intersection(columnInfos.map { $0.name }).union(primaryKeys) ?? Set(columnInfos.map { $0.name })
-                    let _includes: SQLRaw = "\(includes.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
-                    
-                    let sql: SQLRaw = """
+                    let sql: SQLRaw = try """
                         WITH \(identifier: update_temp) AS (\(updateSQL)),
+                        \(identifier: duplicate_check_temp) AS (
+                            SELECT \(_includes) FROM \(identifier: query.class)
+                            WHERE \(_primaryKeysFilter.serialize(dialect.self, primaryKeys))
+                            AND NOT EXISTS(SELECT * FROM \(identifier: update_temp))
+                        ),
                         \(identifier: insert_temp) AS (
                             INSERT INTO \(identifier: query.class)(\(_insert.keys.map { "\(identifier: $0)" as SQLRaw }.joined(separator: ",")))
                             SELECT \(_insert.map { "\($1) AS \(identifier: $0)" as SQLRaw }.joined(separator: ","))
                             WHERE NOT EXISTS(SELECT * FROM \(identifier: update_temp))
+                            AND NOT EXISTS(SELECT * FROM \(identifier: duplicate_check_temp))
                             RETURNING \(_includes)
                         )
-                        SELECT \(_includes) FROM \(identifier: update_temp)
+                        SELECT \(_includes), \(DBData.null) AS \(identifier: is_duplicated) FROM \(identifier: update_temp)
                         UNION
-                        SELECT \(_includes) FROM \(identifier: insert_temp)
+                        SELECT \(_includes), \(DBData.boolean(true)) AS \(identifier: is_duplicated) FROM \(identifier: duplicate_check_temp)
+                        UNION
+                        SELECT \(_includes), \(DBData.null) AS \(identifier: is_duplicated) FROM \(identifier: insert_temp)
                         """
                     
-                    return connection.execute(sql).map { $0.first.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                    return connection.execute(sql)
+                        .map { $0.first.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+                        .flatMapThrowing { obj in
+                            guard obj?[is_duplicated] != true else { throw Database.Error.duplicatedPrimaryKey }
+                            return obj
+                        }
                 }
                 
             } catch {
