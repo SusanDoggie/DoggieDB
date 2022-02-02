@@ -95,6 +95,11 @@ extension BSON {
 extension DBData {
     
     @inlinable
+    public init(_ value: BSONDocument) throws {
+        try self.init(.document(value))
+    }
+    
+    @inlinable
     public init(_ value: BSON) throws {
         switch value {
         case .null: self = nil
