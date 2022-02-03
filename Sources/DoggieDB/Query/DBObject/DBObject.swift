@@ -29,9 +29,9 @@ public struct DBObject {
     
     public let primaryKeys: Set<String>
     
-    private let _columns: [String: DBData]
+    let _columns: [String: DBData]
     
-    private var _updates: [String: DBUpdateOption]
+    private(set) var _updates: [String: DBUpdateOption]
 }
 
 extension DBObject {
