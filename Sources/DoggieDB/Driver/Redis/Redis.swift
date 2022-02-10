@@ -91,6 +91,29 @@ extension RedisDriver.Connection {
 
 extension RedisDriver.Connection {
     
+    func withTransaction<T>(
+        _ transactionBody: @escaping (DBConnection) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        
+        fatalError("unsupported operation")
+    }
+    
+    #if compiler(>=5.5.2) && canImport(_Concurrency)
+    
+    @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+    func withTransaction<T>(
+        _ transactionBody: (DBConnection) async throws -> T
+    ) async throws -> T {
+        
+        fatalError("unsupported operation")
+    }
+    
+    #endif
+    
+}
+
+extension RedisDriver.Connection {
+    
     func runCommand(
         _ string: String,
         _ binds: [RESPValue]

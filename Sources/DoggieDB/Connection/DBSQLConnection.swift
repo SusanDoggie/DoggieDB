@@ -97,7 +97,7 @@ extension DBSQLConnection {
 extension DBSQLConnection {
     
     public func withTransaction<T>(
-        _ transactionBody: @escaping (DBSQLConnection) throws -> EventLoopFuture<T>
+        _ transactionBody: @escaping (DBConnection) throws -> EventLoopFuture<T>
     ) -> EventLoopFuture<T> {
         
         let transaction = self.startTransaction()

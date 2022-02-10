@@ -59,65 +59,11 @@ extension DBConnection {
     }
 }
 
-extension ClientSession {
-    
-    public func withTransaction<T>(
-        options: TransactionOptions? = nil,
-        _ transactionBody: @escaping () throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
-        
-        let transaction = self.startTransaction(options: options)
-        let promise = transaction.eventLoop.makePromise(of: T.self)
-        
-        return transaction.flatMap {
-            
-            do {
-                
-                let bodyFuture = try transactionBody()
-                
-                bodyFuture.flatMap { _ in
-                    self.commitTransaction()
-                }.flatMapError { _ in
-                    self.abortTransaction()
-                }.whenComplete { _ in
-                    promise.completeWith(bodyFuture)
-                }
-                
-            } catch {
-                
-                self.abortTransaction().whenComplete { _ in
-                    promise.fail(error)
-                }
-            }
-            
-            return promise.futureResult
-        }
-    }
-}
-
 extension DBMongoQuery {
     
     public func runCommand(_ command: BSONDocument, options: RunCommandOptions? = nil) -> EventLoopFuture<BSONDocument> {
         guard let database = connection._database() else { fatalError("database not selected.") }
         return database.runCommand(command, options: options, session: session)
-    }
-}
-
-extension DBMongoQuery {
-    
-    public func withTransaction<T>(
-        options: ClientSessionOptions? = nil,
-        _ transactionBody: @escaping (DBMongoQuery) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
-        
-        if let session = self.session {
-            return session.withTransaction { try transactionBody(self) }
-        }
-        
-        return connection.withSession(options: options) { connection in
-            let query = connection.mongoQuery()
-            return connection.session.withTransaction { try transactionBody(query) }
-        }
     }
 }
 

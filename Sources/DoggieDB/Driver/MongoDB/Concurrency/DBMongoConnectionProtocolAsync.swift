@@ -84,4 +84,20 @@ extension DBConnection {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+extension DBMongoConnectionProtocol {
+    
+    public func withTransaction<T>(
+        _ transactionBody: (DBConnection) async throws -> T
+    ) async throws -> T {
+        
+        return try await self.withMongoSession(options: nil) { connection in
+            
+            guard let connection = connection as? SessionBoundConnection else { fatalError("unknown error") }
+            
+            return try await connection.session.withTransaction { try await transactionBody(connection) }
+        }
+    }
+}
+
 #endif

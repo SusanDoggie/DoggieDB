@@ -110,7 +110,7 @@ extension DBSQLConnection {
 extension DBSQLConnection {
     
     public func withTransaction<T>(
-        _ transactionBody: (DBSQLConnection) async throws -> T
+        _ transactionBody: (DBConnection) async throws -> T
     ) async throws -> T {
         
         try await self.startTransaction()
