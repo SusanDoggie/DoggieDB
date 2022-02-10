@@ -110,18 +110,25 @@ extension DBSQLConnection {
 extension DBSQLConnection {
     
     public func withTransaction<T>(
-        _ transactionBody: @escaping @Sendable (DBSQLConnection) async throws -> T
+        _ transactionBody: (DBSQLConnection) async throws -> T
     ) async throws -> T {
         
-        let promise = self.eventLoopGroup.next().makePromise(of: T.self)
+        try await self.startTransaction()
         
-        return try await self.withTransaction { connection in
+        do {
             
-            promise.completeWithTask { try await transactionBody(connection) }
+            let result = try await transactionBody(self)
             
-            return promise.futureResult
+            try await self.commitTransaction()
             
-        }.get()
+            return result
+            
+        } catch {
+            
+            try await self.abortTransaction()
+            
+            throw error
+        }
     }
 }
 

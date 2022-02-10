@@ -32,34 +32,51 @@ extension DBMongoQuery {
     
     public func withSession<T>(
         options: ClientSessionOptions? = nil,
-        _ sessionBody: @escaping @Sendable (ClientSession) async throws -> T
+        _ sessionBody: (ClientSession) async throws -> T
     ) async throws -> T {
         
-        let promise = self.eventLoopGroup.next().makePromise(of: T.self)
+        let session = self.startSession(options: options)
         
-        return try await self.withSession(options: options, { session in
+        do {
             
-            promise.completeWithTask { try await sessionBody(session) }
+            let result = try await sessionBody(session)
             
-            return promise.futureResult
+            try await session.end().get()
             
-        }).get()
+            return result
+            
+        } catch {
+            
+            try await session.end().get()
+            
+            throw error
+        }
     }
     
     public func withTransaction<T>(
         options: ClientSessionOptions? = nil,
-        _ transactionBody: @escaping @Sendable (ClientSession) async throws -> T
+        _ transactionBody: (ClientSession) async throws -> T
     ) async throws -> T {
         
-        let promise = self.eventLoopGroup.next().makePromise(of: T.self)
-        
-        return try await self.withTransaction(options: options, { session in
+        return try await self.withSession(options: options) { session in
             
-            promise.completeWithTask { try await transactionBody(session) }
+            try await session.startTransaction().get()
             
-            return promise.futureResult
-            
-        }).get()
+            do {
+                
+                let result = try await transactionBody(session)
+                
+                try await session.commitTransaction().get()
+                
+                return result
+                
+            } catch {
+                
+                try await session.abortTransaction().get()
+                
+                throw error
+            }
+        }
     }
 }
 
