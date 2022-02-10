@@ -106,23 +106,4 @@ extension DBSQLConnection {
     }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-extension DBSQLConnection {
-    
-    public func withTransaction<T>(
-        _ transactionBody: @escaping @Sendable (DBSQLConnection) async throws -> T
-    ) async throws -> T {
-        
-        let promise = self.eventLoopGroup.next().makePromise(of: T.self)
-        
-        return try await self.withTransaction { connection in
-            
-            promise.completeWithTask { try await transactionBody(connection) }
-            
-            return promise.futureResult
-            
-        }.get()
-    }
-}
-
 #endif
