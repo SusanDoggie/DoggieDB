@@ -422,6 +422,22 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         }
     }
     
+    func _decode(_ type: Json.Number.Type) throws -> Json.Number {
+        switch value {
+        case .null: throw Database.Error.valueNotFound
+        case let .number(value): return Json.Number(value)
+        default: throw Database.Error.unsupportedType
+        }
+    }
+    
+    func _decode(_ type: DBData.Number.Type) throws -> DBData.Number {
+        switch value {
+        case .null: throw Database.Error.valueNotFound
+        case let .number(value): return value
+        default: throw Database.Error.unsupportedType
+        }
+    }
+    
     func decode<T: Decodable>(_ type: T.Type) throws -> T {
         switch type {
         case is DBData.Type: return self as! T
@@ -447,6 +463,8 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         case is Data.Type: return try self._decode(Data.self) as! T
         case is ByteBuffer.Type: return try self._decode(ByteBuffer.self) as! T
         case is ByteBufferView.Type: return try self._decode(ByteBufferView.self) as! T
+        case is Json.Number.Type: return try self._decode(Json.Number.self) as! T
+        case is DBData.Number.Type: return try self._decode(DBData.Number.self) as! T
         default: throw Database.Error.unsupportedType
         }
     }

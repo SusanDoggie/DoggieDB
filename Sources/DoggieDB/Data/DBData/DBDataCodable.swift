@@ -134,6 +134,11 @@ extension DBData: Decodable {
             return
         }
         
+        if let number = try? container.decode(Json.Number.self) {
+            self = .number(Number(number))
+            return
+        }
+        
         if let string = try? container.decode(String.self) {
             self = .string(string)
             return

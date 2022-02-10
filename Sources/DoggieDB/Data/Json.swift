@@ -23,6 +23,19 @@
 //  THE SOFTWARE.
 //
 
+extension Json.Number {
+    
+    @inlinable
+    public init(_ json: DBData.Number) {
+        switch json {
+        case let .signed(value): self.init(value)
+        case let .unsigned(value): self.init(value)
+        case let .number(value): self.init(value)
+        case let .decimal(value): self.init(value)
+        }
+    }
+}
+
 extension DBData.Number {
     
     @inlinable
