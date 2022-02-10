@@ -56,32 +56,6 @@ extension ClientSession {
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension DBMongoQuery {
     
-    public func withSession<T>(
-        options: ClientSessionOptions? = nil,
-        _ sessionBody: (DBMongoQuery) async throws -> T
-    ) async throws -> T {
-        
-        let session = self.connection.startSession(options: options)
-        
-        do {
-            
-            var query = self
-            query.session = session
-            
-            let result = try await sessionBody(query)
-            
-            try await session.end().get()
-            
-            return result
-            
-        } catch {
-            
-            try await session.end().get()
-            
-            throw error
-        }
-    }
-    
     public func withTransaction<T>(
         options: ClientSessionOptions? = nil,
         _ transactionBody: (DBMongoQuery) async throws -> T
@@ -91,10 +65,22 @@ extension DBMongoQuery {
             return try await session.withTransaction { try await transactionBody(self) }
         }
         
-        return try await self.withSession(options: options) { query in
-            guard let session = query.session else { throw Database.Error.unknown }
-            return try await session.withTransaction { try await transactionBody(query) }
+        return try await connection.withSession(options: options) { connection in
+            let query = connection.mongoQuery()
+            return try await connection.session.withTransaction { try await transactionBody(query) }
         }
+    }
+}
+
+@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+extension DBConnection {
+    
+    public func withMongoSession<T>(
+        options: ClientSessionOptions?,
+        _ sessionBody: (DBConnection) async throws -> T
+    ) async throws -> T {
+        guard let connection = self as? DBMongoConnectionProtocol else { fatalError("unsupported operation") }
+        return try await connection.withSession(options: options, sessionBody)
     }
 }
 

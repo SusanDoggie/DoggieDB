@@ -1,5 +1,5 @@
 //
-//  EventLoopBoundConnection.swift
+//  SessionBoundConnection.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2022 Susan Cheng. All rights reserved.
@@ -25,21 +25,19 @@
 
 import MongoSwift
 
-class DBMongoEventLoopBoundConnection: DBMongoConnectionProtocol {
+class SessionBoundConnection: DBMongoConnectionProtocol {
     
-    let connection: MongoDBDriver.Connection
+    let connection: DBMongoConnectionProtocol
     
-    let client: EventLoopBoundMongoClient
+    let session: ClientSession
     
-    private(set) var isClosed: Bool = false
-    
-    init(connection: MongoDBDriver.Connection, client: EventLoopBoundMongoClient) {
+    init(connection: DBMongoConnectionProtocol, session: ClientSession) {
         self.connection = connection
-        self.client = client
+        self.session = session
     }
 }
 
-extension DBMongoEventLoopBoundConnection {
+extension SessionBoundConnection {
     
     var driver: DBDriver {
         return connection.driver
@@ -53,79 +51,65 @@ extension DBMongoEventLoopBoundConnection {
         return connection.database
     }
     
+    var isClosed: Bool {
+        return connection.isClosed
+    }
+    
     var eventLoopGroup: EventLoopGroup {
-        return client.eventLoop
+        return connection.eventLoopGroup
     }
     
     func _database() -> MongoDatabase? {
-        return database.map { client.db($0) }
+        return connection._database()
     }
 }
 
-extension DBMongoEventLoopBoundConnection {
+extension SessionBoundConnection {
     
     func withSession<T>(
         options: ClientSessionOptions?,
         _ sessionBody: (SessionBoundConnection) throws -> EventLoopFuture<T>
     ) -> EventLoopFuture<T> {
-        return client.withSession(options: options) { try sessionBody(SessionBoundConnection(connection: self, session: $0)) }
+        return connection.withSession(options: options, sessionBody)
     }
 }
 
 #if compiler(>=5.5.2) && canImport(_Concurrency)
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-extension DBMongoEventLoopBoundConnection {
+extension SessionBoundConnection {
     
     func withSession<T>(
         options: ClientSessionOptions?,
         _ sessionBody: (SessionBoundConnection) async throws -> T
     ) async throws -> T {
-        
-        let session = client.startSession(options: options)
-        
-        do {
-            
-            let result = try await sessionBody(SessionBoundConnection(connection: self, session: session))
-            
-            try await session.end().get()
-            
-            return result
-            
-        } catch {
-            
-            try await session.end().get()
-            
-            throw error
-        }
+        return try await connection.withSession(options: options, sessionBody)
     }
 }
 
 #endif
 
-extension DBMongoEventLoopBoundConnection {
+extension SessionBoundConnection {
     
     func close() -> EventLoopFuture<Void> {
-        let closeResult = eventLoopGroup.next().makeSucceededVoidFuture()
-        closeResult.whenComplete { _ in self.isClosed = true }
-        return closeResult
+        return connection.close()
     }
 }
 
-extension DBMongoEventLoopBoundConnection {
+extension SessionBoundConnection {
     
     func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol {
-        return connection._bind(to: eventLoop)
+        return SessionBoundConnection(connection: connection._bind(to: eventLoop), session: session)
     }
 }
 
-extension DBMongoEventLoopBoundConnection {
+extension SessionBoundConnection {
     
     func version() -> EventLoopFuture<String> {
         return connection.version()
     }
     
     func databases() -> EventLoopFuture<[String]> {
-        return client.listDatabaseNames()
+        return connection.databases()
     }
 }

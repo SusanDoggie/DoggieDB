@@ -29,10 +29,14 @@ public struct DBMongoQuery {
     
     let connection: DBMongoConnectionProtocol
     
-    var session: ClientSession?
 }
 
 extension DBMongoQuery {
+    
+    public var session: ClientSession? {
+        guard let connection = connection as? SessionBoundConnection else { return nil }
+        return connection.session
+    }
     
     public var eventLoopGroup: EventLoopGroup {
         return connection.eventLoopGroup
@@ -43,7 +47,15 @@ extension DBConnection {
     
     public func mongoQuery() -> DBMongoQuery {
         guard let connection = self as? DBMongoConnectionProtocol else { fatalError("unsupported operation") }
-        return DBMongoQuery(connection: connection, session: nil)
+        return DBMongoQuery(connection: connection)
+    }
+    
+    public func withMongoSession<T>(
+        options: ClientSessionOptions?,
+        _ sessionBody: (DBConnection) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        guard let connection = self as? DBMongoConnectionProtocol else { fatalError("unsupported operation") }
+        return connection.withSession(options: options, sessionBody)
     }
 }
 
@@ -93,17 +105,6 @@ extension DBMongoQuery {
 
 extension DBMongoQuery {
     
-    public func withSession<T>(
-        options: ClientSessionOptions? = nil,
-        _ sessionBody: (DBMongoQuery) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
-        return connection.withSession(options: options) { session in
-            var query = self
-            query.session = session
-            return try sessionBody(query)
-        }
-    }
-    
     public func withTransaction<T>(
         options: ClientSessionOptions? = nil,
         _ transactionBody: @escaping (DBMongoQuery) throws -> EventLoopFuture<T>
@@ -113,10 +114,9 @@ extension DBMongoQuery {
             return session.withTransaction { try transactionBody(self) }
         }
         
-        return connection.withSession(options: options) { session in
-            var query = self
-            query.session = session
-            return session.withTransaction { try transactionBody(query) }
+        return connection.withSession(options: options) { connection in
+            let query = connection.mongoQuery()
+            return connection.session.withTransaction { try transactionBody(query) }
         }
     }
 }

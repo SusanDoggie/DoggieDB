@@ -142,22 +142,52 @@ extension MongoDBDriver.Connection {
     func _database() -> MongoDatabase? {
         return self.database.map { client.db($0) }
     }
-    
-    func startSession(options: ClientSessionOptions?) -> ClientSession {
-        return self.client.startSession(options: options)
-    }
-    
-    func withSession<T>(
-        options: ClientSessionOptions?,
-        _ sessionBody: (ClientSession) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
-        return self.client.withSession(options: options, sessionBody)
-    }
 }
 
 extension MongoDBDriver.Connection {
     
-    func bind(to eventLoop: EventLoop) -> DBConnection {
+    func withSession<T>(
+        options: ClientSessionOptions?,
+        _ sessionBody: (SessionBoundConnection) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        return client.withSession(options: options) { try sessionBody(SessionBoundConnection(connection: self, session: $0)) }
+    }
+}
+
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+
+@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+extension MongoDBDriver.Connection {
+    
+    func withSession<T>(
+        options: ClientSessionOptions?,
+        _ sessionBody: (SessionBoundConnection) async throws -> T
+    ) async throws -> T {
+        
+        let session = client.startSession(options: options)
+        
+        do {
+            
+            let result = try await sessionBody(SessionBoundConnection(connection: self, session: session))
+            
+            try await session.end().get()
+            
+            return result
+            
+        } catch {
+            
+            try await session.end().get()
+            
+            throw error
+        }
+    }
+}
+
+#endif
+
+extension MongoDBDriver.Connection {
+    
+    func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol {
         let client = self.client.bound(to: eventLoop)
         return DBMongoEventLoopBoundConnection(connection: self, client: client)
     }
