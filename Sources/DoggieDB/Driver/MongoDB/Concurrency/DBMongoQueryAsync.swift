@@ -32,7 +32,7 @@ extension DBMongoQuery {
     
     public func withSession<T>(
         options: ClientSessionOptions? = nil,
-        _ sessionBody: @escaping (ClientSession) async throws -> T
+        _ sessionBody: @escaping @Sendable (ClientSession) async throws -> T
     ) async throws -> T {
         
         let promise = self.eventLoopGroup.next().makePromise(of: T.self)
@@ -48,7 +48,7 @@ extension DBMongoQuery {
     
     public func withTransaction<T>(
         options: ClientSessionOptions? = nil,
-        _ transactionBody: @escaping (ClientSession) async throws -> T
+        _ transactionBody: @escaping @Sendable (ClientSession) async throws -> T
     ) async throws -> T {
         
         let promise = self.eventLoopGroup.next().makePromise(of: T.self)

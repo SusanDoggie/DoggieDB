@@ -110,7 +110,7 @@ extension DBSQLConnection {
 extension DBSQLConnection {
     
     public func withTransaction<T>(
-        _ transactionBody: @escaping (DBSQLConnection) async throws -> T
+        _ transactionBody: @escaping @Sendable (DBSQLConnection) async throws -> T
     ) async throws -> T {
         
         let promise = self.eventLoopGroup.next().makePromise(of: T.self)
