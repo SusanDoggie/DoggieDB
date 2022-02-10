@@ -93,30 +93,30 @@ extension DBMongoQuery {
 
 extension DBMongoQuery {
     
-    public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
-        return connection.startSession(options: options)
-    }
-    
-    public func session(_ session: ClientSession) -> Self {
-        var result = self
-        result.session = session
-        return result
-    }
-    
     public func withSession<T>(
         options: ClientSessionOptions? = nil,
-        _ sessionBody: (ClientSession) throws -> EventLoopFuture<T>
+        _ sessionBody: (DBMongoQuery) throws -> EventLoopFuture<T>
     ) -> EventLoopFuture<T> {
-        return connection.withSession(options: options, sessionBody)
+        return connection.withSession(options: options) { session in
+            var query = self
+            query.session = session
+            return try sessionBody(query)
+        }
     }
     
     public func withTransaction<T>(
         options: ClientSessionOptions? = nil,
-        _ transactionBody: @escaping (ClientSession) throws -> EventLoopFuture<T>
+        _ transactionBody: @escaping (DBMongoQuery) throws -> EventLoopFuture<T>
     ) -> EventLoopFuture<T> {
         
+        if let session = self.session {
+            return session.withTransaction { try transactionBody(self) }
+        }
+        
         return connection.withSession(options: options) { session in
-            session.withTransaction { try transactionBody(session) }
+            var query = self
+            query.session = session
+            return session.withTransaction { try transactionBody(query) }
         }
     }
 }

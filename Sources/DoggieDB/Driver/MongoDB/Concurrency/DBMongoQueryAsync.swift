@@ -28,18 +28,47 @@ import MongoSwift
 #if compiler(>=5.5.2) && canImport(_Concurrency)
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+extension ClientSession {
+    
+    public func withTransaction<T>(
+        _ transactionBody: () async throws -> T
+    ) async throws -> T {
+        
+        try await self.startTransaction().get()
+        
+        do {
+            
+            let result = try await transactionBody()
+            
+            try await self.commitTransaction().get()
+            
+            return result
+            
+        } catch {
+            
+            try await self.abortTransaction().get()
+            
+            throw error
+        }
+    }
+}
+
+@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension DBMongoQuery {
     
     public func withSession<T>(
         options: ClientSessionOptions? = nil,
-        _ sessionBody: (ClientSession) async throws -> T
+        _ sessionBody: (DBMongoQuery) async throws -> T
     ) async throws -> T {
         
-        let session = self.startSession(options: options)
+        let session = self.connection.startSession(options: options)
         
         do {
             
-            let result = try await sessionBody(session)
+            var query = self
+            query.session = session
+            
+            let result = try await sessionBody(query)
             
             try await session.end().get()
             
@@ -55,27 +84,16 @@ extension DBMongoQuery {
     
     public func withTransaction<T>(
         options: ClientSessionOptions? = nil,
-        _ transactionBody: (ClientSession) async throws -> T
+        _ transactionBody: (DBMongoQuery) async throws -> T
     ) async throws -> T {
         
-        return try await self.withSession(options: options) { session in
-            
-            try await session.startTransaction().get()
-            
-            do {
-                
-                let result = try await transactionBody(session)
-                
-                try await session.commitTransaction().get()
-                
-                return result
-                
-            } catch {
-                
-                try await session.abortTransaction().get()
-                
-                throw error
-            }
+        if let session = self.session {
+            return try await session.withTransaction { try await transactionBody(self) }
+        }
+        
+        return try await self.withSession(options: options) { query in
+            guard let session = query.session else { throw Database.Error.unknown }
+            return try await session.withTransaction { try await transactionBody(query) }
         }
     }
 }
