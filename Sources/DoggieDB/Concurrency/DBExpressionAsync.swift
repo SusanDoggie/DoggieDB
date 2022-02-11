@@ -106,6 +106,16 @@ extension DBFindOneExpression {
     public func upsert(_ upsert: [String : DBUpsertOption]) async throws -> DBObject? {
         return try await self.upsert(upsert).get()
     }
+    
+    @discardableResult
+    public func upsert(_ update: [String: DBDataConvertible], setOnInsert: [String : DBDataConvertible]) async throws -> DBObject? {
+        return try await self.upsert(update, setOnInsert: setOnInsert).get()
+    }
+    
+    @discardableResult
+    public func upsert(_ update: [String : DBUpdateOption], setOnInsert: [String : DBDataConvertible]) async throws -> DBObject? {
+        return try await self.upsert(update, setOnInsert: setOnInsert).get()
+    }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)

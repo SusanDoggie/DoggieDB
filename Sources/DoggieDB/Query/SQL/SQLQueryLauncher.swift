@@ -345,7 +345,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
         }
     }
     
-    func findOneAndUpsert(_ query: DBFindOneExpression, _ upsert: [String: DBUpsertOption]) -> EventLoopFuture<DBObject?> {
+    func findOneAndUpsert(_ query: DBFindOneExpression, _ update: [String : DBUpdateOption], _ setOnInsert: [String : DBDataConvertible]) -> EventLoopFuture<DBObject?> {
         
         var update_temp: String
         var counter = 0
@@ -365,9 +365,6 @@ struct SQLQueryLauncher: DBQueryLauncher {
             counter += 1
             insert_temp = "temp_\(counter)"
         } while insert_temp == query.class
-        
-        let update = upsert.compactMapValues { $0.update }
-        let setOnInsert = upsert.compactMapValues { $0.setOnInsert }
         
         return self._findOneAndUpdate(query, update).flatMap { updateSQL, primaryKeys, columnInfos in
             

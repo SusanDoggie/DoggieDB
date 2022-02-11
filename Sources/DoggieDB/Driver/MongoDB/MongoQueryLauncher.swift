@@ -102,21 +102,6 @@ extension Dictionary where Key == String, Value == DBUpdateOption {
     }
 }
 
-extension Dictionary where Key == String, Value == DBUpsertOption {
-    
-    fileprivate func toBSONDocument() throws -> BSONDocument {
-        
-        var update = try self.compactMapValues { $0.update }.toBSONDictionary()
-        
-        for case let (key, .setOnInsert(value)) in self where value.toDBData() != nil {
-            
-            update["$setOnInsert", default: [:]][key] = try BSON(value.toDBData())
-        }
-        
-        return BSONDocument(update)
-    }
-}
-
 struct MongoQueryLauncher: DBQueryLauncher {
     
     let connection: MongoDBDriver.Connection
@@ -231,7 +216,7 @@ struct MongoQueryLauncher: DBQueryLauncher {
         }
     }
     
-    func findOneAndUpsert(_ query: DBFindOneExpression, _ upsert: [String: DBUpsertOption]) -> EventLoopFuture<DBObject?> {
+    func findOneAndUpsert(_ query: DBFindOneExpression, _ update: [String : DBUpdateOption], _ setOnInsert: [String : DBDataConvertible]) -> EventLoopFuture<DBObject?> {
         
         do {
             
@@ -239,7 +224,12 @@ struct MongoQueryLauncher: DBQueryLauncher {
             
             var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter)
             
-            mongoQuery = try mongoQuery.update(upsert.toBSONDocument())
+            var _update = try update.toBSONDictionary()
+            for case let (key, value) in setOnInsert where value.toDBData() != nil {
+                _update["$setOnInsert", default: [:]][key] = try BSON(value.toDBData())
+            }
+            
+            mongoQuery = mongoQuery.update(BSONDocument(_update))
             mongoQuery = mongoQuery.upsert(true)
             
             switch query.returning {
