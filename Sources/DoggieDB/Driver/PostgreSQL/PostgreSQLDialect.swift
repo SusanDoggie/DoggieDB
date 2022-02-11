@@ -91,6 +91,8 @@ struct PostgreSQLDialect: SQLDialect {
     
     static func typeCast(_ value: DBData, _ columnType: String) throws -> SQLRaw {
         
+        guard value != nil else { return "\(value)" }
+        
         switch columnType {
         case "json": return "to_json(\(value))"
         case "jsonb": return "to_jsonb(\(value))"
