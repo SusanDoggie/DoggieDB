@@ -106,6 +106,14 @@ extension Decimal: DBDataConvertible {
     }
 }
 
+extension DBData.Number: DBDataConvertible {
+    
+    @inlinable
+    public func toDBData() -> DBData {
+        return .number(self)
+    }
+}
+
 extension StringProtocol {
     
     @inlinable
