@@ -137,7 +137,7 @@ extension DBPredicateExpression {
             let expression: DBPredicateExpression
             
             switch primaryKeys.count {
-            case 0: fatalError("invalid expression")
+            case 0: throw Database.Error.invalidExpression
             case 1: expression = .equal(.key(primaryKeys[0]), .value(value))
             default:
                 let value = value.toDBData()
@@ -152,7 +152,7 @@ extension DBPredicateExpression {
             let expression: DBPredicateExpression
             
             switch primaryKeys.count {
-            case 0: fatalError("invalid expression")
+            case 0: throw Database.Error.invalidExpression
             case 1: expression = .notEqual(.key(primaryKeys[0]), .value(value))
             default:
                 let value = value.toDBData()
@@ -169,13 +169,52 @@ extension DBPredicateExpression {
         case let .greaterThanOrEqualTo(lhs, rhs): return try "\(lhs.serialize()) >= \(rhs.serialize())"
         case let .between(x, from, to): return try "\(x.serialize()) BETWEEN \(from.serialize()) AND \(to.serialize())"
         case let .notBetween(x, from, to): return try "\(x.serialize()) NOT BETWEEN \(from.serialize()) AND \(to.serialize())"
-        case let .startsWith(.key(key), str): return try dialect.matching(key, .startsWith(str))
-        case let .endsWith(.key(key), str): return try dialect.matching(key, .endsWith(str))
-        case let .contains(.key(key), str): return try dialect.matching(key, .contains(str))
+            
+        case let .startsWith(.objectId, str):
+            
+            guard primaryKeys.count == 1 else { throw Database.Error.invalidExpression }
+            return try dialect.matching(primaryKeys[0], .startsWith(str))
+            
+        case let .startsWith(.key(key), str):
+            
+            return try dialect.matching(key, .startsWith(str))
+            
+        case let .endsWith(.objectId, str):
+            
+            guard primaryKeys.count == 1 else { throw Database.Error.invalidExpression }
+            return try dialect.matching(primaryKeys[0], .endsWith(str))
+            
+        case let .endsWith(.key(key), str):
+            
+            return try dialect.matching(key, .endsWith(str))
+            
+        case let .contains(.objectId, str):
+            
+            guard primaryKeys.count == 1 else { throw Database.Error.invalidExpression }
+            return try dialect.matching(primaryKeys[0], .contains(str))
+            
+        case let .contains(.key(key), str):
+            
+            return try dialect.matching(key, .contains(str))
+            
+        case let .containsIn(.objectId, .value(list)):
+            
+            guard primaryKeys.count == 1 else { throw Database.Error.invalidExpression }
+            
+            guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
+            return "\(identifier: primaryKeys[0]) IN (\(array.map { "\($0)" as SQLRaw }.joined(separator: ",")))"
+            
         case let .containsIn(x, .value(list)):
             
             guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
             return try "\(x.serialize()) IN (\(array.map { "\($0)" as SQLRaw }.joined(separator: ",")))"
+            
+        case let .notContainsIn(.objectId, .value(list)):
+            
+            guard primaryKeys.count == 1 else { throw Database.Error.invalidExpression }
+            
+            guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
+            return "\(identifier: primaryKeys[0]) NOT IN (\(array.map { "\($0)" as SQLRaw }.joined(separator: ",")))"
             
         case let .notContainsIn(x, .value(list)):
             
@@ -187,7 +226,7 @@ extension DBPredicateExpression {
             let list = list.flatMap { $0._andList ?? [$0] }
             
             switch list.count {
-            case 0: fatalError("invalid expression")
+            case 0: throw Database.Error.invalidExpression
             case 1: return try list[0].serialize(dialect, primaryKeys)
             default: return try "\(list.map { try "(\($0.serialize(dialect, primaryKeys)))" as SQLRaw }.joined(separator: " AND "))"
             }
@@ -197,7 +236,7 @@ extension DBPredicateExpression {
             let list = list.flatMap { $0._orList ?? [$0] }
             
             switch list.count {
-            case 0: fatalError("invalid expression")
+            case 0: throw Database.Error.invalidExpression
             case 1: return try list[0].serialize(dialect, primaryKeys)
             default: return try "\(list.map { try "(\($0.serialize(dialect, primaryKeys)))" as SQLRaw }.joined(separator: " OR "))"
             }
