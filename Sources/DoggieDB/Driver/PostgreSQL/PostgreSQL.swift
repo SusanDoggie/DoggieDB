@@ -307,6 +307,19 @@ extension PostgreSQLDriver.Connection {
     func abortTransaction() -> EventLoopFuture<Void> {
         return self.execute("ROLLBACK").map { _ in }
     }
+    
+    func savepoint(_ name: String) -> EventLoopFuture<Void> {
+        return self.execute("SAVEPOINT \(identifier: name)").map { _ in }
+    }
+    
+    func rollbackSavepoint(_ name: String) -> EventLoopFuture<Void> {
+        return self.execute("ROLLBACK TO SAVEPOINT \(identifier: name)").map { _ in }
+    }
+    
+    func releaseSavepoint(_ name: String) -> EventLoopFuture<Void> {
+        return self.execute("RELEASE SAVEPOINT \(identifier: name)").map { _ in }
+    }
+    
 }
 
 extension PostgreSQLDriver.Connection {

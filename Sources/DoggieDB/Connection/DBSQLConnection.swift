@@ -68,6 +68,12 @@ public protocol DBSQLConnection: DBConnection {
     
     func abortTransaction() -> EventLoopFuture<Void>
     
+    func savepoint(_ name: String) -> EventLoopFuture<Void>
+    
+    func rollbackSavepoint(_ name: String) -> EventLoopFuture<Void>
+    
+    func releaseSavepoint(_ name: String) -> EventLoopFuture<Void>
+    
     func execute(
         _ sql: SQLRaw
     ) -> EventLoopFuture<[SQLQueryRow]>

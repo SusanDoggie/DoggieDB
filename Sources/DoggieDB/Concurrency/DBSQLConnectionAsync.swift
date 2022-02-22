@@ -71,6 +71,19 @@ extension DBSQLConnection {
     public func abortTransaction() async throws {
         try await self.abortTransaction().get()
     }
+    
+    public func savepoint(_ name: String) async throws {
+        try await self.savepoint(name).get()
+    }
+    
+    public func rollbackSavepoint(_ name: String) async throws {
+        try await self.rollbackSavepoint(name).get()
+    }
+    
+    public func releaseSavepoint(_ name: String) async throws {
+        try await self.releaseSavepoint(name).get()
+    }
+    
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
