@@ -134,3 +134,33 @@ extension DBSQLConnection {
         }
     }
 }
+
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+
+@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+extension DBSQLConnection {
+    
+    public func withTransaction<T>(
+        _ transactionBody: (DBConnection) async throws -> T
+    ) async throws -> T {
+        
+        try await self.startTransaction()
+        
+        do {
+            
+            let result = try await transactionBody(self)
+            
+            try await self.commitTransaction()
+            
+            return result
+            
+        } catch {
+            
+            try await self.abortTransaction()
+            
+            throw error
+        }
+    }
+}
+
+#endif
