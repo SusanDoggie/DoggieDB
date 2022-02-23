@@ -422,6 +422,48 @@ class PostgreSQLTest: XCTestCase {
         }
     }
     
+    func testTransaction2() throws {
+        
+        do {
+            
+            let result = try connection.withTransaction({ connection in
+                
+                (connection as! DBSQLConnection).execute("SELECT \(1) as value")
+                
+            }).wait()
+            
+            XCTAssertEqual(result[0]["value"]?.intValue, 1)
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testTransaction3() throws {
+        
+        do {
+            
+            let result = try connection.withTransaction({ connection in
+                
+                connection.withTransaction({ connection in
+                    
+                    (connection as! DBSQLConnection).execute("SELECT \(1) as value")
+                    
+                })
+                
+            }).wait()
+            
+            XCTAssertEqual(result[0]["value"]?.intValue, 1)
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
     func testQuery() throws {
         
         do {

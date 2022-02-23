@@ -54,10 +54,6 @@ extension DBConnection {
             return SQLQueryLauncher(connection: connection)
         }
         
-        if let connection = self as? DBSQLTransactionConnection {
-            return SQLQueryLauncher(connection: connection.base)
-        }
-        
         return nil
     }
 }

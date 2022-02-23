@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-class DBSQLTransactionConnection: DBConnection {
+class DBSQLTransactionConnection: DBSQLConnection {
     
     let base: DBSQLConnection
     
@@ -56,6 +56,27 @@ extension DBSQLTransactionConnection {
 
 extension DBSQLTransactionConnection {
     
+    var columnInfoHook: ((DBSQLConnection, String) -> EventLoopFuture<[DBSQLColumnInfo]>)? {
+        get {
+            return base.columnInfoHook
+        }
+        set {
+            base.columnInfoHook = newValue
+        }
+    }
+    
+    var primaryKeyHook: ((DBSQLConnection, String) -> EventLoopFuture<[String]>)? {
+        get {
+            return base.primaryKeyHook
+        }
+        set {
+            base.primaryKeyHook = newValue
+        }
+    }
+}
+
+extension DBSQLTransactionConnection {
+    
     func close() -> EventLoopFuture<Void> {
         return base.close()
     }
@@ -70,6 +91,80 @@ extension DBSQLTransactionConnection {
     func databases() -> EventLoopFuture<[String]> {
         return base.databases()
     }
+    
+    func tables() -> EventLoopFuture<[String]> {
+        return base.tables()
+    }
+    
+    func views() -> EventLoopFuture<[String]> {
+        return base.views()
+    }
+    
+    func materializedViews() -> EventLoopFuture<[String]> {
+        return base.materializedViews()
+    }
+    
+    func columns(of table: String) -> EventLoopFuture<[DBSQLColumnInfo]> {
+        return base.columns(of: table)
+    }
+    
+    func primaryKey(of table: String) -> EventLoopFuture<[String]> {
+        return base.primaryKey(of: table)
+    }
+    
+    func indices(of table: String) -> EventLoopFuture<[SQLQueryRow]> {
+        return base.indices(of: table)
+    }
+    
+    func foreignKeys(of table: String) -> EventLoopFuture<[SQLQueryRow]> {
+        return base.foreignKeys(of: table)
+    }
+}
+
+extension DBSQLTransactionConnection {
+    
+    func startTransaction() -> EventLoopFuture<Void> {
+        return base.startTransaction()
+    }
+    
+    func commitTransaction() -> EventLoopFuture<Void> {
+        return base.commitTransaction()
+    }
+    
+    func abortTransaction() -> EventLoopFuture<Void> {
+        return base.abortTransaction()
+    }
+    
+    func createSavepoint(_ name: String) -> EventLoopFuture<Void> {
+        return base.createSavepoint(name)
+    }
+    
+    func rollbackToSavepoint(_ name: String) -> EventLoopFuture<Void> {
+        return base.rollbackToSavepoint(name)
+    }
+    
+    func releaseSavepoint(_ name: String) -> EventLoopFuture<Void> {
+        return base.releaseSavepoint(name)
+    }
+    
+}
+
+extension DBSQLTransactionConnection {
+    
+    func execute(
+        _ sql: SQLRaw
+    ) -> EventLoopFuture<[SQLQueryRow]> {
+        
+        return base.execute(sql)
+    }
+    
+    func execute(
+        _ sql: SQLRaw,
+        onRow: @escaping (SQLQueryRow) throws -> Void
+    ) -> EventLoopFuture<SQLQueryMetadata> {
+        
+        return base.execute(sql, onRow: onRow)
+    }
 }
 
 extension DBSQLTransactionConnection {
@@ -80,7 +175,7 @@ extension DBSQLTransactionConnection {
         
         let counter = self.counter
         
-        let transaction = self.base.savepoint("savepoint_\(counter)")
+        let transaction = self.base.createSavepoint("savepoint_\(counter)")
         let promise = transaction.eventLoop.makePromise(of: T.self)
         
         return transaction.flatMap {
@@ -92,14 +187,14 @@ extension DBSQLTransactionConnection {
                 bodyFuture.flatMap { _ in
                     self.base.releaseSavepoint("savepoint_\(counter)")
                 }.flatMapError { _ in
-                    self.base.rollbackSavepoint("savepoint_\(counter)")
+                    self.base.rollbackToSavepoint("savepoint_\(counter)")
                 }.whenComplete { _ in
                     promise.completeWith(bodyFuture)
                 }
                 
             } catch {
                 
-                self.base.rollbackSavepoint("savepoint_\(counter)").whenComplete { _ in
+                self.base.rollbackToSavepoint("savepoint_\(counter)").whenComplete { _ in
                     promise.fail(error)
                 }
             }
@@ -118,7 +213,7 @@ extension DBSQLTransactionConnection {
         _ transactionBody: (DBConnection) async throws -> T
     ) async throws -> T {
         
-        try await self.base.savepoint("savepoint_\(counter)")
+        try await self.base.createSavepoint("savepoint_\(counter)")
         
         do {
             
@@ -130,7 +225,7 @@ extension DBSQLTransactionConnection {
             
         } catch {
             
-            try await self.base.rollbackSavepoint("savepoint_\(counter)")
+            try await self.base.rollbackToSavepoint("savepoint_\(counter)")
             
             throw error
         }

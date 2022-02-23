@@ -72,12 +72,12 @@ extension DBSQLConnection {
         try await self.abortTransaction().get()
     }
     
-    public func savepoint(_ name: String) async throws {
-        try await self.savepoint(name).get()
+    public func createSavepoint(_ name: String) async throws {
+        try await self.createSavepoint(name).get()
     }
     
-    public func rollbackSavepoint(_ name: String) async throws {
-        try await self.rollbackSavepoint(name).get()
+    public func rollbackToSavepoint(_ name: String) async throws {
+        try await self.rollbackToSavepoint(name).get()
     }
     
     public func releaseSavepoint(_ name: String) async throws {

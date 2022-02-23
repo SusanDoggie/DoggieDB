@@ -68,9 +68,9 @@ public protocol DBSQLConnection: DBConnection {
     
     func abortTransaction() -> EventLoopFuture<Void>
     
-    func savepoint(_ name: String) -> EventLoopFuture<Void>
+    func createSavepoint(_ name: String) -> EventLoopFuture<Void>
     
-    func rollbackSavepoint(_ name: String) -> EventLoopFuture<Void>
+    func rollbackToSavepoint(_ name: String) -> EventLoopFuture<Void>
     
     func releaseSavepoint(_ name: String) -> EventLoopFuture<Void>
     
@@ -113,7 +113,7 @@ extension DBSQLConnection {
             
             do {
                 
-                let bodyFuture = try transactionBody(self)
+                let bodyFuture = try transactionBody(DBSQLTransactionConnection(base: self, counter: 0))
                 
                 bodyFuture.flatMap { _ in
                     self.commitTransaction()
