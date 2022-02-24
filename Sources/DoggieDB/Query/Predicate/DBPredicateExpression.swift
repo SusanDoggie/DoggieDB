@@ -116,21 +116,10 @@ extension DBPredicateExpression {
         }
     }
     
-    var requiredPrimaryKeys: Bool {
-        switch self {
-        case let .not(x): return x.requiredPrimaryKeys
-        case let .equal(lhs, rhs): return lhs.isObjectId || rhs.isObjectId
-        case let .notEqual(lhs, rhs): return lhs.isObjectId || rhs.isObjectId
-        case let .and(list): return list.contains { $0.requiredPrimaryKeys }
-        case let .or(list): return list.contains { $0.requiredPrimaryKeys }
-        default: return false
-        }
-    }
-    
-    func serialize(_ dialect: SQLDialect.Type, _ primaryKeys: [String]) throws -> SQLRaw {
+    func serialize(_ dialect: SQLDialect.Type, _ columnInfos: [DBSQLColumnInfo], _ primaryKeys: [String]) throws -> SQLRaw {
         
         switch self {
-        case let .not(x): return try "NOT (\(x.serialize(dialect, primaryKeys)))"
+        case let .not(x): return try "NOT (\(x.serialize(dialect, columnInfos, primaryKeys)))"
         case let .equal(.objectId, .value(value)),
              let .equal(.value(value), .objectId):
             
@@ -144,7 +133,7 @@ extension DBPredicateExpression {
                 expression = .and(primaryKeys.map { .equal(.key($0), .value(value[$0])) })
             }
             
-            return try expression.serialize(dialect, primaryKeys)
+            return try expression.serialize(dialect, columnInfos, primaryKeys)
             
         case let .notEqual(.objectId, .value(value)),
              let .notEqual(.value(value), .objectId):
@@ -159,7 +148,7 @@ extension DBPredicateExpression {
                 expression = .or(primaryKeys.map { .notEqual(.key($0), .value(value[$0])) })
             }
             
-            return try expression.serialize(dialect, primaryKeys)
+            return try expression.serialize(dialect, columnInfos, primaryKeys)
             
         case let .equal(lhs, rhs): return try dialect.nullSafeEqual(lhs, rhs)
         case let .notEqual(lhs, rhs): return try dialect.nullSafeNotEqual(lhs, rhs)
@@ -227,8 +216,8 @@ extension DBPredicateExpression {
             
             switch list.count {
             case 0: throw Database.Error.invalidExpression
-            case 1: return try list[0].serialize(dialect, primaryKeys)
-            default: return try "\(list.map { try "(\($0.serialize(dialect, primaryKeys)))" as SQLRaw }.joined(separator: " AND "))"
+            case 1: return try list[0].serialize(dialect, columnInfos, primaryKeys)
+            default: return try "\(list.map { try "(\($0.serialize(dialect, columnInfos, primaryKeys)))" as SQLRaw }.joined(separator: " AND "))"
             }
             
         case let .or(list):
@@ -237,8 +226,8 @@ extension DBPredicateExpression {
             
             switch list.count {
             case 0: throw Database.Error.invalidExpression
-            case 1: return try list[0].serialize(dialect, primaryKeys)
-            default: return try "\(list.map { try "(\($0.serialize(dialect, primaryKeys)))" as SQLRaw }.joined(separator: " OR "))"
+            case 1: return try list[0].serialize(dialect, columnInfos, primaryKeys)
+            default: return try "\(list.map { try "(\($0.serialize(dialect, columnInfos, primaryKeys)))" as SQLRaw }.joined(separator: " OR "))"
             }
             
         default: throw Database.Error.invalidExpression
@@ -248,12 +237,8 @@ extension DBPredicateExpression {
 
 extension Collection where Element == DBPredicateExpression {
     
-    var requiredPrimaryKeys: Bool {
-        return self.contains { $0.requiredPrimaryKeys }
-    }
-    
-    func serialize(_ dialect: SQLDialect.Type, _ primaryKeys: [String]) throws -> SQLRaw {
-        return try DBPredicateExpression.and(Array(self)).serialize(dialect, primaryKeys)
+    func serialize(_ dialect: SQLDialect.Type, _ columnInfos: [DBSQLColumnInfo], _ primaryKeys: [String]) throws -> SQLRaw {
+        return try DBPredicateExpression.and(Array(self)).serialize(dialect, columnInfos, primaryKeys)
     }
 }
 
