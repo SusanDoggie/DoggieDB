@@ -32,23 +32,11 @@ public struct DBPredicateBuilder {
     }
 }
 
-@frozen
-public enum DBPredicateKey {
-    
-    case objectId
-    
-    case key(String)
-}
-
 extension DBPredicateBuilder {
     
     @inlinable
-    public var objectId: DBPredicateKey {
-        return .objectId
-    }
+    public var objectId: DBPredicateKey { .objectId }
     
     @inlinable
-    public subscript(_ key: String) -> DBPredicateKey {
-        return .key(key)
-    }
+    public subscript(_ key: String) -> DBPredicateKey { .key(key) }
 }

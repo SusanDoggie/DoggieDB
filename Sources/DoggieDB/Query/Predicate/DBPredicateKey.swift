@@ -1,5 +1,5 @@
 //
-//  MongoPredicateBuilder.swift
+//  DBPredicateKey.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2022 Susan Cheng. All rights reserved.
@@ -24,19 +24,9 @@
 //
 
 @frozen
-public struct MongoPredicateBuilder {
+public enum DBPredicateKey {
     
-    @inlinable
-    public init() {
-        
-    }
-}
-
-extension MongoPredicateBuilder {
+    case objectId
     
-    @inlinable
-    public var id: MongoPredicateKey { .id }
-    
-    @inlinable
-    public subscript(_ key: String) -> MongoPredicateKey { .key(key) }
+    case key(String)
 }

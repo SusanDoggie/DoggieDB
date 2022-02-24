@@ -1,5 +1,5 @@
 //
-//  MongoPredicateBuilder.swift
+//  MongoPredicateKey.swift
 //
 //  The MIT License
 //  Copyright (c) 2015 - 2022 Susan Cheng. All rights reserved.
@@ -24,19 +24,21 @@
 //
 
 @frozen
-public struct MongoPredicateBuilder {
+public struct MongoPredicateKey {
+    
+    public var key: String
     
     @inlinable
-    public init() {
-        
+    public init(key: String) {
+        self.key = key
     }
 }
 
-extension MongoPredicateBuilder {
+extension MongoPredicateKey {
     
     @inlinable
-    public var id: MongoPredicateKey { .id }
+    public static var id: MongoPredicateKey { MongoPredicateKey(key: "_id") }
     
     @inlinable
-    public subscript(_ key: String) -> MongoPredicateKey { .key(key) }
+    public static func key(_ key: String) -> MongoPredicateKey { MongoPredicateKey(key: key) }
 }
