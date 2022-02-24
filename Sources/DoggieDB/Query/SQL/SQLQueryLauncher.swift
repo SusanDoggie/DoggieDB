@@ -123,7 +123,14 @@ struct SQLQueryLauncher: DBQueryLauncher {
                     var sql: SQLRaw = "SELECT COUNT(*) FROM \(identifier: query.class)"
                     
                     if !query.filters.isEmpty {
-                        sql += try "WHERE \(query.filters.serialize(dialect.self, columnInfos, primaryKeys))"
+                        
+                        let filter = try query.filters.serialize(dialect.self, columnInfos, primaryKeys)
+                        
+                        switch filter {
+                        case .true: break
+                        case .false: return connection.eventLoopGroup.next().makeSucceededFuture(0)
+                        case let .sql(filter): sql += "WHERE \(filter)"
+                        }
                     }
                     
                     return connection.execute(sql).map { $0.first.flatMap { $0[$0.keys[0]]?.intValue } ?? 0 }
@@ -140,7 +147,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
         }
     }
     
-    func _find(_ query: DBFindExpression) -> EventLoopFuture<(SQLRaw, [String])> {
+    func _find(_ query: DBFindExpression) -> EventLoopFuture<(SQLRaw?, [String])> {
         
         do {
             
@@ -163,7 +170,14 @@ struct SQLQueryLauncher: DBQueryLauncher {
                 sql += "FROM \(identifier: query.class)"
                 
                 if !query.filters.isEmpty {
-                    sql += try "WHERE \(query.filters.serialize(dialect.self, columnInfos, primaryKeys))"
+                    
+                    let filter = try query.filters.serialize(dialect.self, columnInfos, primaryKeys)
+                    
+                    switch filter {
+                    case .true: break
+                    case .false: return (nil, primaryKeys)
+                    case let .sql(filter): sql += "WHERE \(filter)"
+                    }
                 }
                 
                 if !query.sort.isEmpty {
@@ -189,7 +203,10 @@ struct SQLQueryLauncher: DBQueryLauncher {
     func find(_ query: DBFindExpression) -> EventLoopFuture<[DBObject]> {
         
         return self._find(query).flatMap { sql, primaryKeys in
-            connection.execute(sql).map { $0.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+            
+            guard let sql = sql else { return connection.eventLoopGroup.next().makeSucceededFuture([]) }
+            
+            return connection.execute(sql).map { $0.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
         }
     }
     
@@ -197,7 +214,9 @@ struct SQLQueryLauncher: DBQueryLauncher {
         
         return self._find(query).flatMap { sql, primaryKeys in
             
-            connection.execute(sql) {
+            guard let sql = sql else { return connection.eventLoopGroup.next().makeSucceededVoidFuture() }
+            
+            return connection.execute(sql) {
                 
                 try forEach(DBObject(table: query.class, primaryKeys: primaryKeys, object: $0))
                 
@@ -218,7 +237,14 @@ struct SQLQueryLauncher: DBQueryLauncher {
                     var sql: SQLRaw = "DELETE FROM \(identifier: query.class)"
                     
                     if !query.filters.isEmpty {
-                        sql += try "WHERE \(query.filters.serialize(dialect.self, columnInfos, primaryKeys))"
+                        
+                        let filter = try query.filters.serialize(dialect.self, columnInfos, primaryKeys)
+                        
+                        switch filter {
+                        case .true: break
+                        case .false: return connection.eventLoopGroup.next().makeSucceededFuture(0)
+                        case let .sql(filter): sql += "WHERE \(filter)"
+                        }
                     }
                     
                     sql += "RETURNING 0"
@@ -237,7 +263,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
         }
     }
     
-    func _findOne(_ query: DBFindOneExpression, _ columnInfos: [DBSQLColumnInfo], _ primaryKeys: [String], withData: Bool) throws -> SQLRaw {
+    func _findOne(_ query: DBFindOneExpression, _ columnInfos: [DBSQLColumnInfo], _ primaryKeys: [String], withData: Bool) throws -> SQLRaw? {
         
         guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
         guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
@@ -251,7 +277,14 @@ struct SQLQueryLauncher: DBQueryLauncher {
         }
         
         if !query.filters.isEmpty {
-            sql += try "WHERE \(query.filters.serialize(dialect.self, columnInfos, primaryKeys))"
+            
+            let filter = try query.filters.serialize(dialect.self, columnInfos, primaryKeys)
+            
+            switch filter {
+            case .true: break
+            case .false: return nil
+            case let .sql(filter): sql += "WHERE \(filter)"
+            }
         }
         
         if !query.sort.isEmpty {
@@ -264,7 +297,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
         return sql
     }
     
-    func _findOneAndUpdate(_ query: DBFindOneExpression, _ update: [String: DBUpdateOption]) -> EventLoopFuture<(SQLRaw, [String], [DBSQLColumnInfo])> {
+    func _findOneAndUpdate(_ query: DBFindOneExpression, _ update: [String: DBUpdateOption]) -> EventLoopFuture<(SQLRaw?, [DBSQLColumnInfo], [String])> {
         
         switch query.returning {
             
@@ -282,17 +315,19 @@ struct SQLQueryLauncher: DBQueryLauncher {
                 guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
                 guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
                 
+                guard let _query = try self._findOne(query, columnInfos, primaryKeys, withData: true) else { return (nil, columnInfos, primaryKeys) }
+                
                 var sql: SQLRaw = try """
                     UPDATE \(identifier: query.class)
                     SET \(update.serialize(query.class, columnInfos, dialect).map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
-                    FROM (\(self._findOne(query, columnInfos, primaryKeys, withData: true))) AS \(identifier: temp)
+                    FROM (\(_query)) AS \(identifier: temp)
                     WHERE \(identifier: query.class).\(identifier: rowId) = \(identifier: temp).\(identifier: rowId)
                     """
                 
                 let includes = query.includes?.intersection(columnInfos.map { $0.name }).union(primaryKeys) ?? Set(columnInfos.map { $0.name })
                 sql += "RETURNING \(includes.map { "\(identifier: temp).\(identifier: $0)" as SQLRaw }.joined(separator: ","))"
                 
-                return (sql, primaryKeys, columnInfos)
+                return (sql, columnInfos, primaryKeys)
             }
             
         case .after:
@@ -302,10 +337,12 @@ struct SQLQueryLauncher: DBQueryLauncher {
                 guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
                 guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
                 
+                guard let _query = try self._findOne(query, columnInfos, primaryKeys, withData: false) else { return (nil, columnInfos, primaryKeys) }
+                
                 var sql: SQLRaw = try """
                     UPDATE \(identifier: query.class)
                     SET \(update.serialize(query.class, columnInfos, dialect).map { "\(identifier: $0) = \($1)" as SQLRaw }.joined(separator: ","))
-                    WHERE \(identifier: rowId) IN (\(self._findOne(query, columnInfos, primaryKeys, withData: false)))
+                    WHERE \(identifier: rowId) IN (\(_query))
                     """
                 
                 if let includes = query.includes {
@@ -315,16 +352,18 @@ struct SQLQueryLauncher: DBQueryLauncher {
                     sql += "RETURNING *"
                 }
                 
-                return (sql, primaryKeys, columnInfos)
+                return (sql, columnInfos, primaryKeys)
             }
         }
     }
     
     func findOneAndUpdate(_ query: DBFindOneExpression, _ update: [String: DBUpdateOption]) -> EventLoopFuture<DBObject?> {
         
-        return self._findOneAndUpdate(query, update).flatMap { sql, primaryKeys, _ in
+        return self._findOneAndUpdate(query, update).flatMap { sql, _, primaryKeys in
             
-            connection.execute(sql).map { $0.first.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
+            guard let sql = sql else { return connection.eventLoopGroup.next().makeSucceededFuture(nil) }
+            
+            return connection.execute(sql).map { $0.first.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) } }
         }
     }
     
@@ -349,15 +388,22 @@ struct SQLQueryLauncher: DBQueryLauncher {
             insert_temp = "temp_\(counter)"
         } while insert_temp == query.class
         
-        return self._findOneAndUpdate(query, update).flatMap { updateSQL, primaryKeys, columnInfos in
+        return self._findOneAndUpdate(query, update).flatMap { updateSQL, columnInfos, primaryKeys in
             
             do {
                 
                 guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
                 
                 let insert = update.compactMapValues { $0.value }.merging(setOnInsert) { _, rhs in rhs }
-                var _insert: OrderedDictionary<String, SQLRaw> = [:]
                 
+                guard let updateSQL = updateSQL else {
+                    switch query.returning {
+                    case .before: return self._insert(query.class, columnInfos, primaryKeys, insert.mapValues { $0.toDBData() }).map { _ in nil }
+                    case .after: return self._insert(query.class, columnInfos, primaryKeys, insert.mapValues { $0.toDBData() })
+                    }
+                }
+                
+                var _insert: OrderedDictionary<String, SQLRaw> = [:]
                 var _primaryKeys: [String: DBData] = [:]
                 
                 for (key, value) in insert {
@@ -397,7 +443,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
                         WITH \(identifier: update_temp) AS (\(updateSQL)),
                         \(identifier: duplicate_check_temp) AS (
                             SELECT \(_includes) FROM \(identifier: query.class)
-                            WHERE \(_primaryKeysFilter.serialize(dialect.self, columnInfos, primaryKeys))
+                            WHERE \(_primaryKeysFilter.serialize(dialect.self, columnInfos, primaryKeys)._sql())
                             AND NOT EXISTS(SELECT * FROM \(identifier: update_temp))
                         ),
                         \(identifier: insert_temp) AS (
@@ -423,7 +469,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
                         WITH \(identifier: update_temp) AS (\(updateSQL)),
                         \(identifier: duplicate_check_temp) AS (
                             SELECT \(_includes) FROM \(identifier: query.class)
-                            WHERE \(_primaryKeysFilter.serialize(dialect.self, columnInfos, primaryKeys))
+                            WHERE \(_primaryKeysFilter.serialize(dialect.self, columnInfos, primaryKeys)._sql())
                             AND NOT EXISTS(SELECT * FROM \(identifier: update_temp))
                         ),
                         \(identifier: insert_temp) AS (
@@ -465,11 +511,15 @@ struct SQLQueryLauncher: DBQueryLauncher {
                 
                 do {
                     
+                    guard let _query = try self._findOne(query, columnInfos, primaryKeys, withData: false) else {
+                        return connection.eventLoopGroup.next().makeSucceededFuture(nil)
+                    }
+                    
                     if let includes = query.includes {
                         
-                        var sql: SQLRaw = try """
+                        var sql: SQLRaw = """
                             DELETE FROM \(identifier: query.class)
-                            WHERE \(identifier: rowId) IN (\(self._findOne(query, columnInfos, primaryKeys, withData: false)))
+                            WHERE \(identifier: rowId) IN (\(_query))
                             """
                         
                         let _includes = includes.intersection(columnInfos.map { $0.name }).union(primaryKeys)
@@ -479,9 +529,9 @@ struct SQLQueryLauncher: DBQueryLauncher {
                         
                     } else {
                         
-                        let sql: SQLRaw = try """
+                        let sql: SQLRaw = """
                             DELETE FROM \(identifier: query.class)
-                            WHERE \(identifier: rowId) IN (\(self._findOne(query, columnInfos, primaryKeys, withData: false)))
+                            WHERE \(identifier: rowId) IN (\(_query))
                             RETURNING *
                             """
                         
@@ -500,65 +550,61 @@ struct SQLQueryLauncher: DBQueryLauncher {
         }
     }
     
-    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<DBObject?> {
+    private func _insert(_ class: String, _ columnInfos: [DBSQLColumnInfo], _ primaryKeys: [String], _ data: [String: DBData]) -> EventLoopFuture<DBObject?> {
         
-        guard let data = data as? [String: DBData] else { fatalError() }
-        
-        return connection._columnsAndPrimaryKey(of: `class`).flatMap { (columnInfos, primaryKeys) in
+        do {
             
-            do {
+            guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
+            
+            var duplicate_check_temp: String
+            var counter = 0
+            repeat {
+                counter += 1
+                duplicate_check_temp = "temp_\(counter)"
+            } while duplicate_check_temp == `class`
+            
+            var insert_temp: String
+            repeat {
+                counter += 1
+                insert_temp = "temp_\(counter)"
+            } while insert_temp == `class`
+            
+            var columns: [String] = []
+            var values: [SQLRaw] = []
+            
+            var _primaryKeys: [String: DBData] = [:]
+            
+            for (key, value) in data {
                 
-                guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
-                
-                var duplicate_check_temp: String
-                var counter = 0
-                repeat {
-                    counter += 1
-                    duplicate_check_temp = "temp_\(counter)"
-                } while duplicate_check_temp == `class`
-                
-                var insert_temp: String
-                repeat {
-                    counter += 1
-                    insert_temp = "temp_\(counter)"
-                } while insert_temp == `class`
-                
-                var columns: [String] = []
-                var values: [SQLRaw] = []
-                
-                var _primaryKeys: [String: DBData] = [:]
-                
-                for (key, value) in data {
-                    
-                    if primaryKeys.contains(key) {
-                        _primaryKeys[key] = value
-                    }
-                    
-                    if let column_info = columnInfos.first(where: { $0.name == key }) {
-                        
-                        columns.append(key)
-                        try values.append(dialect.typeCast(value, column_info.type))
-                        
-                    } else if !value.isNil {
-                        
-                        throw Database.Error.columnNotExist
-                    }
+                if primaryKeys.contains(key) {
+                    _primaryKeys[key] = value
                 }
                 
-                let _primaryKeysFilter: DBPredicateExpression = .equal(.objectId, .value(primaryKeys.count == 1 ? _primaryKeys[primaryKeys[0]] : _primaryKeys))
-                
-                var is_duplicated: String
-                repeat {
-                    counter += 1
-                    is_duplicated = "is_duplicated_\(counter)"
-                } while columnInfos.contains(where: { $0.name == is_duplicated })
-                
-                let _includes: SQLRaw = "\(columnInfos.map { "\(identifier: $0.name)" as SQLRaw }.joined(separator: ","))"
-                
-                let sql: SQLRaw = try """
+                if let column_info = columnInfos.first(where: { $0.name == key }) {
+                    
+                    columns.append(key)
+                    try values.append(dialect.typeCast(value, column_info.type))
+                    
+                } else if !value.isNil {
+                    
+                    throw Database.Error.columnNotExist
+                }
+            }
+            
+            let _primaryKeysFilter: DBPredicateExpression = .equal(.objectId, .value(primaryKeys.count == 1 ? _primaryKeys[primaryKeys[0]] : _primaryKeys))
+            
+            var is_duplicated: String
+            repeat {
+                counter += 1
+                is_duplicated = "is_duplicated_\(counter)"
+            } while columnInfos.contains(where: { $0.name == is_duplicated })
+            
+            let _includes: SQLRaw = "\(columnInfos.map { "\(identifier: $0.name)" as SQLRaw }.joined(separator: ","))"
+            
+            let sql: SQLRaw = try """
                     WITH \(identifier: duplicate_check_temp) AS (
                         SELECT \(_includes) FROM \(identifier: `class`)
-                        WHERE \(_primaryKeysFilter.serialize(dialect.self, columnInfos, primaryKeys))
+                        WHERE \(_primaryKeysFilter.serialize(dialect.self, columnInfos, primaryKeys)._sql())
                     ),
                     \(identifier: insert_temp) AS (
                         INSERT INTO \(identifier: `class`)
@@ -571,18 +617,27 @@ struct SQLQueryLauncher: DBQueryLauncher {
                     UNION
                     SELECT \(_includes), \(nil) AS \(identifier: is_duplicated) FROM \(identifier: insert_temp)
                     """
-                
-                return connection.execute(sql)
-                    .map { $0.first.map { DBObject(table: `class`, primaryKeys: primaryKeys, object: $0) } }
-                    .flatMapThrowing { obj in
-                        guard obj?[is_duplicated] != true else { throw Database.Error.duplicatedPrimaryKey }
-                        return obj
-                    }
-                
-            } catch {
-                
-                return connection.eventLoopGroup.next().makeFailedFuture(error)
-            }
+            
+            return connection.execute(sql)
+                .map { $0.first.map { DBObject(table: `class`, primaryKeys: primaryKeys, object: $0) } }
+                .flatMapThrowing { obj in
+                    guard obj?[is_duplicated] != true else { throw Database.Error.duplicatedPrimaryKey }
+                    return obj
+                }
+            
+        } catch {
+            
+            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        }
+    }
+    
+    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<DBObject?> {
+        
+        guard let data = data as? [String: DBData] else { fatalError() }
+        
+        return connection._columnsAndPrimaryKey(of: `class`).flatMap { (columnInfos, primaryKeys) in
+            
+            self._insert(`class`, columnInfos, primaryKeys, data)
         }
     }
 }

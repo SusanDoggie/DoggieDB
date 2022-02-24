@@ -91,6 +91,14 @@ extension DBPredicateValue {
     }
     
     @inlinable
+    var key: String? {
+        switch self {
+        case let .key(key): return key
+        default: return nil
+        }
+    }
+    
+    @inlinable
     public func serialize() throws -> SQLRaw {
         switch self {
         case let .key(key): return "\(identifier: key)"
@@ -100,7 +108,27 @@ extension DBPredicateValue {
     }
 }
 
+extension DBPredicateExpression.SerializeResult {
+    
+    func _sql() throws -> SQLRaw {
+        switch self {
+        case let .sql(sql): return sql
+        default: throw Database.Error.invalidExpression
+        }
+    }
+}
+
 extension DBPredicateExpression {
+    
+    enum SerializeResult {
+        
+        case `true`
+        
+        case `false`
+        
+        case sql(SQLRaw)
+        
+    }
     
     var _andList: [DBPredicateExpression]? {
         switch self {
@@ -116,10 +144,19 @@ extension DBPredicateExpression {
         }
     }
     
-    func serialize(_ dialect: SQLDialect.Type, _ columnInfos: [DBSQLColumnInfo], _ primaryKeys: [String]) throws -> SQLRaw {
+    func serialize(_ dialect: SQLDialect.Type, _ columnInfos: [DBSQLColumnInfo], _ primaryKeys: [String]) throws -> SerializeResult {
         
         switch self {
-        case let .not(x): return try "NOT (\(x.serialize(dialect, columnInfos, primaryKeys)))"
+        case let .not(x):
+            
+            let result = try x.serialize(dialect, columnInfos, primaryKeys)
+            
+            switch result {
+            case .true: return .false
+            case .false: return .true
+            case let .sql(sql): return .sql("NOT (\(sql))")
+            }
+            
         case let .equal(.objectId, .value(value)),
              let .equal(.value(value), .objectId):
             
@@ -150,65 +187,111 @@ extension DBPredicateExpression {
             
             return try expression.serialize(dialect, columnInfos, primaryKeys)
             
-        case let .equal(lhs, rhs): return try dialect.nullSafeEqual(lhs, rhs)
-        case let .notEqual(lhs, rhs): return try dialect.nullSafeNotEqual(lhs, rhs)
-        case let .lessThan(lhs, rhs): return try "\(lhs.serialize()) < \(rhs.serialize())"
-        case let .greaterThan(lhs, rhs): return try "\(lhs.serialize()) > \(rhs.serialize())"
-        case let .lessThanOrEqualTo(lhs, rhs): return try "\(lhs.serialize()) <= \(rhs.serialize())"
-        case let .greaterThanOrEqualTo(lhs, rhs): return try "\(lhs.serialize()) >= \(rhs.serialize())"
-        case let .between(x, from, to): return try "\(x.serialize()) BETWEEN \(from.serialize()) AND \(to.serialize())"
-        case let .notBetween(x, from, to): return try "\(x.serialize()) NOT BETWEEN \(from.serialize()) AND \(to.serialize())"
+        case let .equal(.key(key), .value(value)),
+            let .equal(.value(value), .key(key)):
+            
+            guard columnInfos.contains(where: { $0.name == key }) else { return value.toDBData() == nil ? .true : .false }
+            return try .sql(dialect.nullSafeEqual(.key(key), .value(value)))
+            
+        case let .notEqual(.key(key), .value(value)),
+            let .notEqual(.value(value), .key(key)):
+            
+            guard columnInfos.contains(where: { $0.name == key }) else { return value.toDBData() == nil ? .false : .true }
+            return try .sql(dialect.nullSafeNotEqual(.key(key), .value(value)))
+            
+        case let .lessThan(lhs, rhs):
+            
+            guard lhs.key.map({ key in columnInfos.contains(where: { $0.name == key }) }) != false else { return .false }
+            guard rhs.key.map({ key in columnInfos.contains(where: { $0.name == key }) }) != false else { return .false }
+            return try .sql("\(lhs.serialize()) < \(rhs.serialize())")
+            
+        case let .greaterThan(lhs, rhs):
+            
+            guard lhs.key.map({ key in columnInfos.contains(where: { $0.name == key }) }) != false else { return .false }
+            guard rhs.key.map({ key in columnInfos.contains(where: { $0.name == key }) }) != false else { return .false }
+            return try .sql("\(lhs.serialize()) > \(rhs.serialize())")
+            
+        case let .lessThanOrEqualTo(lhs, rhs):
+            
+            guard lhs.key.map({ key in columnInfos.contains(where: { $0.name == key }) }) != false else { return .false }
+            guard rhs.key.map({ key in columnInfos.contains(where: { $0.name == key }) }) != false else { return .false }
+            return try .sql("\(lhs.serialize()) <= \(rhs.serialize())")
+            
+        case let .greaterThanOrEqualTo(lhs, rhs):
+            
+            guard lhs.key.map({ key in columnInfos.contains(where: { $0.name == key }) }) != false else { return .false }
+            guard rhs.key.map({ key in columnInfos.contains(where: { $0.name == key }) }) != false else { return .false }
+            return try .sql("\(lhs.serialize()) >= \(rhs.serialize())")
+            
+        case let .between(x, from, to):
+            
+            guard x.key.map({ key in columnInfos.contains(where: { $0.name == key }) }) != false else { return .false }
+            guard from.key.map({ key in columnInfos.contains(where: { $0.name == key }) }) != false else { return .false }
+            guard to.key.map({ key in columnInfos.contains(where: { $0.name == key }) }) != false else { return .false }
+            return try .sql("\(x.serialize()) BETWEEN \(from.serialize()) AND \(to.serialize())")
+            
+        case let .notBetween(x, from, to):
+            
+            guard x.key.map({ key in columnInfos.contains(where: { $0.name == key }) }) != false else { return .false }
+            guard from.key.map({ key in columnInfos.contains(where: { $0.name == key }) }) != false else { return .false }
+            guard to.key.map({ key in columnInfos.contains(where: { $0.name == key }) }) != false else { return .false }
+            return try .sql("\(x.serialize()) NOT BETWEEN \(from.serialize()) AND \(to.serialize())")
             
         case let .startsWith(.objectId, str):
             
             guard primaryKeys.count == 1 else { throw Database.Error.invalidExpression }
-            return try dialect.matching(primaryKeys[0], .startsWith(str))
+            return try .sql(dialect.matching(primaryKeys[0], .startsWith(str)))
             
         case let .startsWith(.key(key), str):
             
-            return try dialect.matching(key, .startsWith(str))
+            guard columnInfos.contains(where: { $0.name == key }) else { return .false }
+            return try .sql(dialect.matching(key, .startsWith(str)))
             
         case let .endsWith(.objectId, str):
             
             guard primaryKeys.count == 1 else { throw Database.Error.invalidExpression }
-            return try dialect.matching(primaryKeys[0], .endsWith(str))
+            return try .sql(dialect.matching(primaryKeys[0], .endsWith(str)))
             
         case let .endsWith(.key(key), str):
             
-            return try dialect.matching(key, .endsWith(str))
+            guard columnInfos.contains(where: { $0.name == key }) else { return .false }
+            return try .sql(dialect.matching(key, .endsWith(str)))
             
         case let .contains(.objectId, str):
             
             guard primaryKeys.count == 1 else { throw Database.Error.invalidExpression }
-            return try dialect.matching(primaryKeys[0], .contains(str))
+            return try .sql(dialect.matching(primaryKeys[0], .contains(str)))
             
         case let .contains(.key(key), str):
             
-            return try dialect.matching(key, .contains(str))
+            guard columnInfos.contains(where: { $0.name == key }) else { return .false }
+            return try .sql(dialect.matching(key, .contains(str)))
             
         case let .containsIn(.objectId, .value(list)):
             
             guard primaryKeys.count == 1 else { throw Database.Error.invalidExpression }
             
             guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
-            return "\(identifier: primaryKeys[0]) IN (\(array.map { "\($0)" as SQLRaw }.joined(separator: ",")))"
+            return .sql("\(identifier: primaryKeys[0]) IN (\(array.map { "\($0)" as SQLRaw }.joined(separator: ",")))")
             
-        case let .containsIn(x, .value(list)):
+        case let .containsIn(.key(key), .value(list)):
             
             guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
-            return try "\(x.serialize()) IN (\(array.map { "\($0)" as SQLRaw }.joined(separator: ",")))"
+            guard columnInfos.contains(where: { $0.name == key }) else { return array.contains(nil) ? .true : .false }
+            return .sql("\(identifier: key) IN (\(array.map { "\($0)" as SQLRaw }.joined(separator: ",")))")
             
         case let .notContainsIn(.objectId, .value(list)):
             
             guard primaryKeys.count == 1 else { throw Database.Error.invalidExpression }
             
             guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
-            return "\(identifier: primaryKeys[0]) NOT IN (\(array.map { "\($0)" as SQLRaw }.joined(separator: ",")))"
+            return .sql("\(identifier: primaryKeys[0]) NOT IN (\(array.map { "\($0)" as SQLRaw }.joined(separator: ",")))")
             
-        case let .notContainsIn(x, .value(list)):
+        case let .notContainsIn(.key(key), .value(list)):
             
             guard let array = list.toDBData().array else { throw Database.Error.invalidExpression }
-            return try "\(x.serialize()) NOT IN (\(array.map { "\($0)" as SQLRaw }.joined(separator: ",")))"
+            guard columnInfos.contains(where: { $0.name == key }) else { return array.contains(nil) ? .false : .true }
+            return .sql("\(identifier: key) NOT IN (\(array.map { "\($0)" as SQLRaw }.joined(separator: ",")))")
             
         case let .and(list):
             
@@ -217,7 +300,22 @@ extension DBPredicateExpression {
             switch list.count {
             case 0: throw Database.Error.invalidExpression
             case 1: return try list[0].serialize(dialect, columnInfos, primaryKeys)
-            default: return try "\(list.map { try "(\($0.serialize(dialect, columnInfos, primaryKeys)))" as SQLRaw }.joined(separator: " AND "))"
+            default:
+                
+                var result: [SQLRaw] = []
+                
+                for item in list {
+                    
+                    let sql = try item.serialize(dialect, columnInfos, primaryKeys)
+                    
+                    switch sql {
+                    case .true: break
+                    case .false: return .false
+                    case let .sql(sql): result.append(sql)
+                    }
+                }
+                
+                return .sql(result.joined(separator: " AND "))
             }
             
         case let .or(list):
@@ -227,7 +325,22 @@ extension DBPredicateExpression {
             switch list.count {
             case 0: throw Database.Error.invalidExpression
             case 1: return try list[0].serialize(dialect, columnInfos, primaryKeys)
-            default: return try "\(list.map { try "(\($0.serialize(dialect, columnInfos, primaryKeys)))" as SQLRaw }.joined(separator: " OR "))"
+            default:
+                
+                var result: [SQLRaw] = []
+                
+                for item in list {
+                    
+                    let sql = try item.serialize(dialect, columnInfos, primaryKeys)
+                    
+                    switch sql {
+                    case .true: return .true
+                    case .false: break
+                    case let .sql(sql): result.append(sql)
+                    }
+                }
+                
+                return .sql(result.joined(separator: " OR "))
             }
             
         default: throw Database.Error.invalidExpression
@@ -237,7 +350,7 @@ extension DBPredicateExpression {
 
 extension Collection where Element == DBPredicateExpression {
     
-    func serialize(_ dialect: SQLDialect.Type, _ columnInfos: [DBSQLColumnInfo], _ primaryKeys: [String]) throws -> SQLRaw {
+    func serialize(_ dialect: SQLDialect.Type, _ columnInfos: [DBSQLColumnInfo], _ primaryKeys: [String]) throws -> DBPredicateExpression.SerializeResult {
         return try DBPredicateExpression.and(Array(self)).serialize(dialect, columnInfos, primaryKeys)
     }
 }
