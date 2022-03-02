@@ -108,4 +108,22 @@ class DBDataTest: XCTestCase {
         
         XCTAssertEqual(result, ["value": dict])
     }
+    
+    func testEncoder5() throws {
+        
+        let dict: DBData = [
+            "hello": .number(.decimal(1.5))
+        ]
+        
+        struct Test: Encodable {
+            
+            var value: OrderedDictionary = ["hello": Decimal(1.5)]
+        }
+        
+        let test = Test()
+        
+        let result = try DBDataEncoder().encode(test)
+        
+        XCTAssertEqual(result, ["value": dict])
+    }
 }
