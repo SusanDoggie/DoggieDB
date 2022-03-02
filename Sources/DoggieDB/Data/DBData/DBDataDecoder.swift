@@ -461,8 +461,6 @@ extension DBData._Decoder: SingleValueDecodingContainer {
         case is Date.Type: return try self._decode(Date.self) as! T
         case is DateComponents.Type: return try self._decode(DateComponents.self) as! T
         case is Data.Type: return try self._decode(Data.self) as! T
-        case is ByteBuffer.Type: return try self._decode(ByteBuffer.self) as! T
-        case is ByteBufferView.Type: return try self._decode(ByteBufferView.self) as! T
         case is Json.Number.Type: return try self._decode(Json.Number.self) as! T
         case is DBData.Number.Type: return try self._decode(DBData.Number.self) as! T
         default: throw Database.Error.unsupportedType

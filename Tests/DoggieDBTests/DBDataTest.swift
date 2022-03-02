@@ -50,4 +50,62 @@ class DBDataTest: XCTestCase {
         XCTAssertTrue(result.isDecimal)
         XCTAssertEqual(result, decimal)
     }
+    
+    func testEncoder() throws {
+        
+        let array: DBData = [
+            .number(.decimal(1.5))
+        ]
+        
+        let result = try DBDataEncoder().encode(array)
+        
+        XCTAssertEqual(result, array)
+    }
+    
+    func testEncoder2() throws {
+        
+        let array: DBData = [
+            .number(.decimal(1.5))
+        ]
+        
+        struct Test: Encodable {
+            
+            var value = [Decimal(1.5)]
+        }
+        
+        let test = Test()
+        
+        let result = try DBDataEncoder().encode(test)
+        
+        XCTAssertEqual(result, ["value": array])
+    }
+    
+    func testEncoder3() throws {
+        
+        let dict: DBData = [
+            "hello": .number(.decimal(1.5))
+        ]
+        
+        let result = try DBDataEncoder().encode(dict)
+        
+        XCTAssertEqual(result, dict)
+    }
+    
+    func testEncoder4() throws {
+        
+        let dict: DBData = [
+            "hello": .number(.decimal(1.5))
+        ]
+        
+        struct Test: Encodable {
+            
+            var value = ["hello": Decimal(1.5)]
+        }
+        
+        let test = Test()
+        
+        let result = try DBDataEncoder().encode(test)
+        
+        XCTAssertEqual(result, ["value": dict])
+    }
 }
