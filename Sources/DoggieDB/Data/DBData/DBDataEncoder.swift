@@ -250,6 +250,7 @@ extension DBDataEncoder._EncoderStorage {
             return storage.value
             
         case let value as _AnyEncodable: return try self._encode(value.value)
+        case let value as DBDataConvertible: return value.toDBData()
         default: throw Database.Error.unsupportedType
         }
     }
