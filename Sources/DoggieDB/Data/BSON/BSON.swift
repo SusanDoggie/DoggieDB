@@ -116,7 +116,7 @@ extension DBData {
             case "-Infinity": self.init(-Double.infinity)
             case "NaN": self.init(Decimal.nan)
             default:
-                guard let decimal = Decimal(string: str) else { throw Database.Error.unsupportedType }
+                guard let decimal = Decimal(string: str, locale: Locale(identifier: "en_US")) else { throw Database.Error.unsupportedType }
                 self.init(decimal)
             }
             
