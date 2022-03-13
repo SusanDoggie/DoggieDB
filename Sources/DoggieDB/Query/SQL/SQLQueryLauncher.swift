@@ -81,7 +81,7 @@ extension Dictionary where Key == String, Value == DBUpdateOption {
 
 extension DBObject {
     
-    fileprivate init(table: String, primaryKeys: [String], object: SQLQueryRow) {
+    fileprivate init(table: String, primaryKeys: [String], object: [String: DBData]) {
         var _columns: [String: DBData] = [:]
         for key in object.keys {
             guard let value = object[key] else { continue }
@@ -133,7 +133,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
                         }
                     }
                     
-                    return connection.execute(sql).map { $0.first.flatMap { $0[$0.keys[0]]?.intValue } ?? 0 }
+                    return connection.execute(sql).map { $0.first.flatMap { $0.values.first?.intValue } ?? 0 }
                     
                 } catch {
                     

@@ -206,7 +206,7 @@ extension PostgreSQLDriver.Connection {
         }
     }
     
-    func indices(of table: String) -> EventLoopFuture<[SQLQueryRow]> {
+    func indices(of table: String) -> EventLoopFuture<[[String: DBData]]> {
         
         let table = table.lowercased()
         
@@ -250,7 +250,7 @@ extension PostgreSQLDriver.Connection {
         return self.execute(sql)
     }
     
-    func foreignKeys(of table: String) -> EventLoopFuture<[SQLQueryRow]> {
+    func foreignKeys(of table: String) -> EventLoopFuture<[[String: DBData]]> {
         
         let table = table.lowercased()
         
@@ -326,7 +326,7 @@ extension PostgreSQLDriver.Connection {
     
     func execute(
         _ sql: SQLRaw
-    ) -> EventLoopFuture<[SQLQueryRow]> {
+    ) -> EventLoopFuture<[[String: DBData]]> {
         
         do {
             
@@ -336,7 +336,7 @@ extension PostgreSQLDriver.Connection {
             
             if binds.isEmpty {
                 
-                let result = self.connection.simpleQuery(raw).map { $0.map(SQLQueryRow.init) }
+                let result = self.connection.simpleQuery(raw).map { $0.map(Dictionary.init) }
                 
                 result.whenFailure { error in self.logger.debug("SQL execution error: \(error)\n\(sql)") }
                 
@@ -345,7 +345,7 @@ extension PostgreSQLDriver.Connection {
             
             let _binds = try binds.map(PostgresData.init)
             
-            let result = self.connection.query(raw, _binds).map { $0.rows.map(SQLQueryRow.init) }
+            let result = self.connection.query(raw, _binds).map { $0.rows.map(Dictionary.init) }
             
             result.whenFailure { error in self.logger.debug("SQL execution error: \(error)\n\(sql)") }
             
@@ -359,7 +359,7 @@ extension PostgreSQLDriver.Connection {
     
     func execute(
         _ sql: SQLRaw,
-        onRow: @escaping (SQLQueryRow) throws -> Void
+        onRow: @escaping ([String: DBData]) throws -> Void
     ) -> EventLoopFuture<SQLQueryMetadata> {
         
         do {
@@ -375,7 +375,7 @@ extension PostgreSQLDriver.Connection {
                 raw,
                 _binds,
                 onMetadata: { metadata = $0 },
-                onRow: { try onRow(SQLQueryRow($0)) }
+                onRow: { try onRow(Dictionary($0)) }
             ).map { metadata.map(SQLQueryMetadata.init) ?? SQLQueryMetadata() }
             
             result.whenFailure { error in self.logger.debug("SQL execution error: \(error)\n\(sql)") }
@@ -389,6 +389,20 @@ extension PostgreSQLDriver.Connection {
     }
 }
 
+extension Dictionary where Key == String, Value == DBData {
+    
+    init(_ row: PostgresRow) {
+        self.init(row.makeRandomAccess())
+    }
+    
+    init(_ row: PostgresRandomAccessRow) {
+        self.init(minimumCapacity: row.count)
+        for (idx, column) in row.indexed() {
+            self[column.columnName] = try? DBData(row[data: idx])
+        }
+    }
+}
+
 extension SQLQueryMetadata {
     
     init(_ metadata: PostgresQueryMetadata) {
@@ -397,25 +411,6 @@ extension SQLQueryMetadata {
             "oid": metadata.oid.map(DBData.init) ?? nil,
             "rows": metadata.rows.map(DBData.init) ?? nil,
         ])
-    }
-}
-
-extension PostgresRow: DBRowConvertable {
-    
-    public var count: Int {
-        return self.rowDescription.fields.count
-    }
-    
-    public var keys: [String] {
-        return self.rowDescription.fields.map { $0.name }
-    }
-    
-    public func contains(column: String) -> Bool {
-        return self.rowDescription.fields.contains { $0.name == column }
-    }
-    
-    public func value(_ column: String) -> DBData? {
-        return try? self.column(column).map(DBData.init)
     }
 }
 

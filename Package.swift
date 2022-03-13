@@ -36,13 +36,13 @@ let package = Package(
         .library(name: "DBVapor", targets: ["DBVapor"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/SusanDoggie/Doggie.git", from: "6.6.11"),
-        .package(url: "https://github.com/apple/swift-nio.git", from: "2.36.0"),
+        .package(url: "https://github.com/SusanDoggie/Doggie.git", from: "6.6.14"),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.38.0"),
         .package(url: "https://github.com/mongodb/swift-bson.git", from: "3.0.2"),
         .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "1.2.0"),
-        .package(url: "https://gitlab.com/mordil/RediStack.git", from: "1.2.0"),
-        .package(url: "https://github.com/vapor/postgres-nio.git", from: "1.7.0"),
-        .package(url: "https://github.com/vapor/vapor.git", from: "4.53.0"),
+        .package(url: "https://gitlab.com/mordil/RediStack.git", from: "1.2.1"),
+        .package(url: "https://github.com/vapor/postgres-nio.git", from: "1.8.0"),
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.55.2"),
     ],
     targets: [
         .target(

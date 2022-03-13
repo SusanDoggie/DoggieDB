@@ -112,11 +112,11 @@ extension DBSQLTransactionConnection {
         return base.primaryKey(of: table)
     }
     
-    func indices(of table: String) -> EventLoopFuture<[SQLQueryRow]> {
+    func indices(of table: String) -> EventLoopFuture<[[String: DBData]]> {
         return base.indices(of: table)
     }
     
-    func foreignKeys(of table: String) -> EventLoopFuture<[SQLQueryRow]> {
+    func foreignKeys(of table: String) -> EventLoopFuture<[[String: DBData]]> {
         return base.foreignKeys(of: table)
     }
 }
@@ -153,14 +153,14 @@ extension DBSQLTransactionConnection {
     
     func execute(
         _ sql: SQLRaw
-    ) -> EventLoopFuture<[SQLQueryRow]> {
+    ) -> EventLoopFuture<[[String: DBData]]> {
         
         return base.execute(sql)
     }
     
     func execute(
         _ sql: SQLRaw,
-        onRow: @escaping (SQLQueryRow) throws -> Void
+        onRow: @escaping ([String: DBData]) throws -> Void
     ) -> EventLoopFuture<SQLQueryMetadata> {
         
         return base.execute(sql, onRow: onRow)
