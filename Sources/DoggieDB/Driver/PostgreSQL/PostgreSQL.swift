@@ -61,6 +61,13 @@ extension PostgreSQLDriver {
     }
 }
 
+extension PostgresConnection.Configuration.TLS {
+    
+    init(_ config: TLSConfiguration) throws {
+        self = try config.certificateVerification == .none ? .prefer(.init(configuration: config)) : .require(.init(configuration: config))
+    }
+}
+
 extension PostgreSQLDriver {
     
     static let idGenerator = NIOAtomic.makeAtomic(value: 0)
@@ -88,7 +95,7 @@ extension PostgreSQLDriver {
                     database: config.database,
                     password: config.password
                 ),
-                tls: config.tlsConfiguration.map { try .require(.init(configuration: $0)) } ?? .disable
+                tls: config.tlsConfiguration.map { try .init($0) } ?? .disable
             )
             
             return PostgresConnection.connect(
