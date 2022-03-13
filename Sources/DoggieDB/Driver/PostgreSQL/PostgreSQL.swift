@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 //
 
+import NIOConcurrencyHelpers
 import PostgresNIO
 
 struct PostgreSQLDriver: DBDriverProtocol {
@@ -62,31 +63,44 @@ extension PostgreSQLDriver {
 
 extension PostgreSQLDriver {
     
+    static let idGenerator = NIOAtomic.makeAtomic(value: 0)
+
     static func connect(
         config: Database.Configuration,
         logger: Logger,
         on eventLoopGroup: EventLoopGroup
     ) -> EventLoopFuture<DBConnection> {
         
-        guard let user = config.user else {
-            return eventLoopGroup.next().makeFailedFuture(Database.Error.invalidConfiguration(message: "user is missing."))
-        }
-        
-        let connection = PostgresConnection.connect(
-            to: config.socketAddress[0],
-            tlsConfiguration: config.tlsConfiguration,
-            logger: logger,
-            on: eventLoopGroup.next()
-        )
-        
-        return connection.flatMap { connection in
+        do {
             
-            connection.authenticate(
-                username: user,
-                database: config.database,
-                password: config.password,
+            guard let user = config.user else {
+                throw Database.Error.invalidConfiguration(message: "user is missing.")
+            }
+            
+            guard let address = config.socketAddress.first,
+                  let host = address.host,
+                  let port = address.port else { throw Database.Error.invalidConfiguration(message: "unknown host.") }
+            
+            let _config = try PostgresConnection.Configuration(
+                connection: .init(host: host, port: port),
+                authentication: .init(
+                    username: user,
+                    database: config.database,
+                    password: config.password
+                ),
+                tls: config.tlsConfiguration.map { try .require(.init(configuration: $0)) } ?? .disable
+            )
+            
+            return PostgresConnection.connect(
+                on: eventLoopGroup.next(),
+                configuration: _config,
+                id: idGenerator.add(1),
                 logger: logger
-            ).map { Connection(connection) }
+            ).map { Connection($0) }
+            
+        } catch {
+            
+            return eventLoopGroup.next().makeFailedFuture(error)
         }
     }
 }
