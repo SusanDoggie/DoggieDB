@@ -26,57 +26,25 @@
 import DoggieDB
 import XCTest
 
-class PostgreSQLTest: XCTestCase {
+class PostgreSQLTest: DoggieDBTestCase {
     
-    var eventLoopGroup: MultiThreadedEventLoopGroup!
-    var connection: DBSQLConnection!
-    
-    override func setUpWithError() throws {
+    override var connection_url: URLComponents! {
         
-        do {
-            
-            eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-            
-            var url = URLComponents()
-            url.scheme = "postgres"
-            url.host = env("POSTGRES_HOST") ?? "localhost"
-            url.user = env("POSTGRES_USERNAME")
-            url.password = env("POSTGRES_PASSWORD")
-            url.path = "/\(env("POSTGRES_DATABASE") ?? "")"
-            
-            if let ssl_mode = env("POSTGRES_SSLMODE") {
-                url.queryItems = [
-                    URLQueryItem(name: "ssl", value: "true"),
-                    URLQueryItem(name: "sslmode", value: ssl_mode),
-                ]
-            }
-            
-            var logger = Logger(label: "com.SusanDoggie.DoggieDB")
-            logger.logLevel = .debug
-            
-            self.connection = try Database.connect(url: url, logger: logger, on: eventLoopGroup).wait() as? DBSQLConnection
-            
-            print("POSTGRES:", try connection.version().wait())
-            
-        } catch {
-            
-            print(error)
-            throw error
-        }
-    }
-    
-    override func tearDownWithError() throws {
+        var url = URLComponents()
+        url.scheme = "postgres"
+        url.host = env("POSTGRES_HOST") ?? "localhost"
+        url.user = env("POSTGRES_USERNAME")
+        url.password = env("POSTGRES_PASSWORD")
+        url.path = "/\(env("POSTGRES_DATABASE") ?? "")"
         
-        do {
-            
-            try self.connection.close().wait()
-            try eventLoopGroup.syncShutdownGracefully()
-            
-        } catch {
-            
-            print(error)
-            throw error
+        if let ssl_mode = env("POSTGRES_SSLMODE") {
+            url.queryItems = [
+                URLQueryItem(name: "ssl", value: "true"),
+                URLQueryItem(name: "sslmode", value: ssl_mode),
+            ]
         }
+        
+        return url
     }
     
     func testCreateTable() throws {

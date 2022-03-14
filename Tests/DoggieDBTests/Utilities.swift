@@ -24,7 +24,38 @@
 //
 
 import DoggieDB
+import XCTest
 
 func env(_ name: String) -> String? {
     getenv(name).flatMap { String(cString: $0) }
+}
+
+class DoggieDBTestCase: XCTestCase {
+    
+    var connection_url: URLComponents! { return nil }
+    
+    private var eventLoopGroup: MultiThreadedEventLoopGroup!
+    private(set) var connection: DBSQLConnection!
+    
+    override func setUpWithError() throws {
+        
+        do {
+            
+            eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+            self.addTeardownBlock { try! self.eventLoopGroup.syncShutdownGracefully() }
+            
+            var logger = Logger(label: "com.SusanDoggie.DoggieDB")
+            logger.logLevel = .debug
+            
+            self.connection = try Database.connect(url: connection_url, logger: logger, on: eventLoopGroup).wait() as? DBSQLConnection
+            self.addTeardownBlock { try! self.connection.close().wait() }
+            
+            print(connection_url.scheme!, try connection.version().wait())
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
 }

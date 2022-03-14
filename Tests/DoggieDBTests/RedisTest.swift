@@ -26,7 +26,26 @@
 import DoggieDB
 import XCTest
 
-class RedisTest: XCTestCase {
+class RedisTest: DoggieDBTestCase {
+    
+    override var connection_url: URLComponents! {
+        
+        var url = URLComponents()
+        url.scheme = "redis"
+        url.host = env("REDIS_HOST") ?? "localhost"
+        url.user = env("REDIS_USERNAME")
+        url.password = env("REDIS_PASSWORD")
+        url.path = "/\(env("REDIS_DATABASE") ?? "0")"
+        
+        if let ssl_mode = env("REDIS_SSLMODE") {
+            url.queryItems = [
+                URLQueryItem(name: "ssl", value: "true"),
+                URLQueryItem(name: "sslmode", value: ssl_mode),
+            ]
+        }
+        
+        return url
+    }
     
     struct Contact: Codable, Equatable {
         
@@ -36,55 +55,6 @@ class RedisTest: XCTestCase {
         
         var phone: String
         
-    }
-    
-    var eventLoopGroup: MultiThreadedEventLoopGroup!
-    var connection: DBConnection!
-    
-    override func setUpWithError() throws {
-        
-        do {
-            
-            eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-            
-            var url = URLComponents()
-            url.scheme = "redis"
-            url.host = env("REDIS_HOST") ?? "localhost"
-            url.user = env("REDIS_USERNAME")
-            url.password = env("REDIS_PASSWORD")
-            url.path = "/\(env("REDIS_DATABASE") ?? "0")"
-            
-            if let ssl_mode = env("REDIS_SSLMODE") {
-                url.queryItems = [
-                    URLQueryItem(name: "ssl", value: "true"),
-                    URLQueryItem(name: "sslmode", value: ssl_mode),
-                ]
-            }
-            
-            var logger = Logger(label: "com.SusanDoggie.DoggieDB")
-            logger.logLevel = .debug
-            
-            self.connection = try Database.connect(url: url, logger: logger, on: eventLoopGroup).wait()
-            
-        } catch {
-            
-            print(error)
-            throw error
-        }
-    }
-    
-    override func tearDownWithError() throws {
-        
-        do {
-            
-            try self.connection.close().wait()
-            try eventLoopGroup.syncShutdownGracefully()
-            
-        } catch {
-            
-            print(error)
-            throw error
-        }
     }
     
     func testFetchStore() throws {
