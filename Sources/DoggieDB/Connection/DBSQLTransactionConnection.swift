@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-class DBSQLTransactionConnection: DBSQLConnection {
+actor DBSQLTransactionConnection: DBSQLConnection {
     
     let base: DBSQLConnection
     
@@ -37,114 +37,112 @@ class DBSQLTransactionConnection: DBSQLConnection {
 
 extension DBSQLTransactionConnection {
     
-    var driver: DBDriver {
+    nonisolated var driver: DBDriver {
         return base.driver
     }
     
-    var logger: Logger {
+    nonisolated var logger: Logger {
         return base.logger
     }
     
-    var eventLoopGroup: EventLoopGroup {
+    nonisolated var eventLoopGroup: EventLoopGroup {
         return base.eventLoopGroup
     }
+}
+
+extension DBSQLTransactionConnection {
     
-    var isClosed: Bool {
-        return base.isClosed
+    var columnInfoHook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])? {
+        get async {
+            return await base.columnInfoHook
+        }
+    }
+    
+    func setColumnInfoHook(_ hook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])?) async {
+        await base.setColumnInfoHook(hook)
+    }
+    
+    var primaryKeyHook: ((DBSQLConnection, String) async throws -> [String])? {
+        get async {
+            return await base.primaryKeyHook
+        }
+    }
+    
+    func setPrimaryKeyHook(_ hook: ((DBSQLConnection, String) async throws -> [String])?) async {
+        await base.setPrimaryKeyHook(hook)
     }
 }
 
 extension DBSQLTransactionConnection {
     
-    var columnInfoHook: ((DBSQLConnection, String) -> EventLoopFuture<[DBSQLColumnInfo]>)? {
-        get {
-            return base.columnInfoHook
-        }
-        set {
-            base.columnInfoHook = newValue
-        }
-    }
-    
-    var primaryKeyHook: ((DBSQLConnection, String) -> EventLoopFuture<[String]>)? {
-        get {
-            return base.primaryKeyHook
-        }
-        set {
-            base.primaryKeyHook = newValue
-        }
+    func close() async throws {
+        try await base.close()
     }
 }
 
 extension DBSQLTransactionConnection {
     
-    func close() -> EventLoopFuture<Void> {
-        return base.close()
+    func version() async throws -> String {
+        return try await base.version()
+    }
+    
+    func databases() async throws -> [String] {
+        return try await base.databases()
+    }
+    
+    func tables() async throws -> [String] {
+        return try await base.tables()
+    }
+    
+    func views() async throws -> [String] {
+        return try await base.views()
+    }
+    
+    func materializedViews() async throws -> [String] {
+        return try await base.materializedViews()
+    }
+    
+    func columns(of table: String) async throws -> [DBSQLColumnInfo] {
+        return try await base.columns(of: table)
+    }
+    
+    func primaryKey(of table: String) async throws -> [String] {
+        return try await base.primaryKey(of: table)
+    }
+    
+    func indices(of table: String) async throws -> [[String: DBData]] {
+        return try await base.indices(of: table)
+    }
+    
+    func foreignKeys(of table: String) async throws -> [[String: DBData]] {
+        return try await base.foreignKeys(of: table)
     }
 }
 
 extension DBSQLTransactionConnection {
     
-    func version() -> EventLoopFuture<String> {
-        return base.version()
+    func startTransaction() async throws {
+        try await base.startTransaction()
     }
     
-    func databases() -> EventLoopFuture<[String]> {
-        return base.databases()
+    func commitTransaction() async throws {
+        try await base.commitTransaction()
     }
     
-    func tables() -> EventLoopFuture<[String]> {
-        return base.tables()
+    func abortTransaction() async throws {
+        try await base.abortTransaction()
     }
     
-    func views() -> EventLoopFuture<[String]> {
-        return base.views()
+    func createSavepoint(_ name: String) async throws {
+        try await base.createSavepoint(name)
     }
     
-    func materializedViews() -> EventLoopFuture<[String]> {
-        return base.materializedViews()
+    func rollbackToSavepoint(_ name: String) async throws {
+        try await base.rollbackToSavepoint(name)
     }
     
-    func columns(of table: String) -> EventLoopFuture<[DBSQLColumnInfo]> {
-        return base.columns(of: table)
-    }
-    
-    func primaryKey(of table: String) -> EventLoopFuture<[String]> {
-        return base.primaryKey(of: table)
-    }
-    
-    func indices(of table: String) -> EventLoopFuture<[[String: DBData]]> {
-        return base.indices(of: table)
-    }
-    
-    func foreignKeys(of table: String) -> EventLoopFuture<[[String: DBData]]> {
-        return base.foreignKeys(of: table)
-    }
-}
-
-extension DBSQLTransactionConnection {
-    
-    func startTransaction() -> EventLoopFuture<Void> {
-        return base.startTransaction()
-    }
-    
-    func commitTransaction() -> EventLoopFuture<Void> {
-        return base.commitTransaction()
-    }
-    
-    func abortTransaction() -> EventLoopFuture<Void> {
-        return base.abortTransaction()
-    }
-    
-    func createSavepoint(_ name: String) -> EventLoopFuture<Void> {
-        return base.createSavepoint(name)
-    }
-    
-    func rollbackToSavepoint(_ name: String) -> EventLoopFuture<Void> {
-        return base.rollbackToSavepoint(name)
-    }
-    
-    func releaseSavepoint(_ name: String) -> EventLoopFuture<Void> {
-        return base.releaseSavepoint(name)
+    func releaseSavepoint(_ name: String) async throws {
+        try await base.releaseSavepoint(name)
     }
     
 }
@@ -153,58 +151,19 @@ extension DBSQLTransactionConnection {
     
     func execute(
         _ sql: SQLRaw
-    ) -> EventLoopFuture<[[String: DBData]]> {
+    ) async throws -> [[String: DBData]] {
         
-        return base.execute(sql)
+        return try await base.execute(sql)
     }
     
     func execute(
         _ sql: SQLRaw,
         onRow: @escaping ([String: DBData]) throws -> Void
-    ) -> EventLoopFuture<SQLQueryMetadata> {
+    ) async throws -> SQLQueryMetadata {
         
-        return base.execute(sql, onRow: onRow)
+        return try await base.execute(sql, onRow: onRow)
     }
 }
-
-extension DBSQLTransactionConnection {
-    
-    func withTransaction<T>(
-        _ transactionBody: @escaping (DBConnection) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
-        
-        let counter = self.counter
-        
-        let transaction = self.base.createSavepoint("savepoint_\(counter)")
-        let promise = transaction.eventLoop.makePromise(of: T.self)
-        
-        return transaction.flatMap {
-            
-            do {
-                
-                let bodyFuture = try transactionBody(DBSQLTransactionConnection(base: self.base, counter: counter + 1))
-                
-                bodyFuture.flatMap { _ in
-                    self.base.releaseSavepoint("savepoint_\(counter)")
-                }.flatMapError { _ in
-                    self.base.rollbackToSavepoint("savepoint_\(counter)")
-                }.whenComplete { _ in
-                    promise.completeWith(bodyFuture)
-                }
-                
-            } catch {
-                
-                self.base.rollbackToSavepoint("savepoint_\(counter)").whenComplete { _ in
-                    promise.fail(error)
-                }
-            }
-            
-            return promise.futureResult
-        }
-    }
-}
-
-#if compiler(>=5.5.2) && canImport(_Concurrency)
 
 extension DBSQLTransactionConnection {
     
@@ -230,5 +189,3 @@ extension DBSQLTransactionConnection {
         }
     }
 }
-
-#endif

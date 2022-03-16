@@ -25,24 +25,13 @@
 
 import MongoSwift
 
-public protocol MongoCursorProtocol {
+extension MongoCursor {
     
-    associatedtype Element: Codable
-    
-    func toArray() -> EventLoopFuture<[Element]>
-    
-    func forEach(_ body: @escaping (Element) throws -> Void) -> EventLoopFuture<Void>
-}
-
-extension MongoCursor: MongoCursorProtocol { }
-
-extension EventLoopFuture where Value: MongoCursorProtocol {
-    
-    public func toArray() -> EventLoopFuture<[Value.Element]> {
-        return self.flatMap { $0.toArray() }
+    public func toArray() async throws -> [T] {
+        return try await self.toArray().get()
     }
     
-    public func forEach(_ body: @escaping (Value.Element) throws -> Void) -> EventLoopFuture<Void> {
-        return self.flatMap { $0.forEach(body) }
+    public func forEach(_ body: @escaping (T) throws -> Void) async throws {
+        try await self.forEach(body).get()
     }
 }

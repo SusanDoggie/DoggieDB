@@ -35,7 +35,7 @@ public protocol DBDriverProtocol {
         config: Database.Configuration,
         logger: Logger,
         on eventLoopGroup: EventLoopGroup
-    ) -> EventLoopFuture<DBConnection>
+    ) async throws -> DBConnection
 }
 
 extension DBDriverProtocol {

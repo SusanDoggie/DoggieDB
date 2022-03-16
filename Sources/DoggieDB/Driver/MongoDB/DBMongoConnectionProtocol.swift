@@ -27,30 +27,21 @@ import MongoSwift
 
 protocol DBMongoConnectionProtocol: DBConnection {
     
-    var database: String? { get }
+    nonisolated var database: String? { get }
     
-    func _database() -> MongoDatabase?
+    nonisolated func _database() -> MongoDatabase?
     
-    func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol
-    
-    func withSession<T>(
-        options: ClientSessionOptions?,
-        _ sessionBody: (SessionBoundConnection) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T>
-    
-    #if compiler(>=5.5.2) && canImport(_Concurrency)
+    nonisolated func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol
     
     func withSession<T>(
         options: ClientSessionOptions?,
         _ sessionBody: (SessionBoundConnection) async throws -> T
     ) async throws -> T
-    
-    #endif
 }
 
 extension DBMongoConnectionProtocol {
     
-    func bind(to eventLoop: EventLoop) -> DBConnection {
+    nonisolated func bind(to eventLoop: EventLoop) -> DBConnection {
         return self._bind(to: eventLoop)
     }
 }
@@ -58,35 +49,24 @@ extension DBMongoConnectionProtocol {
 extension ClientSession {
     
     public func withTransaction<T>(
-        options: TransactionOptions? = nil,
-        _ transactionBody: @escaping () throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
+        _ transactionBody: () async throws -> T
+    ) async throws -> T {
         
-        let transaction = self.startTransaction(options: options)
-        let promise = transaction.eventLoop.makePromise(of: T.self)
+        try await self.startTransaction().get()
         
-        return transaction.flatMap {
+        do {
             
-            do {
-                
-                let bodyFuture = try transactionBody()
-                
-                bodyFuture.flatMap { _ in
-                    self.commitTransaction()
-                }.flatMapError { _ in
-                    self.abortTransaction()
-                }.whenComplete { _ in
-                    promise.completeWith(bodyFuture)
-                }
-                
-            } catch {
-                
-                self.abortTransaction().whenComplete { _ in
-                    promise.fail(error)
-                }
-            }
+            let result = try await transactionBody()
             
-            return promise.futureResult
+            try await self.commitTransaction().get()
+            
+            return result
+            
+        } catch {
+            
+            try await self.abortTransaction().get()
+            
+            throw error
         }
     }
 }
@@ -94,15 +74,14 @@ extension ClientSession {
 extension DBMongoConnectionProtocol {
     
     public func withTransaction<T>(
-        _ transactionBody: @escaping (DBConnection) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
+        _ transactionBody: (DBConnection) async throws -> T
+    ) async throws -> T {
         
-        if let connection = self as? SessionBoundConnection {
-            return connection.session.withTransaction { try transactionBody(connection) }
-        }
-        
-        return self.withSession(options: nil) { connection in
-            return connection.session.withTransaction { try transactionBody(connection) }
+        return try await self.withMongoSession(options: nil) { connection in
+            
+            guard let connection = connection as? SessionBoundConnection else { fatalError("unknown error") }
+            
+            return try await connection.session.withTransaction { try await transactionBody(connection) }
         }
     }
 }

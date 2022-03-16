@@ -52,9 +52,9 @@ extension DBMongoCreateIndexesExpression {
 
 extension DBMongoCreateIndexesExpression {
     
-    public func execute() -> EventLoopFuture<[String]> {
+    public func execute() async throws -> [String] {
         guard !models.isEmpty else { fatalError() }
-        return query.collection.createIndexes(models, options: options, session: query.session)
+        return try await query.collection.createIndexes(models, options: options, session: query.session).get()
     }
 }
 

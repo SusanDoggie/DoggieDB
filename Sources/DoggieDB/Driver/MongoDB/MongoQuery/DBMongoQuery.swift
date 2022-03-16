@@ -45,25 +45,25 @@ extension DBMongoQuery {
 
 extension DBConnection {
     
-    public func mongoQuery() -> DBMongoQuery {
+    public nonisolated func mongoQuery() -> DBMongoQuery {
         guard let connection = self as? DBMongoConnectionProtocol else { fatalError("unsupported operation") }
         return DBMongoQuery(connection: connection)
     }
     
     public func withMongoSession<T>(
         options: ClientSessionOptions?,
-        _ sessionBody: (DBConnection) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
+        _ sessionBody: (DBConnection) async throws -> T
+    ) async throws -> T {
         guard let connection = self as? DBMongoConnectionProtocol else { fatalError("unsupported operation") }
-        return connection.withSession(options: options, sessionBody)
+        return try await connection.withSession(options: options, sessionBody)
     }
 }
 
 extension DBMongoQuery {
     
-    public func runCommand(_ command: BSONDocument, options: RunCommandOptions? = nil) -> EventLoopFuture<BSONDocument> {
+    public func runCommand(_ command: BSONDocument, options: RunCommandOptions? = nil) async throws -> BSONDocument {
         guard let database = connection._database() else { fatalError("database not selected.") }
-        return database.runCommand(command, options: options, session: session)
+        return try await database.runCommand(command, options: options, session: session).get()
     }
 }
 

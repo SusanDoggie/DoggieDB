@@ -56,9 +56,9 @@ extension DBMongoFindOneAndReplaceExpression {
 
 extension DBMongoFindOneAndReplaceExpression {
     
-    public func execute() -> EventLoopFuture<T?> {
+    public func execute() async throws -> T? {
         guard let replacement = self.replacement else { fatalError() }
-        return query.collection.findOneAndReplace(filter: _filter, replacement: replacement, options: options, session: query.session)
+        return try await query.collection.findOneAndReplace(filter: _filter, replacement: replacement, options: options, session: query.session).get()
     }
 }
 

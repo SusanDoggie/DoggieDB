@@ -37,26 +37,26 @@ struct PostgreSQLDriver: DBDriverProtocol {
 
 extension PostgreSQLDriver {
     
-    class Connection: DBSQLConnection {
+    actor Connection: DBSQLConnection {
         
-        var driver: DBDriver { return .postgreSQL }
+        nonisolated var driver: DBDriver { return .postgreSQL }
         
         let connection: PostgresConnection
         
-        var eventLoopGroup: EventLoopGroup { connection.eventLoop }
+        nonisolated var eventLoopGroup: EventLoopGroup { connection.eventLoop }
         
         var subscribers: [String: [PostgresListenContext]] = [:]
         
-        var columnInfoHook: ((DBSQLConnection, String) -> EventLoopFuture<[DBSQLColumnInfo]>)?
+        var columnInfoHook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])?
         
-        var primaryKeyHook: ((DBSQLConnection, String) -> EventLoopFuture<[String]>)?
+        var primaryKeyHook: ((DBSQLConnection, String) async throws -> [String])?
         
         init(_ connection: PostgresConnection) {
             self.connection = connection
         }
         
-        func close() -> EventLoopFuture<Void> {
-            return connection.close()
+        func close() async throws {
+            try await connection.close()
         }
     }
 }
@@ -68,6 +68,17 @@ extension PostgresConnection.Configuration.TLS {
     }
 }
 
+extension PostgreSQLDriver.Connection {
+    
+    func setColumnInfoHook(_ hook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])?) {
+        self.columnInfoHook = hook
+    }
+    
+    func setPrimaryKeyHook(_ hook: ((DBSQLConnection, String) async throws -> [String])?) {
+        self.primaryKeyHook = hook
+    }
+}
+
 extension PostgreSQLDriver {
     
     static let idGenerator = NIOAtomic.makeAtomic(value: 0)
@@ -76,76 +87,67 @@ extension PostgreSQLDriver {
         config: Database.Configuration,
         logger: Logger,
         on eventLoopGroup: EventLoopGroup
-    ) -> EventLoopFuture<DBConnection> {
+    ) async throws -> DBConnection {
         
-        do {
-            
-            guard let user = config.user else {
-                throw Database.Error.invalidConfiguration(message: "user is missing.")
-            }
-            
-            guard let address = config.socketAddress.first,
-                  let host = address.host,
-                  let port = address.port else { throw Database.Error.invalidConfiguration(message: "unknown host.") }
-            
-            let _config = try PostgresConnection.Configuration(
-                connection: .init(host: host, port: port),
-                authentication: .init(
-                    username: user,
-                    database: config.database,
-                    password: config.password
-                ),
-                tls: config.tlsConfiguration.map { try .init($0) } ?? .disable
-            )
-            
-            return PostgresConnection.connect(
-                on: eventLoopGroup.next(),
-                configuration: _config,
-                id: idGenerator.add(1),
-                logger: logger
-            ).map { Connection($0) }
-            
-        } catch {
-            
-            return eventLoopGroup.next().makeFailedFuture(error)
+        guard let user = config.user else {
+            throw Database.Error.invalidConfiguration(message: "user is missing.")
         }
+        
+        guard let address = config.socketAddress.first,
+              let host = address.host,
+              let port = address.port else { throw Database.Error.invalidConfiguration(message: "unknown host.") }
+        
+        let _config = try PostgresConnection.Configuration(
+            connection: .init(host: host, port: port),
+            authentication: .init(
+                username: user,
+                database: config.database,
+                password: config.password
+            ),
+            tls: config.tlsConfiguration.map { try .init($0) } ?? .disable
+        )
+        
+        let connection = try await PostgresConnection.connect(
+            on: eventLoopGroup.next(),
+            configuration: _config,
+            id: idGenerator.add(1),
+            logger: logger
+        )
+        
+        return Connection(connection)
     }
 }
 
 extension PostgreSQLDriver.Connection {
     
-    var logger: Logger {
+    nonisolated var logger: Logger {
         return self.connection.logger
     }
-    
-    var isClosed: Bool {
-        return self.connection.isClosed
-    }
 }
 
 extension PostgreSQLDriver.Connection {
     
-    func version() -> EventLoopFuture<String> {
-        return self.execute("SELECT version()").map { $0[0]["version"]!.string! }
+    func version() async throws -> String {
+        return try await self.execute("SELECT version()")[0]["version"]!.string!
     }
     
-    func databases() -> EventLoopFuture<[String]> {
-        return self.execute("SELECT datname FROM pg_catalog.pg_database").map { $0.compactMap { $0["datname"]!.string! } }
+    func databases() async throws -> [String] {
+        return try await self.execute("SELECT datname FROM pg_catalog.pg_database").compactMap { $0["datname"]!.string! }
     }
     
-    func tables() -> EventLoopFuture<[String]> {
-        return self.execute("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'").map { $0.map { $0["tablename"]!.string! } }
+    func tables() async throws -> [String] {
+        return try await self.execute("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'").map { $0["tablename"]!.string! }
     }
     
-    func views() -> EventLoopFuture<[String]> {
-        return self.execute("SELECT viewname FROM pg_catalog.pg_views WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'").map { $0.map { $0["viewname"]!.string! } }
+    func views() async throws -> [String] {
+        return try await self.execute("SELECT viewname FROM pg_catalog.pg_views WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'").map { $0["viewname"]!.string! }
     }
     
-    func materializedViews() -> EventLoopFuture<[String]> {
-        return self.execute("SELECT matviewname FROM pg_catalog.pg_matviews WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'").map { $0.map { $0["matviewname"]!.string! } }
+    func materializedViews() async throws -> [String] {
+        return try await self.execute("SELECT matviewname FROM pg_catalog.pg_matviews WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'").map { $0["matviewname"]!.string! }
     }
     
-    func columns(of table: String) -> EventLoopFuture<[DBSQLColumnInfo]> {
+    func columns(of table: String) async throws -> [DBSQLColumnInfo] {
         
         let table = table.lowercased()
         
@@ -178,18 +180,16 @@ extension PostgreSQLDriver.Connection {
             sql.append(" AND t.relname = \(table)")
         }
         
-        return self.execute(sql).map {
-            $0.map {
-                DBSQLColumnInfo(
-                    name: $0["column_name"]?.string ?? "",
-                    type: $0["data_type"]?.string ?? "",
-                    isOptional: $0["attnotnull"]?.boolValue == false
-                )
-            }
+        return try await self.execute(sql).map {
+            DBSQLColumnInfo(
+                name: $0["column_name"]?.string ?? "",
+                type: $0["data_type"]?.string ?? "",
+                isOptional: $0["attnotnull"]?.boolValue == false
+            )
         }
     }
     
-    func primaryKey(of table: String) -> EventLoopFuture<[String]> {
+    func primaryKey(of table: String) async throws -> [String] {
         
         let table = table.lowercased()
         
@@ -222,12 +222,10 @@ extension PostgreSQLDriver.Connection {
             sql.append(" AND t.relname = \(table)")
         }
         
-        return self.execute(sql).map {
-            $0.sorted { $0["seq"]?.intValue ?? .max }.compactMap { $0["column_name"]?.string }
-        }
+        return try await self.execute(sql).sorted { $0["seq"]?.intValue ?? .max }.compactMap { $0["column_name"]?.string }
     }
     
-    func indices(of table: String) -> EventLoopFuture<[[String: DBData]]> {
+    func indices(of table: String) async throws -> [[String: DBData]] {
         
         let table = table.lowercased()
         
@@ -268,10 +266,10 @@ extension PostgreSQLDriver.Connection {
             sql.append(" AND t.relname = \(table)")
         }
         
-        return self.execute(sql)
+        return try await self.execute(sql)
     }
     
-    func foreignKeys(of table: String) -> EventLoopFuture<[[String: DBData]]> {
+    func foreignKeys(of table: String) async throws -> [[String: DBData]] {
         
         let table = table.lowercased()
         
@@ -311,101 +309,90 @@ extension PostgreSQLDriver.Connection {
             sql.append(" AND kcu.table_name = \(table)")
         }
         
-        return self.execute(sql)
+        return try await self.execute(sql)
     }
 }
 
 extension PostgreSQLDriver.Connection {
     
-    func startTransaction() -> EventLoopFuture<Void> {
-        return self.execute("BEGIN").map { _ in }
+    func startTransaction() async throws {
+        try await self.execute("BEGIN")
     }
     
-    func commitTransaction() -> EventLoopFuture<Void> {
-        return self.execute("COMMIT").map { _ in }
+    func commitTransaction() async throws {
+        try await self.execute("COMMIT")
     }
     
-    func abortTransaction() -> EventLoopFuture<Void> {
-        return self.execute("ROLLBACK").map { _ in }
+    func abortTransaction() async throws {
+        try await self.execute("ROLLBACK")
     }
     
-    func createSavepoint(_ name: String) -> EventLoopFuture<Void> {
-        return self.execute("SAVEPOINT \(identifier: name)").map { _ in }
+    func createSavepoint(_ name: String) async throws {
+        try await self.execute("SAVEPOINT \(identifier: name)")
     }
     
-    func rollbackToSavepoint(_ name: String) -> EventLoopFuture<Void> {
-        return self.execute("ROLLBACK TO SAVEPOINT \(identifier: name)").map { _ in }
+    func rollbackToSavepoint(_ name: String) async throws {
+        try await self.execute("ROLLBACK TO SAVEPOINT \(identifier: name)")
     }
     
-    func releaseSavepoint(_ name: String) -> EventLoopFuture<Void> {
-        return self.execute("RELEASE SAVEPOINT \(identifier: name)").map { _ in }
+    func releaseSavepoint(_ name: String) async throws {
+        try await self.execute("RELEASE SAVEPOINT \(identifier: name)")
     }
     
 }
 
 extension PostgreSQLDriver.Connection {
     
+    @discardableResult
     func execute(
         _ sql: SQLRaw
-    ) -> EventLoopFuture<[[String: DBData]]> {
+    ) async throws -> [[String: DBData]] {
+        
+        guard let (raw, binds) = self.serialize(sql) else {
+            throw Database.Error.unsupportedOperation
+        }
         
         do {
             
-            guard let (raw, binds) = self.serialize(sql) else {
-                throw Database.Error.unsupportedOperation
-            }
-            
             if binds.isEmpty {
-                
-                let result = self.connection.simpleQuery(raw).map { $0.map(Dictionary.init) }
-                
-                result.whenFailure { error in self.logger.debug("SQL execution error: \(error)\n\(sql)") }
-                
-                return result
+                return try await self.connection.simpleQuery(raw).get().map(Dictionary.init)
             }
             
             let _binds = try binds.map(PostgresData.init)
-            
-            let result = self.connection.query(raw, _binds).map { $0.rows.map(Dictionary.init) }
-            
-            result.whenFailure { error in self.logger.debug("SQL execution error: \(error)\n\(sql)") }
-            
-            return result
+            return try await self.connection.query(raw, _binds).get().rows.map(Dictionary.init)
             
         } catch {
             
-            return eventLoopGroup.next().makeFailedFuture(error)
+            self.logger.debug("SQL execution error: \(error)\n\(sql)")
+            
+            throw error
         }
     }
     
+    @discardableResult
     func execute(
         _ sql: SQLRaw,
         onRow: @escaping ([String: DBData]) throws -> Void
-    ) -> EventLoopFuture<SQLQueryMetadata> {
+    ) async throws -> SQLQueryMetadata {
+        
+        guard let (raw, binds) = self.serialize(sql) else {
+            throw Database.Error.unsupportedOperation
+        }
         
         do {
-            
-            guard let (raw, binds) = self.serialize(sql) else {
-                throw Database.Error.unsupportedOperation
-            }
             
             var metadata: PostgresQueryMetadata?
             let _binds = try binds.map(PostgresData.init)
             
-            let result = self.connection.query(
-                raw,
-                _binds,
-                onMetadata: { metadata = $0 },
-                onRow: { try onRow(Dictionary($0)) }
-            ).map { metadata.map(SQLQueryMetadata.init) ?? SQLQueryMetadata() }
+            try await self.connection.query(raw, _binds, onMetadata: { metadata = $0 }, onRow: { try onRow(Dictionary($0)) }).get()
             
-            result.whenFailure { error in self.logger.debug("SQL execution error: \(error)\n\(sql)") }
-            
-            return result
+            return metadata.map(SQLQueryMetadata.init) ?? SQLQueryMetadata()
             
         } catch {
             
-            return eventLoopGroup.next().makeFailedFuture(error)
+            self.logger.debug("SQL execution error: \(error)\n\(sql)")
+            
+            throw error
         }
     }
 }
@@ -440,39 +427,34 @@ extension PostgreSQLDriver.Connection {
     func publish(
         _ message: String,
         to channel: String
-    ) -> EventLoopFuture<Void> {
-        return self.execute("SELECT pg_notify(\(channel), \(message))").map { _ in return }
+    ) async throws {
+        
+        try await self.execute("SELECT pg_notify(\(channel), \(message))")
     }
     
     func subscribe(
         channel: String,
         handler: @escaping (_ channel: String, _ message: String) -> Void
-    ) -> EventLoopFuture<Void> {
+    ) async throws {
         
         let subscriber = self.connection.addListener(channel: channel, handler: { _, response in handler(response.channel, response.payload) })
         
-        return eventLoopGroup.next().flatSubmit {
-            
-            self.subscribers[channel, default: []].append(subscriber)
-            
-            return self.execute("LISTEN \(identifier: channel)").map { _ in return }
-        }
+        self.subscribers[channel, default: []].append(subscriber)
+        
+        try await self.execute("LISTEN \(identifier: channel)")
     }
     
-    func unsubscribe(channel: String) -> EventLoopFuture<Void> {
+    func unsubscribe(channel: String) async throws {
         
-        return eventLoopGroup.next().flatSubmit {
-            
-            let subscribers = self.subscribers[channel] ?? []
-            
-            for subscriber in subscribers {
-                subscriber.stop()
-            }
-            
-            self.subscribers[channel] = []
-            
-            return self.execute("UNLISTEN \(identifier: channel)").map { _ in return }
+        let subscribers = self.subscribers[channel] ?? []
+        
+        for subscriber in subscribers {
+            subscriber.stop()
         }
+        
+        self.subscribers[channel] = []
+        
+        try await self.execute("UNLISTEN \(identifier: channel)")
     }
     
 }

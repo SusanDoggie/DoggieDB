@@ -62,128 +62,108 @@ extension DBRedisQuery {
 
 extension DBRedisList {
     
-    public func toArray() -> EventLoopFuture<[Value]> {
-        return self.subrange(0...)
+    public func toArray() async throws -> [Value] {
+        return try await self.subrange(0...)
     }
 }
 
 extension DBRedisList {
     
-    public func count() -> EventLoopFuture<Int> {
-        return self.client.llen(of: RedisKey(key))
+    public func count() async throws -> Int {
+        return try await self.client.llen(of: RedisKey(key)).get()
     }
 }
 
 extension DBRedisList {
     
-    public func subrange(_ range: PartialRangeFrom<Int>) -> EventLoopFuture<[Value]> {
-        return self.client.lrange(from: RedisKey(key), fromIndex: range.lowerBound).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
+    public func subrange(_ range: PartialRangeFrom<Int>) async throws -> [Value] {
+        return try await self.client.lrange(from: RedisKey(key), fromIndex: range.lowerBound).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }.get()
     }
     
-    public func subrange(_ range: PartialRangeUpTo<Int>) -> EventLoopFuture<[Value]> {
-        return self.client.lrange(from: RedisKey(key), upToIndex: range.upperBound).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
+    public func subrange(_ range: PartialRangeUpTo<Int>) async throws -> [Value] {
+        return try await self.client.lrange(from: RedisKey(key), upToIndex: range.upperBound).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }.get()
     }
     
-    public func subrange(_ range: PartialRangeThrough<Int>) -> EventLoopFuture<[Value]> {
-        return self.client.lrange(from: RedisKey(key), throughIndex: range.upperBound).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
+    public func subrange(_ range: PartialRangeThrough<Int>) async throws -> [Value] {
+        return try await self.client.lrange(from: RedisKey(key), throughIndex: range.upperBound).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }.get()
     }
     
-    public func subrange(_ range: Range<Int>) -> EventLoopFuture<[Value]> {
-        return self.client.lrange(from: RedisKey(key), indices: range).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
+    public func subrange(_ range: Range<Int>) async throws -> [Value] {
+        return try await self.client.lrange(from: RedisKey(key), indices: range).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }.get()
     }
     
-    public func subrange(_ range: ClosedRange<Int>) -> EventLoopFuture<[Value]> {
-        return self.client.lrange(from: RedisKey(key), indices: range).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }
-    }
-}
-
-extension DBRedisList {
-    
-    public func trim(_ range: PartialRangeFrom<Int>) -> EventLoopFuture<Void> {
-        return self.client.ltrim(RedisKey(key), keepingIndices: range)
-    }
-    
-    public func trim(_ range: PartialRangeUpTo<Int>) -> EventLoopFuture<Void> {
-        return self.client.ltrim(RedisKey(key), keepingIndices: range)
-    }
-    
-    public func trim(_ range: PartialRangeThrough<Int>) -> EventLoopFuture<Void> {
-        return self.client.ltrim(RedisKey(key), keepingIndices: range)
-    }
-    
-    public func trim(_ range: Range<Int>) -> EventLoopFuture<Void> {
-        return self.client.ltrim(RedisKey(key), keepingIndices: range)
-    }
-    
-    public func trim(_ range: ClosedRange<Int>) -> EventLoopFuture<Void> {
-        return self.client.ltrim(RedisKey(key), keepingIndices: range)
+    public func subrange(_ range: ClosedRange<Int>) async throws -> [Value] {
+        return try await self.client.lrange(from: RedisKey(key), indices: range).flatMapThrowing { try $0.map { try decoder.decode(Value.self, from: $0) } }.get()
     }
 }
 
 extension DBRedisList {
     
-    public func insertFirst(_ value: Value) -> EventLoopFuture<Int> {
-        do {
-            return try self.client.lpush(encoder.encode(value, as: RESPValue.self), into: RedisKey(key))
-        } catch {
-            return self.client.eventLoop.makeFailedFuture(error)
-        }
+    public func trim(_ range: PartialRangeFrom<Int>) async throws {
+        try await self.client.ltrim(RedisKey(key), keepingIndices: range).get()
     }
     
-    public func insertFirst<C: Collection>(contentsOf values: C) -> EventLoopFuture<Int> where C.Element == Value {
-        do {
-            return try self.client.lpush(values.map { try encoder.encode($0, as: RESPValue.self) }, into: RedisKey(key))
-        } catch {
-            return self.client.eventLoop.makeFailedFuture(error)
-        }
-    }
-}
-
-extension DBRedisList {
-    
-    public func append(_ value: Value) -> EventLoopFuture<Int> {
-        do {
-            return try self.client.rpush(encoder.encode(value, as: RESPValue.self), into: RedisKey(key))
-        } catch {
-            return self.client.eventLoop.makeFailedFuture(error)
-        }
+    public func trim(_ range: PartialRangeUpTo<Int>) async throws {
+        try await self.client.ltrim(RedisKey(key), keepingIndices: range).get()
     }
     
-    public func append<C: Collection>(contentsOf values: C) -> EventLoopFuture<Int> where C.Element == Value {
-        do {
-            return try self.client.rpush(values.map { try encoder.encode($0, as: RESPValue.self) }, into: RedisKey(key))
-        } catch {
-            return self.client.eventLoop.makeFailedFuture(error)
-        }
+    public func trim(_ range: PartialRangeThrough<Int>) async throws {
+        try await self.client.ltrim(RedisKey(key), keepingIndices: range).get()
+    }
+    
+    public func trim(_ range: Range<Int>) async throws {
+        try await self.client.ltrim(RedisKey(key), keepingIndices: range).get()
+    }
+    
+    public func trim(_ range: ClosedRange<Int>) async throws {
+        try await self.client.ltrim(RedisKey(key), keepingIndices: range).get()
     }
 }
 
 extension DBRedisList {
     
-    public func popFirst() -> EventLoopFuture<Value?> {
-        return self.client.lpop(from: RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
+    public func insertFirst(_ value: Value) async throws -> Int {
+        return try await self.client.lpush(encoder.encode(value, as: RESPValue.self), into: RedisKey(key)).get()
     }
     
-    public func popLast() -> EventLoopFuture<Value?> {
-        return self.client.rpop(from: RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
-    }
-    
-    public func popPush(to other: DBRedisList) -> EventLoopFuture<Value?> {
-        return self.client.rpoplpush(from: RedisKey(key), to: RedisKey(other.key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
+    public func insertFirst<C: Collection>(contentsOf values: C) async throws -> Int where C.Element == Value {
+        return try await self.client.lpush(values.map { try encoder.encode($0, as: RESPValue.self) }, into: RedisKey(key)).get()
     }
 }
 
 extension DBRedisList {
     
-    public func fetch(_ index: Int) -> EventLoopFuture<Value?> {
-        return self.client.lindex(index, from: RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
+    public func append(_ value: Value) async throws -> Int {
+        return try await self.client.rpush(encoder.encode(value, as: RESPValue.self), into: RedisKey(key)).get()
     }
     
-    public func store(_ index: Int, value: Value) -> EventLoopFuture<Void> {
-        do {
-            return try self.client.lset(index: index, to: encoder.encode(value, as: RESPValue.self), in: RedisKey(key))
-        } catch {
-            return self.client.eventLoop.makeFailedFuture(error)
-        }
+    public func append<C: Collection>(contentsOf values: C) async throws -> Int where C.Element == Value {
+        return try await self.client.rpush(values.map { try encoder.encode($0, as: RESPValue.self) }, into: RedisKey(key)).get()
+    }
+}
+
+extension DBRedisList {
+    
+    public func popFirst() async throws -> Value? {
+        return try await self.client.lpop(from: RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }.get()
+    }
+    
+    public func popLast() async throws -> Value? {
+        return try await self.client.rpop(from: RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }.get()
+    }
+    
+    public func popPush(to other: DBRedisList) async throws -> Value? {
+        return try await self.client.rpoplpush(from: RedisKey(key), to: RedisKey(other.key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }.get()
+    }
+}
+
+extension DBRedisList {
+    
+    public func fetch(_ index: Int) async throws -> Value? {
+        return try await self.client.lindex(index, from: RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }.get()
+    }
+    
+    public func store(_ index: Int, value: Value) async throws {
+        try await self.client.lset(index: index, to: encoder.encode(value, as: RESPValue.self), in: RedisKey(key)).get()
     }
 }

@@ -42,8 +42,8 @@ extension DBMongoCollectionExpression {
 
 extension DBMongoEstimatedDocumentCountOptionsExpression {
     
-    public func execute() -> EventLoopFuture<Int> {
-        return query.collection.estimatedDocumentCount(options: options)
+    public func execute() async throws -> Int {
+        return try await query.collection.estimatedDocumentCount(options: options).get()
     }
 }
 

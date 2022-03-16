@@ -23,15 +23,14 @@
 //  THE SOFTWARE.
 //
 
+@preconcurrency
 import MongoSwift
 
-class DBMongoEventLoopBoundConnection: DBMongoConnectionProtocol {
+actor DBMongoEventLoopBoundConnection: DBMongoConnectionProtocol {
     
     let connection: MongoDBDriver.Connection
     
     let client: EventLoopBoundMongoClient
-    
-    private(set) var isClosed: Bool = false
     
     init(connection: MongoDBDriver.Connection, client: EventLoopBoundMongoClient) {
         self.connection = connection
@@ -41,38 +40,26 @@ class DBMongoEventLoopBoundConnection: DBMongoConnectionProtocol {
 
 extension DBMongoEventLoopBoundConnection {
     
-    var driver: DBDriver {
+    nonisolated var driver: DBDriver {
         return connection.driver
     }
     
-    var logger: Logger {
+    nonisolated var logger: Logger {
         return connection.logger
     }
     
-    var database: String? {
+    nonisolated var database: String? {
         return connection.database
     }
     
-    var eventLoopGroup: EventLoopGroup {
+    nonisolated var eventLoopGroup: EventLoopGroup {
         return client.eventLoop
     }
     
-    func _database() -> MongoDatabase? {
+    nonisolated func _database() -> MongoDatabase? {
         return database.map { client.db($0) }
     }
 }
-
-extension DBMongoEventLoopBoundConnection {
-    
-    func withSession<T>(
-        options: ClientSessionOptions?,
-        _ sessionBody: (SessionBoundConnection) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
-        return client.withSession(options: options) { try sessionBody(SessionBoundConnection(connection: self, session: $0)) }
-    }
-}
-
-#if compiler(>=5.5.2) && canImport(_Concurrency)
 
 extension DBMongoEventLoopBoundConnection {
     
@@ -100,31 +87,25 @@ extension DBMongoEventLoopBoundConnection {
     }
 }
 
-#endif
-
 extension DBMongoEventLoopBoundConnection {
     
-    func close() -> EventLoopFuture<Void> {
-        let closeResult = eventLoopGroup.next().makeSucceededVoidFuture()
-        closeResult.whenComplete { _ in self.isClosed = true }
-        return closeResult
-    }
+    func close() async throws { }
 }
 
 extension DBMongoEventLoopBoundConnection {
     
-    func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol {
+    nonisolated func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol {
         return connection._bind(to: eventLoop)
     }
 }
 
 extension DBMongoEventLoopBoundConnection {
     
-    func version() -> EventLoopFuture<String> {
-        return connection.version()
+    func version() async throws -> String {
+        return try await connection.version()
     }
     
-    func databases() -> EventLoopFuture<[String]> {
-        return client.listDatabaseNames()
+    func databases() async throws -> [String] {
+        return try await client.listDatabaseNames().get()
     }
 }

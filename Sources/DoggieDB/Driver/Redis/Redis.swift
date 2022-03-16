@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 //
 
+@preconcurrency
 import RediStack
 
 struct RedisDriver: DBDriverProtocol {
@@ -32,23 +33,23 @@ struct RedisDriver: DBDriverProtocol {
 
 extension RedisDriver {
     
-    class Connection: DBConnection {
+    actor Connection: DBConnection {
         
-        var driver: DBDriver { return .redis }
+        nonisolated var driver: DBDriver { return .redis }
         
         let client: RedisConnection
         
         let logger: Logger
         
-        var eventLoopGroup: EventLoopGroup { client.eventLoop }
+        nonisolated var eventLoopGroup: EventLoopGroup { client.eventLoop }
         
         init(_ client: RedisConnection, _ logger: Logger) {
             self.client = client
             self.logger = logger
         }
         
-        func close() -> EventLoopFuture<Void> {
-            return client.close()
+        func close() async throws {
+            try await client.close().get()
         }
     }
 }
@@ -59,46 +60,25 @@ extension RedisDriver {
         config: Database.Configuration,
         logger: Logger,
         on eventLoopGroup: EventLoopGroup
-    ) -> EventLoopFuture<DBConnection> {
+    ) async throws -> DBConnection {
         
-        do {
-            
-            let _config = try RedisConnection.Configuration(
-                address: config.socketAddress[0],
-                password: config.password,
-                initialDatabase: config.database.flatMap(Int.init),
-                defaultLogger: logger
-            )
-            
-            return RedisConnection.make(
-                configuration: _config,
-                boundEventLoop: eventLoopGroup.next()
-            ).map { Connection($0, logger) }
-            
-        } catch {
-            
-            return eventLoopGroup.next().makeFailedFuture(error)
-        }
+        let _config = try RedisConnection.Configuration(
+            address: config.socketAddress[0],
+            password: config.password,
+            initialDatabase: config.database.flatMap(Int.init),
+            defaultLogger: logger
+        )
+        
+        let connection = try await RedisConnection.make(
+            configuration: _config,
+            boundEventLoop: eventLoopGroup.next()
+        ).get()
+        
+        return Connection(connection, logger)
     }
 }
 
 extension RedisDriver.Connection {
-    
-    var isClosed: Bool {
-        return !self.client.isConnected
-    }
-}
-
-extension RedisDriver.Connection {
-    
-    func withTransaction<T>(
-        _ transactionBody: @escaping (DBConnection) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
-        
-        fatalError("unsupported operation")
-    }
-    
-    #if compiler(>=5.5.2) && canImport(_Concurrency)
     
     func withTransaction<T>(
         _ transactionBody: (DBConnection) async throws -> T
@@ -106,9 +86,6 @@ extension RedisDriver.Connection {
         
         fatalError("unsupported operation")
     }
-    
-    #endif
-    
 }
 
 extension RedisDriver.Connection {
@@ -116,17 +93,14 @@ extension RedisDriver.Connection {
     func runCommand(
         _ string: String,
         _ binds: [RESPValue]
-    ) -> EventLoopFuture<RESPValue> {
+    ) async throws -> RESPValue {
         
-        let result = binds.isEmpty ? self.client.send(command: string) : self.client.send(command: string, with: binds)
+        let result = try await binds.isEmpty ? self.client.send(command: string).get() : self.client.send(command: string, with: binds).get()
         
-        return result.flatMapResult { result in
-            Result {
-                if case let .error(error) = result {
-                    throw error
-                }
-                return result
-            }
+        if case let .error(error) = result {
+            throw error
         }
+        
+        return result
     }
 }

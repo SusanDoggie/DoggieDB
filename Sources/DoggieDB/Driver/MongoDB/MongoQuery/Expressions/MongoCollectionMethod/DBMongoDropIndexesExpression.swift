@@ -41,8 +41,8 @@ extension DBMongoCollectionExpression {
 
 extension DBMongoDropIndexesExpression {
     
-    public func execute() -> EventLoopFuture<Void> {
-        return query.collection.dropIndexes(options: options, session: query.session)
+    public func execute() async throws {
+        try await query.collection.dropIndexes(options: options, session: query.session).get()
     }
 }
 

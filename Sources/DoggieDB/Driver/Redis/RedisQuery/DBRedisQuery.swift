@@ -48,27 +48,23 @@ extension RedisDriver.Connection {
 
 extension DBRedisQuery {
     
-    public func exists(_ keys: [String]) -> EventLoopFuture<Int> {
-        return self.client.exists(keys.map { RedisKey($0) })
+    public func exists(_ keys: [String]) async throws -> Int {
+        return try await self.client.exists(keys.map { RedisKey($0) }).get()
     }
     
-    public func delete(_ keys: [String]) -> EventLoopFuture<Int> {
-        return self.client.delete(keys.map { RedisKey($0) })
+    public func delete(_ keys: [String]) async throws -> Int {
+        return try await self.client.delete(keys.map { RedisKey($0) }).get()
     }
 }
 
 extension DBRedisQuery {
     
-    public func fetch<Value: Codable>(_ keys: Set<String>, as: Value.Type, decoder: RedisDecoderProtocol = RedisDecoder()) -> EventLoopFuture<[String: Value]> {
+    public func fetch<Value: Codable>(_ keys: Set<String>, as: Value.Type, decoder: RedisDecoderProtocol = RedisDecoder()) async throws -> [String: Value] {
         let keys = Array(keys)
-        return self.client.mget(keys.map { RedisKey($0) }).flatMapThrowing { try Dictionary(uniqueKeysWithValues: zip(keys, $0.map { try decoder.decode(Value.self, from: $0) })) }
+        return try await self.client.mget(keys.map { RedisKey($0) }).flatMapThrowing { try Dictionary(uniqueKeysWithValues: zip(keys, $0.map { try decoder.decode(Value.self, from: $0) })) }.get()
     }
     
-    public func store<Value: Codable>(_ values: [String: Value], encoder: RedisEncoderProtocol = RedisEncoder()) -> EventLoopFuture<Void> {
-        do {
-            return try self.client.mset(Dictionary(uniqueKeysWithValues: values.map { try (RedisKey($0.key), encoder.encode($0.value, as: RESPValue.self)) }))
-        } catch {
-            return self.client.eventLoop.makeFailedFuture(error)
-        }
+    public func store<Value: Codable>(_ values: [String: Value], encoder: RedisEncoderProtocol = RedisEncoder()) async throws {
+        try await self.client.mset(Dictionary(uniqueKeysWithValues: values.map { try (RedisKey($0.key), encoder.encode($0.value, as: RESPValue.self)) })).get()
     }
 }

@@ -44,98 +44,94 @@ public struct DBSQLColumnInfo {
 
 public protocol DBSQLConnection: DBConnection {
     
-    var columnInfoHook: ((DBSQLConnection, String) -> EventLoopFuture<[DBSQLColumnInfo]>)? { get set }
+    var columnInfoHook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])? { get async }
     
-    var primaryKeyHook: ((DBSQLConnection, String) -> EventLoopFuture<[String]>)? { get set }
+    func setColumnInfoHook(_ hook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])?) async
     
-    func tables() -> EventLoopFuture<[String]>
+    var primaryKeyHook: ((DBSQLConnection, String) async throws -> [String])? { get async }
     
-    func views() -> EventLoopFuture<[String]>
+    func setPrimaryKeyHook(_ hook: ((DBSQLConnection, String) async throws -> [String])?) async
     
-    func materializedViews() -> EventLoopFuture<[String]>
+    func tables() async throws -> [String]
     
-    func columns(of table: String) -> EventLoopFuture<[DBSQLColumnInfo]>
+    func views() async throws -> [String]
     
-    func primaryKey(of table: String) -> EventLoopFuture<[String]>
+    func materializedViews() async throws -> [String]
     
-    func indices(of table: String) -> EventLoopFuture<[[String: DBData]]>
+    func columns(of table: String) async throws -> [DBSQLColumnInfo]
     
-    func foreignKeys(of table: String) -> EventLoopFuture<[[String: DBData]]>
+    func primaryKey(of table: String) async throws -> [String]
     
-    func startTransaction() -> EventLoopFuture<Void>
+    func indices(of table: String) async throws -> [[String: DBData]]
     
-    func commitTransaction() -> EventLoopFuture<Void>
+    func foreignKeys(of table: String) async throws -> [[String: DBData]]
     
-    func abortTransaction() -> EventLoopFuture<Void>
+    func startTransaction() async throws
     
-    func createSavepoint(_ name: String) -> EventLoopFuture<Void>
+    func commitTransaction() async throws
     
-    func rollbackToSavepoint(_ name: String) -> EventLoopFuture<Void>
+    func abortTransaction() async throws
     
-    func releaseSavepoint(_ name: String) -> EventLoopFuture<Void>
+    func createSavepoint(_ name: String) async throws
     
+    func rollbackToSavepoint(_ name: String) async throws
+    
+    func releaseSavepoint(_ name: String) async throws
+    
+    @discardableResult
     func execute(
         _ sql: SQLRaw
-    ) -> EventLoopFuture<[[String: DBData]]>
+    ) async throws -> [[String: DBData]]
     
+    @discardableResult
     func execute(
         _ sql: SQLRaw,
         onRow: @escaping ([String: DBData]) throws -> Void
-    ) -> EventLoopFuture<SQLQueryMetadata>
+    ) async throws -> SQLQueryMetadata
+}
+
+extension DBSQLConnection {
+    
+    @discardableResult
+    public func execute(
+        _ sql: SQLRaw
+    ) async throws -> [[String: DBData]] {
+        throw Database.Error.unsupportedOperation
+    }
+    
+    @discardableResult
+    public func execute(
+        _ sql: SQLRaw,
+        onRow: @escaping ([String: DBData]) throws -> Void
+    ) async throws -> SQLQueryMetadata {
+        throw Database.Error.unsupportedOperation
+    }
 }
 
 extension DBSQLConnection {
     
     public func execute(
         _ sql: SQLRaw
-    ) -> EventLoopFuture<[[String: DBData]]> {
-        return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
-    }
-    
-    public func execute(
-        _ sql: SQLRaw,
-        onRow: @escaping ([String: DBData]) throws -> Void
-    ) -> EventLoopFuture<SQLQueryMetadata> {
-        return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
-    }
-}
-
-extension DBSQLConnection {
-    
-    public func withTransaction<T>(
-        _ transactionBody: @escaping (DBConnection) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
+    ) -> AsyncThrowingStream<[String: DBData], Error> {
         
-        let transaction = self.startTransaction()
-        let promise = transaction.eventLoop.makePromise(of: T.self)
-        
-        return transaction.flatMap {
+        return AsyncThrowingStream { continuation in
             
-            do {
+            Task {
                 
-                let bodyFuture = try transactionBody(DBSQLTransactionConnection(base: self, counter: 0))
-                
-                bodyFuture.flatMap { _ in
-                    self.commitTransaction()
-                }.flatMapError { _ in
-                    self.abortTransaction()
-                }.whenComplete { _ in
-                    promise.completeWith(bodyFuture)
-                }
-                
-            } catch {
-                
-                self.abortTransaction().whenComplete { _ in
-                    promise.fail(error)
+                do {
+                    
+                    try await self.execute(sql) { continuation.yield($0) }
+                    
+                    continuation.finish()
+                    
+                } catch {
+                    
+                    continuation.finish(throwing: error)
                 }
             }
-            
-            return promise.futureResult
         }
     }
 }
-
-#if compiler(>=5.5.2) && canImport(_Concurrency)
 
 extension DBSQLConnection {
     
@@ -161,5 +157,3 @@ extension DBSQLConnection {
         }
     }
 }
-
-#endif

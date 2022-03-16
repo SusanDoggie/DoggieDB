@@ -41,12 +41,12 @@ class RedisTest: XCTestCase {
     var eventLoopGroup: MultiThreadedEventLoopGroup!
     var connection: DBConnection!
     
-    override func setUpWithError() throws {
+    override func setUp() async throws {
         
         do {
             
             eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-            self.addTeardownBlock { try! self.eventLoopGroup.syncShutdownGracefully() }
+            self.addTeardownBlock { try self.eventLoopGroup.syncShutdownGracefully() }
             
             var url = URLComponents()
             url.scheme = "redis"
@@ -65,8 +65,8 @@ class RedisTest: XCTestCase {
             var logger = Logger(label: "com.SusanDoggie.DoggieDB")
             logger.logLevel = .debug
             
-            self.connection = try Database.connect(url: url, logger: logger, on: eventLoopGroup).wait()
-            self.addTeardownBlock { try! self.connection.close().wait() }
+            self.connection = try await Database.connect(url: url, logger: logger, on: eventLoopGroup)
+            self.addTeardownBlock { try await self.connection.close() }
             
         } catch {
             
@@ -75,15 +75,15 @@ class RedisTest: XCTestCase {
         }
     }
     
-    func testFetchStore() throws {
+    func testFetchStore() async throws {
         
         do {
             
             let value = Contact(name: "John", email: "john@example.com", phone: "98765432")
             
-            try connection.redisQuery().value(of: "contact", as: Contact.self).store(value).wait()
+            try await connection.redisQuery().value(of: "contact", as: Contact.self).store(value)
             
-            let result = try connection.redisQuery().value(of: "contact", as: Contact.self).fetch().wait()
+            let result = try await connection.redisQuery().value(of: "contact", as: Contact.self).fetch()
             
             XCTAssertEqual(value, result)
             

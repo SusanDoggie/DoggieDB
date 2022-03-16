@@ -54,42 +54,34 @@ extension DBQuery {
 
 extension DBFindExpression {
     
-    public func count() -> EventLoopFuture<Int> {
-        guard let launcher = self.connection.launcher else {
-            return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
-        }
-        return launcher.count(self)
+    public func count() async throws -> Int {
+        guard let launcher = connection.launcher else { throw Database.Error.unsupportedOperation }
+        return try await launcher.count(self)
     }
 }
 
 extension DBFindExpression {
     
-    public func toArray() -> EventLoopFuture<[DBObject]> {
-        guard let launcher = self.connection.launcher else {
-            return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
-        }
-        return launcher.find(self)
+    public func toArray() async throws -> [DBObject] {
+        guard let launcher = connection.launcher else { throw Database.Error.unsupportedOperation }
+        return try await launcher.find(self)
     }
     
-    public func forEach(_ body: @escaping (DBObject) throws -> Void) -> EventLoopFuture<Void> {
-        guard let launcher = self.connection.launcher else {
-            return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
-        }
-        return launcher.find(self) { try body($0) }
+    public func forEach(_ body: @escaping (DBObject) throws -> Void) async throws {
+        guard let launcher = connection.launcher else { throw Database.Error.unsupportedOperation }
+        return try await launcher.find(self) { try body($0) }
     }
     
-    public func first() -> EventLoopFuture<DBObject?> {
-        return self.limit(1).toArray().map { $0.first }
+    public func first() async throws -> DBObject? {
+        return try await self.limit(1).toArray().first
     }
 }
 
 extension DBFindExpression {
     
-    public func delete() -> EventLoopFuture<Int?> {
-        guard let launcher = self.connection.launcher else {
-            return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
-        }
-        return launcher.findAndDelete(self)
+    public func delete() async throws -> Int? {
+        guard let launcher = connection.launcher else { throw Database.Error.unsupportedOperation }
+        return try await launcher.findAndDelete(self)
     }
 }
 

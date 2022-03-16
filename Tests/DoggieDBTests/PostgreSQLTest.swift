@@ -47,11 +47,11 @@ class PostgreSQLTest: DoggieDBTestCase {
         return url
     }
     
-    func testCreateTable() throws {
+    func testCreateTable() async throws {
         
         do {
             
-            _ = try connection.execute("""
+            _ = try await connection.execute("""
                 CREATE TABLE contacts (
                     contact_id INTEGER NOT NULL PRIMARY KEY,
                     first_name TEXT NOT NULL,
@@ -59,11 +59,12 @@ class PostgreSQLTest: DoggieDBTestCase {
                     email TEXT NOT NULL UNIQUE,
                     phone TEXT NOT NULL UNIQUE
                 )
-                """).wait()
+                """)
             
-            XCTAssertTrue(try connection.tables().wait().contains("contacts"))
+            let tables = try await connection.tables()
+            XCTAssertTrue(tables.contains("contacts"))
             
-            let tableInfo = try connection.columns(of: "contacts").wait()
+            let tableInfo = try await connection.columns(of: "contacts")
             
             guard let contact_id = tableInfo.first(where: { $0.name == "contact_id" }) else { XCTFail(); return }
             guard let first_name = tableInfo.first(where: { $0.name == "first_name" }) else { XCTFail(); return }
@@ -90,11 +91,11 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testPrimaryKey() throws {
+    func testPrimaryKey() async throws {
         
         do {
             
-            _ = try connection.execute("""
+            _ = try await connection.execute("""
                 CREATE TABLE testPrimaryKey (
                     column_1 INTEGER NOT NULL,
                     column_2 TEXT NOT NULL,
@@ -103,9 +104,9 @@ class PostgreSQLTest: DoggieDBTestCase {
                     column_5 TEXT NOT NULL UNIQUE,
                     PRIMARY KEY (column_1, column_3, column_2)
                 )
-                """).wait()
+                """)
             
-            let primaryKey = try connection.primaryKey(of: "testPrimaryKey").wait()
+            let primaryKey = try await connection.primaryKey(of: "testPrimaryKey")
             
             XCTAssertEqual(primaryKey, ["column_1", "column_3", "column_2"])
             
@@ -116,13 +117,13 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testBindInt() throws {
+    func testBindInt() async throws {
         
         do {
             
             let int = 42
             
-            let result = try connection.execute("SELECT \(int) as value").wait()
+            let result = try await connection.execute("SELECT \(int) as value")
             
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["value"]?.intValue, int)
@@ -134,13 +135,13 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testBindInt2() throws {
+    func testBindInt2() async throws {
         
         do {
             
             let int = 42
             
-            let result = try connection.execute("SELECT \(bind: int) as value").wait()
+            let result = try await connection.execute("SELECT \(bind: int) as value")
             
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["value"]?.intValue, int)
@@ -152,13 +153,13 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testBindUUID() throws {
+    func testBindUUID() async throws {
         
         do {
             
             let uuid = UUID()
             
-            let result = try connection.execute("SELECT \(uuid) as uuid").wait()
+            let result = try await connection.execute("SELECT \(uuid) as uuid")
             
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["uuid"]?.uuid, uuid)
@@ -170,13 +171,13 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testBindString() throws {
+    func testBindString() async throws {
         
         do {
             
             let str = "Hello, world"
             
-            let result = try connection.execute("SELECT \(str) as str").wait()
+            let result = try await connection.execute("SELECT \(str) as str")
             
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["str"]?.string, str)
@@ -188,13 +189,13 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testBindArray() throws {
+    func testBindArray() async throws {
         
         do {
             
             let array: [DBData] = [1, 2, 3]
             
-            let result = try connection.execute("SELECT \(array) as array").wait()
+            let result = try await connection.execute("SELECT \(array) as array")
             
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["array"]?.array, array)
@@ -206,13 +207,13 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testBindJson() throws {
+    func testBindJson() async throws {
         
         do {
             
             let array: [DBData] = [1.0, 2.0, "foo", nil]
             
-            let result = try connection.execute("SELECT \(array) as array").wait()
+            let result = try await connection.execute("SELECT \(array) as array")
             
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["array"]?.array, array)
@@ -224,13 +225,13 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testBindTimestamp() throws {
+    func testBindTimestamp() async throws {
         
         do {
             
             let timestamp = Date()
             
-            let result = try connection.execute("SELECT \(timestamp) as \"now\"").wait()
+            let result = try await connection.execute("SELECT \(timestamp) as \"now\"")
             
             XCTAssertEqual(result[0]["now"]?.date, timestamp)
             
@@ -241,13 +242,13 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testBindDate() throws {
+    func testBindDate() async throws {
         
         do {
             
             let date = DateComponents(year: 2000, month: 1, day: 1)
             
-            let result = try connection.execute("SELECT \(date)::date as \"date\"").wait()
+            let result = try await connection.execute("SELECT \(date)::date as \"date\"")
             
             print(result[0]["date"]?.dateComponents == date)
             XCTAssertEqual(result[0]["date"]?.dateComponents?.year, date.year)
@@ -261,13 +262,13 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testBindTime() throws {
+    func testBindTime() async throws {
         
         do {
             
             let time = DateComponents(hour: 21, minute: 16, second: 32, nanosecond: 0)
             
-            let result = try connection.execute("SELECT \(time)::time as \"time\"").wait()
+            let result = try await connection.execute("SELECT \(time)::time as \"time\"")
             
             XCTAssertEqual(result[0]["time"]?.dateComponents?.timeZone?.secondsFromGMT(), 0)
             XCTAssertEqual(result[0]["time"]?.dateComponents?.hour, time.hour)
@@ -281,7 +282,7 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testBindTimetz() throws {
+    func testBindTimetz() async throws {
         
         do {
             
@@ -289,7 +290,7 @@ class PostgreSQLTest: DoggieDBTestCase {
             
             let time = DateComponents(timeZone: timeZone, hour: 21, minute: 16, second: 32, nanosecond: 0)
             
-            let result = try connection.execute("SELECT \(time)::timetz as \"time\"").wait()
+            let result = try await connection.execute("SELECT \(time)::timetz as \"time\"")
             
             XCTAssertEqual(result[0]["time"]?.dateComponents?.timeZone?.secondsFromGMT(), timeZone?.secondsFromGMT())
             XCTAssertEqual(result[0]["time"]?.dateComponents?.hour, time.hour)
@@ -303,11 +304,11 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testBindTimetz2() throws {
+    func testBindTimetz2() async throws {
         
         do {
             
-            let result = try connection.execute("SELECT '21:16:32+08:00'::timetz as \"time\"").wait()
+            let result = try await connection.execute("SELECT '21:16:32+08:00'::timetz as \"time\"")
             
             XCTAssertEqual(result[0]["time"]?.dateComponents?.timeZone?.secondsFromGMT(), 28800)
             XCTAssertEqual(result[0]["time"]?.dateComponents?.hour, 21)
@@ -321,7 +322,7 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testBindMultiple() throws {
+    func testBindMultiple() async throws {
         
         do {
             
@@ -330,7 +331,7 @@ class PostgreSQLTest: DoggieDBTestCase {
             let uuid2 = UUID()
             let str = "Hello, world"
             
-            let result = try connection.execute("SELECT \(bind: int) as value, \(uuid) as uuid, \(uuid2) as uuid2, \(str) as str, \(str) as str2").wait()
+            let result = try await connection.execute("SELECT \(bind: int) as value, \(uuid) as uuid, \(uuid2) as uuid2, \(str) as str, \(str) as str2")
             
             XCTAssertEqual(result.count, 1)
             XCTAssertEqual(result[0]["value"]?.intValue, int)
@@ -346,11 +347,11 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testRecursive() throws {
+    func testRecursive() async throws {
         
         do {
             
-            let result = try connection.execute("""
+            let result = try await connection.execute("""
                 WITH RECURSIVE test AS (
                     SELECT 1 AS n
                     UNION
@@ -358,7 +359,7 @@ class PostgreSQLTest: DoggieDBTestCase {
                 )
                 SELECT n FROM test
                 LIMIT 10
-                """).wait()
+                """)
             
             for (i, row) in result.enumerated() {
                 XCTAssertEqual(row["n"]?.intValue, i + 1)
@@ -371,15 +372,15 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testTransaction() throws {
+    func testTransaction() async throws {
         
         do {
             
-            _ = try connection.execute("BEGIN").wait()
+            _ = try await connection.execute("BEGIN")
             
-            let result = try connection.execute("SELECT \(1) as value").wait()
+            let result = try await connection.execute("SELECT \(1) as value")
             
-            _ = try connection.execute("COMMIT").wait()
+            _ = try await connection.execute("COMMIT")
             
             XCTAssertEqual(result[0]["value"]?.intValue, 1)
             
@@ -390,15 +391,15 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testTransaction2() throws {
+    func testTransaction2() async throws {
         
         do {
             
-            let result = try connection.withTransaction({ connection in
+            let result = try await connection.withTransaction({ connection in
                 
-                (connection as! DBSQLConnection).execute("SELECT \(1) as value")
+                try await (connection as! DBSQLConnection).execute("SELECT \(1) as value")
                 
-            }).wait()
+            })
             
             XCTAssertEqual(result[0]["value"]?.intValue, 1)
             
@@ -409,19 +410,19 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testTransaction3() throws {
+    func testTransaction3() async throws {
         
         do {
             
-            let result = try connection.withTransaction({ connection in
+            let result = try await connection.withTransaction({ connection in
                 
-                connection.withTransaction({ connection in
+                try await connection.withTransaction({ connection in
                     
-                    (connection as! DBSQLConnection).execute("SELECT \(1) as value")
+                    try await (connection as! DBSQLConnection).execute("SELECT \(1) as value")
                     
                 })
                 
-            }).wait()
+            })
             
             XCTAssertEqual(result[0]["value"]?.intValue, 1)
             
@@ -432,11 +433,11 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testQuery() throws {
+    func testQuery() async throws {
         
         do {
             
-            _ = try connection.execute("""
+            _ = try await connection.execute("""
                 CREATE TABLE testQuery (
                     id INTEGER NOT NULL PRIMARY KEY,
                     first_name TEXT,
@@ -444,21 +445,21 @@ class PostgreSQLTest: DoggieDBTestCase {
                     email TEXT,
                     phone TEXT
                 )
-                """).wait()
+                """)
             
             var obj = DBObject(class: "testQuery")
             obj["id"] = 1
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             obj["last_name"] = "Susan"
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             XCTAssertEqual(obj["id"].intValue, 1)
             XCTAssertEqual(obj["last_name"].string, "Susan")
             
-            let list = try connection.query().find("testQuery").toArray().wait()
+            let list = try await connection.query().find("testQuery").toArray()
             
             XCTAssertEqual(list.count, 1)
             
@@ -472,16 +473,16 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testJSON() throws {
+    func testJSON() async throws {
         
         do {
             
-            _ = try connection.execute("""
+            _ = try await connection.execute("""
                 CREATE TABLE testJSON (
                     id INTEGER NOT NULL PRIMARY KEY,
                     col JSONB
                 )
-                """).wait()
+                """)
             
             let json: DBData = [
                 "boolean": true,
@@ -491,7 +492,7 @@ class PostgreSQLTest: DoggieDBTestCase {
                 "dictionary": [:],
             ]
             
-            let obj1 = try connection.query().insert("testJSON", ["id": 1, "col": json]).wait()
+            let obj1 = try await connection.query().insert("testJSON", ["id": 1, "col": json])
             
             XCTAssertEqual(obj1["id"].intValue, 1)
             XCTAssertEqual(obj1["col"], json)
@@ -503,41 +504,41 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testPatternMatchingQuery() throws {
+    func testPatternMatchingQuery() async throws {
         
         do {
             
-            _ = try connection.execute("""
+            _ = try await connection.execute("""
                 CREATE TABLE testPatternMatchingQuery (
                     id INTEGER NOT NULL PRIMARY KEY,
                     col TEXT
                 )
-                """).wait()
+                """)
             
-            _ = try connection.query().insert("testPatternMatchingQuery", ["id": 1, "col": "text to be search"]).wait()
-            _ = try connection.query().insert("testPatternMatchingQuery", ["id": 2, "col": "long long' string%"]).wait()
-            _ = try connection.query().insert("testPatternMatchingQuery", ["id": 3, "col": "long long' string%, hello"]).wait()
+            _ = try await connection.query().insert("testPatternMatchingQuery", ["id": 1, "col": "text to be search"])
+            _ = try await connection.query().insert("testPatternMatchingQuery", ["id": 2, "col": "long long' string%"])
+            _ = try await connection.query().insert("testPatternMatchingQuery", ["id": 3, "col": "long long' string%, hello"])
             
-            let res1 = try connection.query()
+            let res1 = try await connection.query()
                 .find("testPatternMatchingQuery")
                 .filter { .startsWith($0["col"], "text to ") }
-                .toArray().wait()
+                .toArray()
             
             XCTAssertEqual(res1.count, 1)
             XCTAssertEqual(res1.first?["id"].intValue, 1)
             
-            let res2 = try connection.query()
+            let res2 = try await connection.query()
                 .find("testPatternMatchingQuery")
                 .filter { .endsWith($0["col"], "ong' string%") }
-                .toArray().wait()
+                .toArray()
             
             XCTAssertEqual(res2.count, 1)
             XCTAssertEqual(res2.first?["id"].intValue, 2)
             
-            let res3 = try connection.query()
+            let res3 = try await connection.query()
                 .find("testPatternMatchingQuery")
                 .filter { .contains($0["col"], "long' s") }
-                .toArray().wait()
+                .toArray()
             
             XCTAssertEqual(res3.count, 2)
             
@@ -548,46 +549,46 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testUpdateQuery() throws {
+    func testUpdateQuery() async throws {
         
         do {
             
-            _ = try connection.execute("""
+            _ = try await connection.execute("""
                 CREATE TABLE testUpdateQuery (
                     id INTEGER NOT NULL PRIMARY KEY,
                     col TEXT
                 )
-                """).wait()
+                """)
             
             var obj = DBObject(class: "testUpdateQuery")
             obj["id"] = 1
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             obj["col"] = "text_1"
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             XCTAssertEqual(obj["id"].intValue, 1)
             XCTAssertEqual(obj["col"].string, "text_1")
             
-            let obj2 = try connection.query()
+            let obj2 = try await connection.query()
                 .findOne("testUpdateQuery")
                 .filter { $0.objectId == 1 }
                 .update([
                     "col": .set("text_2")
-                ]).wait()
+                ])
             
             XCTAssertEqual(obj2?["id"].intValue, 1)
             XCTAssertEqual(obj2?["col"].string, "text_2")
             
-            let obj3 = try connection.query()
+            let obj3 = try await connection.query()
                 .findOne("testUpdateQuery")
                 .filter { $0.objectId == 1 }
                 .returning(.before)
                 .update([
                     "col": .set("text_3")
-                ]).wait()
+                ])
             
             XCTAssertEqual(obj3?["id"].intValue, 1)
             XCTAssertEqual(obj3?["col"].string, "text_2")
@@ -599,47 +600,47 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testUpsertQuery() throws {
+    func testUpsertQuery() async throws {
         
         do {
             
-            _ = try connection.execute("""
+            _ = try await connection.execute("""
                 CREATE TABLE testUpsertQuery (
                     id INTEGER NOT NULL PRIMARY KEY,
                     col TEXT
                 )
-                """).wait()
+                """)
             
-            let obj = try connection.query()
+            let obj = try await connection.query()
                 .findOne("testUpsertQuery")
                 .filter { $0.objectId == 1 }
                 .upsert([
                     "id": .setOnInsert(1),
                     "col": .set("text_1"),
-                ]).wait()
+                ])
             
             XCTAssertEqual(obj?["id"].intValue, 1)
             XCTAssertEqual(obj?["col"].string, "text_1")
             
-            let obj2 = try connection.query()
+            let obj2 = try await connection.query()
                 .findOne("testUpsertQuery")
                 .filter { $0.objectId == 1 }
                 .upsert([
                     "id": .setOnInsert(1),
                     "col": .set("text_2"),
-                ]).wait()
+                ])
             
             XCTAssertEqual(obj2?["id"].intValue, 1)
             XCTAssertEqual(obj2?["col"].string, "text_2")
             
-            let obj3 = try connection.query()
+            let obj3 = try await connection.query()
                 .findOne("testUpsertQuery")
                 .filter { $0.objectId == 1 }
                 .returning(.before)
                 .upsert([
                     "id": .setOnInsert(1),
                     "col": .set("text_3"),
-                ]).wait()
+                ])
             
             XCTAssertEqual(obj3?["id"].intValue, 1)
             XCTAssertEqual(obj3?["col"].string, "text_2")
@@ -651,11 +652,11 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testIncludesQuery() throws {
+    func testIncludesQuery() async throws {
         
         do {
             
-            _ = try connection.execute("""
+            _ = try await connection.execute("""
                 CREATE TABLE testIncludesQuery (
                     id INTEGER NOT NULL PRIMARY KEY,
                     dummy1 INTEGER,
@@ -663,9 +664,9 @@ class PostgreSQLTest: DoggieDBTestCase {
                     dummy3 INTEGER,
                     dummy4 INTEGER
                 )
-                """).wait()
+                """)
             
-            let obj = try connection.query()
+            let obj = try await connection.query()
                 .findOne("testIncludesQuery")
                 .filter { $0.objectId == 1 }
                 .includes(["dummy1", "dummy2"])
@@ -675,11 +676,11 @@ class PostgreSQLTest: DoggieDBTestCase {
                     "dummy2": .set(2),
                     "dummy3": .set(3),
                     "dummy4": .set(4),
-                ]).wait()
+                ])
             
             XCTAssertEqual(obj?.keys, ["id", "dummy1", "dummy2"])
             
-            let obj2 = try connection.query()
+            let obj2 = try await connection.query()
                 .findOne("testIncludesQuery")
                 .filter { $0.objectId == 2 }
                 .includes(["dummy1", "dummy2"])
@@ -690,11 +691,11 @@ class PostgreSQLTest: DoggieDBTestCase {
                     "dummy2": .set(2),
                     "dummy3": .set(3),
                     "dummy4": .set(4),
-                ]).wait()
+                ])
             
             XCTAssertNil(obj2)
             
-            let obj3 = try connection.query()
+            let obj3 = try await connection.query()
                 .findOne("testIncludesQuery")
                 .filter { $0.objectId == 1 }
                 .includes(["dummy1", "dummy2"])
@@ -704,11 +705,11 @@ class PostgreSQLTest: DoggieDBTestCase {
                     "dummy2": .set(2),
                     "dummy3": .set(3),
                     "dummy4": .set(4),
-                ]).wait()
+                ])
             
             XCTAssertEqual(obj3?.keys, ["id", "dummy1", "dummy2"])
             
-            let obj4 = try connection.query()
+            let obj4 = try await connection.query()
                 .findOne("testIncludesQuery")
                 .filter { $0.objectId == 2 }
                 .includes(["dummy1", "dummy2"])
@@ -719,11 +720,11 @@ class PostgreSQLTest: DoggieDBTestCase {
                     "dummy2": .set(2),
                     "dummy3": .set(3),
                     "dummy4": .set(4),
-                ]).wait()
+                ])
             
             XCTAssertEqual(obj4?.keys, ["id", "dummy1", "dummy2"])
             
-            let obj5 = try connection.query()
+            let obj5 = try await connection.query()
                 .findOne("testIncludesQuery")
                 .filter { $0.objectId == 1 }
                 .includes(["dummy1", "dummy2"])
@@ -732,11 +733,11 @@ class PostgreSQLTest: DoggieDBTestCase {
                     "dummy2": .set(2),
                     "dummy3": .set(3),
                     "dummy4": .set(4),
-                ]).wait()
+                ])
             
             XCTAssertEqual(obj5?.keys, ["id", "dummy1", "dummy2"])
             
-            let obj6 = try connection.query()
+            let obj6 = try await connection.query()
                 .findOne("testIncludesQuery")
                 .filter { $0.objectId == 2 }
                 .includes(["dummy1", "dummy2"])
@@ -746,25 +747,25 @@ class PostgreSQLTest: DoggieDBTestCase {
                     "dummy2": .set(2),
                     "dummy3": .set(3),
                     "dummy4": .set(4),
-                ]).wait()
+                ])
             
             XCTAssertEqual(obj6?.keys, ["id", "dummy1", "dummy2"])
             
-            let obj7 = try connection.query()
+            let obj7 = try await connection.query()
                 .find("testIncludesQuery")
                 .filter { $0.objectId == 1 }
                 .includes(["dummy1", "dummy2"])
                 .first()
-                .wait()
+                
             
             XCTAssertEqual(obj7?.keys, ["id", "dummy1", "dummy2"])
             
-            let obj8 = try connection.query()
+            let obj8 = try await connection.query()
                 .findOne("testIncludesQuery")
                 .filter { $0.objectId == 1 }
                 .includes(["dummy1", "dummy2"])
                 .delete()
-                .wait()
+                
             
             XCTAssertEqual(obj8?.keys, ["id", "dummy1", "dummy2"])
             
@@ -775,18 +776,18 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testQueryNumberOperation() throws {
+    func testQueryNumberOperation() async throws {
         
         do {
             
-            _ = try connection.execute("""
+            _ = try await connection.execute("""
                 CREATE TABLE testQueryNumberOperation (
                     id INTEGER NOT NULL PRIMARY KEY,
                     col_1 INTEGER,
                     col_2 DECIMAL,
                     col_3 REAL
                 )
-                """).wait()
+                """)
             
             var obj = DBObject(class: "testQueryNumberOperation")
             obj["id"] = 1
@@ -794,13 +795,13 @@ class PostgreSQLTest: DoggieDBTestCase {
             obj["col_2"] = 1
             obj["col_3"] = 1
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             obj.increment("col_1", by: 2)
             obj.increment("col_2", by: 2)
             obj.increment("col_3", by: 2)
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             XCTAssertEqual(obj["id"].intValue, 1)
             XCTAssertEqual(obj["col_1"].intValue, 3)
@@ -814,29 +815,29 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testQueryArrayOperation() throws {
+    func testQueryArrayOperation() async throws {
         
         do {
             
-            _ = try connection.execute("""
+            _ = try await connection.execute("""
                 CREATE TABLE testQueryArrayOperation (
                     id INTEGER NOT NULL PRIMARY KEY,
                     int_array INTEGER[],
                     jsonb_array JSONB
                 )
-                """).wait()
+                """)
             
             var obj = DBObject(class: "testQueryArrayOperation")
             obj["id"] = 1
             obj["int_array"] = []
             obj["jsonb_array"] = []
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             obj.push("int_array", values: [1 as DBData, 2.0, 3])
             obj.push("jsonb_array", values: [1, 2.0, 3])
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             XCTAssertEqual(obj["id"].intValue, 1)
             XCTAssertEqual(obj["int_array"].array, [1, 2, 3])
@@ -845,7 +846,7 @@ class PostgreSQLTest: DoggieDBTestCase {
             obj.popFirst(for: "int_array")
             obj.popFirst(for: "jsonb_array")
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             XCTAssertEqual(obj["int_array"].array, [2, 3])
             XCTAssertEqual(obj["jsonb_array"].array, [2.0, 3.0])
@@ -853,7 +854,7 @@ class PostgreSQLTest: DoggieDBTestCase {
             obj.popLast(for: "int_array")
             obj.popLast(for: "jsonb_array")
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             XCTAssertEqual(obj["int_array"].array, [2])
             XCTAssertEqual(obj["jsonb_array"].array, [2.0])
@@ -865,29 +866,29 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testQueryArrayOperation2() throws {
+    func testQueryArrayOperation2() async throws {
         
         do {
             
-            _ = try connection.execute("""
+            _ = try await connection.execute("""
                 CREATE TABLE testQueryArrayOperation2 (
                     id INTEGER NOT NULL PRIMARY KEY,
                     int_array INTEGER[],
                     jsonb_array JSONB
                 )
-                """).wait()
+                """)
             
             var obj = DBObject(class: "testQueryArrayOperation2")
             obj["id"] = 1
             obj["int_array"] = []
             obj["jsonb_array"] = []
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             obj.popFirst(for: "int_array")
             obj.popFirst(for: "jsonb_array")
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             XCTAssertEqual(obj["int_array"].array ?? [], [])
             XCTAssertEqual(obj["jsonb_array"].array, [])
@@ -895,7 +896,7 @@ class PostgreSQLTest: DoggieDBTestCase {
             obj.popLast(for: "int_array")
             obj.popLast(for: "jsonb_array")
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             XCTAssertEqual(obj["int_array"].array ?? [], [])
             XCTAssertEqual(obj["jsonb_array"].array, [])
@@ -907,33 +908,33 @@ class PostgreSQLTest: DoggieDBTestCase {
         }
     }
     
-    func testQueryArrayOperation3() throws {
+    func testQueryArrayOperation3() async throws {
         
         do {
             
-            _ = try connection.execute("""
+            _ = try await connection.execute("""
                 CREATE TABLE testQueryArrayOperation3 (
                     id INTEGER NOT NULL PRIMARY KEY,
                     int_array INTEGER[]
                 )
-                """).wait()
+                """)
             
             var obj = DBObject(class: "testQueryArrayOperation3")
             obj["id"] = 1
             obj["int_array"] = [1, 2, 2, 3, 5, 5]
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             obj.addToSet("int_array", values: [2, 3, 4, 4])
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             XCTAssertEqual(obj["id"].intValue, 1)
             XCTAssertEqual(obj["int_array"].array, [1, 2, 2, 3, 5, 5, 4])
             
             obj.removeAll("int_array", values: [2, 3])
             
-            obj = try obj.save(on: connection).wait()
+            try await obj.save(on: connection)
             
             XCTAssertEqual(obj["id"].intValue, 1)
             XCTAssertEqual(obj["int_array"].array, [1, 5, 4])

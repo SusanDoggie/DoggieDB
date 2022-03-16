@@ -53,14 +53,14 @@ extension DBMongoAggregateExpression {
 
 extension DBMongoAggregateExpression {
     
-    public func execute() -> EventLoopFuture<MongoCursor<BSONDocument>> {
+    public func execute() async throws -> MongoCursor<BSONDocument> {
         guard !pipeline.isEmpty else { fatalError() }
-        return query.collection.aggregate(pipeline, options: options, session: query.session)
+        return try await query.collection.aggregate(pipeline, options: options, session: query.session).get()
     }
     
-    public func execute<OutputType: Codable>(as outputType: OutputType.Type) -> EventLoopFuture<MongoCursor<OutputType>> {
+    public func execute<OutputType: Codable>(as outputType: OutputType.Type) async throws -> MongoCursor<OutputType> {
         guard !pipeline.isEmpty else { fatalError() }
-        return query.collection.aggregate(pipeline, options: options, session: query.session, withOutputType: outputType)
+        return try await query.collection.aggregate(pipeline, options: options, session: query.session, withOutputType: outputType).get()
     }
 }
 

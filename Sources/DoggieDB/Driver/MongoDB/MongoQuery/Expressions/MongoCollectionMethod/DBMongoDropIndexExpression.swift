@@ -76,12 +76,12 @@ extension DBMongoDropIndexExpression {
 
 extension DBMongoDropIndexExpression {
     
-    public func execute() -> EventLoopFuture<Void> {
+    public func execute() async throws {
         guard let keys = self.keys else { fatalError() }
         switch keys {
-        case let .name(name): return query.collection.dropIndex(name, options: options, session: query.session)
-        case let .document(keys): return query.collection.dropIndex(keys, options: options, session: query.session)
-        case let .model(model): return query.collection.dropIndex(model, options: options, session: query.session)
+        case let .name(name): try await query.collection.dropIndex(name, options: options, session: query.session).get()
+        case let .document(keys): try await query.collection.dropIndex(keys, options: options, session: query.session).get()
+        case let .model(model): try await query.collection.dropIndex(model, options: options, session: query.session).get()
         }
     }
 }

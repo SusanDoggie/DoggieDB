@@ -46,8 +46,8 @@ extension DBMongoCollectionExpression {
 
 extension DBMongoFindOneExpression {
     
-    public func execute() -> EventLoopFuture<T?> {
-        return query.collection.findOne(_filter, options: options, session: query.session)
+    public func execute() async throws -> T? {
+        return try await query.collection.findOne(_filter, options: options, session: query.session).get()
     }
 }
 

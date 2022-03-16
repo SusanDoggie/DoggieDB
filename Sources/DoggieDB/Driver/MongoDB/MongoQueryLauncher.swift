@@ -106,18 +106,11 @@ struct MongoQueryLauncher: DBQueryLauncher {
     
     let connection: MongoDBDriver.Connection
     
-    func count(_ query: DBFindExpression) -> EventLoopFuture<Int> {
+    func count(_ query: DBFindExpression) async throws -> Int {
         
-        do {
-            
-            let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
-            
-            return connection.mongoQuery().collection(query.class).count().filter(filter).execute()
-            
-        } catch {
-            
-            return connection.eventLoopGroup.next().makeFailedFuture(error)
-        }
+        let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
+        
+        return try await connection.mongoQuery().collection(query.class).count().filter(filter).execute()
     }
     
     func _find(_ query: DBFindExpression) throws -> DBMongoFindExpression<BSONDocument> {
@@ -144,166 +137,112 @@ struct MongoQueryLauncher: DBQueryLauncher {
         return mongoQuery
     }
     
-    func find(_ query: DBFindExpression) -> EventLoopFuture<[DBObject]> {
+    func find(_ query: DBFindExpression) async throws -> [DBObject] {
         
-        do {
-            
-            return try self._find(query).execute().flatMap { $0.toArray() }.map { $0.map { DBObject(class: query.class, object: $0) } }
-            
-        } catch {
-            
-            return connection.eventLoopGroup.next().makeFailedFuture(error)
-        }
+        return try await self._find(query).execute().toArray().map { DBObject(class: query.class, object: $0) }
     }
     
-    func find(_ query: DBFindExpression, forEach: @escaping (DBObject) throws -> Void) -> EventLoopFuture<Void> {
+    func find(_ query: DBFindExpression, forEach: @escaping (DBObject) throws -> Void) async throws {
         
-        do {
-            
-            return try self._find(query).execute().flatMap { $0.forEach { try forEach(DBObject(class: query.class, object: $0)) } }
-            
-        } catch {
-            
-            return connection.eventLoopGroup.next().makeFailedFuture(error)
-        }
+        try await self._find(query).execute().forEach { try forEach(DBObject(class: query.class, object: $0)) }
     }
     
-    func findAndDelete(_ query: DBFindExpression) -> EventLoopFuture<Int?> {
+    func findAndDelete(_ query: DBFindExpression) async throws -> Int? {
         
-        do {
-            
-            let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
-            
-            let mongoQuery = connection.mongoQuery().collection(query.class).deleteMany().filter(filter)
-            
-            return mongoQuery.execute().map { $0?.deletedCount }
-            
-        } catch {
-            
-            return connection.eventLoopGroup.next().makeFailedFuture(error)
-        }
+        let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
+        
+        let mongoQuery = connection.mongoQuery().collection(query.class).deleteMany().filter(filter)
+        
+        return try await mongoQuery.execute()?.deletedCount
     }
     
-    func findOneAndUpdate(_ query: DBFindOneExpression, _ update: [String: DBUpdateOption]) -> EventLoopFuture<DBObject?> {
+    func findOneAndUpdate(_ query: DBFindOneExpression, _ update: [String: DBUpdateOption]) async throws -> DBObject? {
         
-        do {
-            
-            let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
-            
-            var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter)
-            
-            mongoQuery = try mongoQuery.update(update.toBSONDocument())
-            
-            switch query.returning {
-            case .before: mongoQuery = mongoQuery.returnDocument(.before)
-            case .after: mongoQuery = mongoQuery.returnDocument(.after)
-            }
-            
-            if !query.sort.isEmpty {
-                mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
-            }
-            
-            if let includes = query.includes {
-                let projection = Dictionary(uniqueKeysWithValues: includes.map { ($0, 1) })
-                mongoQuery = mongoQuery.projection(BSONDocument(projection))
-            }
-            
-            return mongoQuery.execute().map { $0.map { DBObject(class: query.class, object: $0) } }
-            
-        } catch {
-            
-            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
+        
+        var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter)
+        
+        mongoQuery = try mongoQuery.update(update.toBSONDocument())
+        
+        switch query.returning {
+        case .before: mongoQuery = mongoQuery.returnDocument(.before)
+        case .after: mongoQuery = mongoQuery.returnDocument(.after)
         }
+        
+        if !query.sort.isEmpty {
+            mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
+        }
+        
+        if let includes = query.includes {
+            let projection = Dictionary(uniqueKeysWithValues: includes.map { ($0, 1) })
+            mongoQuery = mongoQuery.projection(BSONDocument(projection))
+        }
+        
+        return try await mongoQuery.execute().map { DBObject(class: query.class, object: $0) }
     }
     
-    func findOneAndUpsert(_ query: DBFindOneExpression, _ update: [String : DBUpdateOption], _ setOnInsert: [String : DBDataConvertible]) -> EventLoopFuture<DBObject?> {
+    func findOneAndUpsert(_ query: DBFindOneExpression, _ update: [String : DBUpdateOption], _ setOnInsert: [String : DBDataConvertible]) async throws -> DBObject? {
         
-        do {
-            
-            let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
-            
-            var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter)
-            
-            var _update = try update.toBSONDictionary()
-            for case let (key, value) in setOnInsert where value.toDBData() != nil {
-                _update["$setOnInsert", default: [:]][key] = try BSON(value.toDBData())
-            }
-            
-            mongoQuery = mongoQuery.update(BSONDocument(_update))
-            mongoQuery = mongoQuery.upsert(true)
-            
-            switch query.returning {
-            case .before: mongoQuery = mongoQuery.returnDocument(.before)
-            case .after: mongoQuery = mongoQuery.returnDocument(.after)
-            }
-            
-            if !query.sort.isEmpty {
-                mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
-            }
-            
-            if let includes = query.includes {
-                let projection = Dictionary(uniqueKeysWithValues: includes.map { ($0, 1) })
-                mongoQuery = mongoQuery.projection(BSONDocument(projection))
-            }
-            
-            return mongoQuery.execute().map { $0.map { DBObject(class: query.class, object: $0) } }
-            
-        } catch {
-            
-            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
+        
+        var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndUpdate().filter(filter)
+        
+        var _update = try update.toBSONDictionary()
+        for case let (key, value) in setOnInsert where value.toDBData() != nil {
+            _update["$setOnInsert", default: [:]][key] = try BSON(value.toDBData())
         }
+        
+        mongoQuery = mongoQuery.update(BSONDocument(_update))
+        mongoQuery = mongoQuery.upsert(true)
+        
+        switch query.returning {
+        case .before: mongoQuery = mongoQuery.returnDocument(.before)
+        case .after: mongoQuery = mongoQuery.returnDocument(.after)
+        }
+        
+        if !query.sort.isEmpty {
+            mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
+        }
+        
+        if let includes = query.includes {
+            let projection = Dictionary(uniqueKeysWithValues: includes.map { ($0, 1) })
+            mongoQuery = mongoQuery.projection(BSONDocument(projection))
+        }
+        
+        return try await mongoQuery.execute().map { DBObject(class: query.class, object: $0) }
     }
     
-    func findOneAndDelete(_ query: DBFindOneExpression) -> EventLoopFuture<DBObject?> {
+    func findOneAndDelete(_ query: DBFindOneExpression) async throws -> DBObject? {
         
-        do {
-            
-            let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
-            
-            var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndDelete().filter(filter)
-            
-            if !query.sort.isEmpty {
-                mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
-            }
-            
-            if let includes = query.includes {
-                let projection = Dictionary(uniqueKeysWithValues: includes.map { ($0, 1) })
-                mongoQuery = mongoQuery.projection(BSONDocument(projection))
-            }
-            
-            return mongoQuery.execute().map { $0.map { DBObject(class: query.class, object: $0) } }
-            
-        } catch {
-            
-            return connection.eventLoopGroup.next().makeFailedFuture(error)
+        let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
+        
+        var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndDelete().filter(filter)
+        
+        if !query.sort.isEmpty {
+            mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
         }
+        
+        if let includes = query.includes {
+            let projection = Dictionary(uniqueKeysWithValues: includes.map { ($0, 1) })
+            mongoQuery = mongoQuery.projection(BSONDocument(projection))
+        }
+        
+        return try await mongoQuery.execute().map { DBObject(class: query.class, object: $0) }
     }
     
-    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<DBObject?> {
+    func insert<Data>(_ class: String, _ data: [String: Data]) async throws -> DBObject? {
         
         guard let data = data as? [String: DBData] else { fatalError() }
         
-        do {
-            
-            let values = try BSONDocument(data)
-            
-            return connection.mongoQuery().collection(`class`)
-                .insertOne().value(values)
-                .execute()
-                .map { result in
-                    
-                    guard let id = result?.insertedID else { return nil }
-                    
-                    var values = values
-                    values["_id"] = id
-                    
-                    return DBObject(class: `class`, object: values)
-                }
-            
-        } catch {
-            
-            return connection.eventLoopGroup.next().makeFailedFuture(error)
-        }
+        var values = try BSONDocument(data)
+        
+        guard let id = try await connection.mongoQuery().collection(`class`)
+            .insertOne().value(values)
+            .execute()?.insertedID else { return nil }
+        
+        values["_id"] = id
+        
+        return DBObject(class: `class`, object: values)
     }
 }
 

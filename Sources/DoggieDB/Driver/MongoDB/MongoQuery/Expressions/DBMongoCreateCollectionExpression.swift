@@ -47,8 +47,8 @@ extension DBMongoCreateCollectionExpression {
 
 extension DBMongoCreateCollectionExpression {
     
-    public func execute() -> EventLoopFuture<MongoCollection<T>> {
-        return database.createCollection(name, withType: T.self, options: options, session: session)
+    public func execute() async throws -> MongoCollection<T> {
+        return try await database.createCollection(name, withType: T.self, options: options, session: session).get()
     }
 }
 

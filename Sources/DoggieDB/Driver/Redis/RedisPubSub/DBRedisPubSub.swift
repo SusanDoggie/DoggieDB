@@ -59,20 +59,20 @@ extension DBRedisPubSub {
         return self.connection.isSubscribed
     }
     
-    public func activeChannels(matching match: String? = nil) -> EventLoopFuture<[String]> {
-        return self.connection.activeChannels(matching: match).map { $0.map { $0.rawValue } }
+    public func activeChannels(matching match: String? = nil) async throws -> [String] {
+        return try await self.connection.activeChannels(matching: match).map { $0.map { $0.rawValue } }.get()
     }
     
     public func publish(
         _ message: String,
         to channel: String
-    ) -> EventLoopFuture<Int> {
-        return self.connection.publish(message.convertedToRESPValue(), to: RedisChannelName(channel))
+    ) async throws -> Int {
+        return try await self.connection.publish(message.convertedToRESPValue(), to: RedisChannelName(channel)).get()
     }
     
-    public func subscriberCount(forChannels channels: [String]) -> EventLoopFuture<[String: Int]> {
+    public func subscriberCount(forChannels channels: [String]) async throws -> [String: Int] {
         let channels = channels.map { RedisChannelName($0) }
-        return self.connection.subscriberCount(forChannels:channels).map { Dictionary(uniqueKeysWithValues: $0.map { ($0.key.rawValue, $0.value) }) }
+        return try await self.connection.subscriberCount(forChannels:channels).map { Dictionary(uniqueKeysWithValues: $0.map { ($0.key.rawValue, $0.value) }) }.get()
     }
     
     public func subscribe(
@@ -80,18 +80,18 @@ extension DBRedisPubSub {
         messageReceiver receiver: @escaping (_ channel: String, _ message: String) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
-    ) -> EventLoopFuture<Void> {
+    ) async throws {
         
-        return self.connection.subscribe(
+        try await self.connection.subscribe(
             to: channels.map { RedisChannelName($0) },
             messageReceiver: { publisher, message in message.string.map { receiver(publisher.rawValue, $0) } },
             onSubscribe: subscribeHandler,
             onUnsubscribe: unsubscribeHandler
-        )
+        ).get()
     }
     
-    public func unsubscribe(fromChannels channels: [String]) -> EventLoopFuture<Void> {
-        return self.connection.unsubscribe(from: channels.map { RedisChannelName($0) })
+    public func unsubscribe(fromChannels channels: [String]) async throws {
+        try await self.connection.unsubscribe(from: channels.map { RedisChannelName($0) }).get()
     }
     
     public func subscribe(
@@ -99,17 +99,17 @@ extension DBRedisPubSub {
         messageReceiver receiver: @escaping (_ channel: String, _ message: String) -> Void,
         onSubscribe subscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
         onUnsubscribe unsubscribeHandler: ((_ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
-    ) -> EventLoopFuture<Void> {
+    ) async throws {
         
-        return self.connection.psubscribe(
+        try await self.connection.psubscribe(
             to: patterns,
             messageReceiver: { publisher, message in message.string.map { receiver(publisher.rawValue, $0) } },
             onSubscribe: subscribeHandler,
             onUnsubscribe: unsubscribeHandler
-        )
+        ).get()
     }
     
-    public func unsubscribe(fromPatterns patterns: [String]) -> EventLoopFuture<Void> {
-        return self.connection.punsubscribe(from: patterns)
+    public func unsubscribe(fromPatterns patterns: [String]) async throws {
+        try await self.connection.punsubscribe(from: patterns).get()
     }
 }

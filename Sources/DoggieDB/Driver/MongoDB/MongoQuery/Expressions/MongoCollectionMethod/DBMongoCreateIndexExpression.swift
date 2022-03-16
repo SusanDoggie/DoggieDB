@@ -58,9 +58,9 @@ extension DBMongoCreateIndexExpression {
 
 extension DBMongoCreateIndexExpression {
     
-    public func execute() -> EventLoopFuture<String> {
+    public func execute() async throws -> String {
         guard let model = self.model else { fatalError() }
-        return query.collection.createIndex(model, options: options, session: query.session)
+        return try await query.collection.createIndex(model, options: options, session: query.session).get()
     }
 }
 

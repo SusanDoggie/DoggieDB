@@ -52,9 +52,9 @@ extension DBMongoBulkWriteExpression {
 
 extension DBMongoBulkWriteExpression {
     
-    public func execute() -> EventLoopFuture<BulkWriteResult?> {
+    public func execute() async throws -> BulkWriteResult? {
         guard !requests.isEmpty else { fatalError() }
-        return query.collection.bulkWrite(requests, options: options, session: query.session)
+        return try await query.collection.bulkWrite(requests, options: options, session: query.session).get()
     }
 }
 

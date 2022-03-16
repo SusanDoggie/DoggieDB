@@ -56,9 +56,9 @@ extension DBMongoFindOneAndUpdateExpression {
 
 extension DBMongoFindOneAndUpdateExpression {
     
-    public func execute() -> EventLoopFuture<T?> {
+    public func execute() async throws -> T? {
         guard let update = self.update else { fatalError() }
-        return query.collection.findOneAndUpdate(filter: _filter, update: update, options: options, session: query.session)
+        return try await query.collection.findOneAndUpdate(filter: _filter, update: update, options: options, session: query.session).get()
     }
 }
 

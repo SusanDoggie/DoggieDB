@@ -45,8 +45,8 @@ extension DBMongoCollectionExpression {
 
 extension DBMongoFindOneAndDeleteExpression {
     
-    public func execute() -> EventLoopFuture<T?> {
-        return query.collection.findOneAndDelete(_filter, options: options, session: query.session)
+    public func execute() async throws -> T? {
+        return try await query.collection.findOneAndDelete(_filter, options: options, session: query.session).get()
     }
 }
 

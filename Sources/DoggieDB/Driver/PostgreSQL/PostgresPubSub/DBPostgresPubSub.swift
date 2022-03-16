@@ -47,18 +47,18 @@ extension DBPostgresPubSub {
     public func publish(
         _ message: String,
         to channel: String
-    ) -> EventLoopFuture<Void> {
-        return self.connection.publish(message, to: channel)
+    ) async throws {
+        return try await self.connection.publish(message, to: channel)
     }
     
     public func subscribe(
         channel: String,
         handler: @escaping (_ channel: String, _ message: String) -> Void
-    ) -> EventLoopFuture<Void> {
-        return self.connection.subscribe(channel: channel, handler: handler)
+    ) async throws {
+        return try await self.connection.subscribe(channel: channel, handler: handler)
     }
     
-    public func unsubscribe(channel: String) -> EventLoopFuture<Void> {
-        return self.connection.unsubscribe(channel: channel)
+    public func unsubscribe(channel: String) async throws {
+        return try await self.connection.unsubscribe(channel: channel)
     }
 }

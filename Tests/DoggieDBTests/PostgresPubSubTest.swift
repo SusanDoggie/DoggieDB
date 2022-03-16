@@ -47,21 +47,21 @@ class PostgresPubSubTest: DoggieDBTestCase {
         return url
     }
     
-    func testPubSub() throws {
+    func testPubSub() async throws {
         
         do {
             
             let promise = connection.eventLoopGroup.next().makePromise(of: String.self)
             
-            try connection.postgresPubSub().subscribe(channel: "test") { channel, message in
+            try await connection.postgresPubSub().subscribe(channel: "test") { channel, message in
                 
                 promise.succeed(message)
                 
-            }.wait()
+            }
             
-            _ = try connection.postgresPubSub().publish("hello", to: "test").wait()
+            _ = try await connection.postgresPubSub().publish("hello", to: "test")
             
-            let result = try promise.futureResult.wait()
+            let result = try await promise.futureResult.get()
             
             XCTAssertEqual("hello", result)
             

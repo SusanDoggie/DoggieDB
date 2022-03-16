@@ -23,23 +23,21 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBConnection: AnyObject {
+public protocol DBConnection: Actor {
     
-    var driver: DBDriver { get }
+    nonisolated var driver: DBDriver { get }
     
-    var logger: Logger { get }
+    nonisolated var logger: Logger { get }
     
-    var eventLoopGroup: EventLoopGroup { get }
+    nonisolated var eventLoopGroup: EventLoopGroup { get }
     
-    var isClosed: Bool { get }
+    nonisolated func bind(to eventLoop: EventLoop) -> DBConnection
     
-    func bind(to eventLoop: EventLoop) -> DBConnection
+    func close() async throws
     
-    func close() -> EventLoopFuture<Void>
+    func version() async throws -> String
     
-    func version() -> EventLoopFuture<String>
-    
-    func databases() -> EventLoopFuture<[String]>
+    func databases() async throws -> [String]
     
     func redisQuery() -> DBRedisQuery
     
@@ -48,22 +46,14 @@ public protocol DBConnection: AnyObject {
     func postgresPubSub() -> DBPostgresPubSub
     
     func withTransaction<T>(
-        _ transactionBody: @escaping (DBConnection) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T>
-    
-    #if compiler(>=5.5.2) && canImport(_Concurrency)
-    
-    func withTransaction<T>(
         _ transactionBody: (DBConnection) async throws -> T
     ) async throws -> T
     
-    #endif
-
 }
 
 extension DBConnection {
     
-    public func bind(to eventLoop: EventLoop) -> DBConnection {
+    public nonisolated func bind(to eventLoop: EventLoop) -> DBConnection {
         fatalError("unsupported operation")
     }
 }
@@ -88,11 +78,11 @@ extension DBConnection {
 
 extension DBConnection {
     
-    public func version() -> EventLoopFuture<String> {
-        return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
+    public func version() async throws -> String {
+        throw Database.Error.unsupportedOperation
     }
     
-    public func databases() -> EventLoopFuture<[String]> {
-        return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
+    public func databases() async throws -> [String] {
+        throw Database.Error.unsupportedOperation
     }
 }

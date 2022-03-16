@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 //
 
+@preconcurrency
 import MongoSwift
 
 struct MongoDBDriver: DBDriverProtocol {
@@ -34,14 +35,12 @@ struct MongoDBDriver: DBDriverProtocol {
 
 extension MongoDBDriver {
     
-    class Connection: DBMongoConnectionProtocol {
+    actor Connection: DBMongoConnectionProtocol {
         
-        var driver: DBDriver { return .mongoDB }
-        
-        private(set) var isClosed: Bool = false
+        nonisolated var driver: DBDriver { return .mongoDB }
         
         let client: MongoClient
-        let database: String?
+        nonisolated let database: String?
         
         let logger: Logger
         
@@ -54,10 +53,8 @@ extension MongoDBDriver {
             self.eventLoopGroup = eventLoopGroup
         }
         
-        func close() -> EventLoopFuture<Void> {
-            let closeResult = client.close()
-            closeResult.whenComplete { _ in self.isClosed = true }
-            return closeResult
+        func close() async throws {
+            try await client.close().get()
         }
     }
 }
@@ -113,48 +110,27 @@ extension MongoDBDriver {
         config: Database.Configuration,
         logger: Logger,
         on eventLoopGroup: EventLoopGroup
-    ) -> EventLoopFuture<DBConnection> {
+    ) async throws -> DBConnection {
         
-        do {
-            
-            let connectionString = try config.mongo_connection_string()
-            
-            let client = try MongoClient(connectionString, using: eventLoopGroup, options: nil)
-            
-            return eventLoopGroup.next().makeSucceededFuture(
-                Connection(
-                    client: client,
-                    database: config.database,
-                    logger: logger,
-                    eventLoopGroup: eventLoopGroup
-                )
-            )
-            
-        } catch {
-            
-            return eventLoopGroup.next().makeFailedFuture(error)
-        }
+        let connectionString = try config.mongo_connection_string()
+        
+        let client = try MongoClient(connectionString, using: eventLoopGroup, options: nil)
+        
+        return Connection(
+            client: client,
+            database: config.database,
+            logger: logger,
+            eventLoopGroup: eventLoopGroup
+        )
     }
 }
 
 extension MongoDBDriver.Connection {
     
-    func _database() -> MongoDatabase? {
+    nonisolated func _database() -> MongoDatabase? {
         return self.database.map { client.db($0) }
     }
 }
-
-extension MongoDBDriver.Connection {
-    
-    func withSession<T>(
-        options: ClientSessionOptions?,
-        _ sessionBody: (SessionBoundConnection) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
-        return client.withSession(options: options) { try sessionBody(SessionBoundConnection(connection: self, session: $0)) }
-    }
-}
-
-#if compiler(>=5.5.2) && canImport(_Concurrency)
 
 extension MongoDBDriver.Connection {
     
@@ -182,11 +158,9 @@ extension MongoDBDriver.Connection {
     }
 }
 
-#endif
-
 extension MongoDBDriver.Connection {
     
-    func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol {
+    nonisolated func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol {
         let client = self.client.bound(to: eventLoop)
         return DBMongoEventLoopBoundConnection(connection: self, client: client)
     }
@@ -194,12 +168,12 @@ extension MongoDBDriver.Connection {
 
 extension MongoDBDriver.Connection {
     
-    func version() -> EventLoopFuture<String> {
+    func version() async throws -> String {
         guard let database = self._database() else { fatalError("database not selected.") }
-        return database.runCommand(["buildInfo": 1]).map { $0["version"]!.stringValue! }
+        return try await database.runCommand(["buildInfo": 1]).get()["version"]!.stringValue!
     }
     
-    func databases() -> EventLoopFuture<[String]> {
-        return self.client.listDatabaseNames()
+    func databases() async throws -> [String] {
+        return try await self.client.listDatabaseNames().get()
     }
 }

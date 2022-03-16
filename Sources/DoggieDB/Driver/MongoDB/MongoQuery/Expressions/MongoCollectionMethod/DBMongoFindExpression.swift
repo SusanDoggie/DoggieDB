@@ -46,8 +46,8 @@ extension DBMongoCollectionExpression {
 
 extension DBMongoFindExpression {
     
-    public func execute() -> EventLoopFuture<MongoCursor<T>> {
-        return query.collection.find(_filter, options: options, session: query.session)
+    public func execute() async throws -> MongoCursor<T> {
+        return try await query.collection.find(_filter, options: options, session: query.session).get()
     }
 }
 

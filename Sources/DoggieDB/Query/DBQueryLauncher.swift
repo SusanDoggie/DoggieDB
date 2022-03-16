@@ -25,26 +25,26 @@
 
 protocol DBQueryLauncher {
     
-    func count(_ query: DBFindExpression) -> EventLoopFuture<Int>
+    func count(_ query: DBFindExpression) async throws -> Int
     
-    func find(_ query: DBFindExpression) -> EventLoopFuture<[DBObject]>
+    func find(_ query: DBFindExpression) async throws -> [DBObject]
     
-    func find(_ query: DBFindExpression, forEach: @escaping (DBObject) throws -> Void) -> EventLoopFuture<Void>
+    func find(_ query: DBFindExpression, forEach: @escaping (DBObject) throws -> Void) async throws
     
-    func findAndDelete(_ query: DBFindExpression) -> EventLoopFuture<Int?>
+    func findAndDelete(_ query: DBFindExpression) async throws -> Int?
     
-    func findOneAndUpdate(_ query: DBFindOneExpression, _ update: [String: DBUpdateOption]) -> EventLoopFuture<DBObject?>
+    func findOneAndUpdate(_ query: DBFindOneExpression, _ update: [String: DBUpdateOption]) async throws -> DBObject?
     
-    func findOneAndUpsert(_ query: DBFindOneExpression, _ update: [String : DBUpdateOption], _ setOnInsert: [String : DBDataConvertible]) -> EventLoopFuture<DBObject?>
+    func findOneAndUpsert(_ query: DBFindOneExpression, _ update: [String : DBUpdateOption], _ setOnInsert: [String : DBDataConvertible]) async throws -> DBObject?
     
-    func findOneAndDelete(_ query: DBFindOneExpression) -> EventLoopFuture<DBObject?>
+    func findOneAndDelete(_ query: DBFindOneExpression) async throws -> DBObject?
     
-    func insert<Data>(_ class: String, _ data: [String: Data]) -> EventLoopFuture<DBObject?>
+    func insert<Data>(_ class: String, _ data: [String: Data]) async throws -> DBObject?
 }
 
 extension DBConnection {
     
-    var launcher: DBQueryLauncher? {
+    nonisolated var launcher: DBQueryLauncher? {
         
         if let connection = self as? MongoDBDriver.Connection {
             return MongoQueryLauncher(connection: connection)

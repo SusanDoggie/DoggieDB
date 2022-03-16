@@ -52,9 +52,9 @@ extension DBMongoInsertOneExpression {
 
 extension DBMongoInsertOneExpression {
     
-    public func execute() -> EventLoopFuture<InsertOneResult?> {
+    public func execute() async throws -> InsertOneResult? {
         guard let value = self.value else { fatalError() }
-        return query.collection.insertOne(value, options: options, session: query.session)
+        return try await query.collection.insertOne(value, options: options, session: query.session).get()
     }
 }
 

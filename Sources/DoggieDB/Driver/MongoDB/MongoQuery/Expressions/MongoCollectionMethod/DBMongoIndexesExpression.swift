@@ -39,7 +39,7 @@ extension DBMongoCollectionExpression {
 
 extension DBMongoIndexesExpression {
     
-    public func execute() -> EventLoopFuture<MongoCursor<IndexModel>> {
-        return query.collection.listIndexes(session: query.session)
+    public func execute() async throws -> MongoCursor<IndexModel> {
+        return try await query.collection.listIndexes(session: query.session).get()
     }
 }

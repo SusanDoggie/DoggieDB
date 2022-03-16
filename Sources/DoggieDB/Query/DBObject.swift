@@ -153,78 +153,70 @@ extension DBObject {
 
 extension DBObject {
     
-    public func fetch<S: Sequence>(_ keys: S, on connection: DBConnection) -> EventLoopFuture<DBObject> where S.Element == String {
+    public mutating func fetch<S: Sequence>(_ keys: S, on connection: DBConnection) async throws where S.Element == String {
         
         let objectId = self._columns.filter { primaryKeys.contains($0.key) }
         
-        if objectId.count == primaryKeys.count {
-            
-            return connection.query().find(self.class)
-                .filter { object in .and(objectId.map { object[$0] == $1 }) }
-                .includes(Set(keys))
-                .first()
-                .unwrap(orError: Database.Error.objectNotFound)
-            
-        } else {
-            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidObjectId)
-        }
+        guard objectId.count == primaryKeys.count else { throw Database.Error.invalidObjectId }
+        
+        let query = connection.query().find(self.class)
+            .filter { object in .and(objectId.map { object[$0] == $1 }) }
+            .includes(Set(keys))
+        
+        guard let result = try await query.first() else { throw Database.Error.objectNotFound }
+        
+        self = result
     }
     
-    public func fetch(on connection: DBConnection) -> EventLoopFuture<DBObject> {
+    public mutating func fetch(on connection: DBConnection) async throws {
         
         let objectId = self._columns.filter { primaryKeys.contains($0.key) }
         
-        if objectId.count == primaryKeys.count {
-            
-            return connection.query().find(self.class)
-                .filter { object in .and(objectId.map { object[$0] == $1 }) }
-                .first()
-                .unwrap(orError: Database.Error.objectNotFound)
-            
-        } else {
-            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidObjectId)
-        }
+        guard objectId.count == primaryKeys.count else { throw Database.Error.invalidObjectId }
+        
+        let query = connection.query().find(self.class)
+            .filter { object in .and(objectId.map { object[$0] == $1 }) }
+        
+        guard let result = try await query.first() else { throw Database.Error.objectNotFound }
+        
+        self = result
     }
     
-    public func save(on connection: DBConnection) -> EventLoopFuture<DBObject> {
+    public mutating func save(on connection: DBConnection) async throws {
         
         let objectId = self._columns.filter { primaryKeys.contains($0.key) }
         
         if objectId.isEmpty {
-            return connection.query().insert(self.class, _updates.compactMapValues { $0.value })
-        }
-        
-        if objectId.count == primaryKeys.count {
             
-            return connection.query().findOne(self.class)
-                .filter { object in .and(objectId.map { object[$0] == $1 }) }
-                .includes(self.keys)
-                .update(_updates)
-                .unwrap(orError: Database.Error.objectNotFound)
+            self = try await connection.query().insert(self.class, _updates.compactMapValues { $0.value })
             
         } else {
-            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidObjectId)
+            
+            guard objectId.count == primaryKeys.count else { throw Database.Error.invalidObjectId }
+            
+            let query = connection.query().findOne(self.class)
+                .filter { object in .and(objectId.map { object[$0] == $1 }) }
+                .includes(self.keys)
+            
+            guard let result = try await query.update(_updates) else { throw Database.Error.objectNotFound }
+            
+            self = result
         }
     }
     
-    public func delete(on connection: DBConnection) -> EventLoopFuture<DBObject> {
+    public mutating func delete(on connection: DBConnection) async throws {
         
         let objectId = self._columns.filter { primaryKeys.contains($0.key) }
         
-        if objectId.isEmpty {
-            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidObjectId)
-        }
+        guard !objectId.isEmpty else { throw Database.Error.invalidObjectId }
+        guard objectId.count == primaryKeys.count else { throw Database.Error.invalidObjectId }
         
-        if objectId.count == primaryKeys.count {
-            
-            return connection.query().findOne(self.class)
-                .filter { object in .and(objectId.map { object[$0] == $1 }) }
-                .includes(self.keys)
-                .delete()
-                .unwrap(orError: Database.Error.objectNotFound)
-            
-        } else {
-            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.invalidObjectId)
-        }
+        let query = connection.query().findOne(self.class)
+            .filter { object in .and(objectId.map { object[$0] == $1 }) }
+            .includes(self.keys)
+        
+        guard let result = try await query.delete() else { throw Database.Error.objectNotFound }
+        
+        self = result
     }
 }

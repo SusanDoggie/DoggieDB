@@ -57,9 +57,9 @@ extension DBMongoDistinctExpression {
 
 extension DBMongoDistinctExpression {
     
-    public func execute() -> EventLoopFuture<[BSON]> {
+    public func execute() async throws -> [BSON] {
         guard let fieldName = self.fieldName else { fatalError() }
-        return query.collection.distinct(fieldName: fieldName, filter: _filter, options: options, session: query.session)
+        return try await query.collection.distinct(fieldName: fieldName, filter: _filter, options: options, session: query.session).get()
     }
 }
 

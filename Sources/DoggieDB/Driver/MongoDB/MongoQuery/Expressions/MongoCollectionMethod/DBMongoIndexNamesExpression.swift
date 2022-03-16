@@ -37,7 +37,7 @@ extension DBMongoCollectionExpression {
 
 extension DBMongoIndexNamesExpression {
     
-    public func execute() -> EventLoopFuture<[String]> {
-        return query.collection.listIndexNames(session: query.session)
+    public func execute() async throws -> [String] {
+        return try await query.collection.listIndexNames(session: query.session).get()
     }
 }

@@ -52,47 +52,41 @@ extension DBQuery {
 
 extension DBFindOneExpression {
     
-    public func update(_ update: [String: DBDataConvertible]) -> EventLoopFuture<DBObject?> {
-        return self.update(update.mapValues { .set($0) })
+    public func update(_ update: [String: DBDataConvertible]) async throws -> DBObject? {
+        return try await self.update(update.mapValues { .set($0) })
     }
     
-    public func update(_ update: [String: DBUpdateOption]) -> EventLoopFuture<DBObject?> {
-        guard let launcher = self.connection.launcher else {
-            return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
-        }
-        return launcher.findOneAndUpdate(self, update)
+    public func update(_ update: [String: DBUpdateOption]) async throws -> DBObject? {
+        guard let launcher = self.connection.launcher else { throw Database.Error.unsupportedOperation }
+        return try await launcher.findOneAndUpdate(self, update)
     }
 }
 
 extension DBFindOneExpression {
     
-    public func upsert(_ upsert: [String: DBDataConvertible]) -> EventLoopFuture<DBObject?> {
-        return self.upsert(upsert.mapValues { .set($0) })
+    public func upsert(_ upsert: [String: DBDataConvertible]) async throws -> DBObject? {
+        return try await self.upsert(upsert.mapValues { .set($0) })
     }
     
-    public func upsert(_ upsert: [String: DBUpsertOption]) -> EventLoopFuture<DBObject?> {
-        return self.upsert(upsert.compactMapValues { $0.update }, setOnInsert: upsert.compactMapValues { $0.setOnInsert })
+    public func upsert(_ upsert: [String: DBUpsertOption]) async throws -> DBObject? {
+        return try await self.upsert(upsert.compactMapValues { $0.update }, setOnInsert: upsert.compactMapValues { $0.setOnInsert })
     }
     
-    public func upsert(_ update: [String: DBDataConvertible], setOnInsert: [String : DBDataConvertible]) -> EventLoopFuture<DBObject?> {
-        return self.upsert(update.mapValues { .set($0) }, setOnInsert: setOnInsert)
+    public func upsert(_ update: [String: DBDataConvertible], setOnInsert: [String : DBDataConvertible]) async throws -> DBObject? {
+        return try await self.upsert(update.mapValues { .set($0) }, setOnInsert: setOnInsert)
     }
     
-    public func upsert(_ update: [String : DBUpdateOption], setOnInsert: [String : DBDataConvertible]) -> EventLoopFuture<DBObject?> {
-        guard let launcher = self.connection.launcher else {
-            return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
-        }
-        return launcher.findOneAndUpsert(self, update, setOnInsert)
+    public func upsert(_ update: [String : DBUpdateOption], setOnInsert: [String : DBDataConvertible]) async throws -> DBObject? {
+        guard let launcher = self.connection.launcher else { throw Database.Error.unsupportedOperation }
+        return try await launcher.findOneAndUpsert(self, update, setOnInsert)
     }
 }
 
 extension DBFindOneExpression {
     
-    public func delete() -> EventLoopFuture<DBObject?> {
-        guard let launcher = self.connection.launcher else {
-            return eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
-        }
-        return launcher.findOneAndDelete(self)
+    public func delete() async throws -> DBObject? {
+        guard let launcher = self.connection.launcher else { throw Database.Error.unsupportedOperation }
+        return try await launcher.findOneAndDelete(self)
     }
 }
 

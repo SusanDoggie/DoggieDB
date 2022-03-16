@@ -34,24 +34,16 @@ public struct DBQuery {
 
 extension DBConnection {
     
-    public func query() -> DBQuery {
+    public nonisolated func query() -> DBQuery {
         return DBQuery(connection: self)
     }
 }
 
 extension DBQuery {
     
-    public func insert(_ class: String, _ data: [String: DBData]) -> EventLoopFuture<DBObject> {
-        
-        guard let launcher = connection.launcher else {
-            return connection.eventLoopGroup.next().makeFailedFuture(Database.Error.unsupportedOperation)
-        }
-        
-        return launcher.insert(`class`, data).flatMapThrowing {
-            
-            guard let object = $0 else { throw Database.Error.unknown }
-            
-            return object
-        }
+    public func insert(_ class: String, _ data: [String: DBData]) async throws -> DBObject {
+        guard let launcher = connection.launcher else { throw Database.Error.unsupportedOperation }
+        guard let object = try await launcher.insert(`class`, data) else { throw Database.Error.unknown }
+        return object
     }
 }

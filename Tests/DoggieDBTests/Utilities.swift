@@ -37,20 +37,20 @@ class DoggieDBTestCase: XCTestCase {
     private var eventLoopGroup: MultiThreadedEventLoopGroup!
     private(set) var connection: DBSQLConnection!
     
-    override func setUpWithError() throws {
+    override func setUp() async throws {
         
         do {
             
             eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-            self.addTeardownBlock { try! self.eventLoopGroup.syncShutdownGracefully() }
+            self.addTeardownBlock { try self.eventLoopGroup.syncShutdownGracefully() }
             
             var logger = Logger(label: "com.SusanDoggie.DoggieDB")
             logger.logLevel = .debug
             
-            self.connection = try Database.connect(url: connection_url, logger: logger, on: eventLoopGroup).wait() as? DBSQLConnection
-            self.addTeardownBlock { try! self.connection.close().wait() }
+            self.connection = try await Database.connect(url: connection_url, logger: logger, on: eventLoopGroup) as? DBSQLConnection
+            self.addTeardownBlock { try await self.connection.close() }
             
-            print(connection_url.scheme!, try connection.version().wait())
+            print(connection_url.scheme!, try await connection.version())
             
         } catch {
             

@@ -23,9 +23,10 @@
 //  THE SOFTWARE.
 //
 
+@preconcurrency
 import MongoSwift
 
-class SessionBoundConnection: DBMongoConnectionProtocol {
+actor SessionBoundConnection: DBMongoConnectionProtocol {
     
     let connection: DBMongoConnectionProtocol
     
@@ -39,42 +40,26 @@ class SessionBoundConnection: DBMongoConnectionProtocol {
 
 extension SessionBoundConnection {
     
-    var driver: DBDriver {
+    nonisolated var driver: DBDriver {
         return connection.driver
     }
     
-    var logger: Logger {
+    nonisolated var logger: Logger {
         return connection.logger
     }
     
-    var database: String? {
+    nonisolated var database: String? {
         return connection.database
     }
     
-    var isClosed: Bool {
-        return connection.isClosed
-    }
-    
-    var eventLoopGroup: EventLoopGroup {
+    nonisolated var eventLoopGroup: EventLoopGroup {
         return connection.eventLoopGroup
     }
     
-    func _database() -> MongoDatabase? {
+    nonisolated func _database() -> MongoDatabase? {
         return connection._database()
     }
 }
-
-extension SessionBoundConnection {
-    
-    func withSession<T>(
-        options: ClientSessionOptions?,
-        _ sessionBody: (SessionBoundConnection) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
-        return connection.withSession(options: options, sessionBody)
-    }
-}
-
-#if compiler(>=5.5.2) && canImport(_Concurrency)
 
 extension SessionBoundConnection {
     
@@ -86,29 +71,27 @@ extension SessionBoundConnection {
     }
 }
 
-#endif
-
 extension SessionBoundConnection {
     
-    func close() -> EventLoopFuture<Void> {
-        return connection.close()
+    func close() async throws {
+        return try await connection.close()
     }
 }
 
 extension SessionBoundConnection {
     
-    func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol {
+    nonisolated func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol {
         return SessionBoundConnection(connection: connection._bind(to: eventLoop), session: session)
     }
 }
 
 extension SessionBoundConnection {
     
-    func version() -> EventLoopFuture<String> {
-        return connection.version()
+    func version() async throws -> String {
+        return try await connection.version()
     }
     
-    func databases() -> EventLoopFuture<[String]> {
-        return connection.databases()
+    func databases() async throws -> [String] {
+        return try await connection.databases()
     }
 }

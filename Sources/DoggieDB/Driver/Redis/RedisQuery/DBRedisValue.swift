@@ -60,38 +60,34 @@ extension DBRedisQuery {
 
 extension DBRedisValue {
     
-    public func fetch() -> EventLoopFuture<Value?> {
-        return self.client.get(RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }
+    public func fetch() async throws -> Value? {
+        return try await self.client.get(RedisKey(key)).flatMapThrowing { try decoder.decode(Optional<Value>.self, from: $0) }.get()
     }
     
-    public func store(_ value: Value) -> EventLoopFuture<Void> {
-        do {
-            return try self.client.set(RedisKey(key), to: encoder.encode(value, as: RESPValue.self))
-        } catch {
-            return self.client.eventLoop.makeFailedFuture(error)
-        }
+    public func store(_ value: Value) async throws {
+        try await self.client.set(RedisKey(key), to: encoder.encode(value, as: RESPValue.self)).get()
     }
 }
 
 extension DBRedisValue {
     
-    public func increment() -> EventLoopFuture<Int> {
-        return self.client.increment(RedisKey(key))
+    public func increment() async throws -> Int {
+        return try await self.client.increment(RedisKey(key)).get()
     }
     
-    public func decrement() -> EventLoopFuture<Int> {
-        return self.client.decrement(RedisKey(key))
+    public func decrement() async throws -> Int {
+        return try await self.client.decrement(RedisKey(key)).get()
     }
     
-    public func increment<T: FixedWidthInteger>(by amount: T) -> EventLoopFuture<T> {
-        return self.client.increment(RedisKey(key), by: Int64(amount)).map { T($0) }
+    public func increment<T: FixedWidthInteger>(by amount: T) async throws -> T {
+        return try await self.client.increment(RedisKey(key), by: Int64(amount)).map { T($0) }.get()
     }
     
-    public func decrement<T: FixedWidthInteger>(by amount: T) -> EventLoopFuture<T> {
-        return self.client.decrement(RedisKey(key), by: Int64(amount)).map { T($0) }
+    public func decrement<T: FixedWidthInteger>(by amount: T) async throws -> T {
+        return try await self.client.decrement(RedisKey(key), by: Int64(amount)).map { T($0) }.get()
     }
     
-    public func increment<T: BinaryFloatingPoint>(by amount: T) -> EventLoopFuture<T> {
-        return self.client.increment(RedisKey(key), by: Double(amount)).map(T.init)
+    public func increment<T: BinaryFloatingPoint>(by amount: T) async throws -> T {
+        return try await self.client.increment(RedisKey(key), by: Double(amount)).map(T.init).get()
     }
 }

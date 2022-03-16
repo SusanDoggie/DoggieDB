@@ -34,46 +34,32 @@ extension Database {
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
         driver: DBDriver,
         on eventLoopGroup: EventLoopGroup
-    ) -> EventLoopFuture<DBConnection> {
+    ) async throws -> DBConnection {
         
-        return driver.rawValue.connect(config: config, logger: logger, on: eventLoopGroup)
+        return try await driver.rawValue.connect(config: config, logger: logger, on: eventLoopGroup)
     }
     
     public static func connect(
         url: URL,
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
         on eventLoopGroup: EventLoopGroup
-    ) -> EventLoopFuture<DBConnection> {
+    ) async throws -> DBConnection {
         
-        do {
-            
-            let driver = try url.driver()
-            let config = try Database.Configuration(url: url)
-            
-            return self.connect(config: config, logger: logger, driver: driver, on: eventLoopGroup)
-            
-        } catch {
-            
-            return eventLoopGroup.next().makeFailedFuture(error)
-        }
+        let driver = try url.driver()
+        let config = try Database.Configuration(url: url)
+        
+        return try await self.connect(config: config, logger: logger, driver: driver, on: eventLoopGroup)
     }
     
     public static func connect(
         url: URLComponents,
         logger: Logger = .init(label: "com.SusanDoggie.DoggieDB"),
         on eventLoopGroup: EventLoopGroup
-    ) -> EventLoopFuture<DBConnection> {
+    ) async throws -> DBConnection {
         
-        do {
-            
-            let driver = try url.driver()
-            let config = try Database.Configuration(url: url)
-            
-            return self.connect(config: config, logger: logger, driver: driver, on: eventLoopGroup)
-            
-        } catch {
-            
-            return eventLoopGroup.next().makeFailedFuture(error)
-        }
+        let driver = try url.driver()
+        let config = try Database.Configuration(url: url)
+        
+        return try await self.connect(config: config, logger: logger, driver: driver, on: eventLoopGroup)
     }
 }

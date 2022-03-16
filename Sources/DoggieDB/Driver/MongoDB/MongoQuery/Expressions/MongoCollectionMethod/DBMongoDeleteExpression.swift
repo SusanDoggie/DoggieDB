@@ -63,10 +63,10 @@ extension DBMongoCollectionExpression {
 
 extension DBMongoDeleteExpression {
     
-    public func execute() -> EventLoopFuture<DeleteResult?> {
+    public func execute() async throws -> DeleteResult? {
         switch type {
-        case .deleteOne: return query.collection.deleteOne(_filter, options: options, session: query.session)
-        case .deleteMany: return query.collection.deleteMany(_filter, options: options, session: query.session)
+        case .deleteOne: return try await query.collection.deleteOne(_filter, options: options, session: query.session).get()
+        case .deleteMany: return try await query.collection.deleteMany(_filter, options: options, session: query.session).get()
         }
     }
 }

@@ -32,12 +32,12 @@ class RedisPubSubTest: XCTestCase {
     var connection: DBConnection!
     var connection2: DBConnection!
     
-    override func setUpWithError() throws {
+    override func setUp() async throws {
         
         do {
             
             eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-            self.addTeardownBlock { try! self.eventLoopGroup.syncShutdownGracefully() }
+            self.addTeardownBlock { try self.eventLoopGroup.syncShutdownGracefully() }
             
             var url = URLComponents()
             url.scheme = "redis"
@@ -56,11 +56,11 @@ class RedisPubSubTest: XCTestCase {
             var logger = Logger(label: "com.SusanDoggie.DoggieDB")
             logger.logLevel = .debug
             
-            self.connection = try Database.connect(url: url, logger: logger, on: eventLoopGroup).wait()
-            self.addTeardownBlock { try! self.connection.close().wait() }
+            self.connection = try await Database.connect(url: url, logger: logger, on: eventLoopGroup)
+            self.addTeardownBlock { try await self.connection.close() }
             
-            self.connection2 = try Database.connect(url: url, logger: logger, on: eventLoopGroup.next()).wait()
-            self.addTeardownBlock { try! self.connection2.close().wait() }
+            self.connection2 = try await Database.connect(url: url, logger: logger, on: eventLoopGroup.next())
+            self.addTeardownBlock { try await self.connection2.close() }
             
         } catch {
             
@@ -69,21 +69,21 @@ class RedisPubSubTest: XCTestCase {
         }
     }
     
-    func testPubSub() throws {
+    func testPubSub() async throws {
         
         do {
             
             let promise = connection.eventLoopGroup.next().makePromise(of: String.self)
             
-            try connection.redisPubSub().subscribe(toChannels: ["Test"]) { channel, message in
+            try await connection.redisPubSub().subscribe(toChannels: ["Test"]) { channel, message in
                 
                 promise.succeed(message)
                 
-            }.wait()
+            }
             
-            _ = try connection2.redisPubSub().publish("hello", to: "Test").wait()
+            _ = try await connection2.redisPubSub().publish("hello", to: "Test")
             
-            let result = try promise.futureResult.wait()
+            let result = try await promise.futureResult.get()
             
             XCTAssertEqual("hello", result)
             

@@ -40,8 +40,8 @@ public struct DBMongoListCollectionsExpression<T>: DBMongoExpression {
 
 extension DBMongoListCollectionsExpression {
     
-    public func execute() -> EventLoopFuture<MongoCursor<CollectionSpecification>> {
-        return database.listCollections(filter, options: options, session: session)
+    public func execute() async throws -> MongoCursor<CollectionSpecification> {
+        return try await database.listCollections(filter, options: options, session: session).get()
     }
 }
 

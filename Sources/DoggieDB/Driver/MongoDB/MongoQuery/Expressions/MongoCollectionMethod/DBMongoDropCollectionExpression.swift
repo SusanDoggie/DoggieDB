@@ -41,8 +41,8 @@ extension DBMongoCollectionExpression {
 
 extension DBMongoDropCollectionExpression {
     
-    public func execute() -> EventLoopFuture<Void> {
-        return query.collection.drop(options: options, session: query.session)
+    public func execute() async throws {
+        try await query.collection.drop(options: options, session: query.session).get()
     }
 }
 

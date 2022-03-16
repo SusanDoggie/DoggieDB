@@ -74,11 +74,11 @@ extension DBMongoUpdateExpression {
 
 extension DBMongoUpdateExpression {
     
-    public func execute() -> EventLoopFuture<UpdateResult?> {
+    public func execute() async throws -> UpdateResult? {
         guard let update = self.update else { fatalError() }
         switch type {
-        case .updateOne: return query.collection.updateOne(filter: _filter, update: update, options: options, session: query.session)
-        case .updateMany: return query.collection.updateMany(filter: _filter, update: update, options: options, session: query.session)
+        case .updateOne: return try await query.collection.updateOne(filter: _filter, update: update, options: options, session: query.session).get()
+        case .updateMany: return try await query.collection.updateMany(filter: _filter, update: update, options: options, session: query.session).get()
         }
     }
 }
