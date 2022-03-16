@@ -27,7 +27,6 @@ import MongoSwift
 
 #if compiler(>=5.5.2) && canImport(_Concurrency)
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension ClientSession {
     
     public func withTransaction<T>(
@@ -53,7 +52,6 @@ extension ClientSession {
     }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension DBMongoQuery {
     
     public func withTransaction<T>(
@@ -72,7 +70,6 @@ extension DBMongoQuery {
     }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension DBConnection {
     
     public func withMongoSession<T>(
@@ -84,7 +81,6 @@ extension DBConnection {
     }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension DBMongoConnectionProtocol {
     
     public func withTransaction<T>(

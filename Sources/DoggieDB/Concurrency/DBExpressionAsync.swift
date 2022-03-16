@@ -25,7 +25,6 @@
 
 #if compiler(>=5.5.2) && canImport(_Concurrency)
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension DBFindExpression {
     
     public func count() async throws -> Int {
@@ -33,7 +32,6 @@ extension DBFindExpression {
     }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension DBFindExpression {
     
     public func toArray() async throws -> [DBObject] {
@@ -62,7 +60,6 @@ extension DBFindExpression {
     }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension DBQuery {
     
     @discardableResult
@@ -71,7 +68,6 @@ extension DBQuery {
     }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension DBFindExpression {
     
     @discardableResult
@@ -80,7 +76,6 @@ extension DBFindExpression {
     }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension DBFindOneExpression {
     
     @discardableResult
@@ -94,7 +89,6 @@ extension DBFindOneExpression {
     }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension DBFindOneExpression {
     
     @discardableResult
@@ -118,7 +112,6 @@ extension DBFindOneExpression {
     }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension DBFindOneExpression {
     
     @discardableResult

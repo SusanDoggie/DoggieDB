@@ -40,7 +40,6 @@ protocol DBMongoConnectionProtocol: DBConnection {
     
     #if compiler(>=5.5.2) && canImport(_Concurrency)
     
-    @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
     func withSession<T>(
         options: ClientSessionOptions?,
         _ sessionBody: (SessionBoundConnection) async throws -> T
