@@ -37,7 +37,6 @@ class RedisPubSubTest: XCTestCase {
         do {
             
             eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-            self.addTeardownBlock { try self.eventLoopGroup.syncShutdownGracefully() }
             
             var url = URLComponents()
             url.scheme = "redis"
@@ -57,10 +56,23 @@ class RedisPubSubTest: XCTestCase {
             logger.logLevel = .debug
             
             self.connection = try await Database.connect(url: url, logger: logger, on: eventLoopGroup)
-            self.addTeardownBlock { try await self.connection.close() }
             
             self.connection2 = try await Database.connect(url: url, logger: logger, on: eventLoopGroup.next())
-            self.addTeardownBlock { try await self.connection2.close() }
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    override func tearDown() async throws {
+        
+        do {
+            
+            try await self.connection.close()
+            try await self.connection2.close()
+            try eventLoopGroup.syncShutdownGracefully()
             
         } catch {
             

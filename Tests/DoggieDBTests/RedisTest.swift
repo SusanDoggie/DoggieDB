@@ -28,16 +28,6 @@ import XCTest
 
 class RedisTest: XCTestCase {
     
-    struct Contact: Codable, Equatable {
-        
-        var name: String
-        
-        var email: String
-        
-        var phone: String
-        
-    }
-    
     var eventLoopGroup: MultiThreadedEventLoopGroup!
     var connection: DBConnection!
     
@@ -46,7 +36,6 @@ class RedisTest: XCTestCase {
         do {
             
             eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-            self.addTeardownBlock { try self.eventLoopGroup.syncShutdownGracefully() }
             
             var url = URLComponents()
             url.scheme = "redis"
@@ -66,13 +55,36 @@ class RedisTest: XCTestCase {
             logger.logLevel = .debug
             
             self.connection = try await Database.connect(url: url, logger: logger, on: eventLoopGroup)
-            self.addTeardownBlock { try await self.connection.close() }
             
         } catch {
             
             print(error)
             throw error
         }
+    }
+    
+    override func tearDown() async throws {
+        
+        do {
+            
+            try await self.connection.close()
+            try eventLoopGroup.syncShutdownGracefully()
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    struct Contact: Codable, Equatable {
+        
+        var name: String
+        
+        var email: String
+        
+        var phone: String
+        
     }
     
     func testFetchStore() async throws {
