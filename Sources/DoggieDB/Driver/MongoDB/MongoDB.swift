@@ -23,7 +23,6 @@
 //  THE SOFTWARE.
 //
 
-@preconcurrency
 import MongoSwift
 
 struct MongoDBDriver: DBDriverProtocol {
@@ -35,12 +34,12 @@ struct MongoDBDriver: DBDriverProtocol {
 
 extension MongoDBDriver {
     
-    actor Connection: DBMongoConnectionProtocol {
+    final class Connection: DBMongoConnectionProtocol, @unchecked Sendable {
         
-        nonisolated var driver: DBDriver { return .mongoDB }
+        var driver: DBDriver { return .mongoDB }
         
         let client: MongoClient
-        nonisolated let database: String?
+        let database: String?
         
         let logger: Logger
         
@@ -127,7 +126,7 @@ extension MongoDBDriver {
 
 extension MongoDBDriver.Connection {
     
-    nonisolated func _database() -> MongoDatabase? {
+    func _database() -> MongoDatabase? {
         return self.database.map { client.db($0) }
     }
 }
@@ -160,7 +159,7 @@ extension MongoDBDriver.Connection {
 
 extension MongoDBDriver.Connection {
     
-    nonisolated func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol {
+    func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol {
         let client = self.client.bound(to: eventLoop)
         return DBMongoEventLoopBoundConnection(connection: self, client: client)
     }

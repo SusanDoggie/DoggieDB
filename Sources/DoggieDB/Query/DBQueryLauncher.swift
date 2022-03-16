@@ -44,7 +44,7 @@ protocol DBQueryLauncher {
 
 extension DBConnection {
     
-    nonisolated var launcher: DBQueryLauncher? {
+    var launcher: DBQueryLauncher? {
         
         if let connection = self as? MongoDBDriver.Connection {
             return MongoQueryLauncher(connection: connection)

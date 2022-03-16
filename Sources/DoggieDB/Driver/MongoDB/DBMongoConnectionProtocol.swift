@@ -27,11 +27,11 @@ import MongoSwift
 
 protocol DBMongoConnectionProtocol: DBConnection {
     
-    nonisolated var database: String? { get }
+    var database: String? { get }
     
-    nonisolated func _database() -> MongoDatabase?
+    func _database() -> MongoDatabase?
     
-    nonisolated func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol
+    func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol
     
     func withSession<T>(
         options: ClientSessionOptions?,
@@ -41,7 +41,7 @@ protocol DBMongoConnectionProtocol: DBConnection {
 
 extension DBMongoConnectionProtocol {
     
-    nonisolated func bind(to eventLoop: EventLoop) -> DBConnection {
+    func bind(to eventLoop: EventLoop) -> DBConnection {
         return self._bind(to: eventLoop)
     }
 }

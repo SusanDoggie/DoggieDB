@@ -23,15 +23,15 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBConnection: Actor {
+public protocol DBConnection: AnyObject, Sendable {
     
-    nonisolated var driver: DBDriver { get }
+    var driver: DBDriver { get }
     
-    nonisolated var logger: Logger { get }
+    var logger: Logger { get }
     
-    nonisolated var eventLoopGroup: EventLoopGroup { get }
+    var eventLoopGroup: EventLoopGroup { get }
     
-    nonisolated func bind(to eventLoop: EventLoop) -> DBConnection
+    func bind(to eventLoop: EventLoop) -> DBConnection
     
     func close() async throws
     
@@ -53,7 +53,7 @@ public protocol DBConnection: Actor {
 
 extension DBConnection {
     
-    public nonisolated func bind(to eventLoop: EventLoop) -> DBConnection {
+    public func bind(to eventLoop: EventLoop) -> DBConnection {
         fatalError("unsupported operation")
     }
 }

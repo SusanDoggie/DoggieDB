@@ -42,15 +42,28 @@ public struct DBSQLColumnInfo {
     }
 }
 
+public actor DBSQLConnectionHooks {
+    
+    var columnInfoHook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])?
+    
+    var primaryKeyHook: ((DBSQLConnection, String) async throws -> [String])?
+    
+}
+
+extension DBSQLConnectionHooks {
+    
+    public func setColumnInfoHook(_ hook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])?) {
+        self.columnInfoHook = hook
+    }
+    
+    public func setPrimaryKeyHook(_ hook: ((DBSQLConnection, String) async throws -> [String])?) {
+        self.primaryKeyHook = hook
+    }
+}
+
 public protocol DBSQLConnection: DBConnection {
     
-    var columnInfoHook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])? { get async }
-    
-    func setColumnInfoHook(_ hook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])?) async
-    
-    var primaryKeyHook: ((DBSQLConnection, String) async throws -> [String])? { get async }
-    
-    func setPrimaryKeyHook(_ hook: ((DBSQLConnection, String) async throws -> [String])?) async
+    var hooks: DBSQLConnectionHooks { get }
     
     func tables() async throws -> [String]
     

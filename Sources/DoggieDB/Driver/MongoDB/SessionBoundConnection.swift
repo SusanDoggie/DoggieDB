@@ -26,7 +26,7 @@
 @preconcurrency
 import MongoSwift
 
-actor SessionBoundConnection: DBMongoConnectionProtocol {
+final class SessionBoundConnection: DBMongoConnectionProtocol {
     
     let connection: DBMongoConnectionProtocol
     
@@ -40,23 +40,23 @@ actor SessionBoundConnection: DBMongoConnectionProtocol {
 
 extension SessionBoundConnection {
     
-    nonisolated var driver: DBDriver {
+    var driver: DBDriver {
         return connection.driver
     }
     
-    nonisolated var logger: Logger {
+    var logger: Logger {
         return connection.logger
     }
     
-    nonisolated var database: String? {
+    var database: String? {
         return connection.database
     }
     
-    nonisolated var eventLoopGroup: EventLoopGroup {
+    var eventLoopGroup: EventLoopGroup {
         return connection.eventLoopGroup
     }
     
-    nonisolated func _database() -> MongoDatabase? {
+    func _database() -> MongoDatabase? {
         return connection._database()
     }
 }
@@ -80,7 +80,7 @@ extension SessionBoundConnection {
 
 extension SessionBoundConnection {
     
-    nonisolated func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol {
+    func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol {
         return SessionBoundConnection(connection: connection._bind(to: eventLoop), session: session)
     }
 }

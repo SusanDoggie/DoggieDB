@@ -23,7 +23,6 @@
 //  THE SOFTWARE.
 //
 
-@preconcurrency
 import RediStack
 
 struct RedisDriver: DBDriverProtocol {
@@ -33,15 +32,15 @@ struct RedisDriver: DBDriverProtocol {
 
 extension RedisDriver {
     
-    actor Connection: DBConnection {
+    final class Connection: DBConnection, @unchecked Sendable {
         
-        nonisolated var driver: DBDriver { return .redis }
+        var driver: DBDriver { return .redis }
         
         let client: RedisConnection
         
         let logger: Logger
         
-        nonisolated var eventLoopGroup: EventLoopGroup { client.eventLoop }
+        var eventLoopGroup: EventLoopGroup { client.eventLoop }
         
         init(_ client: RedisConnection, _ logger: Logger) {
             self.client = client

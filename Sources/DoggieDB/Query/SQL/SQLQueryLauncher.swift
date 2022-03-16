@@ -96,14 +96,14 @@ struct SQLQueryLauncher: DBQueryLauncher {
     let connection: DBSQLConnection
     
     private func _columns(of table: String) async throws -> [DBSQLColumnInfo] {
-        if let columnInfoHook = await connection.columnInfoHook {
+        if let columnInfoHook = await connection.hooks.columnInfoHook {
             return try await columnInfoHook(connection, table)
         }
         return try await connection.columns(of: table)
     }
     
     private func _primaryKey(of table: String) async throws -> [String] {
-        if let primaryKeyHook = await connection.primaryKeyHook {
+        if let primaryKeyHook = await connection.hooks.primaryKeyHook {
             return try await primaryKeyHook(connection, table)
         }
         return try await connection.primaryKey(of: table)

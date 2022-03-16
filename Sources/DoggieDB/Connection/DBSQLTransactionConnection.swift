@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-actor DBSQLTransactionConnection: DBSQLConnection {
+final class DBSQLTransactionConnection: DBSQLConnection {
     
     let base: DBSQLConnection
     
@@ -37,39 +37,23 @@ actor DBSQLTransactionConnection: DBSQLConnection {
 
 extension DBSQLTransactionConnection {
     
-    nonisolated var driver: DBDriver {
+    var driver: DBDriver {
         return base.driver
     }
     
-    nonisolated var logger: Logger {
+    var logger: Logger {
         return base.logger
     }
     
-    nonisolated var eventLoopGroup: EventLoopGroup {
+    var eventLoopGroup: EventLoopGroup {
         return base.eventLoopGroup
     }
 }
 
 extension DBSQLTransactionConnection {
     
-    var columnInfoHook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])? {
-        get async {
-            return await base.columnInfoHook
-        }
-    }
-    
-    func setColumnInfoHook(_ hook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])?) async {
-        await base.setColumnInfoHook(hook)
-    }
-    
-    var primaryKeyHook: ((DBSQLConnection, String) async throws -> [String])? {
-        get async {
-            return await base.primaryKeyHook
-        }
-    }
-    
-    func setPrimaryKeyHook(_ hook: ((DBSQLConnection, String) async throws -> [String])?) async {
-        await base.setPrimaryKeyHook(hook)
+    var hooks: DBSQLConnectionHooks {
+        return base.hooks
     }
 }
 

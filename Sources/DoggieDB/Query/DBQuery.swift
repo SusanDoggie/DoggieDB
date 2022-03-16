@@ -34,7 +34,7 @@ public struct DBQuery {
 
 extension DBConnection {
     
-    public nonisolated func query() -> DBQuery {
+    public func query() -> DBQuery {
         return DBQuery(connection: self)
     }
 }

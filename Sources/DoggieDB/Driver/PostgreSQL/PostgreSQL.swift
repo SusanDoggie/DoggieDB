@@ -37,19 +37,23 @@ struct PostgreSQLDriver: DBDriverProtocol {
 
 extension PostgreSQLDriver {
     
-    actor Connection: DBSQLConnection {
-        
-        nonisolated var driver: DBDriver { return .postgreSQL }
-        
-        let connection: PostgresConnection
-        
-        nonisolated var eventLoopGroup: EventLoopGroup { connection.eventLoop }
+    actor Subscribers {
         
         var subscribers: [String: [PostgresListenContext]] = [:]
         
-        var columnInfoHook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])?
+    }
+    
+    final class Connection: DBSQLConnection {
         
-        var primaryKeyHook: ((DBSQLConnection, String) async throws -> [String])?
+        var driver: DBDriver { return .postgreSQL }
+        
+        let connection: PostgresConnection
+        
+        var eventLoopGroup: EventLoopGroup { connection.eventLoop }
+        
+        let subscribers: Subscribers = Subscribers()
+        
+        let hooks: DBSQLConnectionHooks = DBSQLConnectionHooks()
         
         init(_ connection: PostgresConnection) {
             self.connection = connection
@@ -65,17 +69,6 @@ extension PostgresConnection.Configuration.TLS {
     
     init(_ config: TLSConfiguration) throws {
         self = try config.certificateVerification == .none ? .prefer(.init(configuration: config)) : .require(.init(configuration: config))
-    }
-}
-
-extension PostgreSQLDriver.Connection {
-    
-    func setColumnInfoHook(_ hook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])?) {
-        self.columnInfoHook = hook
-    }
-    
-    func setPrimaryKeyHook(_ hook: ((DBSQLConnection, String) async throws -> [String])?) {
-        self.primaryKeyHook = hook
     }
 }
 
@@ -120,7 +113,7 @@ extension PostgreSQLDriver {
 
 extension PostgreSQLDriver.Connection {
     
-    nonisolated var logger: Logger {
+    var logger: Logger {
         return self.connection.logger
     }
 }
@@ -422,6 +415,24 @@ extension SQLQueryMetadata {
     }
 }
 
+extension PostgreSQLDriver.Subscribers {
+    
+    func append(_ channel: String, _ subscriber: PostgresListenContext) {
+        self.subscribers[channel, default: []].append(subscriber)
+    }
+    
+    func removeAll(_ channel: String) {
+        
+        guard let subscribers = self.subscribers[channel] else { return }
+        
+        for subscriber in subscribers {
+            subscriber.stop()
+        }
+        
+        self.subscribers[channel] = []
+    }
+}
+
 extension PostgreSQLDriver.Connection {
     
     func publish(
@@ -439,22 +450,16 @@ extension PostgreSQLDriver.Connection {
         
         let subscriber = self.connection.addListener(channel: channel, handler: { _, response in handler(response.channel, response.payload) })
         
-        self.subscribers[channel, default: []].append(subscriber)
+        await self.subscribers.append(channel, subscriber)
         
         try await self.execute("LISTEN \(identifier: channel)")
     }
     
     func unsubscribe(channel: String) async throws {
         
-        let subscribers = self.subscribers[channel] ?? []
-        
-        for subscriber in subscribers {
-            subscriber.stop()
-        }
-        
-        self.subscribers[channel] = []
-        
         try await self.execute("UNLISTEN \(identifier: channel)")
+        
+        await self.subscribers.removeAll(channel)
     }
     
 }
