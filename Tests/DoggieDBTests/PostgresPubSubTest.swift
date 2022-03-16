@@ -59,7 +59,7 @@ class PostgresPubSubTest: DoggieDBTestCase {
                 
             }
             
-            _ = try await connection.postgresPubSub().publish("hello", to: "test")
+            try await connection.postgresPubSub().publish("hello", to: "test")
             
             let result = try await promise.futureResult.get()
             
