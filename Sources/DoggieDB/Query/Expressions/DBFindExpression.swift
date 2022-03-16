@@ -79,6 +79,30 @@ extension DBFindExpression {
 
 extension DBFindExpression {
     
+    public func toStream() -> AsyncThrowingStream<DBObject, Error> {
+        
+        return AsyncThrowingStream { continuation in
+            
+            Task {
+                
+                do {
+                    
+                    try await self.forEach { continuation.yield($0) }
+                    
+                    continuation.finish()
+                    
+                } catch {
+                    
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
+    }
+}
+
+extension DBFindExpression {
+    
+    @discardableResult
     public func delete() async throws -> Int? {
         guard let launcher = connection.launcher else { throw Database.Error.unsupportedOperation }
         return try await launcher.findAndDelete(self)

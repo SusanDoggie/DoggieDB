@@ -52,10 +52,12 @@ extension DBQuery {
 
 extension DBFindOneExpression {
     
+    @discardableResult
     public func update(_ update: [String: DBDataConvertible]) async throws -> DBObject? {
         return try await self.update(update.mapValues { .set($0) })
     }
     
+    @discardableResult
     public func update(_ update: [String: DBUpdateOption]) async throws -> DBObject? {
         guard let launcher = self.connection.launcher else { throw Database.Error.unsupportedOperation }
         return try await launcher.findOneAndUpdate(self, update)
@@ -64,18 +66,22 @@ extension DBFindOneExpression {
 
 extension DBFindOneExpression {
     
+    @discardableResult
     public func upsert(_ upsert: [String: DBDataConvertible]) async throws -> DBObject? {
         return try await self.upsert(upsert.mapValues { .set($0) })
     }
     
+    @discardableResult
     public func upsert(_ upsert: [String: DBUpsertOption]) async throws -> DBObject? {
         return try await self.upsert(upsert.compactMapValues { $0.update }, setOnInsert: upsert.compactMapValues { $0.setOnInsert })
     }
     
+    @discardableResult
     public func upsert(_ update: [String: DBDataConvertible], setOnInsert: [String : DBDataConvertible]) async throws -> DBObject? {
         return try await self.upsert(update.mapValues { .set($0) }, setOnInsert: setOnInsert)
     }
     
+    @discardableResult
     public func upsert(_ update: [String : DBUpdateOption], setOnInsert: [String : DBDataConvertible]) async throws -> DBObject? {
         guard let launcher = self.connection.launcher else { throw Database.Error.unsupportedOperation }
         return try await launcher.findOneAndUpsert(self, update, setOnInsert)
@@ -84,6 +90,7 @@ extension DBFindOneExpression {
 
 extension DBFindOneExpression {
     
+    @discardableResult
     public func delete() async throws -> DBObject? {
         guard let launcher = self.connection.launcher else { throw Database.Error.unsupportedOperation }
         return try await launcher.findOneAndDelete(self)
