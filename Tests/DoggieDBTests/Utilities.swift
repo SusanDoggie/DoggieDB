@@ -35,7 +35,7 @@ class DoggieDBTestCase: XCTestCase {
     var connection_url: URLComponents! { return nil }
     
     private var eventLoopGroup: MultiThreadedEventLoopGroup!
-    private(set) var connection: DBSQLConnection!
+    private(set) var connection: DBConnection!
     
     override func setUp() async throws {
         
@@ -46,7 +46,7 @@ class DoggieDBTestCase: XCTestCase {
             var logger = Logger(label: "com.SusanDoggie.DoggieDB")
             logger.logLevel = .debug
             
-            self.connection = try await Database.connect(url: connection_url, logger: logger, on: eventLoopGroup) as? DBSQLConnection
+            self.connection = try await Database.connect(url: connection_url, logger: logger, on: eventLoopGroup)
             
             print(connection_url.scheme!, try await connection.version())
             

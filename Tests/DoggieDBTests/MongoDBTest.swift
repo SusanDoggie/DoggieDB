@@ -26,7 +26,36 @@
 import DoggieDB
 import XCTest
 
-class MongoDBTest: XCTestCase {
+class MongoDBTest: DoggieDBTestCase {
+    
+    override var connection_url: URLComponents! {
+        
+        var url = URLComponents()
+        url.scheme = "mongodb"
+        url.host = env("MONGO_HOST") ?? "localhost"
+        url.user = env("MONGO_USERNAME")
+        url.password = env("MONGO_PASSWORD")
+        url.path = "/\(env("MONGO_DATABASE") ?? "")"
+        
+        var queryItems: [URLQueryItem] = []
+        
+        if let authSource = env("MONGO_AUTHSOURCE") {
+            queryItems.append(URLQueryItem(name: "authSource", value: authSource))
+        }
+        
+        if let ssl_mode = env("MONGO_SSLMODE") {
+            queryItems.append(URLQueryItem(name: "ssl", value: "true"))
+            queryItems.append(URLQueryItem(name: "sslmode", value: ssl_mode))
+        }
+        
+        if let replicaSet = env("MONGO_REPLICA_SET") {
+            queryItems.append(URLQueryItem(name: "replicaSet", value: replicaSet))
+        }
+        
+        url.queryItems = queryItems.isEmpty ? nil : queryItems
+        
+        return url
+    }
     
     struct Contact: Codable, Equatable {
         
@@ -36,63 +65,6 @@ class MongoDBTest: XCTestCase {
         
         var phone: String
         
-    }
-    
-    var eventLoopGroup: MultiThreadedEventLoopGroup!
-    var connection: DBConnection!
-    
-    override func setUp() async throws {
-        
-        do {
-            
-            eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-            
-            var url = URLComponents()
-            url.scheme = "mongodb"
-            url.host = env("MONGO_HOST") ?? "localhost"
-            url.user = env("MONGO_USERNAME")
-            url.password = env("MONGO_PASSWORD")
-            url.path = "/\(env("MONGO_DATABASE") ?? "")"
-            
-            var queryItems: [URLQueryItem] = []
-            
-            if let authSource = env("MONGO_AUTHSOURCE") {
-                queryItems.append(URLQueryItem(name: "authSource", value: authSource))
-            }
-            
-            if let ssl_mode = env("MONGO_SSLMODE") {
-                queryItems.append(URLQueryItem(name: "ssl", value: "true"))
-                queryItems.append(URLQueryItem(name: "sslmode", value: ssl_mode))
-            }
-            
-            url.queryItems = queryItems.isEmpty ? nil : queryItems
-            
-            var logger = Logger(label: "com.SusanDoggie.DoggieDB")
-            logger.logLevel = .debug
-            
-            self.connection = try await Database.connect(url: url, logger: logger, on: eventLoopGroup)
-            
-            print("MONGO:", try await connection.version())
-            
-        } catch {
-            
-            print(error)
-            throw error
-        }
-    }
-    
-    override func tearDown() async throws {
-        
-        do {
-            
-            try await self.connection.close()
-            try eventLoopGroup.syncShutdownGracefully()
-            
-        } catch {
-            
-            print(error)
-            throw error
-        }
     }
     
     func testSetAndGet() async throws {

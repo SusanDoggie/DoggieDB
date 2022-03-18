@@ -15,6 +15,7 @@ export MONGO_DATABASE=doggiedb
 export MONGO_USERNAME=doggiedb
 export MONGO_PASSWORD=doggiedb
 export MONGO_AUTHSOURCE=admin
+export MONGO_REPLICA_SET=rs0
 
 docker run -d --rm --name postgres_test_db_${RAND} \
   -p 5432:5432 \
@@ -45,7 +46,7 @@ until docker exec --tty mongo_test_db_${RAND} mongo 'admin' --eval 'quit(0)'; do
 
 docker exec --tty mongo_test_db_${RAND} mongo --eval "
   rs.initiate({
-    _id: 'rs0',
+    _id: '${MONGO_REPLICA_SET}',
     members: [{
        _id: 0,
       host: 'localhost'
