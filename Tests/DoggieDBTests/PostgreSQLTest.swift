@@ -397,11 +397,11 @@ class PostgreSQLTest: DoggieDBTestCase {
         
         do {
             
-            let result = try await sqlconnection.withTransaction({ connection in
+            let result = try await sqlconnection.withTransaction { connection in
                 
                 try await (connection as! DBSQLConnection).execute("SELECT \(1) as value")
                 
-            })
+            }
             
             XCTAssertEqual(result[0]["value"]?.intValue, 1)
             
@@ -416,17 +416,53 @@ class PostgreSQLTest: DoggieDBTestCase {
         
         do {
             
-            let result = try await sqlconnection.withTransaction({ connection in
+            let result = try await sqlconnection.withTransaction { connection in
                 
-                try await connection.withTransaction({ connection in
+                try await connection.withTransaction { connection in
                     
                     try await (connection as! DBSQLConnection).execute("SELECT \(1) as value")
                     
-                })
+                }
                 
-            })
+            }
             
             XCTAssertEqual(result[0]["value"]?.intValue, 1)
+            
+        } catch {
+            
+            print(error)
+            throw error
+        }
+    }
+    
+    func testTransaction4() async throws {
+        
+        do {
+            
+            let result = try await (0..<10).parallelMap { i in
+                
+                try await self.sqlconnection.withTransaction { connection in
+                    
+                    try await connection.withTransaction { connection in
+                        
+                        try await (connection as! DBSQLConnection).execute("SELECT \(i) as value")
+                        
+                    }
+                    
+                }
+                
+            }
+            
+            XCTAssertEqual(result[0][0]["value"]?.intValue, 0)
+            XCTAssertEqual(result[1][0]["value"]?.intValue, 1)
+            XCTAssertEqual(result[2][0]["value"]?.intValue, 2)
+            XCTAssertEqual(result[3][0]["value"]?.intValue, 3)
+            XCTAssertEqual(result[4][0]["value"]?.intValue, 4)
+            XCTAssertEqual(result[5][0]["value"]?.intValue, 5)
+            XCTAssertEqual(result[6][0]["value"]?.intValue, 6)
+            XCTAssertEqual(result[7][0]["value"]?.intValue, 7)
+            XCTAssertEqual(result[8][0]["value"]?.intValue, 8)
+            XCTAssertEqual(result[9][0]["value"]?.intValue, 9)
             
         } catch {
             

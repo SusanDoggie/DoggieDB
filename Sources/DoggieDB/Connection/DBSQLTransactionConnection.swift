@@ -29,6 +29,8 @@ final class DBSQLTransactionConnection: DBSQLConnection {
     
     let counter: Int
     
+    let _runloop = SerialRunLoop()
+    
     init(base: DBSQLConnection, counter: Int) {
         self.base = base
         self.counter = counter
@@ -152,24 +154,30 @@ extension DBSQLTransactionConnection {
 extension DBSQLTransactionConnection {
     
     func withTransaction<T>(
-        _ transactionBody: (DBConnection) async throws -> T
+        _ transactionBody: @escaping (DBConnection) async throws -> T
     ) async throws -> T {
         
-        try await self.base.createSavepoint("savepoint_\(counter)")
+        let base = self.base
+        let counter = self.counter
         
-        do {
+        return try await _runloop.perform {
             
-            let result = try await transactionBody(DBSQLTransactionConnection(base: self.base, counter: counter + 1))
+            try await base.createSavepoint("savepoint_\(counter)")
             
-            try await self.base.releaseSavepoint("savepoint_\(counter)")
-            
-            return result
-            
-        } catch {
-            
-            try await self.base.rollbackToSavepoint("savepoint_\(counter)")
-            
-            throw error
+            do {
+                
+                let result = try await transactionBody(DBSQLTransactionConnection(base: base, counter: counter + 1))
+                
+                try await base.releaseSavepoint("savepoint_\(counter)")
+                
+                return result
+                
+            } catch {
+                
+                try await base.rollbackToSavepoint("savepoint_\(counter)")
+                
+                throw error
+            }
         }
     }
 }

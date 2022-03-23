@@ -53,6 +53,8 @@ extension PostgreSQLDriver {
         
         let subscribers: Subscribers = Subscribers()
         
+        let _runloop = SerialRunLoop()
+        
         let hooks: DBSQLConnectionHooks = DBSQLConnectionHooks()
         
         init(_ connection: PostgresConnection) {

@@ -46,7 +46,7 @@ public protocol DBConnection: AnyObject, Sendable {
     func postgresPubSub() -> DBPostgresPubSub
     
     func withTransaction<T>(
-        _ transactionBody: (DBConnection) async throws -> T
+        _ transactionBody: @escaping (DBConnection) async throws -> T
     ) async throws -> T
     
 }

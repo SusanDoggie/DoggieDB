@@ -65,6 +65,8 @@ public protocol DBSQLConnection: DBConnection {
     
     var hooks: DBSQLConnectionHooks { get }
     
+    var _runloop: SerialRunLoop { get }
+    
     func tables() async throws -> [String]
     
     func views() async throws -> [String]
@@ -149,24 +151,27 @@ extension DBSQLConnection {
 extension DBSQLConnection {
     
     public func withTransaction<T>(
-        _ transactionBody: (DBConnection) async throws -> T
+        _ transactionBody: @escaping (DBConnection) async throws -> T
     ) async throws -> T {
         
-        try await self.startTransaction()
-        
-        do {
+        return try await _runloop.perform {
             
-            let result = try await transactionBody(self)
+            try await self.startTransaction()
             
-            try await self.commitTransaction()
-            
-            return result
-            
-        } catch {
-            
-            try await self.abortTransaction()
-            
-            throw error
+            do {
+                
+                let result = try await transactionBody(DBSQLTransactionConnection(base: self, counter: 0))
+                
+                try await self.commitTransaction()
+                
+                return result
+                
+            } catch {
+                
+                try await self.abortTransaction()
+                
+                throw error
+            }
         }
     }
 }
