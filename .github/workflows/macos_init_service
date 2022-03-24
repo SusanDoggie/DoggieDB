@@ -24,13 +24,25 @@ brew services start mongodb-community
 
 until echo | mongo 'admin' --eval 'quit(0)'; do sleep 1; done
 
+mongo --eval "
+  rs.initiate({
+    _id: '${MONGO_REPLICA_SET}',
+    members: [{
+      _id: 0,
+      host: 'localhost'
+    }]
+  })
+"
+
+sleep 1
+
 mongo admin --eval "
   db.createUser({
-    user: '$MONGO_USERNAME',
-    pwd: '$MONGO_PASSWORD',
+    user: '${MONGO_USERNAME}',
+    pwd: '${MONGO_PASSWORD}',
     roles: [{
       role: 'root',
-      db: '$MONGO_AUTHSOURCE'
+      db: '${MONGO_AUTHSOURCE}'
     }]
   })
 "
