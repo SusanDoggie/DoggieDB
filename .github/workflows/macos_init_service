@@ -20,21 +20,10 @@ echo ::endgroup::
 
 echo ::group::Starting MongoDB service
 
-echo "
-systemLog:
-  destination: file
-  path: /usr/local/var/log/mongodb/mongo.log
-  logAppend: true
-storage:
-  engine: wiredTiger
-  dbPath: /usr/local/var/repl-emagine-data-wiredtiger
-net:
-  bindIp: 127.0.0.1
-replication:
-  replSetName: ${MONGO_REPLICA_SET}
-" > /usr/local/etc/mongod.conf
-
-brew services start mongodb-community
+brew install mongodb
+mkdir-p /data/db
+chown -R `id -un` /data/db
+mongod --port 27017 --dbpath /data/db/rs0 --replSet ${MONGO_REPLICA_SET} --bind_ip localhost
 
 sleep 1
 TIMER=0
