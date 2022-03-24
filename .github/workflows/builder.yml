@@ -10,48 +10,6 @@ env:
   MONGO_AUTHSOURCE: admin
   MONGO_REPLICA_SET: rs0
 jobs:
-  macos:
-    name: ${{ matrix.name }}
-    runs-on: macOS-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        name: [macOS, macOS(SwiftPM)]
-        include:
-          - name: macOS
-            use_xcodebuild: true
-            sdk: macosx
-            destination: 'platform=macOS'
-            enable_codecov: true
-          - name: macOS(SwiftPM)
-            use_xcodebuild: false
-    env:
-      use_xcodebuild: ${{ matrix.use_xcodebuild }}
-      schemes: DoggieDB-Package
-      sdk: ${{ matrix.sdk }}
-      destination: ${{ matrix.destination }}
-      enable_codecov: ${{ matrix.enable_codecov }}
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        submodules: recursive
-    - name: Initialize containers 
-      run: ./.github/workflows/macos_init_service
-      timeout-minutes: 10
-    - name: Build
-      uses: SusanDoggie/swift-action@main
-      with:
-        action: build
-    - name: Run tests
-      uses: SusanDoggie/swift-action@main
-      with:
-        action: test
-      env:
-        POSTGRES_HOST: localhost
-        REDIS_HOST: localhost
-        MONGO_HOST: localhost
-    - uses: codecov/codecov-action@v2
-      if: ${{ matrix.enable_codecov }}
   ubuntu_swift:
     name: ${{ matrix.swift_version }}-${{ matrix.distro }}
     container: 
