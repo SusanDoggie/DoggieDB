@@ -20,6 +20,20 @@ echo ::endgroup::
 
 echo ::group::Starting MongoDB service
 
+echo "
+systemLog:
+  destination: file
+  path: /usr/local/var/log/mongodb/mongo.log
+  logAppend: true
+storage:
+  engine: wiredTiger
+  dbPath: /usr/local/var/repl-emagine-data-wiredtiger
+net:
+  bindIp: 127.0.0.1
+replication:
+  replSetName: ${MONGO_REPLICA_SET}
+" > /usr/local/etc/mongod.conf
+
 brew services start mongodb-community
 
 until echo | mongo 'admin' --eval 'quit(0)'; do sleep 1; done
