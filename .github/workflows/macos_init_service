@@ -20,7 +20,7 @@ echo ::endgroup::
 
 echo ::group::Starting MongoDB service
 
-brew install mongodb
+brew install mongodb-community
 mkdir-p /data/db
 chown -R `id -un` /data/db
 mongod --port 27017 --dbpath /data/db/rs0 --replSet ${MONGO_REPLICA_SET} --bind_ip localhost
