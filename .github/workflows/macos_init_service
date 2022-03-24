@@ -32,9 +32,8 @@ net:
   bindIp: 127.0.0.1
 replication:
   replSetName: ${MONGO_REPLICA_SET}
-" > mongo.conf
+" > /usr/local/etc/mongod.conf
 
-mongod --config mongodb.conf
 brew services start mongodb-community
 
 sleep 1
