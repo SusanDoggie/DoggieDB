@@ -41,6 +41,7 @@ extension DBConnection {
 
 extension DBQuery {
     
+    @discardableResult
     public func insert(_ class: String, _ data: [String: DBData]) async throws -> DBObject {
         guard let launcher = connection.launcher else { throw Database.Error.unsupportedOperation }
         guard let object = try await launcher.insert(`class`, data) else { throw Database.Error.unknown }
