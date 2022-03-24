@@ -36,7 +36,19 @@ replication:
 
 brew services start mongodb-community
 
-until echo | mongo 'admin' --eval 'quit(0)'; do sleep 1; done
+sleep 1
+TIMER=0
+
+until echo | mongo 'admin' --eval 'quit(0)'; do
+  sleep 1
+  echo "."
+  TIMER=$((TIMER + 1))
+
+  if [[ $TIMER -eq 20 ]]; then
+    echo "MongoDB did not initialize within 20 seconds. Exiting."
+    exit 2
+  fi
+done
 
 mongo --eval "
   rs.initiate({
