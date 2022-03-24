@@ -81,6 +81,8 @@ public protocol DBSQLConnection: DBConnection {
     
     func foreignKeys(of table: String) async throws -> [[String: DBData]]
     
+    func size(of table: String) async throws -> Int
+    
     func startTransaction() async throws
     
     func commitTransaction() async throws

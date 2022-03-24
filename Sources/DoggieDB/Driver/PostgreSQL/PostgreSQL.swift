@@ -310,6 +310,18 @@ extension PostgreSQLDriver.Connection {
 
 extension PostgreSQLDriver.Connection {
     
+    func size(of table: String) async throws -> Int {
+        
+        let sql: SQLRaw = "SELECT pg_total_relation_size(\(table))"
+        
+        guard let size = try await self.execute(sql).first?.values.first?.intValue else { throw Database.Error.unknown }
+        
+        return size
+    }
+}
+
+extension PostgreSQLDriver.Connection {
+    
     func startTransaction() async throws {
         try await self.execute("BEGIN")
     }
