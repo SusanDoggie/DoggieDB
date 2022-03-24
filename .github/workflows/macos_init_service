@@ -20,9 +20,9 @@ echo ::endgroup::
 
 echo ::group::Starting MongoDB service
 
-mkdir -p /data/db
-chown -R `id -un` /data/db
-mongod --port 27017 --dbpath /data/db/rs0 --replSet ${MONGO_REPLICA_SET} --bind_ip localhost
+mkdir -p /worker/data/db
+chown -R `id -un` /worker/data/db
+mongod --port 27017 --dbpath /worker/data/db/rs0 --replSet ${MONGO_REPLICA_SET} --bind_ip localhost
 
 sleep 1
 TIMER=0
