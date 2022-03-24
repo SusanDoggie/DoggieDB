@@ -20,7 +20,7 @@ echo ::endgroup::
 
 echo ::group::Starting MongoDB service
 
-mongod --config "
+echo "
 systemLog:
   destination: file
   path: /usr/local/var/log/mongodb/mongo.log
@@ -32,8 +32,9 @@ net:
   bindIp: 127.0.0.1
 replication:
   replSetName: ${MONGO_REPLICA_SET}
-"
+" > mongo.conf
 
+mongod --config mongodb.conf
 brew services start mongodb-community
 
 sleep 1
