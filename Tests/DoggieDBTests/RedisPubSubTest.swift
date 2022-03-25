@@ -34,76 +34,52 @@ class RedisPubSubTest: XCTestCase {
     
     override func setUp() async throws {
         
-        do {
-            
-            eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-            
-            var url = URLComponents()
-            url.scheme = "redis"
-            url.host = env("REDIS_HOST") ?? "localhost"
-            url.user = env("REDIS_USERNAME")
-            url.password = env("REDIS_PASSWORD")
-            url.path = "/\(env("REDIS_DATABASE") ?? "")"
-            
-            if let ssl_mode = env("REDIS_SSLMODE") {
-                url.queryItems = [
-                    URLQueryItem(name: "ssl", value: "true"),
-                    URLQueryItem(name: "sslmode", value: ssl_mode),
-                ]
-            }
-            
-            var logger = Logger(label: "com.SusanDoggie.DoggieDB")
-            logger.logLevel = .debug
-            
-            self.connection = try await Database.connect(url: url, logger: logger, on: eventLoopGroup)
-            
-            self.connection2 = try await Database.connect(url: url, logger: logger, on: eventLoopGroup.next())
-            
-        } catch {
-            
-            print(error)
-            throw error
+        eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        
+        var url = URLComponents()
+        url.scheme = "redis"
+        url.host = env("REDIS_HOST") ?? "localhost"
+        url.user = env("REDIS_USERNAME")
+        url.password = env("REDIS_PASSWORD")
+        url.path = "/\(env("REDIS_DATABASE") ?? "")"
+        
+        if let ssl_mode = env("REDIS_SSLMODE") {
+            url.queryItems = [
+                URLQueryItem(name: "ssl", value: "true"),
+                URLQueryItem(name: "sslmode", value: ssl_mode),
+            ]
         }
+        
+        var logger = Logger(label: "com.SusanDoggie.DoggieDB")
+        logger.logLevel = .debug
+        
+        self.connection = try await Database.connect(url: url, logger: logger, on: eventLoopGroup)
+        
+        self.connection2 = try await Database.connect(url: url, logger: logger, on: eventLoopGroup.next())
     }
     
     override func tearDown() async throws {
         
-        do {
-            
-            try await self.connection.close()
-            try await self.connection2.close()
-            try eventLoopGroup.syncShutdownGracefully()
-            
-        } catch {
-            
-            print(error)
-            throw error
-        }
+        try await self.connection.close()
+        try await self.connection2.close()
+        try eventLoopGroup.syncShutdownGracefully()
     }
     
     func testPubSub() async throws {
         
-        do {
+        let promise = connection.eventLoopGroup.next().makePromise(of: String.self)
+        
+        try await connection.redisPubSub().subscribe(toChannels: ["Test"]) { channel, message in
             
-            let promise = connection.eventLoopGroup.next().makePromise(of: String.self)
+            promise.succeed(message)
             
-            try await connection.redisPubSub().subscribe(toChannels: ["Test"]) { channel, message in
-                
-                promise.succeed(message)
-                
-            }
-            
-            _ = try await connection2.redisPubSub().publish("hello", to: "Test")
-            
-            let result = try await promise.futureResult.get()
-            
-            XCTAssertEqual("hello", result)
-            
-        } catch {
-            
-            print(error)
-            throw error
         }
+        
+        _ = try await connection2.redisPubSub().publish("hello", to: "Test")
+        
+        let result = try await promise.futureResult.get()
+        
+        XCTAssertEqual("hello", result)
     }
     
 }

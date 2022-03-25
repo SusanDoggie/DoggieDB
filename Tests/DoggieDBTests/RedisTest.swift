@@ -33,48 +33,32 @@ class RedisTest: XCTestCase {
     
     override func setUp() async throws {
         
-        do {
-            
-            eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-            
-            var url = URLComponents()
-            url.scheme = "redis"
-            url.host = env("REDIS_HOST") ?? "localhost"
-            url.user = env("REDIS_USERNAME")
-            url.password = env("REDIS_PASSWORD")
-            url.path = "/\(env("REDIS_DATABASE") ?? "0")"
-            
-            if let ssl_mode = env("REDIS_SSLMODE") {
-                url.queryItems = [
-                    URLQueryItem(name: "ssl", value: "true"),
-                    URLQueryItem(name: "sslmode", value: ssl_mode),
-                ]
-            }
-            
-            var logger = Logger(label: "com.SusanDoggie.DoggieDB")
-            logger.logLevel = .debug
-            
-            self.connection = try await Database.connect(url: url, logger: logger, on: eventLoopGroup)
-            
-        } catch {
-            
-            print(error)
-            throw error
+        eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        
+        var url = URLComponents()
+        url.scheme = "redis"
+        url.host = env("REDIS_HOST") ?? "localhost"
+        url.user = env("REDIS_USERNAME")
+        url.password = env("REDIS_PASSWORD")
+        url.path = "/\(env("REDIS_DATABASE") ?? "0")"
+        
+        if let ssl_mode = env("REDIS_SSLMODE") {
+            url.queryItems = [
+                URLQueryItem(name: "ssl", value: "true"),
+                URLQueryItem(name: "sslmode", value: ssl_mode),
+            ]
         }
+        
+        var logger = Logger(label: "com.SusanDoggie.DoggieDB")
+        logger.logLevel = .debug
+        
+        self.connection = try await Database.connect(url: url, logger: logger, on: eventLoopGroup)
     }
     
     override func tearDown() async throws {
         
-        do {
-            
-            try await self.connection.close()
-            try eventLoopGroup.syncShutdownGracefully()
-            
-        } catch {
-            
-            print(error)
-            throw error
-        }
+        try await self.connection.close()
+        try eventLoopGroup.syncShutdownGracefully()
     }
     
     struct Contact: Codable, Equatable {
@@ -89,21 +73,13 @@ class RedisTest: XCTestCase {
     
     func testFetchStore() async throws {
         
-        do {
-            
-            let value = Contact(name: "John", email: "john@example.com", phone: "98765432")
-            
-            try await connection.redisQuery().value(of: "contact", as: Contact.self).store(value)
-            
-            let result = try await connection.redisQuery().value(of: "contact", as: Contact.self).fetch()
-            
-            XCTAssertEqual(value, result)
-            
-        } catch {
-            
-            print(error)
-            throw error
-        }
+        let value = Contact(name: "John", email: "john@example.com", phone: "98765432")
+        
+        try await connection.redisQuery().value(of: "contact", as: Contact.self).store(value)
+        
+        let result = try await connection.redisQuery().value(of: "contact", as: Contact.self).fetch()
+        
+        XCTAssertEqual(value, result)
     }
     
 }

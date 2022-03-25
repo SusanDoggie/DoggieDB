@@ -42,6 +42,16 @@ public struct DBSQLColumnInfo {
     }
 }
 
+public struct DBSQLTableStats {
+    
+    public var table: Int
+    
+    public var indexes: Int
+    
+    public var total: Int
+    
+}
+
 public actor DBSQLConnectionHooks {
     
     var columnInfoHook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])?
@@ -81,7 +91,7 @@ public protocol DBSQLConnection: DBConnection {
     
     func foreignKeys(of table: String) async throws -> [[String: DBData]]
     
-    func size(of table: String) async throws -> Int
+    func size(of table: String) async throws -> DBSQLTableStats
     
     func startTransaction() async throws
     

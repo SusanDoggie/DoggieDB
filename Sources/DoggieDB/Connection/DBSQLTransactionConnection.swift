@@ -107,7 +107,7 @@ extension DBSQLTransactionConnection {
 
 extension DBSQLTransactionConnection {
     
-    func size(of table: String) async throws -> Int {
+    func size(of table: String) async throws -> DBSQLTableStats {
         return try await base.size(of: table)
     }
 }

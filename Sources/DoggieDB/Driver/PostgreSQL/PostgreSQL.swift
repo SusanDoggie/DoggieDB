@@ -77,7 +77,7 @@ extension PostgresConnection.Configuration.TLS {
 extension PostgreSQLDriver {
     
     static let idGenerator = NIOAtomic.makeAtomic(value: 0)
-
+    
     static func connect(
         config: Database.Configuration,
         logger: Logger,
@@ -310,13 +310,21 @@ extension PostgreSQLDriver.Connection {
 
 extension PostgreSQLDriver.Connection {
     
-    func size(of table: String) async throws -> Int {
+    func size(of table: String) async throws -> DBSQLTableStats {
         
-        let sql: SQLRaw = "SELECT pg_total_relation_size(\(table))"
+        let sql: SQLRaw = """
+            SELECT pg_table_size(\(table)) AS table,
+                pg_indexes_size(\(table)) AS indexes,
+                pg_total_relation_size(\(table)) AS total
+            """
         
-        guard let size = try await self.execute(sql).first?.values.first?.intValue else { throw Database.Error.unknown }
+        guard let result = try await self.execute(sql).first else { throw Database.Error.unknown }
         
-        return size
+        guard let table = result["table"]?.intValue else { throw Database.Error.unknown }
+        guard let indexes = result["indexes"]?.intValue else { throw Database.Error.unknown }
+        guard let total = result["total"]?.intValue else { throw Database.Error.unknown }
+        
+        return DBSQLTableStats(table: table, indexes: indexes, total: total)
     }
 }
 
