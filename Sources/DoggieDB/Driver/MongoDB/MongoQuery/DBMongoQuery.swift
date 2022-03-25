@@ -69,6 +69,13 @@ extension DBMongoQuery {
 
 extension DBMongoQuery {
     
+    public func collStats(_ collection: String) async throws -> BSONDocument {
+        return try await self.runCommand(["collStats": BSON(collection), "scale": 1])
+    }
+}
+
+extension DBMongoQuery {
+    
     public func collection(_ name: String) -> DBMongoCollectionExpression<BSONDocument> {
         guard let database = connection._database() else { fatalError("database not selected.") }
         return DBMongoCollectionExpression(connection: connection, database: database, session: session, name: name)
