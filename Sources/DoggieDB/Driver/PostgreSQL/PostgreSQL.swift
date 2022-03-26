@@ -62,6 +62,7 @@ extension PostgreSQLDriver {
         }
         
         func close() async throws {
+            await subscribers.removeAll()
             try await connection.close()
         }
     }
@@ -441,6 +442,15 @@ extension PostgreSQLDriver.Subscribers {
     
     func append(_ channel: String, _ subscriber: PostgresListenContext) {
         self.subscribers[channel, default: []].append(subscriber)
+    }
+    
+    func removeAll() {
+        
+        for subscriber in subscribers.values.joined() {
+            subscriber.stop()
+        }
+        
+        self.subscribers = [:]
     }
     
     func removeAll(_ channel: String) {
