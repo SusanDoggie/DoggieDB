@@ -75,7 +75,7 @@ class RedisPubSubTest: XCTestCase {
             
         }
         
-        _ = try await connection2.redisPubSub().publish("hello", to: "Test")
+        try await connection2.redisPubSub().publish("hello", to: "Test")
         
         let result = try await promise.futureResult.get()
         

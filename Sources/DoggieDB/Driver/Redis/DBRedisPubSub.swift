@@ -65,6 +65,7 @@ extension DBRedisPubSub {
         return try await self.connection.client.activeChannels(matching: match).map { $0.map { $0.rawValue } }.get()
     }
     
+    @discardableResult
     public func publish(
         _ message: String,
         to channel: String
