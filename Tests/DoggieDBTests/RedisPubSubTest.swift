@@ -69,7 +69,7 @@ class RedisPubSubTest: XCTestCase {
         
         let promise = connection.eventLoopGroup.next().makePromise(of: String.self)
         
-        try await connection.redisPubSub().subscribe(toChannels: ["Test"]) { channel, message in
+        try await connection.redisPubSub().subscribe(toChannels: ["Test"]) { connection, channel, message in
             
             promise.succeed(message)
             

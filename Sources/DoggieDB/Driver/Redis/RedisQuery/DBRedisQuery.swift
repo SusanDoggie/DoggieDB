@@ -29,20 +29,24 @@ public struct DBRedisQuery {
     
     let connection: RedisDriver.Connection
     
-    let client: RedisConnection
+}
+
+extension DBConnection {
+    
+    public func redisQuery() -> DBRedisQuery {
+        guard let connection = self as? RedisDriver.Connection else { fatalError("unsupported operation") }
+        return DBRedisQuery(connection: connection)
+    }
 }
 
 extension DBRedisQuery {
     
+    public var client: RedisConnection {
+        return connection.client
+    }
+    
     public var eventLoopGroup: EventLoopGroup {
         return connection.eventLoopGroup
-    }
-}
-
-extension RedisDriver.Connection {
-    
-    public func redisQuery() -> DBRedisQuery {
-        return DBRedisQuery(connection: self, client: client)
     }
 }
 

@@ -39,12 +39,6 @@ public protocol DBConnection: AnyObject, Sendable {
     
     func databases() async throws -> [String]
     
-    func redisQuery() -> DBRedisQuery
-    
-    func redisPubSub() -> DBRedisPubSub
-    
-    func postgresPubSub() -> DBPostgresPubSub
-    
     func withTransaction<T>(
         _ transactionBody: @escaping (DBConnection) async throws -> T
     ) async throws -> T
@@ -54,24 +48,6 @@ public protocol DBConnection: AnyObject, Sendable {
 extension DBConnection {
     
     public func bind(to eventLoop: EventLoop) -> DBConnection {
-        fatalError("unsupported operation")
-    }
-}
-
-extension DBConnection {
-    
-    public func redisQuery() -> DBRedisQuery {
-        fatalError("unsupported operation")
-    }
-    
-    public func redisPubSub() -> DBRedisPubSub {
-        fatalError("unsupported operation")
-    }
-}
-
-extension DBConnection {
-    
-    public func postgresPubSub() -> DBPostgresPubSub {
         fatalError("unsupported operation")
     }
 }

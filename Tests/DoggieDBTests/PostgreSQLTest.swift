@@ -189,7 +189,6 @@ class PostgreSQLTest: DoggieDBTestCase {
         
         let result = try await sqlconnection.execute("SELECT \(date)::date as \"date\"")
         
-        print(result[0]["date"]?.dateComponents == date)
         XCTAssertEqual(result[0]["date"]?.dateComponents?.year, date.year)
         XCTAssertEqual(result[0]["date"]?.dateComponents?.month, date.month)
         XCTAssertEqual(result[0]["date"]?.dateComponents?.day, date.day)

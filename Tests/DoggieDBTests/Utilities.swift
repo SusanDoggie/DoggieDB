@@ -44,11 +44,12 @@ class DoggieDBTestCase: XCTestCase {
         var logger = Logger(label: "com.SusanDoggie.DoggieDB")
         logger.logLevel = .debug
         
-        print("connection url:", connection_url!)
+        logger.info("connection url: \(connection_url!)")
         
         self.connection = try await Database.connect(url: connection_url, logger: logger, on: eventLoopGroup)
         
-        print(connection_url.scheme!, try await connection.version())
+        let version = try await connection.version()
+        logger.info("\(connection_url.scheme!) \(version)")
     }
     
     override func tearDown() async throws {

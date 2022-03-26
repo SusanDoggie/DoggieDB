@@ -35,10 +35,11 @@ extension DBPostgresPubSub {
     }
 }
 
-extension PostgreSQLDriver.Connection {
+extension DBConnection {
     
     public func postgresPubSub() -> DBPostgresPubSub {
-        return DBPostgresPubSub(connection: self)
+        guard let connection = self as? PostgreSQLDriver.Connection else { fatalError("unsupported operation") }
+        return DBPostgresPubSub(connection: connection)
     }
 }
 
@@ -53,9 +54,13 @@ extension DBPostgresPubSub {
     
     public func subscribe(
         channel: String,
-        handler: @escaping (_ channel: String, _ message: String) -> Void
+        handler: @escaping (_ connection: DBConnection, _ channel: String, _ message: String) -> Void
     ) async throws {
-        return try await self.connection.subscribe(channel: channel, handler: handler)
+        
+        return try await self.connection.subscribe(channel: channel) { [weak connection] channel, message in
+            guard let connection = connection else { return }
+            handler(connection, channel, message)
+        }
     }
     
     public func unsubscribe(channel: String) async throws {

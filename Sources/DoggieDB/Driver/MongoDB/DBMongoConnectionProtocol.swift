@@ -29,6 +29,8 @@ protocol DBMongoConnectionProtocol: DBConnection {
     
     var database: String? { get }
     
+    var _mongoPubSub: DBMongoPubSub { get }
+    
     func _database() -> MongoDatabase?
     
     func _bind(to eventLoop: EventLoop) -> DBMongoConnectionProtocol

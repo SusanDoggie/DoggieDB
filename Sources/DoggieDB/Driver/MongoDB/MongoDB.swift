@@ -45,6 +45,8 @@ extension MongoDBDriver {
         
         let eventLoopGroup: EventLoopGroup
         
+        lazy var _mongoPubSub = DBMongoPubSub(connection: self)
+        
         init(client: MongoClient, database: String?, logger: Logger, eventLoopGroup: EventLoopGroup) {
             self.client = client
             self.database = database

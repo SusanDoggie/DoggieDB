@@ -51,7 +51,7 @@ class PostgresPubSubTest: DoggieDBTestCase {
         
         let promise = connection.eventLoopGroup.next().makePromise(of: String.self)
         
-        try await connection.postgresPubSub().subscribe(channel: "test") { channel, message in
+        try await connection.postgresPubSub().subscribe(channel: "test") { connection, channel, message in
             
             promise.succeed(message)
             

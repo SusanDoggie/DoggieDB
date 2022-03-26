@@ -71,9 +71,9 @@ class MongoDBTest: DoggieDBTestCase {
         
         let value = Contact(name: "John", email: "john@example.com", phone: "98765432")
         
-        _ = try await connection.mongoQuery().createCollection("contacts").withType(Contact.self).execute()
+        try await connection.mongoQuery().createCollection("contacts").withType(Contact.self).execute()
         
-        _ = try await connection.mongoQuery().collection("contacts").withType(Contact.self).insertOne().value(value).execute()
+        try await connection.mongoQuery().collection("contacts").withType(Contact.self).insertOne().value(value).execute()
         
         let result = try await connection.mongoQuery().collection("contacts").withType(Contact.self).findOne().execute()
         
@@ -82,7 +82,7 @@ class MongoDBTest: DoggieDBTestCase {
     
     func testQuery() async throws {
         
-        _ = try await connection.mongoQuery().createCollection("testQuery").execute()
+        try await connection.mongoQuery().createCollection("testQuery").execute()
         
         var obj = DBObject(class: "testQuery")
         obj["_id"] = "1"
@@ -106,7 +106,7 @@ class MongoDBTest: DoggieDBTestCase {
     
     func testJSON() async throws {
         
-        _ = try await connection.mongoQuery().createCollection("testJSON").execute()
+        try await connection.mongoQuery().createCollection("testJSON").execute()
         
         let json: DBData = [
             "boolean": true,
@@ -124,11 +124,11 @@ class MongoDBTest: DoggieDBTestCase {
     
     func testPatternMatchingQuery() async throws {
         
-        _ = try await connection.mongoQuery().createCollection("testPatternMatchingQuery").execute()
+        try await connection.mongoQuery().createCollection("testPatternMatchingQuery").execute()
         
-        _ = try await connection.query().insert("testPatternMatchingQuery", ["id": 1, "col": "text to be search"])
-        _ = try await connection.query().insert("testPatternMatchingQuery", ["id": 2, "col": "long long' string%"])
-        _ = try await connection.query().insert("testPatternMatchingQuery", ["id": 3, "col": "long long' string%, hello"])
+        try await connection.query().insert("testPatternMatchingQuery", ["id": 1, "col": "text to be search"])
+        try await connection.query().insert("testPatternMatchingQuery", ["id": 2, "col": "long long' string%"])
+        try await connection.query().insert("testPatternMatchingQuery", ["id": 3, "col": "long long' string%, hello"])
         
         let res1 = try await connection.query()
             .find("testPatternMatchingQuery")
@@ -156,7 +156,7 @@ class MongoDBTest: DoggieDBTestCase {
     
     func testUpdateQuery() async throws {
         
-        _ = try await connection.mongoQuery().createCollection("testUpdateQuery").execute()
+        try await connection.mongoQuery().createCollection("testUpdateQuery").execute()
         
         var obj = DBObject(class: "testUpdateQuery")
         obj["_id"] = "1"
@@ -194,7 +194,7 @@ class MongoDBTest: DoggieDBTestCase {
     
     func testUpsertQuery() async throws {
         
-        _ = try await connection.mongoQuery().createCollection("testUpsertQuery").execute()
+        try await connection.mongoQuery().createCollection("testUpsertQuery").execute()
         
         let obj = try await connection.query()
             .findOne("testUpsertQuery")
@@ -233,7 +233,7 @@ class MongoDBTest: DoggieDBTestCase {
     
     func testIncludesQuery() async throws {
         
-        _ = try await connection.mongoQuery().createCollection("testIncludesQuery").execute()
+        try await connection.mongoQuery().createCollection("testIncludesQuery").execute()
         
         let obj = try await connection.query()
             .findOne("testIncludesQuery")
@@ -341,7 +341,7 @@ class MongoDBTest: DoggieDBTestCase {
     
     func testQueryNumberOperation() async throws {
         
-        _ = try await connection.mongoQuery().createCollection("testQueryNumberOperation").execute()
+        try await connection.mongoQuery().createCollection("testQueryNumberOperation").execute()
         
         var obj = DBObject(class: "testQueryNumberOperation")
         obj["_id"] = "1"
@@ -368,7 +368,7 @@ class MongoDBTest: DoggieDBTestCase {
     
     func testQueryArrayOperation() async throws {
         
-        _ = try await connection.mongoQuery().createCollection("testQueryArrayOperation").execute()
+        try await connection.mongoQuery().createCollection("testQueryArrayOperation").execute()
         
         var obj = DBObject(class: "testQueryArrayOperation")
         obj["_id"] = "1"
@@ -398,7 +398,7 @@ class MongoDBTest: DoggieDBTestCase {
     
     func testQueryArrayOperation2() async throws {
         
-        _ = try await connection.mongoQuery().createCollection("testQueryArrayOperation2").execute()
+        try await connection.mongoQuery().createCollection("testQueryArrayOperation2").execute()
         
         var obj = DBObject(class: "testQueryArrayOperation2")
         obj["_id"] = "1"
