@@ -67,16 +67,13 @@ class RedisPubSubTest: XCTestCase {
     
     func testPubSub() async throws {
         
-        let stream = AsyncStream { continuation in
+        var continuation: AsyncStream<String>.Continuation!
+        let stream = AsyncStream { continuation = $0 }
+        
+        try await connection.redisPubSub().subscribe(toChannels: ["Test"]) { connection, channel, message in
             
-            Task {
-                
-                try await connection.redisPubSub().subscribe(toChannels: ["Test"]) { connection, channel, message in
-                    
-                    continuation.yield(message)
-                    
-                }
-            }
+            continuation.yield(message)
+            
         }
         
         try await connection2.redisPubSub().publish("hello1", to: "Test")

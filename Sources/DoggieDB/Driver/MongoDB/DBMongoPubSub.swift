@@ -79,6 +79,8 @@ extension DBMongoPubSub {
             
             try await query.execute()
             
+            try await connection.mongoQuery().collection(name).insertOne().value([:]).execute()
+            
         } catch let error as MongoError.CommandError {
             
             if error.code == 48 { // Collection already exists

@@ -59,16 +59,13 @@ class MongoPubSubTest: DoggieDBTestCase {
     
     func testPubSub() async throws {
         
-        let stream = AsyncStream { continuation in
+        var continuation: AsyncStream<String>.Continuation!
+        let stream = AsyncStream { continuation = $0 }
+        
+        try await connection.mongoPubSub().subscribe(channel: "test", size: 4 * 1024 * 1024) { connection, channel, message in
             
-            Task {
-                
-                try await connection.mongoPubSub().subscribe(channel: "test", size: 4 * 1024 * 1024) { connection, channel, message in
-                    
-                    continuation.yield(message.stringValue!)
-                    
-                }
-            }
+            continuation.yield(message.stringValue!)
+            
         }
         
         try await connection.mongoPubSub().publish("hello1", size: 4 * 1024 * 1024, to: "test")
