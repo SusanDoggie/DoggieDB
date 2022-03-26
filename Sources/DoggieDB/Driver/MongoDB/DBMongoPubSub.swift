@@ -105,7 +105,7 @@ extension DBMongoPubSub {
         
         try await self.create_capped_collection(name: channel, size: size, documentsCount: documentsCount)
         
-        try await connection.mongoQuery().collection(channel).insertOne().value(["message": message]).execute()
+        try await connection.mongoQuery().collection(channel).insertOne().value(["message": message, "timestamp": BSON(Date())]).execute()
     }
     
     public func subscribe(
@@ -124,6 +124,8 @@ extension DBMongoPubSub {
             
             subscribes[channel] = queue
             
+            let start_time = Date()
+            
             Task { [weak self] in
                 
                 while let message = try? await queue.next() {
@@ -131,6 +133,7 @@ extension DBMongoPubSub {
                     guard let connection = await self?.connection else { return }
                     guard let callbacks = await self?.callbacks[channel] else { return }
                     
+                    guard let timestamp = message["timestamp"]?.dateValue, timestamp > start_time else { continue }
                     guard let message = message["message"] else { continue }
                     
                     for callback in callbacks {
