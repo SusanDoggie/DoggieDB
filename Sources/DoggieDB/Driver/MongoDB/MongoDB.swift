@@ -57,6 +57,7 @@ extension MongoDBDriver {
         }
         
         func close() async throws {
+            try await _mongoPubSub.closed()
             try await client.close().get()
         }
     }

@@ -35,10 +35,6 @@ public actor DBMongoPubSub {
     init(connection: DBMongoConnectionProtocol) {
         self.connection = connection
     }
-    
-    deinit {
-        subscribes.values.forEach { _ = $0.kill() }
-    }
 }
 
 extension DBConnection {
@@ -46,6 +42,17 @@ extension DBConnection {
     public func mongoPubSub() -> DBMongoPubSub {
         guard let connection = self as? DBMongoConnectionProtocol else { fatalError("unsupported operation") }
         return connection._mongoPubSub
+    }
+}
+
+extension DBMongoPubSub {
+    
+    func closed() async throws {
+        for subscribe in subscribes.values {
+            try await subscribe.kill()
+        }
+        subscribes = [:]
+        callbacks = [:]
     }
 }
 
@@ -111,16 +118,18 @@ extension DBMongoPubSub {
         if subscribes[channel] == nil {
             
             try await self.create_capped_collection(name: channel, size: size, documentsCount: documentsCount)
-            let queue = try await connection.mongoQuery().collection(channel).find().execute()
+            let queue = try await connection.mongoQuery().collection(channel).find().cursorType(.tailable).execute()
             
             subscribes[channel] = queue
             
             Task { [weak self] in
                 
-                while let message = try? await queue.next()?["message"] {
+                while let message = try? await queue.next() {
                     
                     guard let connection = await self?.connection else { return }
                     guard let callbacks = await self?.callbacks[channel] else { return }
+                    
+                    guard let message = message["message"] else { continue }
                     
                     for callback in callbacks {
                         callback(connection, message)

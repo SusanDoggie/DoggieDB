@@ -78,8 +78,12 @@ class MongoPubSubTest: DoggieDBTestCase {
         var iterator = stream.makeAsyncIterator()
         
         let result1 = await iterator.next()
+        let result2 = await iterator.next()
+        let result3 = await iterator.next()
         
         XCTAssertEqual(result1, "hello1")
+        XCTAssertEqual(result2, "hello2")
+        XCTAssertEqual(result3, "hello3")
     }
     
 }
