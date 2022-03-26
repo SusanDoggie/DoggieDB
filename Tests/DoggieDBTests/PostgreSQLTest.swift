@@ -304,7 +304,7 @@ class PostgreSQLTest: DoggieDBTestCase {
     
     func testTransaction4() async throws {
         
-        let result = try await (0..<10).parallelMap { i in
+        let result = try await (0..<10).async.parallelMap { i in
             
             try await self.sqlconnection.withTransaction { connection in
                 

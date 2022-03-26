@@ -23,6 +23,8 @@
 //  THE SOFTWARE.
 //
 
+@_exported import AsyncAlgorithms
+
 @_exported import DoggieCore
 
 @_exported import NIO

@@ -39,7 +39,8 @@ let package = Package(
         .library(name: "DBVapor", targets: ["DBVapor"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/SusanDoggie/Doggie.git", from: "6.6.19"),
+        .package(url: "https://github.com/apple/swift-async-algorithms", from: "0.0.1"),
+        .package(url: "https://github.com/SusanDoggie/Doggie.git", from: "6.6.20"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.38.0"),
         .package(url: "https://github.com/mongodb/swift-bson.git", from: "3.0.2"),
         .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "1.2.0"),
@@ -51,6 +52,7 @@ let package = Package(
         .target(
             name: "DoggieDB",
             dependencies: [
+                .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
                 .product(name: "NIO", package: "swift-nio"),
                 .product(name: "NIOFoundationCompat", package: "swift-nio"),
                 .product(name: "DoggieCore", package: "Doggie"),
