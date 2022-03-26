@@ -59,33 +59,31 @@ class MongoPubSubTest: DoggieDBTestCase {
     
     func testPubSub() async throws {
         
-        let promise: Task<String, Error> = Task {
+        let stream = AsyncStream { continuation in
             
-            try await withCheckedThrowingContinuation { continuation in
+            Task {
                 
-                Task {
+                try await connection.mongoPubSub().subscribe(channel: "test", size: 4 * 1024 * 1024) { connection, channel, message in
                     
-                    do {
-                        
-                        try await connection.mongoPubSub().subscribe(channel: "test", size: 4 * 1024 * 1024) { connection, channel, message in
-                            
-                            continuation.resume(returning: message.stringValue!)
-                            
-                        }
-                        
-                    } catch {
-                        
-                        continuation.resume(throwing: error)
-                    }
+                    continuation.yield(message.stringValue!)
+                    
                 }
             }
         }
         
-        try await connection.mongoPubSub().publish("hello", size: 4 * 1024 * 1024, to: "test")
+        try await connection.mongoPubSub().publish("hello1", size: 4 * 1024 * 1024, to: "test")
+        try await connection.mongoPubSub().publish("hello2", size: 4 * 1024 * 1024, to: "test")
+        try await connection.mongoPubSub().publish("hello3", size: 4 * 1024 * 1024, to: "test")
         
-        let result = try await promise.value
+        var iterator = stream.makeAsyncIterator()
         
-        XCTAssertEqual("hello", result)
+        let result1 = await iterator.next()
+        let result2 = await iterator.next()
+        let result3 = await iterator.next()
+        
+        XCTAssertEqual(result1, "hello1")
+        XCTAssertEqual(result2, "hello2")
+        XCTAssertEqual(result3, "hello3")
     }
     
 }
