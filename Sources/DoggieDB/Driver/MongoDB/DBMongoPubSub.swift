@@ -117,7 +117,7 @@ extension DBMongoPubSub {
             
             Task { [weak self] in
                 
-                while let message = try? await queue.next().get()?["message"] {
+                while let message = try? await queue.next()?["message"] {
                     
                     guard let connection = await self?.connection else { return }
                     guard let callbacks = await self?.callbacks[channel] else { return }
