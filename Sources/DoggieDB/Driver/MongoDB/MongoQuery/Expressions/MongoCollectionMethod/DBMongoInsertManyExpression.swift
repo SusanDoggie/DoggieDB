@@ -52,6 +52,7 @@ extension DBMongoInsertManyExpression {
 
 extension DBMongoInsertManyExpression {
     
+    @discardableResult
     public func execute() async throws -> InsertManyResult? {
         guard !values.isEmpty else { fatalError() }
         return try await query.collection.insertMany(values, options: options, session: query.session).get()

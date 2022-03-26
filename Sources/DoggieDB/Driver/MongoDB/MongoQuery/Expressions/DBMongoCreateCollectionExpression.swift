@@ -47,6 +47,7 @@ extension DBMongoCreateCollectionExpression {
 
 extension DBMongoCreateCollectionExpression {
     
+    @discardableResult
     public func execute() async throws -> MongoCollection<T> {
         return try await database.createCollection(name, withType: T.self, options: options, session: session).get()
     }

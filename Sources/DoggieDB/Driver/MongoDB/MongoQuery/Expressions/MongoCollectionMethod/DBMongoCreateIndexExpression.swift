@@ -58,6 +58,7 @@ extension DBMongoCreateIndexExpression {
 
 extension DBMongoCreateIndexExpression {
     
+    @discardableResult
     public func execute() async throws -> String {
         guard let model = self.model else { fatalError() }
         return try await query.collection.createIndex(model, options: options, session: query.session).get()

@@ -52,6 +52,7 @@ extension DBMongoInsertOneExpression {
 
 extension DBMongoInsertOneExpression {
     
+    @discardableResult
     public func execute() async throws -> InsertOneResult? {
         guard let value = self.value else { fatalError() }
         return try await query.collection.insertOne(value, options: options, session: query.session).get()

@@ -74,6 +74,7 @@ extension DBMongoUpdateExpression {
 
 extension DBMongoUpdateExpression {
     
+    @discardableResult
     public func execute() async throws -> UpdateResult? {
         guard let update = self.update else { fatalError() }
         switch type {
