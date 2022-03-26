@@ -45,13 +45,15 @@ extension MongoDBDriver {
         
         let eventLoopGroup: EventLoopGroup
         
-        lazy var _mongoPubSub = DBMongoPubSub(connection: self)
+        var _pubSub: DBMongoPubSub!
+        var _mongoPubSub: DBMongoPubSub { _pubSub }
         
         init(client: MongoClient, database: String?, logger: Logger, eventLoopGroup: EventLoopGroup) {
             self.client = client
             self.database = database
             self.logger = logger
             self.eventLoopGroup = eventLoopGroup
+            self._pubSub = DBMongoPubSub(connection: self)
         }
         
         func close() async throws {
