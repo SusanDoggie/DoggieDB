@@ -66,7 +66,7 @@ extension DBMongoConnectionProtocol {
     fileprivate func create_capped_collection(
         name: String,
         size: Int,
-        documentsCount: Int?
+        documentsCount: Int
     ) async throws {
         
         do {
@@ -76,7 +76,7 @@ extension DBMongoConnectionProtocol {
                 .capped(true)
                 .size(size)
             
-            if let documentsCount = documentsCount {
+            if documentsCount != .max {
                 query = query.max(documentsCount)
             }
             
@@ -101,7 +101,7 @@ extension MongoDBDriver.Subscribers {
         connection: DBMongoConnectionProtocol,
         channel: String,
         size: Int,
-        documentsCount: Int?,
+        documentsCount: Int,
         handler: @escaping (_ connection: DBConnection, _ channel: String, _ message: BSON) -> Void
     ) async throws {
         
@@ -160,7 +160,7 @@ extension DBMongoPubSub {
     public func publish(
         _ message: BSON,
         size: Int = default_capped_size,
-        documentsCount: Int? = nil,
+        documentsCount: Int = .max,
         to channel: String
     ) async throws {
         
@@ -172,7 +172,7 @@ extension DBMongoPubSub {
     public func subscribe(
         channel: String,
         size: Int = default_capped_size,
-        documentsCount: Int? = nil,
+        documentsCount: Int = .max,
         handler: @escaping (_ connection: DBConnection, _ channel: String, _ message: BSON) -> Void
     ) async throws {
         try await connection.subscribers.subscribe(connection: connection, channel: channel, size: size, documentsCount: documentsCount, handler: handler)
