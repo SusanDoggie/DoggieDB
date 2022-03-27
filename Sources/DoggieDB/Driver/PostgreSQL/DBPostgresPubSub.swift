@@ -23,7 +23,9 @@
 //  THE SOFTWARE.
 //
 
-public struct DBPostgresPubSub {
+import PostgresNIO
+
+public struct DBPostgresPubSub: Sendable {
     
     let connection: PostgreSQLDriver.Connection
 }
@@ -41,6 +43,73 @@ extension DBConnection {
         guard let connection = self as? PostgreSQLDriver.Connection else { fatalError("unsupported operation") }
         return DBPostgresPubSub(connection: connection)
     }
+}
+
+extension PostgreSQLDriver {
+    
+    actor Subscribers {
+        
+        var subscribers: [String: [PostgresListenContext]] = [:]
+        
+    }
+}
+
+extension PostgreSQLDriver.Subscribers {
+    
+    fileprivate func append(_ channel: String, _ subscriber: PostgresListenContext) {
+        self.subscribers[channel, default: []].append(subscriber)
+    }
+    
+    fileprivate func removeAll(_ channel: String) {
+        
+        guard let subscribers = self.subscribers[channel] else { return }
+        
+        for subscriber in subscribers {
+            subscriber.stop()
+        }
+        
+        self.subscribers[channel] = []
+    }
+    
+    func removeAll() {
+        
+        for subscriber in subscribers.values.joined() {
+            subscriber.stop()
+        }
+        
+        self.subscribers = [:]
+    }
+}
+
+extension PostgreSQLDriver.Connection {
+    
+    fileprivate func publish(
+        _ message: String,
+        to channel: String
+    ) async throws {
+        
+        try await self.execute("SELECT pg_notify(\(channel), \(message))")
+    }
+    
+    fileprivate func subscribe(
+        channel: String,
+        handler: @escaping (_ channel: String, _ message: String) -> Void
+    ) async throws {
+        
+        let subscriber = self.connection.addListener(channel: channel, handler: { _, response in handler(response.channel, response.payload) })
+        
+        await self.subscribers.append(channel, subscriber)
+        
+        try await self.execute("LISTEN \(identifier: channel)")
+    }
+    
+    fileprivate func unsubscribe(channel: String) async throws {
+        
+        try await self.execute("UNLISTEN \(identifier: channel)")
+        
+        await self.subscribers.removeAll(channel)
+    }
+    
 }
 
 extension DBPostgresPubSub {

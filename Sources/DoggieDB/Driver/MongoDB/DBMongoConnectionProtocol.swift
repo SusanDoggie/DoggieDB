@@ -29,7 +29,7 @@ protocol DBMongoConnectionProtocol: DBConnection {
     
     var database: String? { get }
     
-    var _mongoPubSub: DBMongoPubSub { get }
+    var subscribers: MongoDBDriver.Subscribers { get }
     
     func _database() -> MongoDatabase?
     

@@ -37,12 +37,6 @@ struct PostgreSQLDriver: DBDriverProtocol {
 
 extension PostgreSQLDriver {
     
-    actor Subscribers {
-        
-        var subscribers: [String: [PostgresListenContext]] = [:]
-        
-    }
-    
     final class Connection: DBSQLConnection {
         
         var driver: DBDriver { return .postgreSQL }
@@ -436,62 +430,4 @@ extension SQLQueryMetadata {
             "rows": metadata.rows.map(DBData.init) ?? nil,
         ])
     }
-}
-
-extension PostgreSQLDriver.Subscribers {
-    
-    func append(_ channel: String, _ subscriber: PostgresListenContext) {
-        self.subscribers[channel, default: []].append(subscriber)
-    }
-    
-    func removeAll() {
-        
-        for subscriber in subscribers.values.joined() {
-            subscriber.stop()
-        }
-        
-        self.subscribers = [:]
-    }
-    
-    func removeAll(_ channel: String) {
-        
-        guard let subscribers = self.subscribers[channel] else { return }
-        
-        for subscriber in subscribers {
-            subscriber.stop()
-        }
-        
-        self.subscribers[channel] = []
-    }
-}
-
-extension PostgreSQLDriver.Connection {
-    
-    func publish(
-        _ message: String,
-        to channel: String
-    ) async throws {
-        
-        try await self.execute("SELECT pg_notify(\(channel), \(message))")
-    }
-    
-    func subscribe(
-        channel: String,
-        handler: @escaping (_ channel: String, _ message: String) -> Void
-    ) async throws {
-        
-        let subscriber = self.connection.addListener(channel: channel, handler: { _, response in handler(response.channel, response.payload) })
-        
-        await self.subscribers.append(channel, subscriber)
-        
-        try await self.execute("LISTEN \(identifier: channel)")
-    }
-    
-    func unsubscribe(channel: String) async throws {
-        
-        try await self.execute("UNLISTEN \(identifier: channel)")
-        
-        await self.subscribers.removeAll(channel)
-    }
-    
 }

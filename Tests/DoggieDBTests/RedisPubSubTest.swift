@@ -26,22 +26,16 @@
 import DoggieDB
 import XCTest
 
-class RedisPubSubTest: XCTestCase {
+class RedisPubSubTest: DoggieDBTestCase {
     
-    var eventLoopGroup: MultiThreadedEventLoopGroup!
-    var connection: DBConnection!
-    var connection2: DBConnection!
-    
-    override func setUp() async throws {
-        
-        eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+    override var connection_url: URLComponents! {
         
         var url = URLComponents()
         url.scheme = "redis"
         url.host = env("REDIS_HOST") ?? "localhost"
         url.user = env("REDIS_USERNAME")
         url.password = env("REDIS_PASSWORD")
-        url.path = "/\(env("REDIS_DATABASE") ?? "")"
+        url.path = "/\(env("REDIS_DATABASE") ?? "0")"
         
         if let ssl_mode = env("REDIS_SSLMODE") {
             url.queryItems = [
@@ -50,18 +44,7 @@ class RedisPubSubTest: XCTestCase {
             ]
         }
         
-        var logger = Logger(label: "com.SusanDoggie.DoggieDB")
-        logger.logLevel = .debug
-        
-        self.connection = try await Database.connect(url: url, logger: logger, on: eventLoopGroup)
-        self.connection2 = try await Database.connect(url: url, logger: logger, on: eventLoopGroup)
-    }
-    
-    override func tearDown() async throws {
-        
-        try await self.connection.close()
-        try await self.connection2.close()
-        try eventLoopGroup.syncShutdownGracefully()
+        return url
     }
     
     func testPubSub() async throws {
@@ -75,9 +58,9 @@ class RedisPubSubTest: XCTestCase {
             
         }
         
-        try await connection2.redisPubSub().publish("hello1", to: "Test")
-        try await connection2.redisPubSub().publish("hello2", to: "Test")
-        try await connection2.redisPubSub().publish("hello3", to: "Test")
+        try await connection.redisPubSub().publish("hello1", to: "Test")
+        try await connection.redisPubSub().publish("hello2", to: "Test")
+        try await connection.redisPubSub().publish("hello3", to: "Test")
         
         var iterator = stream.makeAsyncIterator()
         

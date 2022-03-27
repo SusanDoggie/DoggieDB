@@ -25,29 +25,34 @@
 
 import MongoSwift
 
-public actor DBMongoPubSub {
+public struct DBMongoPubSub: Sendable {
     
-    weak var connection: DBMongoConnectionProtocol?
+    let connection: DBMongoConnectionProtocol
     
-    var runloops: [String: Task<Void, Never>] = [:]
-    var callbacks: [String: [(DBConnection, BSON) -> Void]] = [:]
-    
-    init(connection: DBMongoConnectionProtocol) {
-        self.connection = connection
-    }
 }
 
 extension DBConnection {
     
     public func mongoPubSub() -> DBMongoPubSub {
         guard let connection = self as? DBMongoConnectionProtocol else { fatalError("unsupported operation") }
-        return connection._mongoPubSub
+        return DBMongoPubSub(connection: connection)
     }
 }
 
-extension DBMongoPubSub {
+extension MongoDBDriver {
     
-    func closed() async throws {
+    actor Subscribers {
+        
+        var runloops: [String: Task<Void, Never>] = [:]
+        
+        var callbacks: [String: [(DBConnection, BSON) -> Void]] = [:]
+        
+    }
+}
+
+extension MongoDBDriver.Subscribers {
+    
+    func closed() {
         for runloop in runloops.values {
             runloop.cancel()
         }
@@ -56,19 +61,17 @@ extension DBMongoPubSub {
     }
 }
 
-extension DBMongoPubSub {
+extension DBMongoConnectionProtocol {
     
-    private func create_capped_collection(
+    fileprivate func create_capped_collection(
         name: String,
         size: Int,
         documentsCount: Int?
     ) async throws {
         
-        guard let connection = self.connection else { return }
-        
         do {
             
-            var query = connection.mongoQuery()
+            var query = self.mongoQuery()
                 .createCollection(name)
                 .capped(true)
                 .size(size)
@@ -79,7 +82,7 @@ extension DBMongoPubSub {
             
             try await query.execute()
             
-            try await connection.mongoQuery().collection(name).insertOne().value([:]).execute()
+            try await self.mongoQuery().collection(name).insertOne().value([:]).execute()
             
         } catch let error as MongoError.CommandError {
             
@@ -92,34 +95,19 @@ extension DBMongoPubSub {
     }
 }
 
-extension DBMongoPubSub {
+extension MongoDBDriver.Subscribers {
     
-    public func publish(
-        _ message: BSON,
-        size: Int,
-        documentsCount: Int? = nil,
-        to channel: String
-    ) async throws {
-        
-        guard let connection = self.connection else { return }
-        
-        try await self.create_capped_collection(name: channel, size: size, documentsCount: documentsCount)
-        
-        try await connection.mongoQuery().collection(channel).insertOne().value(["message": message, "timestamp": BSON(Date())]).execute()
-    }
-    
-    public func subscribe(
+    fileprivate func subscribe(
+        connection: DBMongoConnectionProtocol,
         channel: String,
         size: Int,
-        documentsCount: Int? = nil,
+        documentsCount: Int?,
         handler: @escaping (_ connection: DBConnection, _ channel: String, _ message: BSON) -> Void
     ) async throws {
         
-        guard let connection = self.connection else { return }
-        
         if runloops[channel] == nil {
             
-            try await self.create_capped_collection(name: channel, size: size, documentsCount: documentsCount)
+            try await connection.create_capped_collection(name: channel, size: size, documentsCount: documentsCount)
             
             runloops[channel] = Task { [weak self] in
                 
@@ -158,9 +146,37 @@ extension DBMongoPubSub {
         callbacks[channel, default: []].append { handler($0, channel, $1) }
     }
     
-    public func unsubscribe(channel: String) async throws {
+    fileprivate func unsubscribe(channel: String) {
         runloops[channel]?.cancel()
         runloops[channel] = nil
         callbacks[channel] = nil
+    }
+}
+
+extension DBMongoPubSub {
+    
+    public func publish(
+        _ message: BSON,
+        size: Int,
+        documentsCount: Int? = nil,
+        to channel: String
+    ) async throws {
+        
+        try await connection.create_capped_collection(name: channel, size: size, documentsCount: documentsCount)
+        
+        try await connection.mongoQuery().collection(channel).insertOne().value(["message": message, "timestamp": BSON(Date())]).execute()
+    }
+    
+    public func subscribe(
+        channel: String,
+        size: Int,
+        documentsCount: Int? = nil,
+        handler: @escaping (_ connection: DBConnection, _ channel: String, _ message: BSON) -> Void
+    ) async throws {
+        try await connection.subscribers.subscribe(connection: connection, channel: channel, size: size, documentsCount: documentsCount, handler: handler)
+    }
+    
+    public func unsubscribe(channel: String) async {
+        await connection.subscribers.unsubscribe(channel: channel)
     }
 }

@@ -42,9 +42,12 @@ extension RedisDriver {
         
         var eventLoopGroup: EventLoopGroup { client.eventLoop }
         
-        init(_ client: RedisConnection, _ logger: Logger) {
+        let subscribers: Subscribers
+        
+        init(_ config: Database.Configuration, _ client: RedisConnection, _ logger: Logger) {
             self.client = client
             self.logger = logger
+            self.subscribers = Subscribers(config: config, logger: logger, eventLoop: client.eventLoop)
         }
         
         func close() async throws {
@@ -55,11 +58,11 @@ extension RedisDriver {
 
 extension RedisDriver {
     
-    static func connect(
+    static func _connect(
         config: Database.Configuration,
         logger: Logger,
         on eventLoopGroup: EventLoopGroup
-    ) async throws -> DBConnection {
+    ) async throws -> RedisConnection {
         
         let _config = try RedisConnection.Configuration(
             address: config.socketAddress[0],
@@ -68,12 +71,19 @@ extension RedisDriver {
             defaultLogger: logger
         )
         
-        let connection = try await RedisConnection.make(
+        return try await RedisConnection.make(
             configuration: _config,
             boundEventLoop: eventLoopGroup.next()
         ).get()
+    }
+    
+    static func connect(
+        config: Database.Configuration,
+        logger: Logger,
+        on eventLoopGroup: EventLoopGroup
+    ) async throws -> DBConnection {
         
-        return Connection(connection, logger)
+        return try await Connection(config, _connect(config: config, logger: logger, on: eventLoopGroup), logger)
     }
 }
 

@@ -46,20 +46,40 @@ extension DBRedisPubSub {
     }
 }
 
+extension RedisDriver {
+    
+    actor Subscribers {
+        
+        let config: Database.Configuration
+        
+        let logger: Logger
+        
+        let eventLoop: EventLoop
+        
+        var _client: RedisConnection?
+        
+        init(config: Database.Configuration, logger: Logger, eventLoop: EventLoop) {
+            self.config = config
+            self.logger = logger
+            self.eventLoop = eventLoop
+            self._client = nil
+        }
+    }
+}
+
+extension RedisDriver.Subscribers {
+    
+    public var client: RedisConnection {
+        get async throws {
+            if _client == nil {
+                _client = try await RedisDriver._connect(config: config, logger: logger, on: eventLoop)
+            }
+            return _client!
+        }
+    }
+}
+
 extension DBRedisPubSub {
-    
-    public var allowSubscriptions: Bool {
-        get {
-            return self.connection.client.allowSubscriptions
-        }
-        set {
-            self.connection.client.allowSubscriptions = newValue
-        }
-    }
-    
-    public var isSubscribed: Bool {
-        return self.connection.client.isSubscribed
-    }
     
     public func activeChannels(matching match: String? = nil) async throws -> [String] {
         return try await self.connection.client.activeChannels(matching: match).map { $0.map { $0.rawValue } }.get()
@@ -85,7 +105,7 @@ extension DBRedisPubSub {
         onUnsubscribe unsubscribeHandler: ((_ connection: DBConnection, _ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) async throws {
         
-        try await self.connection.client.subscribe(
+        try await self.connection.subscribers.client.subscribe(
             to: channels.map { RedisChannelName($0) },
             messageReceiver: { [weak connection] publisher, message in
                 guard let connection = connection else { return }
@@ -103,7 +123,7 @@ extension DBRedisPubSub {
     }
     
     public func unsubscribe(fromChannels channels: [String]) async throws {
-        try await self.connection.client.unsubscribe(from: channels.map { RedisChannelName($0) }).get()
+        try await self.connection.subscribers.client.unsubscribe(from: channels.map { RedisChannelName($0) }).get()
     }
     
     public func subscribe(
@@ -113,7 +133,7 @@ extension DBRedisPubSub {
         onUnsubscribe unsubscribeHandler: ((_ connection: DBConnection, _ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) async throws {
         
-        try await self.connection.client.psubscribe(
+        try await self.connection.subscribers.client.psubscribe(
             to: patterns,
             messageReceiver: { [weak connection] publisher, message in
                 guard let connection = connection else { return }
@@ -131,6 +151,6 @@ extension DBRedisPubSub {
     }
     
     public func unsubscribe(fromPatterns patterns: [String]) async throws {
-        try await self.connection.client.punsubscribe(from: patterns).get()
+        try await self.connection.subscribers.client.punsubscribe(from: patterns).get()
     }
 }

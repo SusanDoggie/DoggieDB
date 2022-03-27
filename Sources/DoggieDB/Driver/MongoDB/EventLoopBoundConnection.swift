@@ -56,8 +56,8 @@ extension DBMongoEventLoopBoundConnection {
         return client.eventLoop
     }
     
-    var _mongoPubSub: DBMongoPubSub {
-        return connection._mongoPubSub
+    var subscribers: MongoDBDriver.Subscribers {
+        return connection.subscribers
     }
     
     func _database() -> MongoDatabase? {
