@@ -69,6 +69,13 @@ extension RedisDriver {
 
 extension RedisDriver.Subscribers {
     
+    func close() async throws {
+        try await _client?.close().get()
+    }
+}
+
+extension RedisDriver.Subscribers {
+    
     public var client: RedisConnection {
         get async throws {
             if _client == nil {

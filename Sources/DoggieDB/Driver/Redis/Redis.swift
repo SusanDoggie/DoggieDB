@@ -51,6 +51,7 @@ extension RedisDriver {
         }
         
         func close() async throws {
+            try await subscribers.close()
             try await client.close().get()
         }
     }
