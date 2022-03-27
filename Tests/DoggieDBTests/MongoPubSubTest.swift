@@ -62,15 +62,15 @@ class MongoPubSubTest: DoggieDBTestCase {
         var continuation: AsyncStream<String>.Continuation!
         let stream = AsyncStream { continuation = $0 }
         
-        try await connection.mongoPubSub().subscribe(channel: "test", size: 4 * 1024 * 1024) { connection, channel, message in
+        try await connection.mongoPubSub().subscribe(channel: "test") { connection, channel, message in
             
             continuation.yield(message.stringValue!)
             
         }
         
-        try await connection.mongoPubSub().publish("hello1", size: 4 * 1024 * 1024, to: "test")
-        try await connection.mongoPubSub().publish("hello2", size: 4 * 1024 * 1024, to: "test")
-        try await connection.mongoPubSub().publish("hello3", size: 4 * 1024 * 1024, to: "test")
+        try await connection.mongoPubSub().publish("hello1", to: "test")
+        try await connection.mongoPubSub().publish("hello2", to: "test")
+        try await connection.mongoPubSub().publish("hello3", to: "test")
         
         var iterator = stream.makeAsyncIterator()
         

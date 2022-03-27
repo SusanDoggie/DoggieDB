@@ -155,9 +155,11 @@ extension MongoDBDriver.Subscribers {
 
 extension DBMongoPubSub {
     
+    public static let default_capped_size: Int = 4096
+    
     public func publish(
         _ message: BSON,
-        size: Int,
+        size: Int = default_capped_size,
         documentsCount: Int? = nil,
         to channel: String
     ) async throws {
@@ -169,7 +171,7 @@ extension DBMongoPubSub {
     
     public func subscribe(
         channel: String,
-        size: Int,
+        size: Int = default_capped_size,
         documentsCount: Int? = nil,
         handler: @escaping (_ connection: DBConnection, _ channel: String, _ message: BSON) -> Void
     ) async throws {
