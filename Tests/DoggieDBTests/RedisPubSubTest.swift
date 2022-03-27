@@ -54,13 +54,13 @@ class RedisPubSubTest: DoggieDBTestCase {
         
         try await connection.redisPubSub().subscribe(toChannels: ["Test"]) { connection, channel, message in
             
-            continuation.yield(message)
+            continuation.yield(String(data: message, encoding: .utf8)!)
             
         }
         
-        try await connection.redisPubSub().publish("hello1", to: "Test")
-        try await connection.redisPubSub().publish("hello2", to: "Test")
-        try await connection.redisPubSub().publish("hello3", to: "Test")
+        try await connection.redisPubSub().publish("hello1"._utf8_data, to: "Test")
+        try await connection.redisPubSub().publish("hello2"._utf8_data, to: "Test")
+        try await connection.redisPubSub().publish("hello3"._utf8_data, to: "Test")
         
         var iterator = stream.makeAsyncIterator()
         

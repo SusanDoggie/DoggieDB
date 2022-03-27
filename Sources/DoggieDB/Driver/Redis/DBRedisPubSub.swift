@@ -94,7 +94,7 @@ extension DBRedisPubSub {
     
     @discardableResult
     public func publish(
-        _ message: String,
+        _ message: Data,
         to channel: String
     ) async throws -> Int {
         return try await self.connection.client.publish(message.convertedToRESPValue(), to: RedisChannelName(channel)).get()
@@ -107,7 +107,7 @@ extension DBRedisPubSub {
     
     public func subscribe(
         toChannels channels: [String],
-        messageReceiver receiver: @escaping (_ connection: DBConnection, _ channel: String, _ message: String) -> Void,
+        messageReceiver receiver: @escaping (_ connection: DBConnection, _ channel: String, _ message: Data) -> Void,
         onSubscribe subscribeHandler: ((_ connection: DBConnection, _ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
         onUnsubscribe unsubscribeHandler: ((_ connection: DBConnection, _ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) async throws {
@@ -116,7 +116,7 @@ extension DBRedisPubSub {
             to: channels.map { RedisChannelName($0) },
             messageReceiver: { [weak connection] publisher, message in
                 guard let connection = connection else { return }
-                message.string.map { receiver(connection, publisher.rawValue, $0) }
+                message.data.map { receiver(connection, publisher.rawValue, $0) }
             },
             onSubscribe: subscribeHandler.map { subscribeHandler in { [weak connection] subscriptionKey, currentSubscriptionCount in
                 guard let connection = connection else { return }
@@ -135,7 +135,7 @@ extension DBRedisPubSub {
     
     public func subscribe(
         toPatterns patterns: [String],
-        messageReceiver receiver: @escaping (_ connection: DBConnection, _ channel: String, _ message: String) -> Void,
+        messageReceiver receiver: @escaping (_ connection: DBConnection, _ channel: String, _ message: Data) -> Void,
         onSubscribe subscribeHandler: ((_ connection: DBConnection, _ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil,
         onUnsubscribe unsubscribeHandler: ((_ connection: DBConnection, _ subscriptionKey: String, _ currentSubscriptionCount: Int) -> Void)? = nil
     ) async throws {
@@ -144,7 +144,7 @@ extension DBRedisPubSub {
             to: patterns,
             messageReceiver: { [weak connection] publisher, message in
                 guard let connection = connection else { return }
-                message.string.map { receiver(connection, publisher.rawValue, $0) }
+                message.data.map { receiver(connection, publisher.rawValue, $0) }
             },
             onSubscribe: subscribeHandler.map { subscribeHandler in { [weak connection] subscriptionKey, currentSubscriptionCount in
                 guard let connection = connection else { return }
