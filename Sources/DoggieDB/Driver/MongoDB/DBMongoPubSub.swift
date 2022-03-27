@@ -29,7 +29,7 @@ public actor DBMongoPubSub {
     
     weak var connection: DBMongoConnectionProtocol?
     
-    var subscribes: [String: MongoCursor<BSONDocument>] = [:]
+    var runloops: [String: Task<Void, Never>] = [:]
     var callbacks: [String: [(DBConnection, BSON) -> Void]] = [:]
     
     init(connection: DBMongoConnectionProtocol) {
@@ -48,10 +48,10 @@ extension DBConnection {
 extension DBMongoPubSub {
     
     func closed() async throws {
-        for subscribe in subscribes.values {
-            try await subscribe.kill()
+        for runloop in runloops.values {
+            runloop.cancel()
         }
-        subscribes = [:]
+        runloops = [:]
         callbacks = [:]
     }
 }
@@ -117,27 +117,39 @@ extension DBMongoPubSub {
         
         guard let connection = self.connection else { return }
         
-        if subscribes[channel] == nil {
+        if runloops[channel] == nil {
             
             try await self.create_capped_collection(name: channel, size: size, documentsCount: documentsCount)
-            let queue = try await connection.mongoQuery().collection(channel).find().cursorType(.tailable).execute()
             
-            subscribes[channel] = queue
-            
-            let start_time = Date()
-            
-            Task { [weak self] in
+            runloops[channel] = Task { [weak self] in
                 
-                while let message = try? await queue.next() {
+                let start_time = Date()
+                
+                while !Task.isCancelled {
                     
-                    guard let connection = await self?.connection else { return }
-                    guard let callbacks = await self?.callbacks[channel] else { return }
-                    
-                    guard let timestamp = message["timestamp"]?.dateValue, timestamp > start_time else { continue }
-                    guard let message = message["message"] else { continue }
-                    
-                    for callback in callbacks {
-                        callback(connection, message)
+                    do {
+                        
+                        let queue = try await connection.mongoQuery().collection(channel).find().cursorType(.tailable).execute()
+                        
+                        try await withTaskCancellationHandler {
+                            
+                            while let message = try await queue.next() {
+                                
+                                guard let callbacks = await self?.callbacks[channel] else { return }
+                                
+                                guard let timestamp = message["timestamp"]?.dateValue, timestamp > start_time else { continue }
+                                guard let message = message["message"] else { continue }
+                                
+                                for callback in callbacks {
+                                    callback(connection, message)
+                                }
+                            }
+                            
+                        } onCancel: { _ = queue.kill() }
+                        
+                    } catch {
+                        
+                        connection.logger.error("\(error)")
                     }
                 }
             }
@@ -147,8 +159,8 @@ extension DBMongoPubSub {
     }
     
     public func unsubscribe(channel: String) async throws {
-        try await subscribes[channel]?.kill().get()
-        subscribes[channel] = nil
+        runloops[channel]?.cancel()
+        runloops[channel] = nil
         callbacks[channel] = nil
     }
 }
