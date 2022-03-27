@@ -31,6 +31,13 @@ public struct DBMongoPubSub: Sendable {
     
 }
 
+extension DBMongoPubSub {
+    
+    public var eventLoopGroup: EventLoopGroup {
+        return connection.eventLoopGroup
+    }
+}
+
 extension DBConnection {
     
     public func mongoPubSub() -> DBMongoPubSub {
