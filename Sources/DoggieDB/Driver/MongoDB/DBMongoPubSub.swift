@@ -116,7 +116,7 @@ extension MongoDBDriver.Subscribers {
             
             try await connection.create_capped_collection(name: channel, size: size, documentsCount: documentsCount)
             
-            runloops[channel] = Task { [weak self] in
+            runloops[channel] = Task.detached { [weak self] in
                 
                 let start_time = Date()
                 
