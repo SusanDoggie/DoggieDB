@@ -54,8 +54,7 @@ class RedisPubSubTest: XCTestCase {
         logger.logLevel = .debug
         
         self.connection = try await Database.connect(url: url, logger: logger, on: eventLoopGroup)
-        
-        self.connection2 = try await Database.connect(url: url, logger: logger, on: eventLoopGroup.next())
+        self.connection2 = try await Database.connect(url: url, logger: logger, on: eventLoopGroup)
     }
     
     override func tearDown() async throws {

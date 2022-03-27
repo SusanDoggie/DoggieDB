@@ -54,10 +54,6 @@ extension DBConnection {
 
 extension DBConnection {
     
-    public func version() async throws -> String {
-        throw Database.Error.unsupportedOperation
-    }
-    
     public func databases() async throws -> [String] {
         throw Database.Error.unsupportedOperation
     }

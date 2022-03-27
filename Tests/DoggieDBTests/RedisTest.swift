@@ -26,14 +26,9 @@
 import DoggieDB
 import XCTest
 
-class RedisTest: XCTestCase {
+class RedisTest: DoggieDBTestCase {
     
-    var eventLoopGroup: MultiThreadedEventLoopGroup!
-    var connection: DBConnection!
-    
-    override func setUp() async throws {
-        
-        eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+    override var connection_url: URLComponents! {
         
         var url = URLComponents()
         url.scheme = "redis"
@@ -49,16 +44,7 @@ class RedisTest: XCTestCase {
             ]
         }
         
-        var logger = Logger(label: "com.SusanDoggie.DoggieDB")
-        logger.logLevel = .debug
-        
-        self.connection = try await Database.connect(url: url, logger: logger, on: eventLoopGroup)
-    }
-    
-    override func tearDown() async throws {
-        
-        try await self.connection.close()
-        try eventLoopGroup.syncShutdownGracefully()
+        return url
     }
     
     struct Contact: Codable, Equatable {

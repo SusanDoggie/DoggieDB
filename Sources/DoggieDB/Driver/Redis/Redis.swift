@@ -79,6 +79,16 @@ extension RedisDriver {
 
 extension RedisDriver.Connection {
     
+    func version() async throws -> String {
+        let info = try await self.runCommand("INFO", [RESPValue("SERVER")])
+        guard let lines = info.string?.split(whereSeparator: { $0.isNewline }) else { throw Database.Error.unsupportedOperation }
+        guard let redis_version = lines.first(where: { $0.hasPrefix("redis_version:") }) else { throw Database.Error.unsupportedOperation }
+        return String(redis_version.dropFirst(14))
+    }
+}
+
+extension RedisDriver.Connection {
+    
     func withTransaction<T>(
         _ transactionBody: (DBConnection) async throws -> T
     ) async throws -> T {
