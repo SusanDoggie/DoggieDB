@@ -31,7 +31,7 @@ public protocol DBMongoSortOption {
     
 }
 
-public enum DBMongoSortOrder {
+public enum DBMongoSortOrder: CaseIterable {
     
     case ascending
     

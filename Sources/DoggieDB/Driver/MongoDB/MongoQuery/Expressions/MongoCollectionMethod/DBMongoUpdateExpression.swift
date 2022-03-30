@@ -43,7 +43,7 @@ extension DBMongoUpdateExpression: DBMongoFilterOption {}
 
 extension DBMongoUpdateExpression {
     
-    public enum OperationType {
+    public enum OperationType: CaseIterable {
         
         case updateOne
         

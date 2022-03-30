@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public enum DBReturningOption {
+public enum DBReturningOption: CaseIterable {
     
     case before
     

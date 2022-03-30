@@ -41,7 +41,7 @@ extension DBMongoDeleteExpression: DBMongoFilterOption {}
 
 extension DBMongoDeleteExpression {
     
-    public enum OperationType {
+    public enum OperationType: CaseIterable {
         
         case deleteOne
         
