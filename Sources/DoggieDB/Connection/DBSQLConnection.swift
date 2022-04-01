@@ -166,6 +166,8 @@ extension DBSQLConnection {
         _ transactionBody: @escaping (DBConnection) async throws -> T
     ) async throws -> T {
         
+        guard !_runloop.inRunloop else { throw Database.Error.transactionDeadlocks }
+        
         return try await _runloop.perform {
             
             try await self.startTransaction()

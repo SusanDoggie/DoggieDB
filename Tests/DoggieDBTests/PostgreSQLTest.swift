@@ -329,6 +329,30 @@ class PostgreSQLTest: DoggieDBTestCase {
         XCTAssertEqual(result[9][0]["value"]?.intValue, 9)
     }
     
+    func testTransaction5() async throws {
+        
+        do {
+            
+            let connection = sqlconnection
+            
+            let _ = try await connection.withTransaction { _ in
+                
+                try await connection.withTransaction { _ in
+                    
+                    try await connection.execute("SELECT \(1) as value")
+                    
+                }
+                
+            }
+            
+            XCTFail()
+            
+        } catch {
+            
+            XCTAssertEqual(error as? Database.Error, Database.Error.transactionDeadlocks)
+        }
+    }
+    
     func testQuery() async throws {
         
         _ = try await sqlconnection.execute("""

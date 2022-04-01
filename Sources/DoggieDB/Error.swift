@@ -49,6 +49,8 @@ extension Database {
         
         case duplicatedPrimaryKey
         
+        case transactionDeadlocks
+        
         case unknown
         
     }

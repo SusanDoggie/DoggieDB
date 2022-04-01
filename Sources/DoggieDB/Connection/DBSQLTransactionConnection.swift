@@ -167,6 +167,8 @@ extension DBSQLTransactionConnection {
         let base = self.base
         let counter = self.counter
         
+        guard !_runloop.inRunloop else { throw Database.Error.transactionDeadlocks }
+        
         return try await _runloop.perform {
             
             try await base.createSavepoint("savepoint_\(counter)")
