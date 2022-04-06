@@ -58,3 +58,34 @@ extension DBConnection {
         throw Database.Error.unsupportedOperation
     }
 }
+
+extension DBConnection {
+    
+    public func withTransaction<S: AsyncSequence>(
+        _ transactionBody: @escaping (DBConnection) async throws -> S
+    ) -> AsyncThrowingChannel<S.Element, Error> {
+        
+        let channel = AsyncThrowingChannel<S.Element, Error>()
+        
+        Task {
+            
+            do {
+                
+                try await self.withTransaction { connection in
+                    
+                    for try await element in try await transactionBody(connection) {
+                        await channel.send(element)
+                    }
+                }
+                
+                await channel.finish()
+                
+            } catch {
+                
+                await channel.fail(error)
+            }
+        }
+        
+        return channel
+    }
+}
