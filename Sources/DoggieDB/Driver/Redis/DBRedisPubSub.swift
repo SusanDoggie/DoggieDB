@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 //
 
+@preconcurrency
 import RediStack
 
 public struct DBRedisPubSub {

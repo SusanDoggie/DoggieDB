@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 //
 
+@preconcurrency
 import MongoSwift
 
 public struct DBMongoPubSub: Sendable {
@@ -52,7 +53,7 @@ extension MongoDBDriver {
         
         var runloops: [String: Task<Void, Never>] = [:]
         
-        var callbacks: [String: [(DBConnection, BSON) -> Void]] = [:]
+        var callbacks: [String: [@Sendable (DBConnection, BSON) -> Void]] = [:]
         
     }
 }
@@ -109,7 +110,7 @@ extension MongoDBDriver.Subscribers {
         channel: String,
         size: Int,
         documentsCount: Int,
-        handler: @escaping (_ connection: DBConnection, _ channel: String, _ message: BSON) -> Void
+        handler: @Sendable @escaping (_ connection: DBConnection, _ channel: String, _ message: BSON) -> Void
     ) async throws {
         
         if runloops[channel] == nil {
@@ -180,7 +181,7 @@ extension DBMongoPubSub {
         channel: String,
         size: Int = default_capped_size,
         documentsCount: Int = .max,
-        handler: @escaping (_ connection: DBConnection, _ channel: String, _ message: BSON) -> Void
+        handler: @Sendable @escaping (_ connection: DBConnection, _ channel: String, _ message: BSON) -> Void
     ) async throws {
         try await connection.subscribers.subscribe(connection: connection, channel: channel, size: size, documentsCount: documentsCount, handler: handler)
     }

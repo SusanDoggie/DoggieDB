@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 //
 
+@preconcurrency
 import PostgresNIO
 
 public struct DBPostgresPubSub: Sendable {
@@ -93,7 +94,7 @@ extension PostgreSQLDriver.Connection {
     
     fileprivate func subscribe(
         channel: String,
-        handler: @escaping (_ channel: String, _ message: String) -> Void
+        handler: @Sendable @escaping (_ channel: String, _ message: String) -> Void
     ) async throws {
         
         let subscriber = self.connection.addListener(channel: channel, handler: { _, response in handler(response.channel, response.payload) })
@@ -123,7 +124,7 @@ extension DBPostgresPubSub {
     
     public func subscribe(
         channel: String,
-        handler: @escaping (_ connection: DBConnection, _ channel: String, _ message: String) -> Void
+        handler: @Sendable @escaping (_ connection: DBConnection, _ channel: String, _ message: String) -> Void
     ) async throws {
         
         return try await self.connection.subscribe(channel: channel) { [weak connection] channel, message in
