@@ -54,19 +54,19 @@ public struct DBSQLTableStats {
 
 public actor DBSQLConnectionHooks {
     
-    var columnInfoHook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])?
+    var columnInfoHook: (@Sendable (DBSQLConnection, String) async throws -> [DBSQLColumnInfo])?
     
-    var primaryKeyHook: ((DBSQLConnection, String) async throws -> [String])?
+    var primaryKeyHook: (@Sendable (DBSQLConnection, String) async throws -> [String])?
     
 }
 
 extension DBSQLConnectionHooks {
     
-    public func setColumnInfoHook(_ hook: ((DBSQLConnection, String) async throws -> [DBSQLColumnInfo])?) {
+    public func setColumnInfoHook(_ hook: (@Sendable (DBSQLConnection, String) async throws -> [DBSQLColumnInfo])?) {
         self.columnInfoHook = hook
     }
     
-    public func setPrimaryKeyHook(_ hook: ((DBSQLConnection, String) async throws -> [String])?) {
+    public func setPrimaryKeyHook(_ hook: (@Sendable (DBSQLConnection, String) async throws -> [String])?) {
         self.primaryKeyHook = hook
     }
 }
