@@ -65,6 +65,8 @@ public enum MongoPredicateValue: @unchecked Sendable {
     case value(BSONConvertible)
 }
 
+extension NSRegularExpression.Options: @unchecked Sendable { }
+
 extension MongoPredicateValue {
     
     @inlinable

@@ -23,6 +23,9 @@
 //  THE SOFTWARE.
 //
 
+@preconcurrency
+import Collections
+
 public struct DBFindExpression: DBExpressionProtocol {
     
     public let connection: DBConnection
