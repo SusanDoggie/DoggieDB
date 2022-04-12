@@ -40,7 +40,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-async-algorithms", from: "0.0.1"),
-        .package(url: "https://github.com/SusanDoggie/Doggie.git", from: "6.6.26"),
+        .package(url: "https://github.com/SusanDoggie/Doggie.git", from: "6.6.28"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.38.0"),
         .package(url: "https://github.com/mongodb/swift-bson.git", from: "3.0.2"),
         .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "1.2.0"),

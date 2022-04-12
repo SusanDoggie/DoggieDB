@@ -169,17 +169,19 @@ extension DBSQLTransactionConnection {
         
         guard !_runloop.inRunloop else { throw Database.Error.transactionDeadlocks }
         
-        return try await _runloop.perform {
+        let _transactionBody = UnsafeSendable(wrappedValue: transactionBody)
+        
+        let wrapped: UnsafeSendable<T> = try await _runloop.perform {
             
             try await base.createSavepoint("savepoint_\(counter)")
             
             do {
                 
-                let result = try await transactionBody(DBSQLTransactionConnection(base: base, counter: counter + 1))
+                let result = try await _transactionBody.wrappedValue(DBSQLTransactionConnection(base: base, counter: counter + 1))
                 
                 try await base.releaseSavepoint("savepoint_\(counter)")
                 
-                return result
+                return UnsafeSendable(wrappedValue: result)
                 
             } catch {
                 
@@ -188,5 +190,7 @@ extension DBSQLTransactionConnection {
                 throw error
             }
         }
+        
+        return wrapped.wrappedValue
     }
 }

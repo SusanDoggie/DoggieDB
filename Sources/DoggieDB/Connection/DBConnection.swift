@@ -67,13 +67,15 @@ extension DBConnection {
         
         let channel = AsyncThrowingChannel<S.Element, Error>()
         
+        let _transactionBody = UnsafeSendable(wrappedValue: transactionBody)
+        
         Task {
             
             do {
                 
                 try await self.withTransaction { connection in
                     
-                    for try await element in try await transactionBody(connection) {
+                    for try await element in try await _transactionBody.wrappedValue(connection) {
                         await channel.send(element)
                     }
                 }
