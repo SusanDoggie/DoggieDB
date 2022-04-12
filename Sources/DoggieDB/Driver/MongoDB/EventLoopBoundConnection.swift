@@ -23,8 +23,7 @@
 //  THE SOFTWARE.
 //
 
-@preconcurrency
-import MongoSwift
+@preconcurrency import MongoSwift
 
 final class DBMongoEventLoopBoundConnection: DBMongoConnectionProtocol {
     

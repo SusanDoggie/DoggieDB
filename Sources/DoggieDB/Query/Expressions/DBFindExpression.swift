@@ -23,8 +23,7 @@
 //  THE SOFTWARE.
 //
 
-@preconcurrency
-import Collections
+@preconcurrency import Collections
 
 public struct DBFindExpression: DBExpressionProtocol {
     

@@ -23,8 +23,7 @@
 //  THE SOFTWARE.
 //
 
-@preconcurrency
-import PostgresNIO
+@preconcurrency import PostgresNIO
 
 public struct DBPostgresPubSub: Sendable {
     

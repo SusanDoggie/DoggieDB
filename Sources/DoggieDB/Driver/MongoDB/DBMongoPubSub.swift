@@ -23,8 +23,7 @@
 //  THE SOFTWARE.
 //
 
-@preconcurrency
-import MongoSwift
+@preconcurrency import MongoSwift
 
 public struct DBMongoPubSub: Sendable {
     
