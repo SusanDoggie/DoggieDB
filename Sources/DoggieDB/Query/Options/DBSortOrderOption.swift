@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public enum DBSortOrderOption: CaseIterable {
+public enum DBSortOrderOption: CaseIterable, Sendable {
     
     case ascending
     

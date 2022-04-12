@@ -24,7 +24,7 @@
 //
 
 @frozen
-public struct MongoPredicateKey {
+public struct MongoPredicateKey: Sendable {
     
     public var key: String
     

@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public enum DBUpdateOption {
+public enum DBUpdateOption: @unchecked Sendable {
     
     case set(DBDataConvertible)
     

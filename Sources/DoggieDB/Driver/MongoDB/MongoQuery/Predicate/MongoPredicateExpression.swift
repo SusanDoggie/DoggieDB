@@ -24,7 +24,7 @@
 //
 
 @frozen
-public indirect enum MongoPredicateExpression {
+public indirect enum MongoPredicateExpression: Sendable {
     
     case not(MongoPredicateExpression)
     
@@ -58,7 +58,7 @@ public indirect enum MongoPredicateExpression {
 }
 
 @frozen
-public enum MongoPredicateValue {
+public enum MongoPredicateValue: @unchecked Sendable {
     
     case key(String)
     

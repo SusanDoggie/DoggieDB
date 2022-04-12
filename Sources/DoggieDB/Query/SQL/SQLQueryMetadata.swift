@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public struct SQLQueryMetadata {
+public struct SQLQueryMetadata: Sendable {
     
     let metadata: [String: DBData]
     

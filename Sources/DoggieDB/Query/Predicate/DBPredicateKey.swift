@@ -24,7 +24,7 @@
 //
 
 @frozen
-public enum DBPredicateKey {
+public enum DBPredicateKey: Sendable {
     
     case objectId
     

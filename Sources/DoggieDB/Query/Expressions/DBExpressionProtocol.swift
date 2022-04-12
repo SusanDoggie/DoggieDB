@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public protocol DBExpressionProtocol {
+public protocol DBExpressionProtocol: Sendable {
     
     var connection: DBConnection { get }
 }

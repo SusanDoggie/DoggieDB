@@ -24,7 +24,7 @@
 //
 
 @frozen
-public struct DBPredicateBuilder {
+public struct DBPredicateBuilder: Sendable {
     
     @inlinable
     public init() {

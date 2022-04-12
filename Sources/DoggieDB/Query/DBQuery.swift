@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public struct DBQuery {
+public struct DBQuery: Sendable {
     
     public let connection: DBConnection
     

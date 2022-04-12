@@ -24,7 +24,7 @@
 //
 
 @frozen
-public struct MongoPredicateBuilder {
+public struct MongoPredicateBuilder: Sendable {
     
     @inlinable
     public init() {

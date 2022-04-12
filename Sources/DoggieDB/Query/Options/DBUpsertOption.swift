@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public enum DBUpsertOption {
+public enum DBUpsertOption: @unchecked Sendable {
     
     case set(DBDataConvertible)
     

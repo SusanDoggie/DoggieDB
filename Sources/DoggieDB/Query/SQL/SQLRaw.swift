@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-enum SQLRawComponent: Hashable {
+enum SQLRawComponent: Hashable, Sendable {
     
     case identifier(String)
     
@@ -102,7 +102,7 @@ extension Array where Element == SQLRawComponent {
     }
 }
 
-public struct SQLRaw: Hashable {
+public struct SQLRaw: Hashable, Sendable {
     
     var components: [SQLRawComponent]
     
@@ -133,7 +133,7 @@ extension SQLRaw: ExpressibleByStringInterpolation {
         self.init(value)
     }
     
-    public struct StringInterpolation: StringInterpolationProtocol {
+    public struct StringInterpolation: StringInterpolationProtocol, Sendable {
         
         var components: [SQLRawComponent]
         

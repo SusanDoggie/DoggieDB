@@ -24,7 +24,7 @@
 //
 
 @frozen
-public indirect enum DBPredicateExpression {
+public indirect enum DBPredicateExpression: Sendable {
     
     case not(DBPredicateExpression)
     
@@ -60,7 +60,7 @@ public indirect enum DBPredicateExpression {
 }
 
 @frozen
-public enum DBPredicateValue {
+public enum DBPredicateValue: @unchecked Sendable {
     
     case objectId
     

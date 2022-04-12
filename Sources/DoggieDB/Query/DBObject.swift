@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public struct DBObject {
+public struct DBObject: Sendable {
     
     public let `class`: String
     

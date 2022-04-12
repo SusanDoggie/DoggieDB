@@ -25,7 +25,7 @@
 
 import MongoSwift
 
-public struct DBMongoQuery {
+public struct DBMongoQuery: Sendable {
     
     let connection: DBMongoConnectionProtocol
     
