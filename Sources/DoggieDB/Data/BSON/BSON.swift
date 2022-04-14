@@ -207,11 +207,13 @@ extension BSON {
             switch self {
             case var .array(value):
                 
-                if index >= value.count {
-                    value.append(contentsOf: repeatElement(.undefined, count: index - value.count + 1))
+                replaceValue(&self) {
+                    if index >= value.count {
+                        value.append(contentsOf: repeatElement(.undefined, count: index - value.count + 1))
+                    }
+                    value[index] = newValue
+                    return BSON(value)
                 }
-                value[index] = newValue
-                self = BSON(value)
                 
             default: fatalError("Not an array.")
             }
@@ -246,8 +248,10 @@ extension BSON {
             switch self {
             case var .document(value):
                 
-                value[key] = newValue == .undefined ? nil : newValue
-                self = BSON(value)
+                replaceValue(&self) {
+                    value[key] = newValue == .undefined ? nil : newValue
+                    return BSON(value)
+                }
                 
             default: fatalError("Not a document.")
             }
