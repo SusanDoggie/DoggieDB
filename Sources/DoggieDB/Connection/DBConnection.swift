@@ -62,10 +62,12 @@ extension DBConnection {
 extension DBConnection {
     
     public func withTransaction<S: AsyncSequence>(
-        @UnsafeSendable _ transactionBody: @escaping (DBConnection) async throws -> S
+        _ transactionBody: @escaping (DBConnection) async throws -> S
     ) -> AsyncThrowingChannel<S.Element, Error> {
         
         let channel = AsyncThrowingChannel<S.Element, Error>()
+        
+        let _transactionBody = UnsafeSendable(wrappedValue: transactionBody)
         
         Task {
             
@@ -73,7 +75,7 @@ extension DBConnection {
                 
                 try await self.withTransaction { connection in
                     
-                    for try await element in try await transactionBody(connection) {
+                    for try await element in try await _transactionBody.wrappedValue(connection) {
                         await channel.send(element)
                     }
                 }
