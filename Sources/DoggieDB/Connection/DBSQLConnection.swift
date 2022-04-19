@@ -163,12 +163,10 @@ extension DBSQLConnection {
 extension DBSQLConnection {
     
     public func withTransaction<T>(
-        _ transactionBody: @escaping (DBConnection) async throws -> T
+        @UnsafeSendable _ transactionBody: @escaping (DBConnection) async throws -> T
     ) async throws -> T {
         
         guard !_runloop.inRunloop else { throw Database.Error.transactionDeadlocks }
-        
-        let _transactionBody = UnsafeSendable(wrappedValue: transactionBody)
         
         let wrapped: UnsafeSendable<T> = try await _runloop.perform {
             
@@ -176,7 +174,7 @@ extension DBSQLConnection {
             
             do {
                 
-                let result = try await _transactionBody.wrappedValue(DBSQLTransactionConnection(base: self, counter: 0))
+                let result = try await transactionBody(DBSQLTransactionConnection(base: self, counter: 0))
                 
                 try await self.commitTransaction()
                 
