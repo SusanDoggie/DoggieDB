@@ -175,7 +175,7 @@ extension DBSQLTransactionConnection {
             
             do {
                 
-                let result = try await transactionBody(DBSQLTransactionConnection(base: base, counter: counter + 1))
+                let result = try await $transactionBody.wrappedValue(DBSQLTransactionConnection(base: base, counter: counter + 1))
                 
                 try await base.releaseSavepoint("savepoint_\(counter)")
                 

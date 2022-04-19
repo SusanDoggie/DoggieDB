@@ -174,7 +174,7 @@ extension DBSQLConnection {
             
             do {
                 
-                let result = try await transactionBody(DBSQLTransactionConnection(base: self, counter: 0))
+                let result = try await $transactionBody.wrappedValue(DBSQLTransactionConnection(base: self, counter: 0))
                 
                 try await self.commitTransaction()
                 

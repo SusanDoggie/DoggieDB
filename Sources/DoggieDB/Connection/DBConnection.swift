@@ -73,7 +73,7 @@ extension DBConnection {
                 
                 try await self.withTransaction { connection in
                     
-                    for try await element in try await transactionBody(connection) {
+                    for try await element in try await $transactionBody.wrappedValue(connection) {
                         await channel.send(element)
                     }
                 }
