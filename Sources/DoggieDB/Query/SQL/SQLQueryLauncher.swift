@@ -221,13 +221,18 @@ struct SQLQueryLauncher: DBQueryLauncher {
     func _findOne(_ query: DBFindOneExpression, _ columnInfos: [DBSQLColumnInfo], _ primaryKeys: [String], withData: Bool) throws -> SQLRaw? {
         
         guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
-        guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
+        guard let rowId = primaryKeys.count == 1 ? primaryKeys[0] : dialect.rowId else { throw Database.Error.unsupportedOperation }
         
         var sql: SQLRaw
         
         if withData {
-            sql = "SELECT \(identifier: rowId), * FROM \(identifier: query.class)"
+            
+            sql = "SELECT"
+            sql += primaryKeys.count == 1 ? "*" : "\(identifier: rowId), *"
+            sql += "FROM \(identifier: query.class)"
+            
         } else {
+            
             sql = "SELECT \(identifier: rowId) FROM \(identifier: query.class)"
         }
         
@@ -268,7 +273,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
             let (columnInfos, primaryKeys) = try await (self._columns(of: query.class), self._primaryKey(of: query.class))
             
             guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
-            guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
+            guard let rowId = primaryKeys.count == 1 ? primaryKeys[0] : dialect.rowId else { throw Database.Error.unsupportedOperation }
             
             guard let _query = try self._findOne(query, columnInfos, primaryKeys, withData: true) else { return (nil, columnInfos, primaryKeys) }
             
@@ -289,7 +294,7 @@ struct SQLQueryLauncher: DBQueryLauncher {
             let (columnInfos, primaryKeys) = try await (self._columns(of: query.class), self._primaryKey(of: query.class))
             
             guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
-            guard let rowId = dialect.rowId else { throw Database.Error.unsupportedOperation }
+            guard let rowId = primaryKeys.count == 1 ? primaryKeys[0] : dialect.rowId else { throw Database.Error.unsupportedOperation }
             
             guard let _query = try self._findOne(query, columnInfos, primaryKeys, withData: false) else { return (nil, columnInfos, primaryKeys) }
             
@@ -449,9 +454,10 @@ struct SQLQueryLauncher: DBQueryLauncher {
     
     func findOneAndDelete(_ query: DBFindOneExpression) async throws -> DBObject? {
         
-        guard let rowId = connection.driver.sqlDialect?.rowId else { throw Database.Error.unsupportedOperation }
-        
         let (columnInfos, primaryKeys) = try await (self._columns(of: query.class), self._primaryKey(of: query.class))
+        
+        guard let dialect = connection.driver.sqlDialect else { throw Database.Error.unsupportedOperation }
+        guard let rowId = primaryKeys.count == 1 ? primaryKeys[0] : dialect.rowId else { throw Database.Error.unsupportedOperation }
         
         guard let _query = try self._findOne(query, columnInfos, primaryKeys, withData: false) else { return nil }
         
