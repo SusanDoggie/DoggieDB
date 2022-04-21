@@ -78,14 +78,17 @@ class PostgreSQLLongTransactionTest: DoggieDBTestCase {
                     )) { connection in
                         
                         var obj = try await connection.query().find("testLongTransaction").first()!
+                        var value = obj["col"].intValue!
                         
-                        obj.increment("col", by: 1)
+                        value += 1
+                        obj["col"] = DBData(value)
                         
                         try await Task.sleep(nanoseconds: 1_000_000_000)
                         
                         try await obj.save(on: connection)
                         
-                        obj.increment("col", by: 1)
+                        value += 1
+                        obj["col"] = DBData(value)
                         
                         try await Task.sleep(nanoseconds: 1_000_000_000)
                         
