@@ -93,7 +93,7 @@ public protocol DBSQLConnection: DBConnection {
     
     func size(of table: String) async throws -> DBSQLTableStats
     
-    func startTransaction() async throws
+    func startTransaction(_ mode: DBTransactionOptions.Mode) async throws
     
     func commitTransaction() async throws
     
@@ -157,37 +157,5 @@ extension DBSQLConnection {
                 }
             }
         }
-    }
-}
-
-extension DBSQLConnection {
-    
-    public func withTransaction<T>(
-        @UnsafeSendable _ transactionBody: @escaping (DBConnection) async throws -> T
-    ) async throws -> T {
-        
-        guard !_runloop.inRunloop else { throw Database.Error.transactionDeadlocks }
-        
-        let wrapped: UnsafeSendable<T> = try await _runloop.perform {
-            
-            try await self.startTransaction()
-            
-            do {
-                
-                let result = try await $transactionBody.wrappedValue(DBSQLTransactionConnection(base: self, counter: 0))
-                
-                try await self.commitTransaction()
-                
-                return UnsafeSendable(wrappedValue: result)
-                
-            } catch {
-                
-                try await self.abortTransaction()
-                
-                throw error
-            }
-        }
-        
-        return wrapped.wrappedValue
     }
 }

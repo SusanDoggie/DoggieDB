@@ -51,6 +51,7 @@ extension DBMongoConnectionProtocol {
 extension ClientSession {
     
     public func withTransaction<T>(
+        _ options: DBTransactionOptions,
         _ transactionBody: () async throws -> T
     ) async throws -> T {
         
@@ -76,6 +77,7 @@ extension ClientSession {
 extension DBMongoConnectionProtocol {
     
     public func withTransaction<T>(
+        _ options: DBTransactionOptions,
         _ transactionBody: (DBConnection) async throws -> T
     ) async throws -> T {
         
@@ -83,7 +85,7 @@ extension DBMongoConnectionProtocol {
             
             guard let connection = connection as? SessionBoundConnection else { fatalError("unknown error") }
             
-            return try await connection.session.withTransaction { try await transactionBody(connection) }
+            return try await connection.session.withTransaction(options) { try await transactionBody(connection) }
         }
     }
 }

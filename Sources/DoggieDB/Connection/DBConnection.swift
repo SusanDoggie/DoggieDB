@@ -40,6 +40,7 @@ public protocol DBConnection: AnyObject, Sendable {
     func databases() async throws -> [String]
     
     func withTransaction<T>(
+        _ options: DBTransactionOptions,
         _ transactionBody: @escaping (DBConnection) async throws -> T
     ) async throws -> T
     
@@ -62,6 +63,7 @@ extension DBConnection {
 extension DBConnection {
     
     public func withTransaction<S: AsyncSequence>(
+        _ options: DBTransactionOptions = .default,
         @UnsafeSendable _ transactionBody: @escaping (DBConnection) async throws -> S
     ) -> AsyncThrowingChannel<S.Element, Error> {
         
@@ -71,7 +73,7 @@ extension DBConnection {
             
             do {
                 
-                try await self.withTransaction { connection in
+                try await self.withTransaction(options) { connection in
                     
                     for try await element in try await $transactionBody.wrappedValue(connection) {
                         await channel.send(element)
@@ -87,5 +89,15 @@ extension DBConnection {
         }
         
         return channel
+    }
+}
+
+extension DBConnection {
+    
+    public func withTransaction<T>(
+        _ transactionBody: @escaping (DBConnection) async throws -> T
+    ) async throws -> T {
+        
+        return try await self.withTransaction(.default, transactionBody)
     }
 }

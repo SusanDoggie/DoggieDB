@@ -101,6 +101,7 @@ extension RedisDriver.Connection {
 extension RedisDriver.Connection {
     
     func withTransaction<T>(
+        _ options: DBTransactionOptions,
         _ transactionBody: (DBConnection) async throws -> T
     ) async throws -> T {
         

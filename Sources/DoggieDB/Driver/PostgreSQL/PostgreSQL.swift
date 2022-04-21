@@ -325,8 +325,11 @@ extension PostgreSQLDriver.Connection {
 
 extension PostgreSQLDriver.Connection {
     
-    func startTransaction() async throws {
-        try await self.execute("BEGIN")
+    func startTransaction(_ mode: DBTransactionOptions.Mode) async throws {
+        switch mode {
+        case .default: try await self.execute("BEGIN")
+        case .serialize: try await self.execute("BEGIN ISOLATION LEVEL SERIALIZABLE")
+        }
     }
     
     func commitTransaction() async throws {
@@ -401,6 +404,50 @@ extension PostgreSQLDriver.Connection {
         } catch {
             
             self.logger.debug("SQL execution error: \(error)\n\(sql)")
+            
+            throw error
+        }
+    }
+}
+
+extension PostgreSQLDriver.Connection {
+    
+    public func withTransaction<T>(
+        _ options: DBTransactionOptions,
+        @UnsafeSendable _ transactionBody: @escaping (DBConnection) async throws -> T
+    ) async throws -> T {
+        
+        guard !_runloop.inRunloop else { throw Database.Error.transactionDeadlocks }
+        
+        do {
+            
+            let wrapped: UnsafeSendable<T> = try await _runloop.perform {
+                
+                try await self.startTransaction(options.mode)
+                
+                do {
+                    
+                    let result = try await $transactionBody.wrappedValue(DBSQLTransactionConnection(base: self, counter: 0))
+                    
+                    try await self.commitTransaction()
+                    
+                    return UnsafeSendable(wrappedValue: result)
+                    
+                } catch {
+                    
+                    try await self.abortTransaction()
+                    
+                    throw error
+                }
+            }
+            
+            return wrapped.wrappedValue
+            
+        } catch let error as PostgresError {
+            
+            if options.retryOnConflict, error.code == .serializationFailure {
+                return try await self.withTransaction(options, transactionBody)
+            }
             
             throw error
         }

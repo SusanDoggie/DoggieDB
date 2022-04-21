@@ -114,8 +114,8 @@ extension DBSQLTransactionConnection {
 
 extension DBSQLTransactionConnection {
     
-    func startTransaction() async throws {
-        try await base.startTransaction()
+    func startTransaction(_ mode: DBTransactionOptions.Mode) async throws {
+        try await base.startTransaction(mode)
     }
     
     func commitTransaction() async throws {
@@ -161,6 +161,7 @@ extension DBSQLTransactionConnection {
 extension DBSQLTransactionConnection {
     
     func withTransaction<T>(
+        _ options: DBTransactionOptions,
         @UnsafeSendable _ transactionBody: @escaping (DBConnection) async throws -> T
     ) async throws -> T {
         

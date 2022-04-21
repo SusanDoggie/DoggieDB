@@ -72,23 +72,41 @@ class PostgreSQLLongTransactionTest: DoggieDBTestCase {
                 
                 group.addTask {
                     
-                    try await connection.withTransaction { connection in
+                    do {
                         
-                        var obj = try await connection.query().find("testLongTransaction").first()!
+                        return try await connection.withTransaction(DBTransactionOptions(
+                            mode: .serialize,
+                            retryOnConflict: true
+                        )) { connection in
+                            
+                            var obj = try await connection.query().find("testLongTransaction").first()!
+                            
+                            connection.logger.info("Transaction started: \(obj)")
+                            
+                            obj.increment("col", by: 1)
+                            
+                            try await Task.sleep(nanoseconds: 1_000_000_000)
+                            
+                            try await obj.save(on: connection)
+                            
+                            connection.logger.info("check: \(obj)")
+                            
+                            obj.increment("col", by: 1)
+                            
+                            try await Task.sleep(nanoseconds: 1_000_000_000)
+                            
+                            try await obj.save(on: connection)
+                            
+                            connection.logger.info("Transaction end: \(obj)")
+                            
+                            return obj
+                        }
                         
-                        obj.increment("col", by: 1)
+                    } catch {
                         
-                        try await Task.sleep(nanoseconds: 1_000_000_000)
+                        connection.logger.error("\(error)")
                         
-                        try await obj.save(on: connection)
-                        
-                        obj.increment("col", by: 1)
-                        
-                        try await Task.sleep(nanoseconds: 1_000_000_000)
-                        
-                        try await obj.save(on: connection)
-                        
-                        return obj
+                        throw error
                     }
                 }
             }
