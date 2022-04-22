@@ -412,40 +412,50 @@ extension PostgreSQLDriver.Connection {
 
 extension PostgreSQLDriver.Connection {
     
-    public func withTransaction<T>(
+    private func _withTransaction<T>(
         _ options: DBTransactionOptions,
         @UnsafeSendable _ transactionBody: @escaping (DBConnection) async throws -> T
     ) async throws -> T {
         
         guard !_runloop.inRunloop else { throw Database.Error.transactionDeadlocks }
         
+        let wrapped: UnsafeSendable<T> = try await _runloop.perform {
+            
+            try await self.startTransaction(options.mode)
+            
+            do {
+                
+                let result = try await $transactionBody.wrappedValue(DBSQLTransactionConnection(base: self, counter: 0))
+                
+                try await self.commitTransaction()
+                
+                return UnsafeSendable(wrappedValue: result)
+                
+            } catch {
+                
+                try await self.abortTransaction()
+                
+                throw error
+            }
+        }
+        
+        return wrapped.wrappedValue
+    }
+    
+    public func withTransaction<T>(
+        _ options: DBTransactionOptions,
+        @UnsafeSendable _ transactionBody: @escaping (DBConnection) async throws -> T
+    ) async throws -> T {
+        
+        guard options.retryOnConflict else { return try await self._withTransaction(options, transactionBody) }
+        
         do {
             
-            let wrapped: UnsafeSendable<T> = try await _runloop.perform {
-                
-                try await self.startTransaction(options.mode)
-                
-                do {
-                    
-                    let result = try await $transactionBody.wrappedValue(DBSQLTransactionConnection(base: self, counter: 0))
-                    
-                    try await self.commitTransaction()
-                    
-                    return UnsafeSendable(wrappedValue: result)
-                    
-                } catch {
-                    
-                    try await self.abortTransaction()
-                    
-                    throw error
-                }
-            }
-            
-            return wrapped.wrappedValue
+            return try await self._withTransaction(options, transactionBody)
             
         } catch let error as PostgresError {
             
-            if options.retryOnConflict, error.code == .serializationFailure {
+            if error.code == .serializationFailure {
                 return try await self.withTransaction(options, transactionBody)
             }
             

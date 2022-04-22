@@ -50,7 +50,7 @@ extension DBMongoConnectionProtocol {
 
 extension ClientSession {
     
-    public func withTransaction<T>(
+    private func _withTransaction<T>(
         _ options: DBTransactionOptions,
         _ transactionBody: () async throws -> T
     ) async throws -> T {
@@ -68,6 +68,27 @@ extension ClientSession {
         } catch {
             
             try await self.abortTransaction().get()
+            
+            throw error
+        }
+    }
+    
+    public func withTransaction<T>(
+        _ options: DBTransactionOptions,
+        _ transactionBody: () async throws -> T
+    ) async throws -> T {
+        
+        guard options.retryOnConflict else { return try await self._withTransaction(options, transactionBody) }
+        
+        do {
+            
+            return try await self._withTransaction(options, transactionBody)
+            
+        } catch let error as MongoError.CommandError {
+            
+            if error.code == 112 && error.codeName == "WriteConflict" {
+                return try await self.withTransaction(options, transactionBody)
+            }
             
             throw error
         }

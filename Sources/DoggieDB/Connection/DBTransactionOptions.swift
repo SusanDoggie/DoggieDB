@@ -31,7 +31,7 @@ public struct DBTransactionOptions {
     
     public init(
         mode: DBTransactionOptions.Mode = .default,
-        retryOnConflict: Bool = true
+        retryOnConflict: Bool = false
     ) {
         self.mode = mode
         self.retryOnConflict = retryOnConflict
