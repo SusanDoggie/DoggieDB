@@ -73,6 +73,9 @@ extension DBConnection {
             
             do {
                 
+                var options = options
+                options.retryOnConflict = false
+                
                 try await self.withTransaction(options) { connection in
                     
                     for try await element in try await $transactionBody.wrappedValue(connection) {
