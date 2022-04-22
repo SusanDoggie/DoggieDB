@@ -455,7 +455,7 @@ extension PostgreSQLDriver.Connection {
             
         } catch let error as PostgresError {
             
-            if error.code == .serializationFailure {
+            if error.code == .serializationFailure || error.code == .deadlockDetected {
                 return try await self.withTransaction(options, transactionBody)
             }
             
