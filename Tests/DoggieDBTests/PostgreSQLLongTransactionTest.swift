@@ -60,10 +60,10 @@ class PostgreSQLLongTransactionTest: DoggieDBTestCase {
         
         _ = try await sqlconnection.query().insert("testLongTransaction", ["id": 1, "col": 0])
         
-        var connections: [DBSQLConnection] = []
+        var connections: [DBConnection] = []
         
         for _ in 0..<10 {
-            try await connections.append(self._create_connection() as! DBSQLConnection)
+            try await connections.append(self._create_connection())
         }
         
         let result: Set<Int> = try await withThrowingTaskGroup(of: DBObject.self) { group in

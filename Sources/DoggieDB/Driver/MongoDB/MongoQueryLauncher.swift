@@ -104,7 +104,7 @@ extension Dictionary where Key == String, Value == DBUpdateOption {
 
 struct MongoQueryLauncher: DBQueryLauncher {
     
-    let connection: MongoDBDriver.Connection
+    let connection: DBMongoConnectionProtocol
     
     func count(_ query: DBFindExpression) async throws -> Int {
         
