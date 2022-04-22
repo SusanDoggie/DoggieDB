@@ -115,4 +115,136 @@ class PostgreSQLLongTransactionTest: DoggieDBTestCase {
         }
     }
     
+    func testLongTransaction2() async throws {
+        
+        _ = try await sqlconnection.execute("""
+            CREATE TABLE testLongTransaction2 (
+                id INTEGER NOT NULL PRIMARY KEY,
+                col INTEGER NOT NULL
+            )
+            """)
+        
+        _ = try await sqlconnection.query().insert("testLongTransaction2", ["id": 1, "col": 0])
+        
+        var connections: [DBConnection] = []
+        
+        for _ in 0..<10 {
+            try await connections.append(self._create_connection())
+        }
+        
+        let result: Set<Int> = try await withThrowingTaskGroup(of: DBObject.self) { group in
+            
+            for connection in connections {
+                
+                group.addTask {
+                    
+                    try await connection.withTransaction(DBTransactionOptions(
+                        mode: .serialize,
+                        retryOnConflict: true
+                    )) { connection in
+                        
+                        var obj = try await connection.query().find("testLongTransaction2").first()!
+                        var value = obj["col"].intValue!
+                        
+                        try await Task.sleep(nanoseconds: 1_000_000_000)
+                        
+                        value += 1
+                        obj = try await connection.query().findOne("testLongTransaction2")
+                            .filter { $0.objectId == obj.objectId }
+                            .update(["col": value])!
+                        
+                        try await Task.sleep(nanoseconds: 1_000_000_000)
+                        
+                        value += 1
+                        obj = try await connection.query().findOne("testLongTransaction2")
+                            .filter { $0.objectId == obj.objectId }
+                            .update(["col": value])!
+                        
+                        return obj
+                    }
+                }
+            }
+            
+            var result: Set<Int> = []
+            
+            for try await item in group {
+                result.insert(item["col"].intValue!)
+            }
+            
+            return result
+        }
+        
+        XCTAssertEqual(result, [2, 4, 6, 8, 10, 12, 14, 16, 18, 20])
+        
+        for connection in connections {
+            try await connection.close()
+        }
+    }
+    
+    func testLongTransaction3() async throws {
+        
+        _ = try await sqlconnection.execute("""
+            CREATE TABLE testLongTransaction3 (
+                id INTEGER NOT NULL PRIMARY KEY,
+                col INTEGER NOT NULL
+            )
+            """)
+        
+        _ = try await sqlconnection.query().insert("testLongTransaction3", ["id": 1, "col": 0])
+        
+        var connections: [DBConnection] = []
+        
+        for _ in 0..<10 {
+            try await connections.append(self._create_connection())
+        }
+        
+        let result: Set<Int> = try await withThrowingTaskGroup(of: DBObject.self) { group in
+            
+            for connection in connections {
+                
+                group.addTask {
+                    
+                    try await connection.withTransaction(DBTransactionOptions(
+                        mode: .serialize,
+                        retryOnConflict: true
+                    )) { connection in
+                        
+                        var obj = try await connection.query().find("testLongTransaction3").first()!
+                        var value = obj["col"].intValue!
+                        
+                        try await Task.sleep(nanoseconds: 1_000_000_000)
+                        
+                        value += 1
+                        obj = try await connection.query().findOne("testLongTransaction3")
+                            .filter { $0.objectId == obj.objectId }
+                            .upsert(["col": value])!
+                        
+                        try await Task.sleep(nanoseconds: 1_000_000_000)
+                        
+                        value += 1
+                        obj = try await connection.query().findOne("testLongTransaction3")
+                            .filter { $0.objectId == obj.objectId }
+                            .upsert(["col": value])!
+                        
+                        return obj
+                    }
+                }
+            }
+            
+            var result: Set<Int> = []
+            
+            for try await item in group {
+                result.insert(item["col"].intValue!)
+            }
+            
+            return result
+        }
+        
+        XCTAssertEqual(result, [2, 4, 6, 8, 10, 12, 14, 16, 18, 20])
+        
+        for connection in connections {
+            try await connection.close()
+        }
+    }
+    
 }
