@@ -55,7 +55,15 @@ extension ClientSession {
         _ transactionBody: () async throws -> T
     ) async throws -> T {
         
-        try await self.startTransaction().get()
+        var _options = TransactionOptions(writeConcern: .majority)
+        switch options.mode {
+        case .default: _options.readConcern = .serverDefault
+        case .committed: _options.readConcern = .snapshot
+        case .repeatable: _options.readConcern = .majority
+        case .serializable: _options.readConcern = .majority
+        }
+        
+        try await self.startTransaction(options: _options).get()
         
         do {
             

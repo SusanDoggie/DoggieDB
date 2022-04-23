@@ -328,7 +328,9 @@ extension PostgreSQLDriver.Connection {
     func startTransaction(_ mode: DBTransactionOptions.Mode) async throws {
         switch mode {
         case .default: try await self.execute("BEGIN")
-        case .serialize: try await self.execute("BEGIN ISOLATION LEVEL SERIALIZABLE")
+        case .committed: try await self.execute("BEGIN ISOLATION LEVEL READ COMMITTED")
+        case .repeatable: try await self.execute("BEGIN ISOLATION LEVEL REPEATABLE READ")
+        case .serializable: try await self.execute("BEGIN ISOLATION LEVEL SERIALIZABLE")
         }
     }
     

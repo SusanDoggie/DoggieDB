@@ -49,7 +49,12 @@ extension DBTransactionOptions {
         
         case `default`
         
-        case serialize
+        case committed
+        
+        case repeatable
+        
+        case serializable
+        
     }
     
 }
