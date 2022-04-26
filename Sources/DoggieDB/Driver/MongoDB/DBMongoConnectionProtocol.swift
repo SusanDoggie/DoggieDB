@@ -58,7 +58,7 @@ extension ClientSession {
         var _options = TransactionOptions(writeConcern: .majority)
         switch options.mode {
         case .default: _options.readConcern = .serverDefault
-        case .committed: _options.readConcern = .snapshot
+        case .committed: _options.readConcern = .majority
         case .repeatable: _options.readConcern = .majority
         case .serializable: _options.readConcern = .majority
         }
