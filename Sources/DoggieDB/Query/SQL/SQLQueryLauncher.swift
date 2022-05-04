@@ -172,6 +172,9 @@ struct SQLQueryLauncher: DBQueryLauncher {
         if query.skip > 0 {
             sql += "OFFSET \(query.skip)"
         }
+        if query.updateLock {
+            sql += try dialect.updateLock()
+        }
         
         return (sql, primaryKeys)
     }

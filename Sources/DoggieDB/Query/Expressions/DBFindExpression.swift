@@ -39,6 +39,8 @@ public struct DBFindExpression: DBExpressionProtocol {
     
     var includes: Set<String>?
     
+    var updateLock: Bool = false
+    
     init(connection: DBConnection, class: String) {
         self.connection = connection
         self.class = `class`
@@ -156,6 +158,12 @@ extension DBFindExpression {
     public func includes<S: Sequence>(_ keys: S) -> Self where S.Element == String {
         var result = self
         result.includes = includes?.union(keys) ?? Set(keys)
+        return result
+    }
+    
+    public func forUpdate() -> Self {
+        var result = self
+        result.updateLock = true
         return result
     }
 }

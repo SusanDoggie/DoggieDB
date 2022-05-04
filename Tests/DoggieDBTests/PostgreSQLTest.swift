@@ -786,7 +786,7 @@ class PostgreSQLTest: DoggieDBTestCase {
                         retryOnConflict: true
                     )) { connection in
                         
-                        var obj = try await connection.query().find("testLongTransaction").first()!
+                        var obj = try await connection.query().find("testLongTransaction").forUpdate().first()!
                         var value = obj["col"].intValue!
                         
                         value += 1
@@ -852,7 +852,7 @@ class PostgreSQLTest: DoggieDBTestCase {
                         retryOnConflict: true
                     )) { connection in
                         
-                        var obj = try await connection.query().find("testLongTransaction2").first()!
+                        var obj = try await connection.query().find("testLongTransaction2").forUpdate().first()!
                         var value = obj["col"].intValue!
                         
                         try await Task.sleep(nanoseconds: 1_000_000_000)
@@ -918,7 +918,7 @@ class PostgreSQLTest: DoggieDBTestCase {
                         retryOnConflict: true
                     )) { connection in
                         
-                        var obj = try await connection.query().find("testLongTransaction3").first()!
+                        var obj = try await connection.query().find("testLongTransaction3").forUpdate().first()!
                         var value = obj["col"].intValue!
                         
                         try await Task.sleep(nanoseconds: 1_000_000_000)
@@ -984,7 +984,7 @@ class PostgreSQLTest: DoggieDBTestCase {
                         retryOnConflict: true
                     )) { connection in
                         
-                        var obj = try await connection.query().find("testLongTransaction4").first()!
+                        var obj = try await connection.query().find("testLongTransaction4").forUpdate().first()!
                         var value = obj["col"].intValue!
                         
                         value += 1
@@ -1050,7 +1050,7 @@ class PostgreSQLTest: DoggieDBTestCase {
                         retryOnConflict: true
                     )) { connection in
                         
-                        var obj = try await connection.query().find("testLongTransaction5").first()!
+                        var obj = try await connection.query().find("testLongTransaction5").forUpdate().first()!
                         var value = obj["col"].intValue!
                         
                         try await Task.sleep(nanoseconds: 1_000_000_000)
@@ -1116,7 +1116,7 @@ class PostgreSQLTest: DoggieDBTestCase {
                         retryOnConflict: true
                     )) { connection in
                         
-                        var obj = try await connection.query().find("testLongTransaction6").first()!
+                        var obj = try await connection.query().find("testLongTransaction6").forUpdate().first()!
                         var value = obj["col"].intValue!
                         
                         try await Task.sleep(nanoseconds: 1_000_000_000)
