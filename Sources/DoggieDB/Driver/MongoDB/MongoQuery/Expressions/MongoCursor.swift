@@ -27,22 +27,6 @@ import MongoSwift
 
 extension MongoCursor {
     
-    public func isAlive() async throws -> Bool {
-        return try await self.isAlive().get()
-    }
-    
-    public func tryNext() async throws -> T? {
-        return try await self.tryNext().get()
-    }
-    
-    public func next() async throws -> T? {
-        return try await self.next().get()
-    }
-    
-    public func toArray() async throws -> [T] {
-        return try await self.toArray().get()
-    }
-    
     public func forEach(_ body: @escaping (T) throws -> Void) async throws {
         try await self.forEach(body).get()
     }
