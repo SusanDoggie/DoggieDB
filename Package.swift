@@ -39,7 +39,7 @@ let package = Package(
         .library(name: "DBVapor", targets: ["DBVapor"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-async-algorithms", from: "0.0.1"),
+        .package(url: "https://github.com/apple/swift-async-algorithms", exact: "0.0.1"),
         .package(url: "https://github.com/SusanDoggie/Doggie.git", from: "6.6.34"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.39.0"),
         .package(url: "https://github.com/mongodb/swift-bson.git", from: "3.1.0"),
