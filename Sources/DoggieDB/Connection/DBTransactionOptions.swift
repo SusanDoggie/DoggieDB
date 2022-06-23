@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public struct DBTransactionOptions {
+public struct DBTransactionOptions: Sendable {
     
     public var mode: Mode
     
@@ -45,7 +45,7 @@ extension DBTransactionOptions {
 
 extension DBTransactionOptions {
     
-    public enum Mode {
+    public enum Mode: Sendable {
         
         case `default`
         
