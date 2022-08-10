@@ -71,7 +71,7 @@ extension PostgresConnection.Configuration.TLS {
 
 extension PostgreSQLDriver {
     
-    static let idGenerator = NIOAtomic.makeAtomic(value: 0)
+    private static let idGenerator = ManagedAtomic(0)
     
     static func connect(
         config: Database.Configuration,
@@ -100,7 +100,7 @@ extension PostgreSQLDriver {
         let connection = try await PostgresConnection.connect(
             on: eventLoopGroup.next(),
             configuration: _config,
-            id: idGenerator.add(1),
+            id: idGenerator.loadThenWrappingIncrement(by: 1, ordering: .relaxed),
             logger: logger
         )
         
