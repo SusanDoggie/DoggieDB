@@ -31,8 +31,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift_version: [5.6]
-        distro: [bionic, focal]
+        swift_version: [5.6, 5.7]
+        distro: [bionic, focal, jammy]
+        exclude:
+           - swift_version: 5.6
+             distro: jammy
     steps:
     - name: Start MongoDB
       uses: SusanDoggie/mongodb-action@0.0.1
