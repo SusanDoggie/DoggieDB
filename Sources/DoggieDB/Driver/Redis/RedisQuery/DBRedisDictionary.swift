@@ -107,6 +107,6 @@ extension DBRedisDictionary {
     }
     
     public func increment<T: BinaryFloatingPoint>(_ field: String, by amount: T) async throws -> T {
-        return try await self.client.hincrbyfloat(Double(amount), field: field, in: RedisKey(key)).map(T.init).get()
+        return try await self.client.hincrbyfloat(Double(amount), field: field, in: RedisKey(key)).map { T($0) }.get()
     }
 }

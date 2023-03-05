@@ -196,14 +196,6 @@ extension NSRegularExpression: BSONConvertible {
     }
 }
 
-extension Regex: BSONConvertible {
-    
-    @inlinable
-    public func toBSON() -> BSON {
-        return .regex(BSONRegularExpression(from: self.nsRegex))
-    }
-}
-
 extension Array: BSONConvertible where Element: BSONConvertible {
     
     @inlinable

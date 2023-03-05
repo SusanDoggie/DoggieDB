@@ -88,6 +88,6 @@ extension DBRedisValue {
     }
     
     public func increment<T: BinaryFloatingPoint>(by amount: T) async throws -> T {
-        return try await self.client.increment(RedisKey(key), by: Double(amount)).map(T.init).get()
+        return try await self.client.increment(RedisKey(key), by: Double(amount)).map { T($0) }.get()
     }
 }

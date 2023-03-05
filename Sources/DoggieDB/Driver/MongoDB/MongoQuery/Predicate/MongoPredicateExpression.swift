@@ -93,7 +93,7 @@ extension NSRegularExpression.Options {
 }
 
 private func quote(_ str: String) -> String {
-    return "\\Q\(str.replace(regex: "\\\\E", template: "\\\\E\\\\\\\\E\\\\Q"))\\E"
+    return "\\Q\(str.replacingOccurrences(of: "\\\\E", with: "\\\\E\\\\\\\\E\\\\Q"))\\E"
 }
 
 extension MongoPredicateExpression {
@@ -461,11 +461,6 @@ public func ~= (lhs: NSRegularExpression, rhs: MongoPredicateKey) -> MongoPredic
 }
 
 @inlinable
-public func ~= (lhs: Regex, rhs: MongoPredicateKey) -> MongoPredicateExpression {
-    return .matching(rhs, .value(lhs))
-}
-
-@inlinable
 public func ~= (lhs: MongoPredicateKey, rhs: MongoPredicateKey) -> MongoPredicateExpression {
     return .containsIn(.key(rhs), .key(lhs))
 }
@@ -507,11 +502,6 @@ public func ~= <T: BSONConvertible>(lhs: PartialRangeThrough<T>, rhs: MongoPredi
 
 @inlinable
 public func =~ (lhs: MongoPredicateKey, rhs: NSRegularExpression) -> MongoPredicateExpression {
-    return .matching(lhs, .value(rhs))
-}
-
-@inlinable
-public func =~ (lhs: MongoPredicateKey, rhs: Regex) -> MongoPredicateExpression {
     return .matching(lhs, .value(rhs))
 }
 
