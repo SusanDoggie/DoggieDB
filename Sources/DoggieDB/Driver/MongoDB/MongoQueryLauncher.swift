@@ -181,6 +181,31 @@ struct MongoQueryLauncher: DBQueryLauncher {
         return try await mongoQuery.execute().map { DBObject(class: query.class, object: $0) }
     }
     
+    func findOneAndReplace(_ query: DBFindOneExpression, _ replacement: [String: DBDataConvertible]) async throws -> DBObject? {
+        
+        let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }
+        
+        var mongoQuery = connection.mongoQuery().collection(query.class).findOneAndReplace().filter(filter)
+        
+        mongoQuery = try mongoQuery.replacement(BSONDocument(replacement.mapValues { $0.toDBData() }))
+        
+        switch query.returning {
+        case .before: mongoQuery = mongoQuery.returnDocument(.before)
+        case .after: mongoQuery = mongoQuery.returnDocument(.after)
+        }
+        
+        if !query.sort.isEmpty {
+            mongoQuery = mongoQuery.sort(query.sort.mapValues(DBMongoSortOrder.init))
+        }
+        
+        if let includes = query.includes {
+            let projection = Dictionary(uniqueKeysWithValues: includes.map { ($0, 1) })
+            mongoQuery = mongoQuery.projection(BSONDocument(projection))
+        }
+        
+        return try await mongoQuery.execute().map { DBObject(class: query.class, object: $0) }
+    }
+    
     func findOneAndUpsert(_ query: DBFindOneExpression, _ update: [String : DBUpdateOption], _ setOnInsert: [String : DBDataConvertible]) async throws -> DBObject? {
         
         let filter = try query.filters.map { try MongoPredicateExpression($0).toBSONDocument() }

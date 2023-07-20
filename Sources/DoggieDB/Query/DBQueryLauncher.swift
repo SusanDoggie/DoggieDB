@@ -35,6 +35,8 @@ protocol DBQueryLauncher {
     
     func findOneAndUpdate(_ query: DBFindOneExpression, _ update: [String: DBUpdateOption]) async throws -> DBObject?
     
+    func findOneAndReplace(_ query: DBFindOneExpression, _ replacement: [String: DBDataConvertible]) async throws -> DBObject?
+    
     func findOneAndUpsert(_ query: DBFindOneExpression, _ update: [String : DBUpdateOption], _ setOnInsert: [String : DBDataConvertible]) async throws -> DBObject?
     
     func findOneAndDelete(_ query: DBFindOneExpression) async throws -> DBObject?

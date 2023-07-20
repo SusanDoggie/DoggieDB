@@ -327,6 +327,10 @@ struct SQLQueryLauncher: DBQueryLauncher {
         return try await connection.execute(sql).first.map { DBObject(table: query.class, primaryKeys: primaryKeys, object: $0) }
     }
     
+    func findOneAndReplace(_ query: DBFindOneExpression, _ replacement: [String: DBDataConvertible]) async throws -> DBObject? {
+        fatalError("Unimplemented")
+    }
+    
     func findOneAndUpsert(_ query: DBFindOneExpression, _ update: [String : DBUpdateOption], _ setOnInsert: [String : DBDataConvertible]) async throws -> DBObject? {
         
         var update_temp: String
