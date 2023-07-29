@@ -122,7 +122,7 @@ extension PostgreSQLDriver.Connection {
     }
     
     func databases() async throws -> [String] {
-        return try await self.execute("SELECT dbname FROM pg_catalog.pg_database").compactMap { $0["dbname"]!.string! }
+        return try await self.execute("SELECT datname FROM pg_catalog.pg_database").compactMap { $0["datname"]!.string! }
     }
     
     func tables() async throws -> [String] {
